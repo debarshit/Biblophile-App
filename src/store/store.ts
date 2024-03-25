@@ -3,12 +3,14 @@ import {produce} from 'immer';
 import {persist, createJSONStorage} from 'zustand/middleware';
 import CoffeeData from '../data/CoffeeData';
 import BeansData from '../data/BeansData';
+import BookData from '../data/BooksData';
 
 export const useStore = create(
     persist(
       (set, get) => ({
         CoffeeList: CoffeeData,
         BeanList: BeansData,
+        BookList: BookData, 
         CartPrice: 0,
         FavoritesList: [],
         CartList: [],
