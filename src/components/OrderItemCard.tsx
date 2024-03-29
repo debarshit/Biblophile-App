@@ -12,7 +12,7 @@ import {
 interface OrderItemCardProps {
   type: string;
   name: string;
-  imagelink_square: ImageProps;
+  imagelink_square: string;
   special_ingredient: string;
   prices: any;
   ItemPrice: string;
@@ -34,7 +34,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
       style={styles.CardLinearGradient}>
       <View style={styles.CardInfoContainer}>
         <View style={styles.CardImageInfoContainer}>
-          <Image source={imagelink_square} style={styles.Image} />
+          <Image source={{uri: imagelink_square}} style={styles.Image} />
           <View>
             <Text style={styles.CardTitle}>{name}</Text>
             <Text style={styles.CardSubtitle}>{special_ingredient}</Text>
@@ -42,7 +42,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
         </View>
         <View>
           <Text style={styles.CardCurrency}>
-            $ <Text style={styles.CardPrice}>{ItemPrice}</Text>
+          ₹ <Text style={styles.CardPrice}>{ItemPrice}</Text>
           </Text>
         </View>
       </View>
@@ -74,7 +74,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
               X <Text style={styles.Price}>{data.quantity}</Text>
             </Text>
             <Text style={styles.CardQuantityPriceText}>
-              $ {(data.quantity * data.price).toFixed(2).toString()}
+            ₹ {(data.quantity * data.price).toFixed(2).toString()}
             </Text>
           </View>
         </View>

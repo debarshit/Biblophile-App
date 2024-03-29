@@ -4,17 +4,29 @@ import {persist, createJSONStorage} from 'zustand/middleware';
 import CoffeeData from '../data/CoffeeData';
 import BeansData from '../data/BeansData';
 import BookData from '../data/BooksData';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import instance from '../services/axios';
+import requests from '../services/requests';
 
 export const useStore = create(
     persist(
       (set, get) => ({
         CoffeeList: CoffeeData,
         BeanList: BeansData,
-        BookList: BookData, 
+        BookList: [], 
         CartPrice: 0,
         FavoritesList: [],
         CartList: [],
         OrderHistoryList: [],
+        fetchBooks: async () => {
+          try {
+            const response = await instance(requests.getBooks);
+            const data = response.data;
+            set({ BookList: data });
+          } catch (error) {
+            console.error('Error fetching genres:', error);
+          }
+        },
         addToCart: (cartItem: any) =>
           set(
             produce(state => {
@@ -97,6 +109,25 @@ export const useStore = create(
                     break;
                   }
                 }
+              } else if (type == 'Book') {
+                for (let i = 0; i < state.BookList.length; i++) {
+                  if (state.BookList[i].BookId === id) {
+                    if (!state.BookList[i].hasOwnProperty('favourite')) {
+                      state.BookList[i].favourite = true;
+                    } else {
+                      state.BookList[i].favourite = !state.BookList[i].favourite;
+                    }
+                    if (state.BookList[i].favourite) {
+                      state.FavoritesList.unshift(state.BookList[i]);
+                    } else {
+                      const index = state.FavoritesList.findIndex(item => item.id === id);
+                      if (index !== -1) {
+                        state.FavoritesList.splice(index, 1);
+                      }
+                    }
+                    break;
+                  }
+                }
               }
             }),
           ),
@@ -125,6 +156,17 @@ export const useStore = create(
                     break;
                   }
                 }
+              } else if (type === 'Book') {
+                for (let i = 0; i < state.BookList.length; i++) {
+                  if (state.BookList[i].BookId === id) {
+                    if (!state.BookList[i].hasOwnProperty('favourite')) {
+                      state.BookList[i].favourite = false;
+                    } else {
+                      state.BookList[i].favourite = !state.BookList[i].favourite;
+                    }
+                    break;
+                  }
+                }
               }
               let spliceIndex = -1;
               for (let i = 0; i < state.FavoritesList.length; i++) {
@@ -136,7 +178,7 @@ export const useStore = create(
               state.FavoritesList.splice(spliceIndex, 1);
             }),
           ),
-        incrementCartItemQuantity: (id: string, size: string) =>
+          incrementCartItemQuantity: (id: string, size: string) =>
           set(
             produce(state => {
               for (let i = 0; i < state.CartList.length; i++) {

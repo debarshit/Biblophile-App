@@ -23,12 +23,12 @@ const CARD_WIDTH = Dimensions.get('window').width * 0.32;
 
 interface CoffeeCardProps {
   id: string;
-  index: number;
+  // index: number;
   type: string;
-  roasted: string;
-  imagelink_square: ImageProps;
+  genre: string;
+  imagelink_square: string;
   name: string;
-  special_ingredient: string;
+  // special_ingredient: string;
   average_rating: number;
   price: any;
   buttonPressHandler: any;
@@ -36,16 +36,24 @@ interface CoffeeCardProps {
 
 const CoffeeCard: React.FC<CoffeeCardProps> = ({
   id,
-  index,
+  // index,
+  // index,
   type,
-  roasted,
+  // roasted,
+  genre,
   imagelink_square,
   name,
-  special_ingredient,
+  // special_ingredient,
   average_rating,
   price,
   buttonPressHandler,
 }) => {
+   //Array of buy and rent prices
+   const prices: { size: string; price: string; currency: string }[] = [
+    { size: 'Buy', price: price, currency: '₹' },
+    { size: 'Rent', price: price/10, currency: '₹' },
+  ];
+
   return (
     <LinearGradient
       start={{x: 0, y: 0}}
@@ -53,7 +61,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
       style={styles.CardLinearGradientContainer}
       colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}>
       <ImageBackground
-        source={imagelink_square}
+        source={{ uri: imagelink_square }}
         style={styles.CardImageBG}
         resizeMode="cover">
         <View style={styles.CardRatingContainer}>
@@ -66,22 +74,20 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
         </View>
       </ImageBackground>
       <Text style={styles.CardTitle}>{name}</Text>
-      <Text style={styles.CardSubtitle}>{special_ingredient}</Text>
+      {/* <Text style={styles.CardSubtitle}>{special_ingredient}</Text> */}
       <View style={styles.CardFooterRow}>
         <Text style={styles.CardPriceCurrency}>
-          $ <Text style={styles.CardPrice}>{price.price}</Text>
+        ₹ <Text style={styles.CardPrice}>{price}</Text>
         </Text>
         <TouchableOpacity
           onPress={() => {
             buttonPressHandler({
               id,
-              index,
               type,
-              roasted,
+              genre,
               imagelink_square,
               name,
-              special_ingredient,
-              prices: [{...price, quantity: 1}],
+              prices: [{...prices[0], quantity: 1}],
             });
           }}>
           <BGIcon

@@ -60,7 +60,6 @@ const CartScreen = ({navigation, route}: any) => {
                   <TouchableOpacity
                     onPress={() => {
                       navigation.push('Details', {
-                        index: data.index,
                         id: data.id,
                         type: data.type,
                       });
@@ -70,10 +69,9 @@ const CartScreen = ({navigation, route}: any) => {
                       id={data.id}
                       name={data.name}
                       imagelink_square={data.imagelink_square}
-                      special_ingredient={data.special_ingredient}
-                      roasted={data.roasted}
+                      genre={data.genre}
                       prices={data.prices}
-                      type={data.type}
+                      type="Book"
                       incrementCartItemQuantityHandler={
                         incrementCartItemQuantityHandler
                       }
@@ -91,7 +89,7 @@ const CartScreen = ({navigation, route}: any) => {
             <PaymentFooter
               buttonPressHandler={buttonPressHandler}
               buttonTitle="Pay"
-              price={{price: CartPrice, currency: '$'}}
+              price={{price: CartPrice, currency: '₹'}}
             />
           ) : (
             <></>

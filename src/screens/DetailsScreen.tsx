@@ -20,9 +20,8 @@ import ImageBackgroundInfo from '../components/ImageBackgroundInfo';
 import PaymentFooter from '../components/PaymentFooter';
 
 const DetailsScreen = ({navigation, route}: any) => {
-  const ItemOfIndex = useStore((state: any) =>
-    route.params.type == 'Coffee' ? state.CoffeeList : state.BeanList,
-  )[route.params.index];
+  // const ItemOfIndex = useStore((state: any) =>route.params.type === 'Book' ? state.BookList : state.BeanList,)[route.params.id];  use this for books and bookmark list later
+  const ItemOfIndex = useStore((state: any) => state.BookList.find(item => item.BookId === route.params.id));
   const addToFavoriteList = useStore((state: any) => state.addToFavoriteList);
   const deleteFromFavoriteList = useStore(
     (state: any) => state.deleteFromFavoriteList,
@@ -30,10 +29,16 @@ const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
 
-  const [price, setPrice] = useState(ItemOfIndex.prices[0]);
+  //Array of buy and rent prices
+  const prices: { size: string; price: string; currency: string }[] = [
+    { size: 'Buy', price: ItemOfIndex.BookPrice, currency: '₹' },
+    { size: 'Rent', price: (ItemOfIndex.BookPrice)/10, currency: '₹' },
+  ];
+
+  const [price, setPrice] = useState(prices[0]);
   const [fullDesc, setFullDesc] = useState(false);
 
-  const ToggleFavourite = (favourite: boolean, type: string, id: string) => {
+  const ToggleFavourite = (favourite: boolean, type: string, id: number) => {
     favourite ? deleteFromFavoriteList(type, id) : addToFavoriteList(type, id);
   };
 
@@ -43,21 +48,17 @@ const DetailsScreen = ({navigation, route}: any) => {
 
   const addToCarthandler = ({
     id,
-    index,
     name,
-    roasted,
+    genre,
     imagelink_square,
-    special_ingredient,
     type,
     price,
   }: any) => {
     addToCart({
       id,
-      index,
       name,
-      roasted,
+      genre,
       imagelink_square,
-      special_ingredient,
       type,
       prices: [{...price, quantity: 1}],
     });
@@ -73,16 +74,17 @@ const DetailsScreen = ({navigation, route}: any) => {
         contentContainerStyle={styles.ScrollViewFlex}>
         <ImageBackgroundInfo
           EnableBackHandler={true}
-          imagelink_portrait={ItemOfIndex.imagelink_portrait}
-          type={ItemOfIndex.type}
-          id={ItemOfIndex.id}
+          imagelink_portrait={ItemOfIndex.BookPoster}
+          type="Book"
+          id={ItemOfIndex.BookId}
           favourite={ItemOfIndex.favourite}
-          name={ItemOfIndex.name}
-          special_ingredient={ItemOfIndex.special_ingredient}
-          ingredients={ItemOfIndex.ingredients}
-          average_rating={ItemOfIndex.average_rating}
-          ratings_count={ItemOfIndex.ratings_count}
-          roasted={ItemOfIndex.roasted}
+          name={ItemOfIndex.BookName}
+          genre={ItemOfIndex.BookGenre}
+          // special_ingredient={ItemOfIndex.special_ingredient}
+          // ingredients={ItemOfIndex.ingredients}
+          average_rating={ItemOfIndex.BookAverageRating}
+          ratings_count={ItemOfIndex.BookRatingCount}
+          // roasted={ItemOfIndex.roasted}
           BackHandler={BackHandler}
           ToggleFavourite={ToggleFavourite}
         />
@@ -95,7 +97,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                 setFullDesc(prev => !prev);
               }}>
               <Text style={styles.DescriptionText}>
-                {ItemOfIndex.description}
+                {ItemOfIndex.BookDescription}
               </Text>
             </TouchableWithoutFeedback>
           ) : (
@@ -104,13 +106,13 @@ const DetailsScreen = ({navigation, route}: any) => {
                 setFullDesc(prev => !prev);
               }}>
               <Text numberOfLines={3} style={styles.DescriptionText}>
-                {ItemOfIndex.description}
+                {ItemOfIndex.BookDescription}
               </Text>
             </TouchableWithoutFeedback>
           )}
           <Text style={styles.InfoTitle}>Size</Text>
           <View style={styles.SizeOuterContainer}>
-            {ItemOfIndex.prices.map((data: any) => (
+            {prices.map((data: any) => (
               <TouchableOpacity
                 key={data.size}
                 onPress={() => {
@@ -150,13 +152,11 @@ const DetailsScreen = ({navigation, route}: any) => {
           buttonTitle="Add to Cart"
           buttonPressHandler={() => {
             addToCarthandler({
-              id: ItemOfIndex.id,
-              index: ItemOfIndex.index,
-              name: ItemOfIndex.name,
-              roasted: ItemOfIndex.roasted,
-              imagelink_square: ItemOfIndex.imagelink_square,
-              special_ingredient: ItemOfIndex.special_ingredient,
-              type: ItemOfIndex.type,
+              id: ItemOfIndex.BookId,
+              name: ItemOfIndex.BookName,
+              genre: ItemOfIndex.BookGenre,
+              imagelink_square: ItemOfIndex.BookPhoto,
+              type: "Book",
               price: price,
             });
           }}

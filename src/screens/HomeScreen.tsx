@@ -28,10 +28,10 @@ import CoffeeCard from '../components/CoffeeCard';
 const getCategoriesFromData = (data: any) => {
   let temp: any = {};
   for (let i = 0; i < data.length; i++) {
-    if (temp[data[i].name] == undefined) {
-      temp[data[i].name] = 1;
+    if (temp[data[i].BookGenre] == undefined) {
+      temp[data[i].BookGenre] = 1;
     } else {
-      temp[data[i].name]++;
+      temp[data[i].BookGenre]++;
     }
   }
   let categories = Object.keys(temp);
@@ -43,8 +43,8 @@ const getCoffeeList = (category: string, data: any) => {
   if (category == 'All') {
     return data;
   } else {
-    let coffeelist = data.filter((item: any) => item.name == category);
-    return coffeelist;
+    let booklist = data.filter((item: any) => item.BookGenre == category);
+    return booklist;
   }
 };
 
@@ -53,9 +53,10 @@ const HomeScreen = ({navigation}: any) => {
   const BeanList = useStore((state: any) => state.BeanList);
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
+  const BookList = useStore((state: any) => state.BookList); //added BookList
 
   const [categories, setCategories] = useState(
-    getCategoriesFromData(CoffeeList),
+    getCategoriesFromData(BookList),    //replaced CoffeeList with BookList
   );
   const [searchText, setSearchText] = useState('');
   const [categoryIndex, setCategoryIndex] = useState({
@@ -63,13 +64,13 @@ const HomeScreen = ({navigation}: any) => {
     category: categories[0],
   });
   const [sortedCoffee, setSortedCoffee] = useState(
-    getCoffeeList(categoryIndex.category, CoffeeList),
+    getCoffeeList(categoryIndex.category, BookList),
   );
 
   const ListRef: any = useRef<FlatList>();
   const tabBarHeight = useBottomTabBarHeight();
 
-  const searchCoffee = (search: string) => {
+  const searchCoffee = (search: string) => { 
     if (search != '') {
       ListRef?.current?.scrollToOffset({
         animated: true,
@@ -77,8 +78,8 @@ const HomeScreen = ({navigation}: any) => {
       });
       setCategoryIndex({index: 0, category: categories[0]});
       setSortedCoffee([
-        ...CoffeeList.filter((item: any) =>
-          item.name.toLowerCase().includes(search.toLowerCase()),
+        ...BookList.filter((item: any) =>
+          item.BookName.toLowerCase().includes(search.toLowerCase()),
         ),
       ]);
     }
@@ -90,27 +91,23 @@ const HomeScreen = ({navigation}: any) => {
       offset: 0,
     });
     setCategoryIndex({index: 0, category: categories[0]});
-    setSortedCoffee([...CoffeeList]);
+    setSortedCoffee([...BookList]);
     setSearchText('');
   };
 
   const CoffeCardAddToCart = ({
     id,
-    index,
     name,
-    roasted,
+    genre,
     imagelink_square,
-    special_ingredient,
     type,
     prices,
   }: any) => {
     addToCart({
       id,
-      index,
       name,
-      roasted,
+      genre,
       imagelink_square,
-      special_ingredient,
       type,
       prices,
     });
@@ -132,7 +129,7 @@ const HomeScreen = ({navigation}: any) => {
         <HeaderBar />
 
         <Text style={styles.ScreenTitle}>
-          Find the best{'\n'}coffee for you
+          Find the best{'\n'}book for you
         </Text>
 
         {/* Search Input */}
@@ -154,7 +151,7 @@ const HomeScreen = ({navigation}: any) => {
             />
           </TouchableOpacity>
           <TextInput
-            placeholder="Find Your Coffee..."
+            placeholder="Find Your Book..."
             value={searchText}
             onChangeText={text => {
               setSearchText(text);
@@ -199,7 +196,7 @@ const HomeScreen = ({navigation}: any) => {
                   });
                   setCategoryIndex({index: index, category: categories[index]});
                   setSortedCoffee([
-                    ...getCoffeeList(categories[index], CoffeeList),
+                    ...getCoffeeList(categories[index], BookList),
                   ]);
                 }}>
                 <Text
@@ -228,33 +225,30 @@ const HomeScreen = ({navigation}: any) => {
           horizontal
           ListEmptyComponent={
             <View style={styles.EmptyListContainer}>
-              <Text style={styles.CategoryText}>No Coffee Available</Text>
+              <Text style={styles.CategoryText}>No Books Available</Text>
             </View>
           }
           showsHorizontalScrollIndicator={false}
           data={sortedCoffee}
           contentContainerStyle={styles.FlatListContainer}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item.BookId}
           renderItem={({item}) => {
             return (
               <TouchableOpacity
                 onPress={() => {
                   navigation.push('Details', {
-                    index: item.index,
-                    id: item.id,
-                    type: item.type,
+                    id: item.BookId,
+                    type: "Book",
                   });
                 }}>
                 <CoffeeCard
-                  id={item.id}
-                  index={item.index}
-                  type={item.type}
-                  roasted={item.roasted}
-                  imagelink_square={item.imagelink_square}
-                  name={item.name}
-                  special_ingredient={item.special_ingredient}
-                  average_rating={item.average_rating}
-                  price={item.prices[2]}
+                  id={item.BookId}
+                  type="Book"
+                  genre={item.BookGenre}
+                  imagelink_square={item.BookPhoto}
+                  name={item.BookName}
+                  average_rating={item.BookAverageRating}
+                  price={item.BookPrice}
                   buttonPressHandler={CoffeCardAddToCart}
                 />
               </TouchableOpacity>
@@ -262,14 +256,14 @@ const HomeScreen = ({navigation}: any) => {
           }}
         />
 
-        <Text style={styles.CoffeeBeansTitle}>Coffee Beans</Text>
+        <Text style={styles.CoffeeBeansTitle}>Pick of the week</Text>
 
         {/* Beans Flatlist */}
 
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={BeanList}
+          data={BookList}
           contentContainerStyle={[
             styles.FlatListContainer,
             {marginBottom: tabBarHeight},
@@ -280,21 +274,18 @@ const HomeScreen = ({navigation}: any) => {
               <TouchableOpacity
                 onPress={() => {
                   navigation.push('Details', {
-                    index: item.index,
-                    id: item.id,
-                    type: item.type,
+                    id: item.BookId,
+                    type: "Book",
                   });
                 }}>
                 <CoffeeCard
-                  id={item.id}
-                  index={item.index}
-                  type={item.type}
-                  roasted={item.roasted}
-                  imagelink_square={item.imagelink_square}
-                  name={item.name}
-                  special_ingredient={item.special_ingredient}
-                  average_rating={item.average_rating}
-                  price={item.prices[2]}
+                  id={item.BookId}
+                  genre={item.BookGenre}
+                  type={"Book"}
+                  imagelink_square={item.BookPhoto}
+                  name={item.BookName}
+                  average_rating={item.BookAverageRating}
+                  price={item.BookPrice}
                   buttonPressHandler={CoffeCardAddToCart}
                 />
               </TouchableOpacity>

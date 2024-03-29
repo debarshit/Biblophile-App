@@ -130,10 +130,10 @@ const PaymentScreen = ({navigation, route}: any) => {
                     />
                   </View>
                   <View style={styles.CreditCardNumberContainer}>
-                    <Text style={styles.CreditCardNumber}>3879</Text>
-                    <Text style={styles.CreditCardNumber}>8923</Text>
-                    <Text style={styles.CreditCardNumber}>6745</Text>
-                    <Text style={styles.CreditCardNumber}>4638</Text>
+                    <Text style={styles.CreditCardNumber}>1234</Text>
+                    <Text style={styles.CreditCardNumber}>4321</Text>
+                    <Text style={styles.CreditCardNumber}>5678</Text>
+                    <Text style={styles.CreditCardNumber}>8765</Text>
                   </View>
                   <View style={styles.CreditCardRow}>
                     <View style={styles.CreditCardNameContainer}>
@@ -141,7 +141,7 @@ const PaymentScreen = ({navigation, route}: any) => {
                         Card Holder Name
                       </Text>
                       <Text style={styles.CreditCardNameTitle}>
-                        Robert Evans
+                        Abhi Etta
                       </Text>
                     </View>
                     <View style={styles.CreditCardDateContainer}>

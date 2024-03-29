@@ -54,12 +54,10 @@ const FavoritesScreen = ({navigation}: any) => {
                       id={data.id}
                       imagelink_portrait={data.imagelink_portrait}
                       name={data.name}
-                      special_ingredient={data.special_ingredient}
                       type={data.type}
-                      ingredients={data.ingredients}
                       average_rating={data.average_rating}
                       ratings_count={data.ratings_count}
-                      roasted={data.roasted}
+                      genre={data.genre}
                       description={data.description}
                       favourite={data.favourite}
                       ToggleFavouriteItem={ToggleFavourite}
