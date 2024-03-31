@@ -132,7 +132,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                     styles.SizeText,
                     {
                       fontSize:
-                        ItemOfIndex.type == 'Bean'
+                        ItemOfIndex.type == 'Book'
                           ? FONTSIZE.size_14
                           : FONTSIZE.size_16,
                       color:

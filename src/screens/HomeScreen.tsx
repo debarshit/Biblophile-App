@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -53,6 +53,7 @@ const HomeScreen = ({navigation}: any) => {
   const BeanList = useStore((state: any) => state.BeanList);
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
+  const fetchBooks = useStore((state: any) => state.fetchBooks);
   const BookList = useStore((state: any) => state.BookList); //added BookList
 
   const [categories, setCategories] = useState(
@@ -118,6 +119,12 @@ const HomeScreen = ({navigation}: any) => {
       ToastAndroid.CENTER,
     );
   };
+
+  useEffect(() => {
+   
+    fetchBooks();
+
+    }, []); 
 
   return (
     <View style={styles.ScreenContainer}>
