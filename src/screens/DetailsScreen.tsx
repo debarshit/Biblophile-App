@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -20,26 +20,37 @@ import ImageBackgroundInfo from '../components/ImageBackgroundInfo';
 import PaymentFooter from '../components/PaymentFooter';
 
 const DetailsScreen = ({navigation, route}: any) => {
-  // const ItemOfIndex = useStore((state: any) =>route.params.type === 'Book' ? state.BookList : state.BeanList,)[route.params.id];  use this for books and bookmark list later
-  const ItemOfIndex = useStore((state: any) => state.BookList.find(item => item.BookId === route.params.id));
-  const addToFavoriteList = useStore((state: any) => state.addToFavoriteList);
-  const deleteFromFavoriteList = useStore(
-    (state: any) => state.deleteFromFavoriteList,
-  );
+  const updateFavoriteList = useStore((state: any) => state.updateFavoriteList);
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
+  const favoritesList = useStore((state: any) => state.FavoritesList);
 
   //Array of buy and rent prices
   const prices: { size: string; price: string; currency: string }[] = [
-    { size: 'Buy', price: ItemOfIndex.BookPrice, currency: '₹' },
-    { size: 'Rent', price: (ItemOfIndex.BookPrice)/10, currency: '₹' },
+    { size: 'Buy', price: route.params.price, currency: '₹' },
+    { size: 'Rent', price: (route.params.price)/10, currency: '₹' },
   ];
 
   const [price, setPrice] = useState(prices[0]);
   const [fullDesc, setFullDesc] = useState(false);
+  const [favourite, setFavourite] = useState(false);
 
-  const ToggleFavourite = (favourite: boolean, type: string, id: number) => {
-    favourite ? deleteFromFavoriteList(type, id) : addToFavoriteList(type, id);
+  const ToggleFavourite = (isFavourite, id) => {
+    const book = {
+      id: route.params.id,
+      type: "Book",
+      price: route.params.price,
+      name: route.params.name,
+      genre: route.params.genre,
+      poster: route.params.poster,
+      photo: route.params.photo,
+      averageRating: route.params.averageRating,
+      ratingCount: route.params.ratingCOunt,
+      description: route.params.description,
+      favourite: !favourite,
+    };
+    updateFavoriteList(route.params.type, route.params.id, book);
+    setFavourite(!favourite);
   };
 
   const BackHandler = () => {
@@ -66,6 +77,11 @@ const DetailsScreen = ({navigation, route}: any) => {
     navigation.navigate('Cart');
   };
 
+  useEffect(() => {
+    const isBookInFavorites = favoritesList.some((book: any) => book.id == route.params.id);
+    setFavourite(isBookInFavorites);
+  }, [favoritesList, route.params.id]);
+
   return (
     <View style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
@@ -74,16 +90,16 @@ const DetailsScreen = ({navigation, route}: any) => {
         contentContainerStyle={styles.ScrollViewFlex}>
         <ImageBackgroundInfo
           EnableBackHandler={true}
-          imagelink_portrait={ItemOfIndex.BookPoster}
+          imagelink_portrait={route.params.poster}
           type="Book"
-          id={ItemOfIndex.BookId}
-          favourite={ItemOfIndex.favourite}
-          name={ItemOfIndex.BookName}
-          genre={ItemOfIndex.BookGenre}
+          id={route.params.id}
+          favourite={favourite}
+          name={route.params.name}
+          genre={route.params.genre}
           // special_ingredient={ItemOfIndex.special_ingredient}
           // ingredients={ItemOfIndex.ingredients}
-          average_rating={ItemOfIndex.BookAverageRating}
-          ratings_count={ItemOfIndex.BookRatingCount}
+          average_rating={route.params.averageRating}
+          ratings_count={route.params.ratingCount}
           // roasted={ItemOfIndex.roasted}
           BackHandler={BackHandler}
           ToggleFavourite={ToggleFavourite}
@@ -97,7 +113,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                 setFullDesc(prev => !prev);
               }}>
               <Text style={styles.DescriptionText}>
-                {ItemOfIndex.BookDescription}
+                {route.params.description}
               </Text>
             </TouchableWithoutFeedback>
           ) : (
@@ -106,7 +122,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                 setFullDesc(prev => !prev);
               }}>
               <Text numberOfLines={3} style={styles.DescriptionText}>
-                {ItemOfIndex.BookDescription}
+                {route.params.description}
               </Text>
             </TouchableWithoutFeedback>
           )}
@@ -132,7 +148,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                     styles.SizeText,
                     {
                       fontSize:
-                        ItemOfIndex.type == 'Book'
+                      route.params.type == 'Book'
                           ? FONTSIZE.size_14
                           : FONTSIZE.size_16,
                       color:
@@ -152,10 +168,10 @@ const DetailsScreen = ({navigation, route}: any) => {
           buttonTitle="Add to Cart"
           buttonPressHandler={() => {
             addToCarthandler({
-              id: ItemOfIndex.BookId,
-              name: ItemOfIndex.BookName,
-              genre: ItemOfIndex.BookGenre,
-              imagelink_square: ItemOfIndex.BookPhoto,
+              id: route.params.id,
+              name: route.params.name,
+              genre: route.params.genre,
+              imagelink_square: route.params.photo,
               type: "Book",
               price: price,
             });

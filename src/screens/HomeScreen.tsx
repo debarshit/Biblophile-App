@@ -11,6 +11,8 @@ import {
 } from 'react-native';    //replace with a toast message compatible with both android & ios, add safeview for topmost view 
 import {FlatList} from 'react-native';
 import {Dimensions} from 'react-native';
+import instance from '../services/axios';
+import requests from '../services/requests';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import { AntDesign, Feather } from '@expo/vector-icons';
 import {useStore} from '../store/store';
@@ -25,65 +27,75 @@ import HeaderBar from '../components/HeaderBar';
 import CoffeeCard from '../components/CoffeeCard';
 
 
-const getCategoriesFromData = (data: any) => {
+const getGenresFromData = (data: any) => {  //optimise this function as it only has to fetch bookGenres
   let temp: any = {};
   for (let i = 0; i < data.length; i++) {
-    if (temp[data[i].BookGenre] == undefined) {
-      temp[data[i].BookGenre] = 1;
+    if (temp[data[i].genre] == undefined) {
+      temp[data[i].genre] = 1;
     } else {
-      temp[data[i].BookGenre]++;
+      temp[data[i].genre]++;
     }
   }
-  let categories = Object.keys(temp);
-  categories.unshift('All');
-  return categories;
+  let genres = Object.keys(temp);
+  genres.unshift('All');
+  return genres;
 };
 
-const getCoffeeList = (category: string, data: any) => {
-  if (category == 'All') {
+const getBookList = async (genre: string) => {
+  try {
+    const response = await instance(requests.getBooks+genre);
+    const data = response.data;
     return data;
-  } else {
-    let booklist = data.filter((item: any) => item.BookGenre == category);
-    return booklist;
+  } catch (error) {
+    console.error('Error fetching genres:', error);
   }
 };
 
 const HomeScreen = ({navigation}: any) => {
+  //useStore variables
   const CoffeeList = useStore((state: any) => state.CoffeeList);
   const BeanList = useStore((state: any) => state.BeanList);
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
-  const fetchBooks = useStore((state: any) => state.fetchBooks);
-  const BookList = useStore((state: any) => state.BookList); //added BookList
+  const fetchGenres = useStore((state: any) => state.fetchGenres);  //this function should run on mount
+  const GenreList = useStore((state: any) => state.GenreList);
 
-  const [categories, setCategories] = useState(
-    getCategoriesFromData(BookList),    //replaced CoffeeList with BookList
+  //useState variables
+  const [genres, setGenres] = useState(
+    getGenresFromData(GenreList),  
   );
   const [searchText, setSearchText] = useState('');
-  const [categoryIndex, setCategoryIndex] = useState({
+  const [genreIndex, setGenreIndex] = useState({
     index: 0,
-    category: categories[0],
+    genre: genres[0],
   });
+  const [bookList, setBookList] = useState(getBookList(genreIndex.genre));
   const [sortedCoffee, setSortedCoffee] = useState(
-    getCoffeeList(categoryIndex.category, BookList),
+    getBookList(genreIndex.genre),
   );
 
   const ListRef: any = useRef<FlatList>();
   const tabBarHeight = useBottomTabBarHeight();
 
+  // Define a variable to store the timeout ID
+  let searchTimeout: any = null;  
+
   const searchCoffee = (search: string) => { 
-    if (search != '') {
-      ListRef?.current?.scrollToOffset({
-        animated: true,
-        offset: 0,
-      });
-      setCategoryIndex({index: 0, category: categories[0]});
-      setSortedCoffee([
-        ...BookList.filter((item: any) =>
-          item.BookName.toLowerCase().includes(search.toLowerCase()),
-        ),
-      ]);
-    }
+    // Clear the previous timeout
+    clearTimeout(searchTimeout);
+    
+    // Create a new timeout
+    searchTimeout = setTimeout(async () => {
+      if (search !== '') {
+        try {
+          const response = await instance(requests.searchBooks + search);
+          const data = response.data;
+          setSortedCoffee(data);
+        } catch (error) {
+          console.error('Error fetching books:', error);
+        }
+      }
+    }, 500); // Waiting time in milliseconds
   };
 
   const resetSearchCoffee = () => {
@@ -91,8 +103,8 @@ const HomeScreen = ({navigation}: any) => {
       animated: true,
       offset: 0,
     });
-    setCategoryIndex({index: 0, category: categories[0]});
-    setSortedCoffee([...BookList]);
+    setGenreIndex({index: 0, genre: genres[0]});
+    setSortedCoffee(bookList);
     setSearchText('');
   };
 
@@ -121,10 +133,30 @@ const HomeScreen = ({navigation}: any) => {
   };
 
   useEffect(() => {
-   
-    fetchBooks();
+    // Fetch genres when component mounts
+    fetchGenres();
+  }, []);
 
-    }, []); 
+  useEffect(() => {
+    // Update genres state when GenreList changes
+    setGenres(['All', ...GenreList.map((genre: any) => genre.genre)]);
+  }, [GenreList]);
+
+  useEffect(() => {
+    // Fetch book list when genreIndex changes
+    async function fetchBookList() {
+      try {
+        const response = await instance(requests.getBooks + genreIndex.genre);
+        const data = response.data;
+        setBookList(data);
+        setSortedCoffee(data);
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+      }
+    }
+
+    fetchBookList();
+  }, [genreIndex]);
 
   return (
     <View style={styles.ScreenContainer}>
@@ -184,39 +216,37 @@ const HomeScreen = ({navigation}: any) => {
           )}
         </View>
 
-        {/* Category Scroller */}
+        {/* genre Scroller */}
 
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.CategoryScrollViewStyle}>
-          {categories.map((data, index) => (
+          contentContainerStyle={styles.genreScrollViewStyle}>
+          {genres.map((data, index) => (
             <View
               key={index.toString()}
-              style={styles.CategoryScrollViewContainer}>
+              style={styles.genreScrollViewContainer}>
               <TouchableOpacity
-                style={styles.CategoryScrollViewItem}
+                style={styles.genreScrollViewItem}
                 onPress={() => {
                   ListRef?.current?.scrollToOffset({
                     animated: true,
                     offset: 0,
                   });
-                  setCategoryIndex({index: index, category: categories[index]});
-                  setSortedCoffee([
-                    ...getCoffeeList(categories[index], BookList),
-                  ]);
+                  setGenreIndex({index: index, genre: genres[index]});
+                  setSortedCoffee(bookList);
                 }}>
                 <Text
                   style={[
-                    styles.CategoryText,
-                    categoryIndex.index == index
+                    styles.genreText,
+                    genreIndex.index == index
                       ? {color: COLORS.primaryOrangeHex}
                       : {},
                   ]}>
                   {data}
                 </Text>
-                {categoryIndex.index == index ? (
-                  <View style={styles.ActiveCategory} />
+                {genreIndex.index == index ? (
+                  <View style={styles.Activegenre} />
                 ) : (
                   <></>
                 )}
@@ -232,7 +262,7 @@ const HomeScreen = ({navigation}: any) => {
           horizontal
           ListEmptyComponent={
             <View style={styles.EmptyListContainer}>
-              <Text style={styles.CategoryText}>No Books Available</Text>
+              <Text style={styles.genreText}>No Books Available</Text>
             </View>
           }
           showsHorizontalScrollIndicator={false}
@@ -246,6 +276,14 @@ const HomeScreen = ({navigation}: any) => {
                   navigation.push('Details', {
                     id: item.BookId,
                     type: "Book",
+                    price: item.BookPrice,
+                    name: item.BookName,
+                    genre: item.BookGenre,
+                    poster: item.BookPoster,
+                    photo: item.BookPhoto,
+                    averageRating: item.BookAverageRating,
+                    ratingCount: item.BookRatingCount,
+                    description: item.BookDescription,
                   });
                 }}>
                 <CoffeeCard
@@ -270,7 +308,7 @@ const HomeScreen = ({navigation}: any) => {
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={BookList}
+          data={bookList}
           contentContainerStyle={[
             styles.FlatListContainer,
             {marginBottom: tabBarHeight},
@@ -335,23 +373,23 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_14,
     color: COLORS.primaryWhiteHex,
   },
-  CategoryScrollViewStyle: {
+  genreScrollViewStyle: {
     paddingHorizontal: SPACING.space_20,
     marginBottom: SPACING.space_20,
   },
-  CategoryScrollViewContainer: {
+  genreScrollViewContainer: {
     paddingHorizontal: SPACING.space_15,
   },
-  CategoryScrollViewItem: {
+  genreScrollViewItem: {
     alignItems: 'center',
   },
-  CategoryText: {
+  genreText: {
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_16,
     color: COLORS.primaryLightGreyHex,
     marginBottom: SPACING.space_4,
   },
-  ActiveCategory: {
+  Activegenre: {
     height: SPACING.space_10,
     width: SPACING.space_10,
     borderRadius: BORDERRADIUS.radius_10,

@@ -17,12 +17,10 @@ import FavoritesItemCard from '../components/FavoritesItemCard';
 const FavoritesScreen = ({navigation}: any) => {
   const FavoritesList = useStore((state: any) => state.FavoritesList);
   const tabBarHeight = useBottomTabBarHeight();
-  const addToFavoriteList = useStore((state: any) => state.addToFavoriteList);
-  const deleteFromFavoriteList = useStore(
-    (state: any) => state.deleteFromFavoriteList,
-  );
-  const ToggleFavourite = (favourite: boolean, type: string, id: string) => {
-    favourite ? deleteFromFavoriteList(type, id) : addToFavoriteList(type, id);
+  const updateFavoriteList = useStore((state: any) => state.updateFavoriteList);
+
+  const ToggleFavourite = (isFavourite, id) => {
+    updateFavoriteList("Book", id, [])
   };
   return (
     <View style={styles.ScreenContainer}>
@@ -44,19 +42,26 @@ const FavoritesScreen = ({navigation}: any) => {
                   <TouchableOpacity
                     onPress={() => {
                       navigation.push('Details', {
-                        index: data.index,
                         id: data.id,
-                        type: data.type,
+                        type: "Book",
+                        price: data.price,
+                        name: data.name,
+                        genre: data.genre,
+                        poster: data.poster,
+                        photo: data.photo,
+                        averageRating: data.averageRating,
+                        ratingCount: data.ratingCount,
+                        description: data.description,
                       });
                     }}
                     key={data.id}>
                     <FavoritesItemCard
                       id={data.id}
-                      imagelink_portrait={data.imagelink_portrait}
+                      imagelink_portrait={data.poster}
                       name={data.name}
                       type={data.type}
-                      average_rating={data.average_rating}
-                      ratings_count={data.ratings_count}
+                      average_rating={data.averageRating}
+                      ratings_count={data.ratingCount}
                       genre={data.genre}
                       description={data.description}
                       favourite={data.favourite}

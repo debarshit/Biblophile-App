@@ -1,7 +1,7 @@
 const requests = {
     //request to biblophile actions api
     getBookGenre:`/actions.php?action=getBookGenre`,
-    getBooks:`/actions.php?action=getBooks`,
+    getBooks:`/actions.php?action=getBooks&bookGenre=`,
     placeOrder: `/actions.php?action=placeOrder`,
     userLogin: `/actions.php?action=userLogin`,
     userSignup: `/actions.php?action=userSignup`,
@@ -9,6 +9,7 @@ const requests = {
     fetchOrders: `/actions.php?action=fetchOrders`,
     updateUserData: `/actions.php?action=updateUserData`,
     fetchDeposit: `/actions.php?action=fetchDeposit`,
+    searchBooks: `/actions.php?action=searchBooks&searchQuery=`,
 }
 
 export default requests;

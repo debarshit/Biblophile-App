@@ -13,16 +13,16 @@ export const useStore = create(
       (set, get) => ({
         CoffeeList: CoffeeData,
         BeanList: BeansData,
-        BookList: [], 
+        GenreList: [], 
         CartPrice: 0,
         FavoritesList: [],
         CartList: [],
         OrderHistoryList: [],
-        fetchBooks: async () => {
+        fetchGenres: async () => {
           try {
-            const response = await instance(requests.getBooks);
+            const response = await instance(requests.getBookGenre);
             const data = response.data;
-            set({ BookList: data });
+            set({ GenreList: data });
           } catch (error) {
             console.error('Error fetching genres:', error);
           }
@@ -82,102 +82,19 @@ export const useStore = create(
               state.CartPrice = totalprice.toFixed(2).toString();
             }),
           ),
-        addToFavoriteList: (type: string, id: string) =>
-          set(
-            produce(state => {
-              if (type == 'Coffee') {
-                for (let i = 0; i < state.CoffeeList.length; i++) {
-                  if (state.CoffeeList[i].id == id) {
-                    if (state.CoffeeList[i].favourite == false) {
-                      state.CoffeeList[i].favourite = true;
-                      state.FavoritesList.unshift(state.CoffeeList[i]);
-                    } else {
-                      state.CoffeeList[i].favourite = false;
-                    }
-                    break;
-                  }
-                }
-              } else if (type == 'Bean') {
-                for (let i = 0; i < state.BeanList.length; i++) {
-                  if (state.BeanList[i].id == id) {
-                    if (state.BeanList[i].favourite == false) {
-                      state.BeanList[i].favourite = true;
-                      state.FavoritesList.unshift(state.BeanList[i]);
-                    } else {
-                      state.BeanList[i].favourite = false;
-                    }
-                    break;
-                  }
-                }
-              } else if (type == 'Book') {
-                for (let i = 0; i < state.BookList.length; i++) {
-                  if (state.BookList[i].BookId === id) {
-                    if (!state.BookList[i].hasOwnProperty('favourite')) {
-                      state.BookList[i].favourite = true;
-                    } else {
-                      state.BookList[i].favourite = !state.BookList[i].favourite;
-                    }
-                    if (state.BookList[i].favourite) {
-                      state.FavoritesList.unshift(state.BookList[i]);
-                    } else {
-                      const index = state.FavoritesList.findIndex(item => item.id === id);
-                      if (index !== -1) {
-                        state.FavoritesList.splice(index, 1);
-                      }
-                    }
-                    break;
-                  }
-                }
-              }
-            }),
-          ),
-        deleteFromFavoriteList: (type: string, id: string) =>
-          set(
-            produce(state => {
-              if (type == 'Coffee') {
-                for (let i = 0; i < state.CoffeeList.length; i++) {
-                  if (state.CoffeeList[i].id == id) {
-                    if (state.CoffeeList[i].favourite == true) {
-                      state.CoffeeList[i].favourite = false;
-                    } else {
-                      state.CoffeeList[i].favourite = true;
-                    }
-                    break;
-                  }
-                }
-              } else if (type == 'Beans') {
-                for (let i = 0; i < state.BeanList.length; i++) {
-                  if (state.BeanList[i].id == id) {
-                    if (state.BeanList[i].favourite == true) {
-                      state.BeanList[i].favourite = false;
-                    } else {
-                      state.BeanList[i].favourite = true;
-                    }
-                    break;
-                  }
-                }
-              } else if (type === 'Book') {
-                for (let i = 0; i < state.BookList.length; i++) {
-                  if (state.BookList[i].BookId === id) {
-                    if (!state.BookList[i].hasOwnProperty('favourite')) {
-                      state.BookList[i].favourite = false;
-                    } else {
-                      state.BookList[i].favourite = !state.BookList[i].favourite;
-                    }
-                    break;
-                  }
-                }
-              }
-              let spliceIndex = -1;
-              for (let i = 0; i < state.FavoritesList.length; i++) {
-                if (state.FavoritesList[i].id == id) {
-                  spliceIndex = i;
-                  break;
-                }
-              }
-              state.FavoritesList.splice(spliceIndex, 1);
-            }),
-          ),
+        updateFavoriteList: (type: string, id: string, book: any) =>
+        set(
+          produce(state => {
+            const bookIndex = state.FavoritesList.findIndex(item => item.id === id);
+            if (bookIndex !== -1) {
+              // If the book is already in the favorites list, remove it
+              state.FavoritesList.splice(bookIndex, 1);
+            } else {
+              // If the book is not in the favorites list, add it to the beginning of the list
+              state.FavoritesList.unshift(book);
+            }
+          }),
+        ),
           incrementCartItemQuantity: (id: string, size: string) =>
           set(
             produce(state => {
