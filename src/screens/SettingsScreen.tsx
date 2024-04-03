@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -6,18 +6,18 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  Switch,
   Image,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import {COLORS, SPACING} from '../theme/theme';
+import { Feather, FontAwesome, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import  {COLORS } from '../theme/theme';
 
 const SettingsScreen = ({navigation, route}: any) => {
-  const [form, setForm] = useState({
-    darkMode: false,
-    emailNotifications: true,
-    pushNotifications: false,
-  });
+
+  const openWebView = (url: string) => {
+    navigation.push('Resources', {
+      url: url
+    });
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}>
@@ -60,18 +60,18 @@ const SettingsScreen = ({navigation, route}: any) => {
 
         <ScrollView>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Preferences</Text>
+            <Text style={styles.sectionTitle}>Subscription</Text>
 
             <TouchableOpacity
               onPress={() => {
                 // handle onPress
               }}
               style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: '#fe9400' }]}>
-                <Feather color="#fff" name="globe" size={20} />
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <FontAwesome color="#fff" name="rupee" size={20} />
               </View>
 
-              <Text style={styles.rowLabel}>Language</Text>
+              <Text style={styles.rowLabel}>Manage Subscription</Text>
 
               <View style={styles.rowSpacer} />
 
@@ -81,76 +81,6 @@ const SettingsScreen = ({navigation, route}: any) => {
                 size={20} />
             </TouchableOpacity>
 
-            <View style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: '#007afe' }]}>
-                <Feather color="#fff" name="moon" size={20} />
-              </View>
-
-              <Text style={styles.rowLabel}>Dark Mode</Text>
-
-              <View style={styles.rowSpacer} />
-
-              <Switch
-                onValueChange={darkMode => setForm({ ...form, darkMode })}
-                value={form.darkMode} />
-            </View>
-
-            <TouchableOpacity
-              onPress={() => {
-                // handle onPress
-              }}
-              style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: '#32c759' }]}>
-                <Feather
-                  color="#fff"
-                  name="navigation"
-                  size={20} />
-              </View>
-
-              <Text style={styles.rowLabel}>Location</Text>
-
-              <View style={styles.rowSpacer} />
-
-              <Feather
-                color="#C6C6C6"
-                name="chevron-right"
-                size={20} />
-            </TouchableOpacity>
-
-            <View style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: '#38C959' }]}>
-                <Feather
-                  color="#fff"
-                  name="at-sign"
-                  size={20} />
-              </View>
-
-              <Text style={styles.rowLabel}>Email Notifications</Text>
-
-              <View style={styles.rowSpacer} />
-
-              <Switch
-                onValueChange={emailNotifications =>
-                  setForm({ ...form, emailNotifications })
-                }
-                value={form.emailNotifications} />
-            </View>
-
-            <View style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: '#38C959' }]}>
-                <Feather color="#fff" name="bell" size={20} />
-              </View>
-
-              <Text style={styles.rowLabel}>Push Notifications</Text>
-
-              <View style={styles.rowSpacer} />
-
-              <Switch
-                onValueChange={pushNotifications =>
-                  setForm({ ...form, pushNotifications })
-                }
-                value={form.pushNotifications} />
-            </View>
           </View>
 
           <View style={styles.section}>
@@ -158,14 +88,14 @@ const SettingsScreen = ({navigation, route}: any) => {
 
             <TouchableOpacity
               onPress={() => {
-                // handle onPress
+                openWebView('https://www.google.com/')
               }}
               style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: '#8e8d91' }]}>
-                <Feather color="#fff" name="flag" size={20} />
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <FontAwesome color="#fff" name="question" size={20} />
               </View>
 
-              <Text style={styles.rowLabel}>Report Bug</Text>
+              <Text style={styles.rowLabel}>FAQs</Text>
 
               <View style={styles.rowSpacer} />
 
@@ -180,7 +110,83 @@ const SettingsScreen = ({navigation, route}: any) => {
                 // handle onPress
               }}
               style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: '#007afe' }]}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <MaterialIcons color="#fff" name="feedback" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Report an Issue</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                // handle onPress
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <Feather color="#fff" name="flag" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Terms of Service</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                // handle onPress
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <MaterialIcons color="#fff" name="privacy-tip" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Privacy Policy</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                // handle onPress
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <Feather color="#fff" name="flag" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Return/Refund Policy</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                // handle onPress
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
                 <Feather color="#fff" name="mail" size={20} />
               </View>
 
@@ -194,16 +200,78 @@ const SettingsScreen = ({navigation, route}: any) => {
                 size={20} />
             </TouchableOpacity>
 
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>More</Text>
+
             <TouchableOpacity
               onPress={() => {
                 // handle onPress
               }}
               style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: '#32c759' }]}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <FontAwesome5 color="#fff" name="user-friends" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Refer a Friend</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                // handle onPress
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
                 <Feather color="#fff" name="star" size={20} />
               </View>
 
               <Text style={styles.rowLabel}>Rate in App Store</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                // handle onPress
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <MaterialIcons color="#fff" name="logout" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Logout</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                // handle onPress
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <MaterialIcons color="#fff" name="delete" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Delete Account</Text>
 
               <View style={styles.rowSpacer} />
 

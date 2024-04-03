@@ -6,6 +6,7 @@ import TabNavigator from './src/navigators/TabNavigator';
 import DetailsScreen from './src/screens/DetailsScreen';
 import PaymentScreen from './src/screens/PaymentScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import ResourceScreen from './src/screens/settings/ResourceScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,7 +32,11 @@ const App = () => {
           <Stack.Screen
           name="Settings"
           component={SettingsScreen}
-          options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+          options={{animation: 'slide_from_right'}}></Stack.Screen>
+          <Stack.Screen
+          name="Resources"
+          component={ResourceScreen}
+          options={{animation: 'slide_from_right'}}></Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
