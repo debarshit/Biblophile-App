@@ -39,16 +39,22 @@ const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
             key={index.toString() + data.id}
             onPress={() => {
               navigationHandler({
-                index: data.index,
                 id: data.id,
                 type: data.type,
+                price: data.price,
+                name: data.name,
+                genre: data.genre,
+                poster: data.poster,
+                photo: data.photo,
+                averageRating: data.averageRating,
+                ratingCount: data.ratingCount,
+                description: data.description,
               });
             }}>
             <OrderItemCard
               type={data.type}
               name={data.name}
-              imagelink_square={data.imagelink_square}
-              special_ingredient={data.special_ingredient}
+              photo={data.photo}
               prices={data.prices}
               ItemPrice={data.ItemPrice}
             />

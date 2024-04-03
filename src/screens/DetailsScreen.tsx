@@ -45,7 +45,7 @@ const DetailsScreen = ({navigation, route}: any) => {
       poster: route.params.poster,
       photo: route.params.photo,
       averageRating: route.params.averageRating,
-      ratingCount: route.params.ratingCOunt,
+      ratingCount: route.params.ratingCount,
       description: route.params.description,
       favourite: !favourite,
     };
@@ -61,16 +61,24 @@ const DetailsScreen = ({navigation, route}: any) => {
     id,
     name,
     genre,
-    imagelink_square,
+    photo,
+    poster,
     type,
     price,
+    averageRating,
+    ratingCount,
+    description, 
   }: any) => {
     addToCart({
       id,
       name,
       genre,
-      imagelink_square,
+      photo,
+      poster,
       type,
+      averageRating,
+      ratingCount,
+      description, 
       prices: [{...price, quantity: 1}],
     });
     calculateCartPrice();
@@ -171,9 +179,13 @@ const DetailsScreen = ({navigation, route}: any) => {
               id: route.params.id,
               name: route.params.name,
               genre: route.params.genre,
-              imagelink_square: route.params.photo,
-              type: "Book",
+              photo: route.params.photo,
+              poster: route.params.poster,
+              type: route.params.type,
               price: price,
+              averageRating: route.params.averageRating,
+              ratingCount: route.params.ratingCount,
+              description: route.params.description,
             });
           }}
         />

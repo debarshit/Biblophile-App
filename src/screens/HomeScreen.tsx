@@ -112,17 +112,25 @@ const HomeScreen = ({navigation}: any) => {
     id,
     name,
     genre,
-    imagelink_square,
+    photo,
+    poster,
     type,
     prices,
+    averageRating,
+    ratingCount,
+    description,                    
   }: any) => {
     addToCart({
       id,
       name,
       genre,
-      imagelink_square,
+      photo,
+      poster,
       type,
       prices,
+      averageRating,
+      ratingCount,
+      description, 
     });
     calculateCartPrice();
     ToastAndroid.showWithGravity(
@@ -288,12 +296,15 @@ const HomeScreen = ({navigation}: any) => {
                 }}>
                 <CoffeeCard
                   id={item.BookId}
-                  type="Book"
-                  genre={item.BookGenre}
-                  imagelink_square={item.BookPhoto}
                   name={item.BookName}
-                  average_rating={item.BookAverageRating}
+                  genre={item.BookGenre}
+                  photo={item.BookPhoto}
+                  poster={item.BookPoster}
+                  type="Book"
                   price={item.BookPrice}
+                  averageRating={item.BookAverageRating}
+                  ratingCount={item.BookRatingCount}
+                  description={item.BookDescription}  
                   buttonPressHandler={CoffeCardAddToCart}
                 />
               </TouchableOpacity>
@@ -321,16 +332,27 @@ const HomeScreen = ({navigation}: any) => {
                   navigation.push('Details', {
                     id: item.BookId,
                     type: "Book",
+                    price: item.BookPrice,
+                    name: item.BookName,
+                    genre: item.BookGenre,
+                    poster: item.BookPoster,
+                    photo: item.BookPhoto,
+                    averageRating: item.BookAverageRating,
+                    ratingCount: item.BookRatingCount,
+                    description: item.BookDescription,
                   });
                 }}>
                 <CoffeeCard
                   id={item.BookId}
-                  genre={item.BookGenre}
-                  type={"Book"}
-                  imagelink_square={item.BookPhoto}
                   name={item.BookName}
-                  average_rating={item.BookAverageRating}
+                  genre={item.BookGenre}
+                  photo={item.BookPhoto}
+                  poster={item.BookPoster}
+                  type="Book"
                   price={item.BookPrice}
+                  averageRating={item.BookAverageRating}
+                  ratingCount={item.BookRatingCount}
+                  description={item.BookDescription}  
                   buttonPressHandler={CoffeCardAddToCart}
                 />
               </TouchableOpacity>

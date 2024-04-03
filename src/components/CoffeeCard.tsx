@@ -23,29 +23,29 @@ const CARD_WIDTH = Dimensions.get('window').width * 0.32;
 
 interface CoffeeCardProps {
   id: string;
-  // index: number;
   type: string;
   genre: string;
-  imagelink_square: string;
+  photo: string;
+  poster: string;
+  ratingCount: number;
   name: string;
-  // special_ingredient: string;
-  average_rating: number;
+  averageRating: number;
   price: any;
+  description: string;
   buttonPressHandler: any;
 }
 
 const CoffeeCard: React.FC<CoffeeCardProps> = ({
   id,
-  // index,
-  // index,
   type,
-  // roasted,
   genre,
-  imagelink_square,
+  photo,
+  poster,
   name,
-  // special_ingredient,
-  average_rating,
+  averageRating,
+  ratingCount,
   price,
+  description,
   buttonPressHandler,
 }) => {
    //Array of buy and rent prices
@@ -61,7 +61,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
       style={styles.CardLinearGradientContainer}
       colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}>
       <ImageBackground
-        source={{ uri: imagelink_square }}
+        source={{ uri: photo }}
         style={styles.CardImageBG}
         resizeMode="cover">
         <View style={styles.CardRatingContainer}>
@@ -70,7 +70,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
             color={COLORS.primaryOrangeHex}
             size={FONTSIZE.size_16}
           />
-          <Text style={styles.CardRatingText}>{average_rating}</Text>
+          <Text style={styles.CardRatingText}>{averageRating}</Text>
         </View>
       </ImageBackground>
       <Text style={styles.CardTitle}>{name}</Text>
@@ -83,11 +83,15 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
           onPress={() => {
             buttonPressHandler({
               id,
-              type,
-              genre,
-              imagelink_square,
               name,
+              genre,
+              photo,
+              poster,
+              type,
               prices: [{...prices[0], quantity: 1}],
+              averageRating,
+              ratingCount,
+              description,  
             });
           }}>
           <BGIcon

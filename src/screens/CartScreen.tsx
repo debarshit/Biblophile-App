@@ -62,13 +62,21 @@ const CartScreen = ({navigation, route}: any) => {
                       navigation.push('Details', {
                         id: data.id,
                         type: data.type,
+                        price: data.prices[0].price,
+                        name: data.name,
+                        genre: data.genre,
+                        poster: data.poster,
+                        photo: data.photo,
+                        averageRating: data.averageRating,
+                        ratingCount: data.ratingCount,
+                        description: data.description,
                       });
                     }}
                     key={data.id}>
                     <CartItem
                       id={data.id}
                       name={data.name}
-                      imagelink_square={data.imagelink_square}
+                      photo={data.photo}
                       genre={data.genre}
                       prices={data.prices}
                       type="Book"

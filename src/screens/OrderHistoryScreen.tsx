@@ -26,11 +26,27 @@ const OrderHistoryScreen = ({navigation}: any) => {
   const tabBarHeight = useBottomTabBarHeight();
   const [showAnimation, setShowAnimation] = useState(false);
 
-  const navigationHandler = ({index, id, type}: any) => {
+  const navigationHandler = ({id,
+    type,
+    price,
+    name,
+    genre,
+    poster,
+    photo,
+    averageRating,
+    ratingCount,
+    description,}: any) => {
     navigation.push('Details', {
-      index,
       id,
       type,
+      price,
+      name,
+      genre,
+      poster,
+      photo,
+      averageRating,
+      ratingCount,
+      description,
     });
   };
 

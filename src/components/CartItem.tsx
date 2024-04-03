@@ -20,7 +20,7 @@ import {
 interface CartItemProps {
   id: string;
   name: string;
-  imagelink_square: string;
+  photo: string;
   genre: string;
   prices: any;
   type: string;
@@ -31,7 +31,7 @@ interface CartItemProps {
 const CartItem: React.FC<CartItemProps> = ({
   id,
   name,
-  imagelink_square,
+  photo,
   genre,
   prices,
   type,
@@ -47,7 +47,7 @@ const CartItem: React.FC<CartItemProps> = ({
           colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}
           style={styles.CartItemLinearGradient}>
           <View style={styles.CartItemRow}>
-            <Image source={{uri: imagelink_square}} style={styles.CartItemImage} />
+            <Image source={{uri: photo}} style={styles.CartItemImage} />
             <View style={styles.CartItemInfo}>
               <View>
                 <Text style={styles.CartItemTitle}>{name}</Text>
@@ -122,7 +122,7 @@ const CartItem: React.FC<CartItemProps> = ({
           style={styles.CartItemSingleLinearGradient}>
           <View>
             <Image
-              source={{uri: imagelink_square}}
+              source={{uri: photo}}
               style={styles.CartItemSingleImage}
             />
           </View>
