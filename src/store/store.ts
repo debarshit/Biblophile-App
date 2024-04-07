@@ -11,6 +11,8 @@ import requests from '../services/requests';
 export const useStore = create(
     persist(
       (set, get) => ({
+        user: null,
+        isAuthenticated: false,
         CoffeeList: CoffeeData,
         BeanList: BeansData,
         GenreList: [], 
@@ -18,6 +20,12 @@ export const useStore = create(
         FavoritesList: [],
         CartList: [],
         OrderHistoryList: [],
+        login: (userData) => {
+          set({ isAuthenticated: true, user: userData })
+        },
+        logout: (userData) => {
+          set({ isAuthenticated: false, user: null })
+        },
         fetchGenres: async () => {
           try {
             const response = await instance(requests.getBookGenre);

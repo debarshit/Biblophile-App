@@ -9,9 +9,11 @@ import {
   Image,
 } from 'react-native';
 import { Feather, FontAwesome, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
-import  {COLORS } from '../theme/theme';
+import { useStore } from '../store/store';
+import  { COLORS } from '../theme/theme';
 
 const SettingsScreen = ({navigation, route}: any) => {
+  const logout = useStore((state: any) => state.logout); 
 
   const openWebView = (url: string) => {
     navigation.push('Resources', {
@@ -244,9 +246,7 @@ const SettingsScreen = ({navigation, route}: any) => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => {
-                // handle onPress
-              }}
+              onPress={() => logout()}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
                 <MaterialIcons color="#fff" name="logout" size={20} />
