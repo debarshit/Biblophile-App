@@ -2,6 +2,7 @@ import React, {useEffect} from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import Toast from 'react-native-toast-message';
 import {useStore} from './src/store/store';
 import TabNavigator from './src/navigators/TabNavigator';
 import DetailsScreen from './src/screens/DetailsScreen';
@@ -49,6 +50,7 @@ const App = () => {
             component={ResourceScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
         </Stack.Navigator>
+        <Toast />
       </NavigationContainer>
     );
   }

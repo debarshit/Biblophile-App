@@ -8,8 +8,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Platform,
   ToastAndroid,
-} from 'react-native';    //replace with a toast message compatible with both android & ios, add safeview for topmost view 
+} from 'react-native';
+import Toast from 'react-native-toast-message';
 import {FlatList} from 'react-native';
 import {Dimensions} from 'react-native';
 import instance from '../services/axios';
@@ -28,7 +30,7 @@ import HeaderBar from '../components/HeaderBar';
 import CoffeeCard from '../components/CoffeeCard';
 
 
-const getGenresFromData = (data: any) => {  //optimise this function as it only has to fetch bookGenres
+const getGenresFromData = (data: any) => {
   let temp: any = {};
   for (let i = 0; i < data.length; i++) {
     if (temp[data[i].genre] == undefined) {
@@ -132,11 +134,23 @@ const HomeScreen = ({navigation}: any) => {
       description, 
     });
     calculateCartPrice();
-    ToastAndroid.showWithGravity(
-      `${name} is Added to Cart`,
-      ToastAndroid.SHORT,
-      ToastAndroid.CENTER,
-    );
+    if (Platform.OS == 'android') {
+      ToastAndroid.showWithGravity(
+        `${name} is Added to Cart`,
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER,
+      );
+    }
+    else {
+      Toast.show({
+        type: 'info', // You can set type as 'success', 'error', 'info', or 'none'
+        text1: `${name} is Added to Cart`, // Main message
+        visibilityTime: 2000, // Duration in milliseconds
+        autoHide: true, // Auto hide the toast after visibilityTime
+        position: 'bottom', // Set position to bottom
+        bottomOffset: 100, // Adjust the offset as needed
+      });
+    }
   };
 
   useEffect(() => {
