@@ -13,13 +13,13 @@ import SignupLogin from './src/screens/SignupLogin';
 const Stack = createNativeStackNavigator();
 
 const App = () => {
-  const user = useStore((state: any) => state.user);
+  const isAuthenticated = useStore((state: any) => state.isAuthenticated);
 
   useEffect(() => {
     SplashScreen.hideAsync();
   }, []);
 
-  if (user == null) {
+  if (!isAuthenticated) {
     return (
       <SignupLogin />
     );

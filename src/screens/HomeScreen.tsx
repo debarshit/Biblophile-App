@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
+  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -53,8 +54,6 @@ const getBookList = async (genre: string) => {
 
 const HomeScreen = ({navigation}: any) => {
   //useStore variables
-  const CoffeeList = useStore((state: any) => state.CoffeeList);
-  const BeanList = useStore((state: any) => state.BeanList);
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const fetchGenres = useStore((state: any) => state.fetchGenres);  //this function should run on mount
@@ -167,7 +166,7 @@ const HomeScreen = ({navigation}: any) => {
   }, [genreIndex]);
 
   return (
-    <View style={styles.ScreenContainer}>
+    <SafeAreaView style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -360,7 +359,7 @@ const HomeScreen = ({navigation}: any) => {
           }}
         />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

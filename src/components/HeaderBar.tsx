@@ -11,11 +11,11 @@ interface HeaderBarProps {
 const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
   return (
     <View style={styles.HeaderContainer}>
-      <GradientBGIcon
+      {/* <GradientBGIcon
         name="menufold"
         color={COLORS.primaryLightGreyHex}
         size={FONTSIZE.size_16}
-      />
+      /> */}
       <Text style={styles.HeaderText}>{title}</Text>
       <ProfilePic />
     </View>

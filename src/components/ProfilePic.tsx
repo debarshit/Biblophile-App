@@ -1,15 +1,19 @@
 import React from 'react';
 import {StyleSheet, Image, View, TouchableOpacity} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useStore } from '../store/store';
 import {COLORS, SPACING} from '../theme/theme';
 
 const ProfilePic = ({navigation}: any) => {
+  const userDetails = useStore((state: any) => state.userDetails);
+
   navigation = useNavigation();
+  
   return (
     <TouchableOpacity onPress={()=>navigation.navigate("Settings")}>
       <View style={styles.ImageContainer}>
         <Image
-          source={require('../assets/app_images/avatar.png')}
+          source={userDetails.length == 0 ? require('../assets/app_images/avatar.jpg'): {uri: userDetails[0].profilePic}}
           style={styles.Image}
         />
       </View>

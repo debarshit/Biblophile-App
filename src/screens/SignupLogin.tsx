@@ -20,7 +20,8 @@ const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible,
 };
 
 const SignupLogin: React.FC = () => {
-    const login = useStore((state: any) => state.login); 
+    const login = useStore((state: any) => state.login);
+    const addUser = useStore((state: any) => state.addUser);
 
     const [isRegistration, setIsRegistration] = useState<boolean>(false);
     const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -133,7 +134,17 @@ const SignupLogin: React.FC = () => {
                     if (response.data.message === 1)
                     {
 
-                        login(response.data.userId);
+                        const newUser = {
+                            userId: response.data.userId,
+                            userEmail: response.data.email,
+                            userAddress: response.data.address,
+                            userPhone: response.data.phone,
+                            userName: response.data.name,
+                            deposit: response.data.deposit,
+                            profilePic: response.data.profilePic,
+                          };
+                          
+                          login(newUser);
             
                     }
                     else

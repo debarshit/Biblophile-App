@@ -13,6 +13,7 @@ import { useStore } from '../store/store';
 import  { COLORS } from '../theme/theme';
 
 const SettingsScreen = ({navigation, route}: any) => {
+  const userDetails = useStore((state: any) => state.userDetails);
   const logout = useStore((state: any) => state.logout); 
 
   const openWebView = (url: string) => {
@@ -33,7 +34,7 @@ const SettingsScreen = ({navigation, route}: any) => {
               <Image
                 alt=""
                 source={{
-                  uri: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2.5&w=256&h=256&q=80',
+                  uri: userDetails[0].profilePic,
                 }}
                 style={styles.profileAvatar} />
 
@@ -52,10 +53,10 @@ const SettingsScreen = ({navigation, route}: any) => {
           </TouchableOpacity>
 
           <View>
-            <Text style={styles.profileName}>John Doe</Text>
+            <Text style={styles.profileName}>{userDetails[0].userName}</Text>
 
             <Text style={styles.profileAddress}>
-              123 Maple Street. Anytown, PA 17101
+              {userDetails[0].userAddress}
             </Text>
           </View>
         </View>

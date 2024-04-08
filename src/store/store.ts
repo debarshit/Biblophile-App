@@ -13,6 +13,7 @@ export const useStore = create(
       (set, get) => ({
         user: null,
         isAuthenticated: false,
+        userDetails: [],
         CoffeeList: CoffeeData,
         BeanList: BeansData,
         GenreList: [], 
@@ -21,10 +22,13 @@ export const useStore = create(
         CartList: [],
         OrderHistoryList: [],
         login: (userData) => {
-          set({ isAuthenticated: true, user: userData })
+          set({ isAuthenticated: true, user: userData['userId'] });
+          set(state => ({
+            userDetails: [...state.userDetails, userData],
+          }));
         },
         logout: (userData) => {
-          set({ isAuthenticated: false, user: null })
+          set({ isAuthenticated: false, user: null, userDetails: [] })
         },
         fetchGenres: async () => {
           try {
