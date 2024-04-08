@@ -31,20 +31,11 @@ import CoffeeCard from '../components/CoffeeCard';
 
 
 const getGenresFromData = (data: any) => {
-  let temp: any = {};
-  for (let i = 0; i < data.length; i++) {
-    if (temp[data[i].genre] == undefined) {
-      temp[data[i].genre] = 1;
-    } else {
-      temp[data[i].genre]++;
-    }
-  }
-  let genres = Object.keys(temp);
-  genres.unshift('All');
+  const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
   return genres;
 };
 
-const getBookList = async (genre: string) => {
+const getBookList = async (genre: any) => {
   try {
     const response = await instance(requests.getBooks+genre);
     const data = response.data;
@@ -70,8 +61,8 @@ const HomeScreen = ({navigation}: any) => {
     index: 0,
     genre: genres[0],
   });
-  const [bookList, setBookList] = useState(getBookList(genreIndex.genre));
-  const [sortedCoffee, setSortedCoffee] = useState(
+  const [bookList, setBookList] = useState<any>(getBookList(genreIndex.genre));
+  const [sortedCoffee, setSortedCoffee] = useState<any>(
     getBookList(genreIndex.genre),
   );
 
@@ -109,7 +100,7 @@ const HomeScreen = ({navigation}: any) => {
     setSearchText('');
   };
 
-  const CoffeCardAddToCart = ({
+  const CoffeeCardAddToCart = ({
     id,
     name,
     genre,
@@ -164,18 +155,16 @@ const HomeScreen = ({navigation}: any) => {
   }, [GenreList]);
 
   useEffect(() => {
-    // Fetch book list when genreIndex changes
     async function fetchBookList() {
       try {
-        const response = await instance(requests.getBooks + genreIndex.genre);
-        const data = response.data;
+        const data = await getBookList(genreIndex.genre);
         setBookList(data);
         setSortedCoffee(data);
       } catch (error) {
-        console.error('Error fetching genres:', error);
+        console.error('Error fetching book list:', error);
       }
     }
-
+  
     fetchBookList();
   }, [genreIndex]);
 
@@ -243,7 +232,7 @@ const HomeScreen = ({navigation}: any) => {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.genreScrollViewStyle}>
-          {genres.map((data, index) => (
+          {genres.map((data: string, index) => (
             <View
               key={index.toString()}
               style={styles.genreScrollViewContainer}>
@@ -318,7 +307,7 @@ const HomeScreen = ({navigation}: any) => {
                   averageRating={item.BookAverageRating}
                   ratingCount={item.BookRatingCount}
                   description={item.BookDescription}  
-                  buttonPressHandler={CoffeCardAddToCart}
+                  buttonPressHandler={CoffeeCardAddToCart}
                 />
               </TouchableOpacity>
             );
@@ -366,7 +355,7 @@ const HomeScreen = ({navigation}: any) => {
                   averageRating={item.BookAverageRating}
                   ratingCount={item.BookRatingCount}
                   description={item.BookDescription}  
-                  buttonPressHandler={CoffeCardAddToCart}
+                  buttonPressHandler={CoffeeCardAddToCart}
                 />
               </TouchableOpacity>
             );
