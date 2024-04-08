@@ -14,6 +14,8 @@ import {
 import Toast from 'react-native-toast-message';
 import {FlatList} from 'react-native';
 import {Dimensions} from 'react-native';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
+import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
@@ -28,7 +30,6 @@ import {
 } from '../theme/theme';    //font poppings is not coming
 import HeaderBar from '../components/HeaderBar';
 import CoffeeCard from '../components/CoffeeCard';
-
 
 const getGenresFromData = (data: any) => {
   const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
@@ -65,6 +66,7 @@ const HomeScreen = ({navigation}: any) => {
   const [sortedCoffee, setSortedCoffee] = useState<any>(
     getBookList(genreIndex.genre),
   );
+  const [loading, setLoading] = useState(true);
 
   const ListRef: any = useRef<FlatList>();
   const tabBarHeight = useBottomTabBarHeight();
@@ -160,6 +162,7 @@ const HomeScreen = ({navigation}: any) => {
         const data = await getBookList(genreIndex.genre);
         setBookList(data);
         setSortedCoffee(data);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching book list:', error);
       }
@@ -266,6 +269,29 @@ const HomeScreen = ({navigation}: any) => {
         </ScrollView>
 
         {/* Coffee Flatlist */}
+        {loading ? (
+        // Render shimmer effect while loading
+        <View style={styles.shimmerFlex}>
+          <ShimmerPlaceholder
+          LinearGradient={LinearGradient}
+            style={styles.ShimmerPlaceholder}
+            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+            visible={!loading}>
+          </ShimmerPlaceholder>
+          <ShimmerPlaceholder
+          LinearGradient={LinearGradient}
+            style={styles.ShimmerPlaceholder}
+            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+            visible={!loading}>
+          </ShimmerPlaceholder>
+          <ShimmerPlaceholder
+          LinearGradient={LinearGradient}
+            style={styles.ShimmerPlaceholder}
+            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+            visible={!loading}>
+          </ShimmerPlaceholder>
+        </View>
+      ) : (
 
         <FlatList
           ref={ListRef}
@@ -313,60 +339,95 @@ const HomeScreen = ({navigation}: any) => {
             );
           }}
         />
+)}
 
         <Text style={styles.CoffeeBeansTitle}>Pick of the week</Text>
 
         {/* Beans Flatlist */}
-
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={bookList}
-          contentContainerStyle={[
-            styles.FlatListContainer,
-            {marginBottom: tabBarHeight},
-          ]}
-          keyExtractor={item => item.id}
-          renderItem={({item}) => {
-            return (
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.push('Details', {
-                    id: item.BookId,
-                    type: "Book",
-                    price: item.BookPrice,
-                    name: item.BookName,
-                    genre: item.BookGenre,
-                    poster: item.BookPoster,
-                    photo: item.BookPhoto,
-                    averageRating: item.BookAverageRating,
-                    ratingCount: item.BookRatingCount,
-                    description: item.BookDescription,
-                  });
-                }}>
-                <CoffeeCard
-                  id={item.BookId}
-                  name={item.BookName}
-                  genre={item.BookGenre}
-                  photo={item.BookPhoto}
-                  poster={item.BookPoster}
-                  type="Book"
-                  price={item.BookPrice}
-                  averageRating={item.BookAverageRating}
-                  ratingCount={item.BookRatingCount}
-                  description={item.BookDescription}  
-                  buttonPressHandler={CoffeeCardAddToCart}
-                />
-              </TouchableOpacity>
-            );
-          }}
-        />
+        {loading ? (
+        // Render shimmer effect while loading
+          <View style={styles.shimmerFlex}>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!loading}>
+            </ShimmerPlaceholder>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!loading}>
+            </ShimmerPlaceholder>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!loading}>
+            </ShimmerPlaceholder>
+          </View>
+        ) : (
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={bookList}
+            contentContainerStyle={[
+              styles.FlatListContainer,
+              {marginBottom: tabBarHeight},
+            ]}
+            keyExtractor={item => item.id}
+            renderItem={({item}) => {
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.push('Details', {
+                      id: item.BookId,
+                      type: "Book",
+                      price: item.BookPrice,
+                      name: item.BookName,
+                      genre: item.BookGenre,
+                      poster: item.BookPoster,
+                      photo: item.BookPhoto,
+                      averageRating: item.BookAverageRating,
+                      ratingCount: item.BookRatingCount,
+                      description: item.BookDescription,
+                    });
+                  }}>
+                  <CoffeeCard
+                    id={item.BookId}
+                    name={item.BookName}
+                    genre={item.BookGenre}
+                    photo={item.BookPhoto}
+                    poster={item.BookPoster}
+                    type="Book"
+                    price={item.BookPrice}
+                    averageRating={item.BookAverageRating}
+                    ratingCount={item.BookRatingCount}
+                    description={item.BookDescription}  
+                    buttonPressHandler={CoffeeCardAddToCart}
+                  />
+                </TouchableOpacity>
+              );
+            }}
+          />
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  ShimmerPlaceholder: {
+    width: 150, // Adjust width according to your design
+    height: 200, // Adjust height according to your design
+    borderRadius: 10, // Adjust border radius according to your design
+    marginHorizontal: 10, // Adjust horizontal margin according to your design
+    marginTop: 10,
+    marginBottom: 20, // Adjust bottom margin according to your design
+  },
+  shimmerFlex: {
+    flexDirection: 'row',
+  },
   ScreenContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

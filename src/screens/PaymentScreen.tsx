@@ -6,6 +6,7 @@ import {
   StatusBar,
   ScrollView,
   TouchableOpacity,
+  SafeAreaView
 } from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import { FontAwesome } from '@expo/vector-icons';
@@ -65,7 +66,7 @@ const PaymentScreen = ({navigation, route}: any) => {
   };
 
   return (
-    <View style={styles.ScreenContainer}>
+    <SafeAreaView style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
 
       {showAnimation ? (
@@ -177,7 +178,7 @@ const PaymentScreen = ({navigation, route}: any) => {
         price={{price: route.params.amount, currency: '$'}}
         buttonPressHandler={buttonPressHandler}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

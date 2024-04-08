@@ -3,6 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
+  SafeAreaView,
   StatusBar,
   ScrollView,
   TouchableOpacity,
@@ -23,7 +24,7 @@ const FavoritesScreen = ({navigation}: any) => {
     updateFavoriteList("Book", id, [])
   };
   return (
-    <View style={styles.ScreenContainer}>
+    <SafeAreaView style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
 
       <ScrollView
@@ -74,7 +75,7 @@ const FavoritesScreen = ({navigation}: any) => {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
