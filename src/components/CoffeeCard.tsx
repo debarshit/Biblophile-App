@@ -73,7 +73,9 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
           <Text style={styles.CardRatingText}>{averageRating}</Text>
         </View>
       </ImageBackground>
-      <Text style={styles.CardTitle}>{name}</Text>
+      <Text style={styles.CardTitle}>
+        {name.length > 20 ? name.substring(0, 20) + '...' : name}
+      </Text>
       {/* <Text style={styles.CardSubtitle}>{special_ingredient}</Text> */}
       <View style={styles.CardFooterRow}>
         <Text style={styles.CardPriceCurrency}>

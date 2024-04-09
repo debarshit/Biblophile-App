@@ -67,6 +67,7 @@ const HomeScreen = ({navigation}: any) => {
     getBookList(genreIndex.genre),
   );
   const [loading, setLoading] = useState(true);
+  const [booksLoading, setBooksLoading] = useState(true);
 
   const ListRef: any = useRef<FlatList>();
   const tabBarHeight = useBottomTabBarHeight();
@@ -81,10 +82,12 @@ const HomeScreen = ({navigation}: any) => {
     // Create a new timeout
     searchTimeout = setTimeout(async () => {
       if (search !== '') {
+        setBooksLoading(true);
         try {
           const response = await instance(requests.searchBooks + search);
           const data = response.data;
           setSortedCoffee(data);
+          setBooksLoading(false);
         } catch (error) {
           console.error('Error fetching books:', error);
         }
@@ -163,6 +166,7 @@ const HomeScreen = ({navigation}: any) => {
         setBookList(data);
         setSortedCoffee(data);
         setLoading(false);
+        setBooksLoading(false);
       } catch (error) {
         console.error('Error fetching book list:', error);
       }
@@ -242,6 +246,7 @@ const HomeScreen = ({navigation}: any) => {
               <TouchableOpacity
                 style={styles.genreScrollViewItem}
                 onPress={() => {
+                  setBooksLoading(true);
                   ListRef?.current?.scrollToOffset({
                     animated: true,
                     offset: 0,
@@ -269,26 +274,26 @@ const HomeScreen = ({navigation}: any) => {
         </ScrollView>
 
         {/* Coffee Flatlist */}
-        {loading ? (
+        {booksLoading ? (
         // Render shimmer effect while loading
         <View style={styles.shimmerFlex}>
           <ShimmerPlaceholder
           LinearGradient={LinearGradient}
             style={styles.ShimmerPlaceholder}
             shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-            visible={!loading}>
+            visible={!booksLoading}>
           </ShimmerPlaceholder>
           <ShimmerPlaceholder
           LinearGradient={LinearGradient}
             style={styles.ShimmerPlaceholder}
             shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-            visible={!loading}>
+            visible={!setBooksLoading}>
           </ShimmerPlaceholder>
           <ShimmerPlaceholder
           LinearGradient={LinearGradient}
             style={styles.ShimmerPlaceholder}
             shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-            visible={!loading}>
+            visible={!booksLoading}>
           </ShimmerPlaceholder>
         </View>
       ) : (
@@ -418,12 +423,13 @@ const HomeScreen = ({navigation}: any) => {
 
 const styles = StyleSheet.create({
   ShimmerPlaceholder: {
-    width: 150, // Adjust width according to your design
-    height: 200, // Adjust height according to your design
-    borderRadius: 10, // Adjust border radius according to your design
-    marginHorizontal: 10, // Adjust horizontal margin according to your design
+    width: 150, 
+    height: 200, 
+    borderRadius: 10,
+    marginHorizontal: 10, 
     marginTop: 10,
-    marginBottom: 20, // Adjust bottom margin according to your design
+    marginBottom: 40,
+    marginLeft: 20, 
   },
   shimmerFlex: {
     flexDirection: 'row',
