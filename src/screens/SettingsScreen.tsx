@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Feather, FontAwesome, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useStore } from '../store/store';
-import  { COLORS } from '../theme/theme';
+import  { COLORS, FONTFAMILY, FONTSIZE } from '../theme/theme';
 
 const SettingsScreen = ({navigation, route}: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
@@ -28,7 +28,7 @@ const SettingsScreen = ({navigation, route}: any) => {
         <View style={styles.profile}>
           <TouchableOpacity
             onPress={() => {
-              // handle onPress
+              navigation.push('Profile');
             }}>
             <View style={styles.profileAvatarWrapper}>
               <Image
@@ -40,7 +40,7 @@ const SettingsScreen = ({navigation, route}: any) => {
 
               <TouchableOpacity
                 onPress={() => {
-                  // handle onPress
+                  navigation.push('Profile');
                 }}>
                 <View style={styles.profileAction}>
                   <Feather
@@ -56,7 +56,7 @@ const SettingsScreen = ({navigation, route}: any) => {
             <Text style={styles.profileName}>{userDetails[0].userName}</Text>
 
             <Text style={styles.profileAddress}>
-              {userDetails[0].userAddress}
+              {userDetails[0].userAddress.length > 20 ? userDetails[0].userAddress.substring(0, 20) + '...' : userDetails[0].userAddress}
             </Text>
           </View>
         </View>
@@ -87,11 +87,11 @@ const SettingsScreen = ({navigation, route}: any) => {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Resources</Text>
+            <Text style={styles.sectionTitle}>Help & Support</Text>
 
             <TouchableOpacity
               onPress={() => {
-                openWebView('https://www.google.com/')
+                openWebView('https://biblophile.com/policies/faq.php')
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
@@ -110,7 +110,45 @@ const SettingsScreen = ({navigation, route}: any) => {
 
             <TouchableOpacity
               onPress={() => {
-                // handle onPress
+                openWebView('https://forms.gle/abqJbuW5UxducZst7')
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <FontAwesome color="#fff" name="book" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Request a book</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                openWebView('https://forms.gle/JMbjx6iEn4HVZvvS6')
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <MaterialIcons color="#fff" name="sell" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Wish to sell/rent books?</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                openWebView('https://forms.gle/1RgWuAXJamudCRmB7')
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
@@ -129,7 +167,31 @@ const SettingsScreen = ({navigation, route}: any) => {
 
             <TouchableOpacity
               onPress={() => {
-                // handle onPress
+                openWebView('https://biblophile.com/policies/customer-support.php')
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <Feather color="#fff" name="mail" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Contact Us</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Legal & Policies</Text>
+
+            <TouchableOpacity
+              onPress={() => {
+                openWebView('https://biblophile.com/policies/terms-of-service.php')
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
@@ -147,8 +209,8 @@ const SettingsScreen = ({navigation, route}: any) => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => {
-                // handle onPress
+               onPress={() => {
+                openWebView('https://biblophile.com/policies/privacy-policy.php')
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
@@ -167,7 +229,7 @@ const SettingsScreen = ({navigation, route}: any) => {
 
             <TouchableOpacity
               onPress={() => {
-                // handle onPress
+                openWebView('https://biblophile.com/policies/refund.php')
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
@@ -175,25 +237,6 @@ const SettingsScreen = ({navigation, route}: any) => {
               </View>
 
               <Text style={styles.rowLabel}>Return/Refund Policy</Text>
-
-              <View style={styles.rowSpacer} />
-
-              <Feather
-                color="#C6C6C6"
-                name="chevron-right"
-                size={20} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                // handle onPress
-              }}
-              style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
-                <Feather color="#fff" name="mail" size={20} />
-              </View>
-
-              <Text style={styles.rowLabel}>Contact Us</Text>
 
               <View style={styles.rowSpacer} />
 
@@ -326,14 +369,15 @@ const styles = StyleSheet.create({
   },
   profileName: {
     marginTop: 20,
-    fontSize: 19,
-    fontWeight: '600',
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_semibold,
     color: COLORS.secondaryLightGreyHex,
     textAlign: 'center',
   },
   profileAddress: {
     marginTop: 5,
-    fontSize: 16,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_medium,
     color: COLORS.primaryLightGreyHex,
     textAlign: 'center',
   },
@@ -343,8 +387,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     paddingVertical: 12,
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_bold,
     color: COLORS.primaryWhiteHex,
     textTransform: 'uppercase',
     letterSpacing: 1.1,
@@ -371,8 +415,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   rowLabel: {
-    fontSize: 17,
-    fontWeight: '400',
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_regular,
     color: COLORS.secondaryLightGreyHex,
   },
   rowSpacer: {

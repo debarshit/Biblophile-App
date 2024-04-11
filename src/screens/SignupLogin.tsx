@@ -19,7 +19,7 @@ const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible,
     );
 };
 
-const SignupLogin: React.FC = () => {
+const SignupLogin: React.FC = ({ navigation }: any) => {
     const login = useStore((state: any) => state.login);
     const addUser = useStore((state: any) => state.addUser);
 
@@ -159,6 +159,12 @@ const SignupLogin: React.FC = () => {
         }
     }
 
+    const openWebView = (url: string) => {
+        navigation.navigate('Resources', {
+          url: url
+        });
+      };
+
     return (
         <View style={styles.wrapper}>
             {!isRegistration ? (
@@ -296,9 +302,16 @@ const SignupLogin: React.FC = () => {
             )}
             <Text  style={styles.agreementMessageText}>By continuing you agree to our</Text>
             <View style={styles.agreementTextContainer}>
-            <Text  style={styles.agreementText}>Terms of service</Text>
-            <Text  style={styles.agreementText}>Privacy policy</Text>
-            <Text  style={styles.agreementText}>Sharing policy</Text>
+            <TouchableOpacity onPress={() => {
+                openWebView('https://biblophile.com/policies/terms-of-service.php')
+              }}>
+                <Text  style={styles.agreementText}>Terms of service</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => {
+                openWebView('https://biblophile.com/policies/terms-of-service.php')
+              }}>
+                <Text  style={styles.agreementText}>Privacy policy</Text>
+            </TouchableOpacity>
             </View>
         </View>
     );

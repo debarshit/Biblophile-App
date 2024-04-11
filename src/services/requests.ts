@@ -8,6 +8,7 @@ const requests = {
     fetchUserData: `/actions.php?action=fetchUserData`,
     fetchOrders: `/actions.php?action=fetchOrders`,
     updateUserData: `/actions.php?action=updateUserData`,
+    updateAppUserData: `/actions.php?action=updateAppUserData`,
     fetchDeposit: `/actions.php?action=fetchDeposit`,
     searchBooks: `/actions.php?action=searchBooks&searchQuery=`,
 }

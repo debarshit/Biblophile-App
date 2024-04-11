@@ -11,6 +11,7 @@ import PaymentScreen from './src/screens/PaymentScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import ResourceScreen from './src/screens/settings/ResourceScreen';
 import SignupLogin from './src/screens/SignupLogin';
+import ProfileScreen from './src/screens/settings/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -78,6 +79,10 @@ const App = () => {
             <Stack.Screen
             name="Resources"
             component={ResourceScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
+            <Stack.Screen
+            name="Profile"
+            component={ProfileScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
         </Stack.Navigator>
         <Toast />
