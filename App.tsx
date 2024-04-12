@@ -12,6 +12,7 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import ResourceScreen from './src/screens/settings/ResourceScreen';
 import SignupLogin from './src/screens/SignupLogin';
 import ProfileScreen from './src/screens/settings/ProfileScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -53,7 +54,18 @@ const App = () => {
 
   if (!isAuthenticated) {
     return (
-      <SignupLogin />
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+          <Stack.Screen
+            name="Onboarding"
+            component={OnboardingScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+          <Stack.Screen
+            name="SignupLogin"
+            component={SignupLogin}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
+        </Stack.Navigator>
+      </NavigationContainer>
     );
   }
   else {
