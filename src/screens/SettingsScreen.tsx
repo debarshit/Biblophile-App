@@ -67,7 +67,7 @@ const SettingsScreen = ({navigation, route}: any) => {
 
             <TouchableOpacity
               onPress={() => {
-                // handle onPress
+                navigation.push('Subscription');
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>

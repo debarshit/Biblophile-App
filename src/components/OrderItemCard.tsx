@@ -33,14 +33,14 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
       <View style={styles.CardInfoContainer}>
         <View style={styles.CardImageInfoContainer}>
           <Image source={{uri: photo}} style={styles.Image} />
-          <View>
+          <View style={styles.CardTitleContainer}>
             <Text style={styles.CardTitle}>{name}</Text>
           </View>
         </View>
         <View>
-          <Text style={styles.CardCurrency}>
+          {/* <Text style={styles.CardCurrency}>
           ₹ <Text style={styles.CardPrice}>{ItemPrice}</Text>
-          </Text>
+          </Text> */}
         </View>
       </View>
       {prices.map((data: any, index: any) => (
@@ -101,10 +101,15 @@ const styles = StyleSheet.create({
     width: 90,
     borderRadius: BORDERRADIUS.radius_15,
   },
+  CardTitleContainer: {
+    flex: 1,
+    maxWidth: '70%',
+  },
   CardTitle: {
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_18,
     color: COLORS.primaryWhiteHex,
+    maxWidth: '100%',
   },
   CardSubtitle: {
     fontFamily: FONTFAMILY.poppins_regular,

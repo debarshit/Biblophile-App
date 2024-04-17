@@ -96,7 +96,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         <View style={styles.ImageInfoOuterContainer}>
           <View style={styles.ImageInfoInnerContainer}>
             <View style={styles.InfoContainerRow}>
-              <View>
+              <View style={styles.ItemTitleContainer}>
                 <Text style={styles.ItemTitleText}>{name}</Text>
                 {/* <Text style={styles.ItemSubtitleText}>
                   {genre}
@@ -187,10 +187,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  ItemTitleContainer: {
+    flex: 1,
+    maxWidth: '70%', // Adjust this value according to your layout requirements
+  },
   ItemTitleText: {
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_24,
     color: COLORS.primaryWhiteHex,
+    maxWidth: '100%',
   },
   ItemSubtitleText: {
     fontFamily: FONTFAMILY.poppins_medium,

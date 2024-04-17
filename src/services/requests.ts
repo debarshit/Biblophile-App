@@ -11,6 +11,8 @@ const requests = {
     updateAppUserData: `/actions.php?action=updateAppUserData`,
     fetchDeposit: `/actions.php?action=fetchDeposit`,
     searchBooks: `/actions.php?action=searchBooks&searchQuery=`,
+    fetchSubscriptionPlans: `/actions.php?action=fetchSubscriptionPlans`,
+    fetchActivePlan: `/actions.php?action=fetchActivePlan&userId=`,
 }
 
 export default requests;
