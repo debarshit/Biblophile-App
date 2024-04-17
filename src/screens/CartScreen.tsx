@@ -63,7 +63,7 @@ const CartScreen = ({navigation, route}: any) => {
                       navigation.push('Details', {
                         id: data.id,
                         type: data.type,
-                        price: data.prices[0].price,
+                        price: data.prices[0].size === "Buy"? data.prices[0].price : data.prices[0].price*10,
                         name: data.name,
                         genre: data.genre,
                         poster: data.poster,

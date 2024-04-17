@@ -149,6 +149,7 @@ const CartItem: React.FC<CartItemProps> = ({
                 <Text style={styles.SizePrice}> {prices[0].price}</Text>
               </Text>
             </View>
+            <Text style={styles.quantityText}>{prices[0].size === "Buy" ? "Qty" : "Weeks"}</Text>
             <View style={styles.CartItemSingleQuantityContainer}>
               <TouchableOpacity
                 style={styles.CartItemIcon}
@@ -253,6 +254,9 @@ const styles = StyleSheet.create({
   },
   SizeText: {
     fontFamily: FONTFAMILY.poppins_medium,
+    color: COLORS.secondaryLightGreyHex,
+  },
+  quantityText: {
     color: COLORS.secondaryLightGreyHex,
   },
   SizeCurrency: {
