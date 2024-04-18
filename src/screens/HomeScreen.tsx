@@ -46,6 +46,16 @@ const getBookList = async (genre: any) => {
   }
 };
 
+// const getBookmarks = async () => {
+//   try {
+//     const response = await instance(requests.getBookmarks);
+//     const data = response.data;
+//     return data;
+//   } catch (error) {
+//     console.error('Error fetching genres:', error);
+//   }
+// };
+
 const HomeScreen = ({navigation}: any) => {
   //useStore variables
   const addToCart = useStore((state: any) => state.addToCart);
@@ -63,6 +73,7 @@ const HomeScreen = ({navigation}: any) => {
     genre: genres[0],
   });
   const [bookList, setBookList] = useState<any>(getBookList(genreIndex.genre));
+  const [bookmarks, setBookmarks] = useState<any>([]);
   const [sortedCoffee, setSortedCoffee] = useState<any>(
     getBookList(genreIndex.genre),
   );
@@ -165,7 +176,6 @@ const HomeScreen = ({navigation}: any) => {
         const data = await getBookList(genreIndex.genre);
         setBookList(data);
         setSortedCoffee(data);
-        setLoading(false);
         setBooksLoading(false);
       } catch (error) {
         console.error('Error fetching book list:', error);
@@ -174,6 +184,21 @@ const HomeScreen = ({navigation}: any) => {
   
     fetchBookList();
   }, [genreIndex]);
+
+  useEffect(() => {
+    async function getBookmarks() {
+        try {
+            const response = await instance(requests.getBookmarks);
+            const data = response.data;
+            setBookmarks(data);
+            setLoading(false);
+          } catch (error) {
+            console.error('Error fetching plans:', error);
+          }
+    }
+  
+    getBookmarks();
+  }, []);
 
   return (
     <SafeAreaView style={styles.ScreenContainer}>
@@ -273,7 +298,7 @@ const HomeScreen = ({navigation}: any) => {
           ))}
         </ScrollView>
 
-        {/* Coffee Flatlist */}
+        {/* Books Flatlist */}
         {booksLoading ? (
         // Render shimmer effect while loading
         <View style={styles.shimmerFlex}>
@@ -346,9 +371,9 @@ const HomeScreen = ({navigation}: any) => {
         />
 )}
 
-        <Text style={styles.CoffeeBeansTitle}>Pick of the week</Text>
+        <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
 
-        {/* Beans Flatlist */}
+        {/* Bookmarks Flatlist */}
         {loading ? (
         // Render shimmer effect while loading
           <View style={styles.shimmerFlex}>
@@ -375,40 +400,40 @@ const HomeScreen = ({navigation}: any) => {
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
-            data={bookList}
+            data={bookmarks}
             contentContainerStyle={[
               styles.FlatListContainer,
               {marginBottom: tabBarHeight},
             ]}
-            keyExtractor={item => item.id}
+            keyExtractor={item => item.BookmarkId}
             renderItem={({item}) => {
               return (
                 <TouchableOpacity
                   onPress={() => {
                     navigation.push('Details', {
-                      id: item.BookId,
-                      type: "Book",
-                      price: item.BookPrice,
-                      name: item.BookName,
-                      genre: item.BookGenre,
-                      poster: item.BookPoster,
-                      photo: item.BookPhoto,
-                      averageRating: item.BookAverageRating,
-                      ratingCount: item.BookRatingCount,
-                      description: item.BookDescription,
+                      id: item.BookmarkId,
+                      type: "Bookmark",
+                      price: item.BookmarkPrice,
+                      name: item.BookmarkTitle,
+                      genre: "Bookmark",
+                      poster: item.BookmarkPoster,
+                      photo: item.BookmarkPhoto,
+                      averageRating: null,
+                      ratingCount: null,
+                      description: item.BookmarkDescription,
                     });
                   }}>
                   <CoffeeCard
-                    id={item.BookId}
-                    name={item.BookName}
-                    genre={item.BookGenre}
-                    photo={item.BookPhoto}
-                    poster={item.BookPoster}
-                    type="Book"
-                    price={item.BookPrice}
-                    averageRating={item.BookAverageRating}
-                    ratingCount={item.BookRatingCount}
-                    description={item.BookDescription}  
+                    id={item.BookmarkId}
+                    name={item.BookmarkTitle}
+                    genre="Bookmark"
+                    photo={item.BookmarkPhoto}
+                    poster={item.BookmarkPoster}
+                    type="Bookmark"
+                    price={item.BookmarkPrice}
+                    averageRating={null}
+                    ratingCount={null}
+                    description={item.BookmarkDescription}  
                     buttonPressHandler={CoffeeCardAddToCart}
                   />
                 </TouchableOpacity>

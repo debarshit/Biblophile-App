@@ -13,6 +13,7 @@ const requests = {
     searchBooks: `/actions.php?action=searchBooks&searchQuery=`,
     fetchSubscriptionPlans: `/actions.php?action=fetchSubscriptionPlans`,
     fetchActivePlan: `/actions.php?action=fetchActivePlan&userId=`,
+    getBookmarks: `/actions.php?action=getBookmarks`,
 }
 
 export default requests;

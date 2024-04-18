@@ -102,7 +102,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
                   {genre}
                 </Text> */}
               </View>
-              <View style={styles.ItemPropertiesContainer}>
+              { type === "Book" && <View style={styles.ItemPropertiesContainer}>
                 <View style={styles.ProperFirst}>
                   <MaterialCommunityIcons
                     name={type == 'Book' ? 'check' : 'check'}
@@ -130,10 +130,10 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
                   />
                   <Text style={styles.PropertyTextLast}>Rent</Text>
                 </View>
-              </View>
+              </View>}
             </View>
             <View style={styles.InfoContainerRow}>
-              <View style={styles.RatingContainer}>
+              {type === "Book" && <View style={styles.RatingContainer}>
                 <AntDesign
                   name={'star'}
                   color={COLORS.primaryOrangeHex}
@@ -141,7 +141,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
                 />
                 <Text style={styles.RatingText}>{average_rating}</Text>
                 <Text style={styles.RatingCountText}>({ratings_count})</Text>
-              </View>
+              </View>}
               <View style={styles.RoastedContainer}>
                 <Text style={styles.RoastedText}>{genre}</Text>
               </View>

@@ -26,10 +26,16 @@ const DetailsScreen = ({navigation, route}: any) => {
   const favoritesList = useStore((state: any) => state.FavoritesList);
 
   //Array of buy and rent prices
-  const prices: { size: string; price: string; currency: string }[] = [
-    { size: 'Buy', price: route.params.price, currency: '₹' },
-    { size: 'Rent', price: (route.params.price)/10, currency: '₹' },
-  ];
+  const prices: { size: string; price: string; currency: string }[] = 
+  route.params.type === 'Book'
+  ? [
+      { size: 'Buy', price: route.params.price, currency: '₹' },
+      { size: 'Rent', price: (route.params.price) * 0.1, currency: '₹' }, // Assuming rent price is 10% of buy price
+    ]
+  : [
+      { size: 'PVC', price: route.params.price, currency: '₹' },
+      { size: 'Laminated', price: (route.params.price) * 1.5, currency: '₹' },
+    ];
 
   const [price, setPrice] = useState(prices[0]);
   const [fullDesc, setFullDesc] = useState(false);
@@ -38,7 +44,7 @@ const DetailsScreen = ({navigation, route}: any) => {
   const ToggleFavourite = (isFavourite, id) => {
     const book = {
       id: route.params.id,
-      type: "Book",
+      type: route.params.type,
       price: route.params.price,
       name: route.params.name,
       genre: route.params.genre,
@@ -99,7 +105,7 @@ const DetailsScreen = ({navigation, route}: any) => {
         <ImageBackgroundInfo
           EnableBackHandler={true}
           imagelink_portrait={route.params.poster}
-          type="Book"
+          type={route.params.type}
           id={route.params.id}
           favourite={favourite}
           name={route.params.name}
