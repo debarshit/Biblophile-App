@@ -5,6 +5,7 @@ const requests = {
     placeOrder: `/actions.php?action=placeOrder`,
     userLogin: `/actions.php?action=userLogin`,
     userSignup: `/actions.php?action=userSignup`,
+    forgotPassword: `/actions.php?action=forgotPassword`,
     fetchUserData: `/actions.php?action=fetchUserData`,
     fetchOrders: `/actions.php?action=fetchOrders`,
     updateUserData: `/actions.php?action=updateUserData`,

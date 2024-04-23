@@ -159,6 +159,26 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
         }
     }
 
+    const forgotPassword = () => {
+        if (!loginEmail)
+        {
+            setLoginMessage({ text: "Please fill the email address", color: COLORS.primaryRedHex });
+        }
+        else {
+            async function fetchData() {
+                try {
+                    const response = await instance.post(requests.forgotPassword, {
+                        email: loginEmail,
+                      });
+                    setLoginMessage({ text: response.data.message, color: COLORS.primaryRedHex });
+                  } catch (error) {
+                    setLoginMessage({ text: "There was an error! Please try again.", color: COLORS.primaryRedHex });
+                  }
+            }
+            fetchData();
+        }
+    }
+
     const openWebView = (url: string) => {
         navigation.navigate('Resources', {
           url: url
@@ -203,6 +223,9 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                             <EyeIcon visible={passwordVisible} onPress={togglePasswordVisibility} />
                         </View>
                     </View>
+                    <TouchableOpacity onPress={() => forgotPassword()}>
+                        <Text style={styles.forgotText}>Forgot password?</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleLogin()} style={styles.button}>
                         <Text style={styles.buttonText}>Login</Text>
                     </TouchableOpacity>
@@ -397,6 +420,11 @@ const styles = StyleSheet.create({
     linkText: {
         color: COLORS.primaryOrangeHex,
         textDecorationLine: 'underline',
+    },
+    forgotText: {
+        color: COLORS.primaryOrangeHex,
+        textDecorationLine: 'underline',
+        alignSelf: 'flex-end',
     },
     agreementMessageText: {
         marginTop: 20,
