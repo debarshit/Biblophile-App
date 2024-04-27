@@ -343,6 +343,7 @@ const styles = StyleSheet.create({
   /** Profile */
   profile: {
     padding: 24,
+    marginTop: 15,
     backgroundColor: COLORS.primaryBlackHex,
     flexDirection: 'column',
     alignItems: 'center',
