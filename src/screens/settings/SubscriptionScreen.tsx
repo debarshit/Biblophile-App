@@ -95,7 +95,7 @@ const SubscriptionScreen = ({navigation}: any) => {
             <Text style={styles.price}>₹ {userDetails[0].deposit}</Text>
           </View>
           {
-            activePlan[0] !== undefined && activePlan[0].PlanId !== null && 
+            activePlan[0] !== undefined && activePlan[0].PlanId !== null &&
             <>
               <Text style={styles.heading}>Active Plan</Text>
               <View style={styles.subscriptionItem}>
