@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../../services/axios';
 import requests from '../../services/requests';
 import { useStore } from '../../store/store';
-import { COLORS, FONTSIZE, FONTFAMILY, SPACING, BORDERRADIUS } from '../../theme/theme';
+import { COLORS, FONTSIZE, FONTFAMILY, SPACING, BORDERRADIUS } from '../../theme/theme'; 
 
 const { width } = Dimensions.get("window");
 
@@ -90,8 +90,12 @@ const SubscriptionScreen = ({navigation}: any) => {
     else {
       return (
         <SafeAreaView style={styles.container}>
+          <View style={styles.depositView}>
+            <Text style={styles.depositLabel}>Security deposit: </Text>
+            <Text style={styles.price}>₹ {userDetails[0].deposit}</Text>
+          </View>
           {
-            activePlan.length > 0 && 
+            activePlan[0] !== undefined && activePlan[0].PlanId !== null && 
             <>
               <Text style={styles.heading}>Active Plan</Text>
               <View style={styles.subscriptionItem}>
@@ -111,7 +115,7 @@ const SubscriptionScreen = ({navigation}: any) => {
                 keyExtractor={(item) => item.PlanId.toString()}
             />
         </SafeAreaView>
-    )
+      )
     }
 }
 
@@ -141,6 +145,15 @@ const styles = StyleSheet.create({
         color: COLORS.primaryWhiteHex,
         marginBottom: SPACING.space_16, 
         alignSelf: 'center',
+    },
+    depositView: {
+      flexDirection: 'row',
+    },
+    depositLabel: {
+        fontSize: FONTSIZE.size_16,
+        fontFamily: FONTFAMILY.poppins_medium,
+        color: COLORS.primaryOrangeHex,
+        marginBottom: SPACING.space_12, 
     },
       subscriptionItem: {
         backgroundColor: COLORS.secondaryBlackRGBA, 

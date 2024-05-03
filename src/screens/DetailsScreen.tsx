@@ -16,6 +16,8 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
+import instance from '../services/axios';
+import requests from '../services/requests';
 import ImageBackgroundInfo from '../components/ImageBackgroundInfo';
 import PaymentFooter from '../components/PaymentFooter';
 
@@ -24,13 +26,16 @@ const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const favoritesList = useStore((state: any) => state.FavoritesList);
+  const userDetails = useStore((state: any) => state.userDetails);
+
+  const [subscription, setSubscription] = useState(false);
 
   //Array of buy and rent prices
   const prices: { size: string; price: string; currency: string }[] = 
   route.params.type === 'Book'
   ? [
       { size: 'Buy', price: route.params.price, currency: '₹' },
-      { size: 'Rent', price: (route.params.price) * 0.1, currency: '₹' }, // Assuming rent price is 10% of buy price
+      { size: 'Rent', price: subscription === true ? 0 : (route.params.price) * 0.1, currency: '₹' }, // Assuming rent price is 10% of buy price
     ]
   : [
       { size: 'PVC', price: route.params.price, currency: '₹' },
@@ -95,6 +100,22 @@ const DetailsScreen = ({navigation, route}: any) => {
     const isBookInFavorites = favoritesList.some((book: any) => book.id == route.params.id);
     setFavourite(isBookInFavorites);
   }, [favoritesList, route.params.id]);
+
+  useEffect(() => {
+    async function fetchActivePlan() {
+        try {
+            const response = await instance(requests.fetchActivePlan+userDetails[0].userId);
+            const data = response.data;
+            if (data[0].PlanId !== null) {
+              setSubscription(true);
+            }
+          } catch (error) {
+            console.error('Error fetching plans:', error);
+          }
+    }
+  
+    fetchActivePlan();
+  }, []);
 
   return (
     <View style={styles.ScreenContainer}>
