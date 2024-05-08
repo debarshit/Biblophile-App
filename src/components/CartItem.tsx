@@ -149,7 +149,7 @@ const CartItem: React.FC<CartItemProps> = ({
                 <Text style={styles.SizePrice}> {prices[0].price}</Text>
               </Text>
             </View>
-            <Text style={styles.quantityText}>{prices[0].size === "Buy" ? "Qty" : "Weeks"}</Text>
+            <Text style={styles.quantityText}>{prices[0].size === "Rent" ? "Weeks" : "Qty"}</Text>
             <View style={styles.CartItemSingleQuantityContainer}>
               <TouchableOpacity
                 style={styles.CartItemIcon}
