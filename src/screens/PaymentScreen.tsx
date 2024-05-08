@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,16 +8,15 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
-import {LinearGradient} from 'expo-linear-gradient';
-import { FontAwesome } from '@expo/vector-icons';
 import {
-  BORDERRADIUS,
   COLORS,
   FONTFAMILY,
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
 import {useStore} from '../store/store';
+import instance from '../services/axios';
+import requests from '../services/requests';
 import GradientBGIcon from '../components/GradientBGIcon';
 import PaymentMethod from '../components/PaymentMethod';
 import PaymentFooter from '../components/PaymentFooter';
@@ -41,17 +40,147 @@ const PaymentScreen = ({navigation, route}: any) => {
   const addToOrderHistoryListFromCart = useStore(
     (state: any) => state.addToOrderHistoryListFromCart,
   );
+  const userDetails = useStore((state: any) => state.userDetails);
 
   const [paymentMode, setPaymentMode] = useState('Online');
   const [showAnimation, setShowAnimation] = useState(false);
+  const [isSubscription, setIsSubscription] = useState(false);
 
-  const buttonPressHandler = () => {
-    if (paymentMode === 'Online') {
-      alert ('paid online');
-      //open payment portal
+  const placeOrder = async (paymentStatus) => {
+    if (userDetails[0].userAddress === null) {
+      navigation.push('Profile', {
+        update: "Please fill your address",
+      });
     }
     else {
-      alert('paid offline');
+      try {
+        for (const data of route.params.cart) {
+          const response = await instance.post(requests.placeOrder, {
+            custId: userDetails[0].userId,
+            custName: userDetails[0].userName,
+            custPhone: userDetails[0].userPhone,
+            custAddress: userDetails[0].userAddress,
+            orderedBook: data.name,
+            payment: paymentStatus,
+            orderMode: data.prices[0].size,
+            custOrderDuration: data.prices[0].quantity, //duration for rent and qty for buy
+            amount: route.params.amount,
+          });
+          
+          if (response.data.message === 1) {
+            setShowAnimation(true);
+            addToOrderHistoryListFromCart();
+            calculateCartPrice();
+            setTimeout(() => {
+              setShowAnimation(false);
+              navigation.navigate('History');
+            }, 2000);
+          } else {
+            alert(response.data.message);
+            console.log(response);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
+  const placeSubscriptionOrder = async () => {
+    try {
+        const response = await instance.post(requests.placeSubscriptionOrder, {
+          custId: userDetails[0].userId,
+          planId: route.params.subscription,
+        });
+        
+        if (response.data.message === 1) {
+          //navigate to subscription page or just do navigation.back
+          setShowAnimation(true);
+            setTimeout(() => {
+              setShowAnimation(false);
+              navigation.navigate('Subscription');
+            }, 2000);
+
+        } else {
+          alert(response.data.message);
+          console.log(response);
+        }
+      
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (route.params.subscription) {
+      setIsSubscription(true);
+    }
+  }, [isSubscription]);
+  
+
+  const buttonPressHandler = () => {
+    if (paymentMode === 'Online') {      
+      //open payment portal
+      let link_id; // Declare link_id variable here to make it accessible
+      if (route.params.amount > 0) {
+        async function fetchData() {
+          try {
+            const response = await instance.post(requests.paymentRequest, {
+                customerName: userDetails[0].userName,
+                customerPhone: userDetails[0].userPhone,
+                amount: route.params.amount,
+              });  
+            if (response.data && response.data.link_url) {
+              navigation.push('PaymentGateway', {
+                url: response.data.link_url
+              });
+              
+              // Assign link_id after successfully receiving link_url
+              link_id = response.data.link_id;
+    
+              // Polling backend to check payment status
+              const pollPaymentStatus = setInterval(async () => {
+                try {
+                  const statusResponse = await instance.post(requests.paymentSuccessful + link_id, {
+                    customerId: userDetails[0].userId,
+                    customerPhone: userDetails[0].userPhone,
+                    amount: route.params.amount,
+                  });
+                  if (statusResponse.data.status === "success") {
+                    clearInterval(pollPaymentStatus); // Stop polling
+                    if (isSubscription) {
+                      placeSubscriptionOrder();
+                    }
+                    else {
+                      placeOrder(1);
+                    }
+                  }
+                } catch (error) {
+                  console.error("Error occurred while checking payment status:", error);
+                }
+              }, 5000); // Polling interval (5 seconds in this example)
+              
+            } else {
+              alert("Network error! Please try again.");
+            }
+          } catch (error) {
+            console.error("Error occurred during payment:", error);
+          } 
+        }
+      
+        fetchData();
+      }
+      else {
+        placeOrder(0);
+      }
+    }
+    else {
+      if (isSubscription) {
+        placeSubscriptionOrder();
+      }
+      else {
+        placeOrder(0);
+      }
     }
     // setShowAnimation(true);
     // addToOrderHistoryListFromCart();

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Platform, KeyboardAvoidingView } from 'react-native';
 import instance from '../../services/axios';
 import requests from '../../services/requests';
@@ -63,6 +63,14 @@ const ProfileScreen = ({navigation, route}: any) => {
     function handleFocus(inputName: string) {
         setFocusedInput(inputName);
     }
+
+    useEffect(() => {
+      if (route.params) {
+        alert (route.params.update);
+      }
+    
+    }, [])
+    
 
     return (
         <KeyboardAvoidingView

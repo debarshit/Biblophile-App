@@ -14,6 +14,7 @@ import SignupLogin from './src/screens/SignupLogin';
 import ProfileScreen from './src/screens/settings/ProfileScreen';
 import SubscriptionScreen from './src/screens/settings/SubscriptionScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
+import PaymentGatewayScreen from './src/screens/PaymentGatewayScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -85,6 +86,10 @@ const App = () => {
             name="Payment"
             component={PaymentScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="PaymentGateway"
+            component={PaymentGatewayScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
             <Stack.Screen
             name="Settings"
             component={SettingsScreen}

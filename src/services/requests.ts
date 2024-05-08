@@ -3,6 +3,7 @@ const requests = {
     getBookGenre:`/actions.php?action=getBookGenre`,
     getBooks:`/actions.php?action=getBooks&bookGenre=`,
     placeOrder: `/actions.php?action=placeOrder`,
+    placeSubscriptionOrder: `/actions.php?action=placeSubscriptionOrder`,
     userLogin: `/actions.php?action=userLogin`,
     userSignup: `/actions.php?action=userSignup`,
     forgotPassword: `/actions.php?action=forgotPassword`,
@@ -15,6 +16,8 @@ const requests = {
     fetchSubscriptionPlans: `/actions.php?action=fetchSubscriptionPlans`,
     fetchActivePlan: `/actions.php?action=fetchActivePlan&userId=`,
     getBookmarks: `/actions.php?action=getBookmarks`,
+    paymentRequest: `/actions.php?action=paymentRequest`,
+    paymentSuccessful: `/actions.php?action=paymentSuccessful&linkId=`,
 }
 
 export default requests;

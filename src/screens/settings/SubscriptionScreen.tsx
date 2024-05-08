@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dimensions, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../../services/axios';
@@ -20,7 +21,7 @@ const SubscriptionScreen = ({navigation}: any) => {
     const renderSubscriptionItem = ({ item }) => (
         <TouchableOpacity
         onPress={
-            () => navigation.push('Payment', {amount: item.PlanPrice})
+            () => navigation.push('Payment', {amount: item.PlanPrice, subscription: item.PlanId})
         }>
             <View style={styles.subscriptionItem}>
                 <Text style={styles.title}>{item.PlanName}</Text>
@@ -59,6 +60,23 @@ const SubscriptionScreen = ({navigation}: any) => {
       
         fetchPlanList();
       }, []);
+
+      // This useFocusEffect will run each time the screen comes into focus
+    useFocusEffect(
+      React.useCallback(() => {
+        async function fetchActivePlan() {
+          try {
+              const response = await instance(requests.fetchActivePlan+userDetails[0].userId);
+              const data = response.data;
+              setActivePlan(data);
+            } catch (error) {
+              console.error('Error fetching plans:', error);
+            }
+      }
+    
+      fetchActivePlan();
+      }, [])
+  );
 
     if (loading) {
       return (
@@ -103,7 +121,7 @@ const SubscriptionScreen = ({navigation}: any) => {
                 <Text style={styles.description}>{activePlan[0].PlanDescription}</Text>
                 <View style={styles.footer}>
                     <Text style={styles.price}>₹ {activePlan[0].PlanPrice}</Text>
-                <Text style={styles.deadline}>Ends on: {activePlan[0].EndDate.split(" ")[0]}</Text>
+                {activePlan[0].EndDate !== null && <Text style={styles.deadline}>Ends on: {activePlan[0].EndDate.split(" ")[0]}</Text>}
                 </View>
               </View>
             </>

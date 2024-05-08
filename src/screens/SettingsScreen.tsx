@@ -56,7 +56,7 @@ const SettingsScreen = ({navigation, route}: any) => {
             <Text style={styles.profileName}>{userDetails[0].userName}</Text>
 
             <Text style={styles.profileAddress}>
-              {userDetails[0].userAddress.length > 20 ? userDetails[0].userAddress.substring(0, 20) + '...' : userDetails[0].userAddress}
+              {userDetails[0].userAddress !== null && userDetails[0].userAddress.length > 20 ? userDetails[0].userAddress.substring(0, 20) + '...' : userDetails[0].userAddress}
             </Text>
           </View>
         </View>
