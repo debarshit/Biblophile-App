@@ -1,9 +1,6 @@
 import {create} from 'zustand';
 import {produce} from 'immer';
 import {persist, createJSONStorage} from 'zustand/middleware';
-import CoffeeData from '../data/CoffeeData';
-import BeansData from '../data/BeansData';
-import BookData from '../data/BooksData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import instance from '../services/axios';
 import requests from '../services/requests';
@@ -14,13 +11,10 @@ export const useStore = create(
         user: null,
         isAuthenticated: false,
         userDetails: [],
-        CoffeeList: CoffeeData,
-        BeanList: BeansData,
         GenreList: [], 
         CartPrice: 0,
         FavoritesList: [],
         CartList: [],
-        OrderHistoryList: [],
         login: (userData) => {
           set({ isAuthenticated: true, user: userData['userId'] });
           set(state => ({
@@ -149,33 +143,9 @@ export const useStore = create(
               }
             }),
           ),
-        addToOrderHistoryListFromCart: () =>
+        clearCart: () =>
           set(
             produce(state => {
-              let temp = state.CartList.reduce(
-                (accumulator: number, currentValue: any) =>
-                  accumulator + parseFloat(currentValue.ItemPrice),
-                0,
-              );
-              if (state.OrderHistoryList.length > 0) {
-                state.OrderHistoryList.unshift({
-                  OrderDate:
-                    new Date().toDateString() +
-                    ' ' +
-                    new Date().toLocaleTimeString(),
-                  CartList: state.CartList,
-                  CartListPrice: temp.toFixed(2).toString(),
-                });
-              } else {
-                state.OrderHistoryList.push({
-                  OrderDate:
-                    new Date().toDateString() +
-                    ' ' +
-                    new Date().toLocaleTimeString(),
-                  CartList: state.CartList,
-                  CartListPrice: temp.toFixed(2).toString(),
-                });
-              }
               state.CartList = [];
             }),
           ),

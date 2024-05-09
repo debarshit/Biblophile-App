@@ -142,7 +142,7 @@ if (loading) {
               </View>
             )}
           </View>
-          {OrderHistoryList.length > 0 ? (
+          {/* {OrderHistoryList.length > 0 ? (
             <TouchableOpacity
               style={styles.DownloadButton}
               onPress={() => {
@@ -152,7 +152,7 @@ if (loading) {
             </TouchableOpacity>
           ) : (
             <></>
-          )}
+          )} */}
         </View>
       </ScrollView>
     </SafeAreaView>

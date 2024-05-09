@@ -37,8 +37,8 @@ const PaymentList = [
 
 const PaymentScreen = ({navigation, route}: any) => {
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
-  const addToOrderHistoryListFromCart = useStore(
-    (state: any) => state.addToOrderHistoryListFromCart,
+  const clearCart = useStore(
+    (state: any) => state.clearCart,
   );
   const userDetails = useStore((state: any) => state.userDetails);
 
@@ -70,7 +70,7 @@ const PaymentScreen = ({navigation, route}: any) => {
           
           if (response.data.message === 1) {
             setShowAnimation(true);
-            addToOrderHistoryListFromCart();
+            clearCart();
             calculateCartPrice();
             setTimeout(() => {
               setShowAnimation(false);

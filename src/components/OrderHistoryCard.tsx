@@ -19,7 +19,7 @@ const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
     <View style={styles.CardContainer}>
       <View style={styles.CardHeader}>
         <View>
-          <Text style={styles.HeaderTitle}>Order Date</Text>
+          <Text style={styles.HeaderTitle}>Order Time</Text>
           <Text style={styles.HeaderSubtitle}>{order.OrderDate}</Text>
         </View>
         <View style={styles.PriceContainer}>
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     color: COLORS.primaryWhiteHex,
   },
   HeaderSubtitle: {
-    fontFamily: FONTFAMILY.poppins_light,
+    fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_16,
     color: COLORS.primaryWhiteHex,
   },
