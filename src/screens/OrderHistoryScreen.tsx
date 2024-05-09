@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -6,7 +6,10 @@ import {
   Text,
   TouchableOpacity,
   View,
+  SafeAreaView,
+  Dimensions
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useStore} from '../store/store';
 import {
@@ -16,23 +19,25 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
+import { LinearGradient } from 'expo-linear-gradient';
+import instance from '../services/axios';
+import requests from '../services/requests';
 import HeaderBar from '../components/HeaderBar';
 import EmptyListAnimation from '../components/EmptyListAnimation';
 import PopUpAnimation from '../components/PopUpAnimation';
 import OrderHistoryCard from '../components/OrderHistoryCard';
 
+const { width } = Dimensions.get("window");
+
 const OrderHistoryScreen = ({navigation}: any) => {
-  const OrderHistoryList = useStore((state: any) => state.OrderHistoryList);
+  const [OrderHistoryList, setOrderHistoryList] = useState([]);
+  const userDetails = useStore((state: any) => state.userDetails);
+
   const tabBarHeight = useBottomTabBarHeight();
   const [showAnimation, setShowAnimation] = useState(false);
 
-  const navigationHandler = ({index, id, type}: any) => {
-    navigation.push('Details', {
-      index,
-      id,
-      type,
-    });
-  };
+  const [loading, setLoading] = useState(true);
 
   const buttonPressHandler = () => {
     setShowAnimation(true);
@@ -41,8 +46,70 @@ const OrderHistoryScreen = ({navigation}: any) => {
     }, 2000);
   };
 
+  useEffect(() => {
+    async function fetchOrderHistory() {
+        try {
+            const response = await instance.post(requests.fetchOrders, {
+              userId: userDetails[0].userId,
+            });
+            const data = response.data;
+            setOrderHistoryList(data);
+            setLoading(false);
+          } catch (error) {
+            console.error('Error fetching plans:', error);
+          }
+    }
+  
+    fetchOrderHistory();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      async function fetchOrderHistory() {
+        try {
+            const response = await instance.post(requests.fetchOrders, {
+              userId: userDetails[0].userId,
+            });
+            const data = response.data;
+            setOrderHistoryList(data);
+          } catch (error) {
+            console.error('Error fetching plans:', error);
+          }
+    }
+  
+    fetchOrderHistory();  
+    }, [])
+);
+
+if (loading) {
   return (
-    <View style={styles.ScreenContainer}>
+    // Render shimmer effect while loading
+    <SafeAreaView style={styles.container}>
+      <View style={styles.shimmerFlex}>
+        <ShimmerPlaceholder
+        LinearGradient={LinearGradient}
+          style={styles.ShimmerPlaceholder}
+          shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+          visible={!loading}>
+        </ShimmerPlaceholder>
+        <ShimmerPlaceholder
+        LinearGradient={LinearGradient}
+          style={styles.ShimmerPlaceholder}
+          shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+          visible={!loading}>
+        </ShimmerPlaceholder>
+        <ShimmerPlaceholder
+        LinearGradient={LinearGradient}
+          style={styles.ShimmerPlaceholder}
+          shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+          visible={!loading}>
+        </ShimmerPlaceholder>
+      </View>
+    </SafeAreaView>
+  )
+} else {
+  return (
+    <SafeAreaView style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
 
       {showAnimation ? (
@@ -66,19 +133,16 @@ const OrderHistoryScreen = ({navigation}: any) => {
               <EmptyListAnimation title={'No Order History'} />
             ) : (
               <View style={styles.ListItemContainer}>
-                {OrderHistoryList.map((data: any, index: any) => (
+                {OrderHistoryList.map((data: any) => (
                   <OrderHistoryCard
-                    key={index.toString()}
-                    navigationHandler={navigationHandler}
-                    CartList={data.CartList}
-                    CartListPrice={data.CartListPrice}
-                    OrderDate={data.OrderDate}
+                    key={data['OrderId'].toString()}
+                    order={data}
                   />
                 ))}
               </View>
             )}
           </View>
-          {OrderHistoryList.length > 0 ? (
+          {/* {OrderHistoryList.length > 0 ? (
             <TouchableOpacity
               style={styles.DownloadButton}
               onPress={() => {
@@ -88,14 +152,32 @@ const OrderHistoryScreen = ({navigation}: any) => {
             </TouchableOpacity>
           ) : (
             <></>
-          )}
+          )} */}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
+}
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: SPACING.space_16, 
+    backgroundColor: COLORS.primaryBlackHex,
+  },
+  ShimmerPlaceholder: {
+    width: width*0.9, 
+    height: 200, 
+    borderRadius: 10,
+    marginHorizontal: 10, 
+    marginTop: 10,
+    marginBottom: 40,
+    marginLeft: 20, 
+  },
+  shimmerFlex: {
+    flexDirection: 'column',
+  },
   ScreenContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

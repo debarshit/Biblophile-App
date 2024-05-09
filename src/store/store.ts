@@ -1,20 +1,38 @@
 import {create} from 'zustand';
 import {produce} from 'immer';
 import {persist, createJSONStorage} from 'zustand/middleware';
-import CoffeeData from '../data/CoffeeData';
-import BeansData from '../data/BeansData';
-import BookData from '../data/BooksData';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import instance from '../services/axios';
+import requests from '../services/requests';
 
 export const useStore = create(
     persist(
       (set, get) => ({
-        CoffeeList: CoffeeData,
-        BeanList: BeansData,
-        BookList: BookData, 
+        user: null,
+        isAuthenticated: false,
+        userDetails: [],
+        GenreList: [], 
         CartPrice: 0,
         FavoritesList: [],
         CartList: [],
-        OrderHistoryList: [],
+        login: (userData) => {
+          set({ isAuthenticated: true, user: userData['userId'] });
+          set(state => ({
+            userDetails: [...state.userDetails, userData],
+          }));
+        },
+        logout: (userData) => {
+          set({ isAuthenticated: false, user: null, userDetails: [] })
+        },
+        fetchGenres: async () => {
+          try {
+            const response = await instance(requests.getBookGenre);
+            const data = response.data;
+            set({ GenreList: data });
+          } catch (error) {
+            console.error('Error fetching genres:', error);
+          }
+        },
         addToCart: (cartItem: any) =>
           set(
             produce(state => {
@@ -70,73 +88,20 @@ export const useStore = create(
               state.CartPrice = totalprice.toFixed(2).toString();
             }),
           ),
-        addToFavoriteList: (type: string, id: string) =>
-          set(
-            produce(state => {
-              if (type == 'Coffee') {
-                for (let i = 0; i < state.CoffeeList.length; i++) {
-                  if (state.CoffeeList[i].id == id) {
-                    if (state.CoffeeList[i].favourite == false) {
-                      state.CoffeeList[i].favourite = true;
-                      state.FavoritesList.unshift(state.CoffeeList[i]);
-                    } else {
-                      state.CoffeeList[i].favourite = false;
-                    }
-                    break;
-                  }
-                }
-              } else if (type == 'Bean') {
-                for (let i = 0; i < state.BeanList.length; i++) {
-                  if (state.BeanList[i].id == id) {
-                    if (state.BeanList[i].favourite == false) {
-                      state.BeanList[i].favourite = true;
-                      state.FavoritesList.unshift(state.BeanList[i]);
-                    } else {
-                      state.BeanList[i].favourite = false;
-                    }
-                    break;
-                  }
-                }
-              }
-            }),
-          ),
-        deleteFromFavoriteList: (type: string, id: string) =>
-          set(
-            produce(state => {
-              if (type == 'Coffee') {
-                for (let i = 0; i < state.CoffeeList.length; i++) {
-                  if (state.CoffeeList[i].id == id) {
-                    if (state.CoffeeList[i].favourite == true) {
-                      state.CoffeeList[i].favourite = false;
-                    } else {
-                      state.CoffeeList[i].favourite = true;
-                    }
-                    break;
-                  }
-                }
-              } else if (type == 'Beans') {
-                for (let i = 0; i < state.BeanList.length; i++) {
-                  if (state.BeanList[i].id == id) {
-                    if (state.BeanList[i].favourite == true) {
-                      state.BeanList[i].favourite = false;
-                    } else {
-                      state.BeanList[i].favourite = true;
-                    }
-                    break;
-                  }
-                }
-              }
-              let spliceIndex = -1;
-              for (let i = 0; i < state.FavoritesList.length; i++) {
-                if (state.FavoritesList[i].id == id) {
-                  spliceIndex = i;
-                  break;
-                }
-              }
-              state.FavoritesList.splice(spliceIndex, 1);
-            }),
-          ),
-        incrementCartItemQuantity: (id: string, size: string) =>
+        updateFavoriteList: (type: string, id: string, book: any) =>
+        set(
+          produce(state => {
+            const bookIndex = state.FavoritesList.findIndex(item => item.id === id);
+            if (bookIndex !== -1) {
+              // If the book is already in the favorites list, remove it
+              state.FavoritesList.splice(bookIndex, 1);
+            } else {
+              // If the book is not in the favorites list, add it to the beginning of the list
+              state.FavoritesList.unshift(book);
+            }
+          }),
+        ),
+          incrementCartItemQuantity: (id: string, size: string) =>
           set(
             produce(state => {
               for (let i = 0; i < state.CartList.length; i++) {
@@ -178,33 +143,9 @@ export const useStore = create(
               }
             }),
           ),
-        addToOrderHistoryListFromCart: () =>
+        clearCart: () =>
           set(
             produce(state => {
-              let temp = state.CartList.reduce(
-                (accumulator: number, currentValue: any) =>
-                  accumulator + parseFloat(currentValue.ItemPrice),
-                0,
-              );
-              if (state.OrderHistoryList.length > 0) {
-                state.OrderHistoryList.unshift({
-                  OrderDate:
-                    new Date().toDateString() +
-                    ' ' +
-                    new Date().toLocaleTimeString(),
-                  CartList: state.CartList,
-                  CartListPrice: temp.toFixed(2).toString(),
-                });
-              } else {
-                state.OrderHistoryList.push({
-                  OrderDate:
-                    new Date().toDateString() +
-                    ' ' +
-                    new Date().toLocaleTimeString(),
-                  CartList: state.CartList,
-                  CartListPrice: temp.toFixed(2).toString(),
-                });
-              }
               state.CartList = [];
             }),
           ),

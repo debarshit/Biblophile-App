@@ -1,5 +1,6 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
+  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -7,10 +8,16 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Platform,
   ToastAndroid,
-} from 'react-native';    //replace with a toast message compatible with both android & ios, add safeview for topmost view 
+} from 'react-native';
+import Toast from 'react-native-toast-message';
 import {FlatList} from 'react-native';
 import {Dimensions} from 'react-native';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
+import { LinearGradient } from 'expo-linear-gradient';
+import instance from '../services/axios';
+import requests from '../services/requests';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import { AntDesign, Feather } from '@expo/vector-icons';
 import {useStore} from '../store/store';
@@ -24,64 +31,79 @@ import {
 import HeaderBar from '../components/HeaderBar';
 import CoffeeCard from '../components/CoffeeCard';
 
-
-const getCategoriesFromData = (data: any) => {
-  let temp: any = {};
-  for (let i = 0; i < data.length; i++) {
-    if (temp[data[i].name] == undefined) {
-      temp[data[i].name] = 1;
-    } else {
-      temp[data[i].name]++;
-    }
-  }
-  let categories = Object.keys(temp);
-  categories.unshift('All');
-  return categories;
+const getGenresFromData = (data: any) => {
+  const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
+  return genres;
 };
 
-const getCoffeeList = (category: string, data: any) => {
-  if (category == 'All') {
+const getBookList = async (genre: any) => {
+  try {
+    const response = await instance(requests.getBooks+genre);
+    const data = response.data;
     return data;
-  } else {
-    let coffeelist = data.filter((item: any) => item.name == category);
-    return coffeelist;
+  } catch (error) {
+    console.error('Error fetching genres:', error);
   }
 };
+
+// const getBookmarks = async () => {
+//   try {
+//     const response = await instance(requests.getBookmarks);
+//     const data = response.data;
+//     return data;
+//   } catch (error) {
+//     console.error('Error fetching genres:', error);
+//   }
+// };
 
 const HomeScreen = ({navigation}: any) => {
-  const CoffeeList = useStore((state: any) => state.CoffeeList);
-  const BeanList = useStore((state: any) => state.BeanList);
+  //useStore variables
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
+  const fetchGenres = useStore((state: any) => state.fetchGenres);  //this function should run on mount
+  const GenreList = useStore((state: any) => state.GenreList);
 
-  const [categories, setCategories] = useState(
-    getCategoriesFromData(CoffeeList),
+  //useState variables
+  const [genres, setGenres] = useState(
+    getGenresFromData(GenreList),  
   );
   const [searchText, setSearchText] = useState('');
-  const [categoryIndex, setCategoryIndex] = useState({
+  const [genreIndex, setGenreIndex] = useState({
     index: 0,
-    category: categories[0],
+    genre: genres[0],
   });
-  const [sortedCoffee, setSortedCoffee] = useState(
-    getCoffeeList(categoryIndex.category, CoffeeList),
+  const [bookList, setBookList] = useState<any>(getBookList(genreIndex.genre));
+  const [bookmarks, setBookmarks] = useState<any>([]);
+  const [sortedCoffee, setSortedCoffee] = useState<any>(
+    getBookList(genreIndex.genre),
   );
+  const [loading, setLoading] = useState(true);
+  const [booksLoading, setBooksLoading] = useState(true);
 
   const ListRef: any = useRef<FlatList>();
   const tabBarHeight = useBottomTabBarHeight();
 
-  const searchCoffee = (search: string) => {
-    if (search != '') {
-      ListRef?.current?.scrollToOffset({
-        animated: true,
-        offset: 0,
-      });
-      setCategoryIndex({index: 0, category: categories[0]});
-      setSortedCoffee([
-        ...CoffeeList.filter((item: any) =>
-          item.name.toLowerCase().includes(search.toLowerCase()),
-        ),
-      ]);
-    }
+  // Define a variable to store the timeout ID
+  let searchTimeout: any = null;  
+
+  const searchCoffee = (search: string) => { 
+    // Clear the previous timeout
+    clearTimeout(searchTimeout);
+    
+    // Create a new timeout
+    searchTimeout = setTimeout(async () => {
+      if (search !== '') {
+        setBooksLoading(true);
+        try {
+          const response = await instance(requests.searchBooks + search);
+          const data = response.data;
+          setSortedCoffee(data);
+          setBooksLoading(false);
+        } catch (error) {
+          console.error('Error fetching books:', error);
+        }
+      }
+    }, 500); // Waiting time in milliseconds
   };
 
   const resetSearchCoffee = () => {
@@ -89,41 +111,97 @@ const HomeScreen = ({navigation}: any) => {
       animated: true,
       offset: 0,
     });
-    setCategoryIndex({index: 0, category: categories[0]});
-    setSortedCoffee([...CoffeeList]);
+    setGenreIndex({index: 0, genre: genres[0]});
+    setSortedCoffee(bookList);
     setSearchText('');
   };
 
-  const CoffeCardAddToCart = ({
+  const CoffeeCardAddToCart = ({
     id,
-    index,
     name,
-    roasted,
-    imagelink_square,
-    special_ingredient,
+    genre,
+    photo,
+    poster,
     type,
     prices,
+    averageRating,
+    ratingCount,
+    description,                    
   }: any) => {
     addToCart({
       id,
-      index,
       name,
-      roasted,
-      imagelink_square,
-      special_ingredient,
+      genre,
+      photo,
+      poster,
       type,
       prices,
+      averageRating,
+      ratingCount,
+      description, 
     });
     calculateCartPrice();
-    ToastAndroid.showWithGravity(
-      `${name} is Added to Cart`,
-      ToastAndroid.SHORT,
-      ToastAndroid.CENTER,
-    );
+    if (Platform.OS == 'android') {
+      ToastAndroid.showWithGravity(
+        `${name} is Added to Cart`,
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER,
+      );
+    }
+    else {
+      Toast.show({
+        type: 'info', // You can set type as 'success', 'error', 'info', or 'none'
+        text1: `${name} is Added to Cart`, // Main message
+        visibilityTime: 2000, // Duration in milliseconds
+        autoHide: true, // Auto hide the toast after visibilityTime
+        position: 'bottom', // Set position to bottom
+        bottomOffset: 100, // Adjust the offset as needed
+      });
+    }
   };
 
+  useEffect(() => {
+    // Fetch genres when component mounts
+    fetchGenres();
+  }, []);
+
+  useEffect(() => {
+    // Update genres state when GenreList changes
+    setGenres(['All', ...GenreList.map((genre: any) => genre.genre)]);
+  }, [GenreList]);
+
+  useEffect(() => {
+    async function fetchBookList() {
+      try {
+        const data = await getBookList(genreIndex.genre);
+        setBookList(data);
+        setSortedCoffee(data);
+        setBooksLoading(false);
+      } catch (error) {
+        console.error('Error fetching book list:', error);
+      }
+    }
+  
+    fetchBookList();
+  }, [genreIndex]);
+
+  useEffect(() => {
+    async function getBookmarks() {
+        try {
+            const response = await instance(requests.getBookmarks);
+            const data = response.data;
+            setBookmarks(data);
+            setLoading(false);
+          } catch (error) {
+            console.error('Error fetching plans:', error);
+          }
+    }
+  
+    getBookmarks();
+  }, []);
+
   return (
-    <View style={styles.ScreenContainer}>
+    <SafeAreaView style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -132,7 +210,7 @@ const HomeScreen = ({navigation}: any) => {
         <HeaderBar />
 
         <Text style={styles.ScreenTitle}>
-          Find the best{'\n'}coffee for you
+          Find the best{'\n'}book for you
         </Text>
 
         {/* Search Input */}
@@ -154,7 +232,7 @@ const HomeScreen = ({navigation}: any) => {
             />
           </TouchableOpacity>
           <TextInput
-            placeholder="Find Your Coffee..."
+            placeholder="Find Your Book..."
             value={searchText}
             onChangeText={text => {
               setSearchText(text);
@@ -180,39 +258,38 @@ const HomeScreen = ({navigation}: any) => {
           )}
         </View>
 
-        {/* Category Scroller */}
+        {/* genre Scroller */}
 
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.CategoryScrollViewStyle}>
-          {categories.map((data, index) => (
+          contentContainerStyle={styles.genreScrollViewStyle}>
+          {genres.map((data: string, index) => (
             <View
               key={index.toString()}
-              style={styles.CategoryScrollViewContainer}>
+              style={styles.genreScrollViewContainer}>
               <TouchableOpacity
-                style={styles.CategoryScrollViewItem}
+                style={styles.genreScrollViewItem}
                 onPress={() => {
+                  setBooksLoading(true);
                   ListRef?.current?.scrollToOffset({
                     animated: true,
                     offset: 0,
                   });
-                  setCategoryIndex({index: index, category: categories[index]});
-                  setSortedCoffee([
-                    ...getCoffeeList(categories[index], CoffeeList),
-                  ]);
+                  setGenreIndex({index: index, genre: genres[index]});
+                  setSortedCoffee(bookList);
                 }}>
                 <Text
                   style={[
-                    styles.CategoryText,
-                    categoryIndex.index == index
+                    styles.genreText,
+                    genreIndex.index == index
                       ? {color: COLORS.primaryOrangeHex}
                       : {},
                   ]}>
                   {data}
                 </Text>
-                {categoryIndex.index == index ? (
-                  <View style={styles.ActiveCategory} />
+                {genreIndex.index == index ? (
+                  <View style={styles.Activegenre} />
                 ) : (
                   <></>
                 )}
@@ -221,92 +298,167 @@ const HomeScreen = ({navigation}: any) => {
           ))}
         </ScrollView>
 
-        {/* Coffee Flatlist */}
+        {/* Books Flatlist */}
+        {booksLoading ? (
+        // Render shimmer effect while loading
+        <View style={styles.shimmerFlex}>
+          <ShimmerPlaceholder
+          LinearGradient={LinearGradient}
+            style={styles.ShimmerPlaceholder}
+            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+            visible={!booksLoading}>
+          </ShimmerPlaceholder>
+          <ShimmerPlaceholder
+          LinearGradient={LinearGradient}
+            style={styles.ShimmerPlaceholder}
+            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+            visible={!setBooksLoading}>
+          </ShimmerPlaceholder>
+          <ShimmerPlaceholder
+          LinearGradient={LinearGradient}
+            style={styles.ShimmerPlaceholder}
+            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+            visible={!booksLoading}>
+          </ShimmerPlaceholder>
+        </View>
+      ) : (
 
         <FlatList
           ref={ListRef}
           horizontal
           ListEmptyComponent={
             <View style={styles.EmptyListContainer}>
-              <Text style={styles.CategoryText}>No Coffee Available</Text>
+              <Text style={styles.genreText}>No Books Available</Text>
             </View>
           }
           showsHorizontalScrollIndicator={false}
           data={sortedCoffee}
           contentContainerStyle={styles.FlatListContainer}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item.BookId}
           renderItem={({item}) => {
             return (
               <TouchableOpacity
                 onPress={() => {
                   navigation.push('Details', {
-                    index: item.index,
-                    id: item.id,
-                    type: item.type,
+                    id: item.BookId,
+                    type: "Book",
+                    price: item.BookPrice,
+                    name: item.BookName,
+                    genre: item.BookGenre,
+                    poster: item.BookPoster,
+                    photo: item.BookPhoto,
+                    averageRating: item.BookAverageRating,
+                    ratingCount: item.BookRatingCount,
+                    description: item.BookDescription,
                   });
                 }}>
                 <CoffeeCard
-                  id={item.id}
-                  index={item.index}
-                  type={item.type}
-                  roasted={item.roasted}
-                  imagelink_square={item.imagelink_square}
-                  name={item.name}
-                  special_ingredient={item.special_ingredient}
-                  average_rating={item.average_rating}
-                  price={item.prices[2]}
-                  buttonPressHandler={CoffeCardAddToCart}
+                  id={item.BookId}
+                  name={item.BookName}
+                  genre={item.BookGenre}
+                  photo={item.BookPhoto}
+                  poster={item.BookPoster}
+                  type="Book"
+                  price={item.BookPrice}
+                  averageRating={item.BookAverageRating}
+                  ratingCount={item.BookRatingCount}
+                  description={item.BookDescription}  
+                  buttonPressHandler={CoffeeCardAddToCart}
                 />
               </TouchableOpacity>
             );
           }}
         />
+)}
 
-        <Text style={styles.CoffeeBeansTitle}>Coffee Beans</Text>
+        <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
 
-        {/* Beans Flatlist */}
-
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={BeanList}
-          contentContainerStyle={[
-            styles.FlatListContainer,
-            {marginBottom: tabBarHeight},
-          ]}
-          keyExtractor={item => item.id}
-          renderItem={({item}) => {
-            return (
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.push('Details', {
-                    index: item.index,
-                    id: item.id,
-                    type: item.type,
-                  });
-                }}>
-                <CoffeeCard
-                  id={item.id}
-                  index={item.index}
-                  type={item.type}
-                  roasted={item.roasted}
-                  imagelink_square={item.imagelink_square}
-                  name={item.name}
-                  special_ingredient={item.special_ingredient}
-                  average_rating={item.average_rating}
-                  price={item.prices[2]}
-                  buttonPressHandler={CoffeCardAddToCart}
-                />
-              </TouchableOpacity>
-            );
-          }}
-        />
+        {/* Bookmarks Flatlist */}
+        {loading ? (
+        // Render shimmer effect while loading
+          <View style={styles.shimmerFlex}>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!loading}>
+            </ShimmerPlaceholder>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!loading}>
+            </ShimmerPlaceholder>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!loading}>
+            </ShimmerPlaceholder>
+          </View>
+        ) : (
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={bookmarks}
+            contentContainerStyle={[
+              styles.FlatListContainer,
+              {marginBottom: tabBarHeight},
+            ]}
+            keyExtractor={item => item.BookmarkId}
+            renderItem={({item}) => {
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.push('Details', {
+                      id: item.BookmarkId,
+                      type: "Bookmark",
+                      price: item.BookmarkPrice,
+                      name: item.BookmarkTitle,
+                      genre: "Bookmark",
+                      poster: item.BookmarkPoster,
+                      photo: item.BookmarkPhoto,
+                      averageRating: null,
+                      ratingCount: null,
+                      description: item.BookmarkDescription,
+                    });
+                  }}>
+                  <CoffeeCard
+                    id={item.BookmarkId}
+                    name={item.BookmarkTitle}
+                    genre="Bookmark"
+                    photo={item.BookmarkPhoto}
+                    poster={item.BookmarkPoster}
+                    type="Bookmark"
+                    price={item.BookmarkPrice}
+                    averageRating={null}
+                    ratingCount={null}
+                    description={item.BookmarkDescription}  
+                    buttonPressHandler={CoffeeCardAddToCart}
+                  />
+                </TouchableOpacity>
+              );
+            }}
+          />
+        )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  ShimmerPlaceholder: {
+    width: 150, 
+    height: 200, 
+    borderRadius: 10,
+    marginHorizontal: 10, 
+    marginTop: 10,
+    marginBottom: 40,
+    marginLeft: 20, 
+  },
+  shimmerFlex: {
+    flexDirection: 'row',
+  },
   ScreenContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
@@ -337,23 +489,23 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_14,
     color: COLORS.primaryWhiteHex,
   },
-  CategoryScrollViewStyle: {
+  genreScrollViewStyle: {
     paddingHorizontal: SPACING.space_20,
     marginBottom: SPACING.space_20,
   },
-  CategoryScrollViewContainer: {
+  genreScrollViewContainer: {
     paddingHorizontal: SPACING.space_15,
   },
-  CategoryScrollViewItem: {
+  genreScrollViewItem: {
     alignItems: 'center',
   },
-  CategoryText: {
+  genreText: {
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_16,
     color: COLORS.primaryLightGreyHex,
     marginBottom: SPACING.space_4,
   },
-  ActiveCategory: {
+  Activegenre: {
     height: SPACING.space_10,
     width: SPACING.space_10,
     borderRadius: BORDERRADIUS.radius_10,

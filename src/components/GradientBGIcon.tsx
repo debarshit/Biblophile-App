@@ -26,6 +26,7 @@ const GradientBGIcon: React.FC<GradientBGIconProps> = ({name, color, size}) => {
 
 const styles = StyleSheet.create({
   Container: {
+    top: SPACING.space_10,
     borderWidth: 2,
     borderColor: COLORS.secondaryDarkGreyHex,
     borderRadius: SPACING.space_12,

@@ -11,15 +11,13 @@ import {
 } from '../theme/theme';
 
 interface FavoritesItemCardProps {
-  id: string;
-  imagelink_portrait: ImageProps;
+  id: number;
+  imagelink_portrait: string;
   name: string;
-  special_ingredient: string;
   type: string;
-  ingredients: string;
   average_rating: number;
   ratings_count: string;
-  roasted: string;
+  genre: string;
   description: string;
   favourite: boolean;
   ToggleFavouriteItem: any;
@@ -29,12 +27,10 @@ const FavoritesItemCard: React.FC<FavoritesItemCardProps> = ({
   id,
   imagelink_portrait,
   name,
-  special_ingredient,
   type,
-  ingredients,
   average_rating,
   ratings_count,
-  roasted,
+  genre,
   description,
   favourite,
   ToggleFavouriteItem,
@@ -48,11 +44,9 @@ const FavoritesItemCard: React.FC<FavoritesItemCardProps> = ({
         id={id}
         favourite={favourite}
         name={name}
-        special_ingredient={special_ingredient}
-        ingredients={ingredients}
         average_rating={average_rating}
         ratings_count={ratings_count}
-        roasted={roasted}
+        genre={genre}
         ToggleFavourite={ToggleFavouriteItem}
       />
       <LinearGradient

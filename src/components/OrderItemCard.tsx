@@ -12,19 +12,19 @@ import {
 interface OrderItemCardProps {
   type: string;
   name: string;
-  imagelink_square: ImageProps;
-  special_ingredient: string;
+  photo: string;
   prices: any;
   ItemPrice: string;
+  quantity: number
 }
 
 const OrderItemCard: React.FC<OrderItemCardProps> = ({
   type,
   name,
-  imagelink_square,
-  special_ingredient,
+  photo,
   prices,
   ItemPrice,
+  quantity,
 }) => {
   return (
     <LinearGradient
@@ -34,16 +34,10 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
       style={styles.CardLinearGradient}>
       <View style={styles.CardInfoContainer}>
         <View style={styles.CardImageInfoContainer}>
-          <Image source={imagelink_square} style={styles.Image} />
-          <View>
+          <Image source={{uri: photo}} style={styles.Image} />
+          <View style={styles.CardTitleContainer}>
             <Text style={styles.CardTitle}>{name}</Text>
-            <Text style={styles.CardSubtitle}>{special_ingredient}</Text>
           </View>
-        </View>
-        <View>
-          <Text style={styles.CardCurrency}>
-            $ <Text style={styles.CardPrice}>{ItemPrice}</Text>
-          </Text>
         </View>
       </View>
       {prices.map((data: any, index: any) => (
@@ -55,7 +49,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
                   styles.SizeText,
                   {
                     fontSize:
-                      type == 'Bean' ? FONTSIZE.size_12 : FONTSIZE.size_16,
+                      type == 'Book' ? FONTSIZE.size_12 : FONTSIZE.size_16,
                   },
                 ]}>
                 {data.size}
@@ -71,10 +65,10 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
 
           <View style={styles.CardTableRow}>
             <Text style={styles.CardQuantityPriceText}>
-              X <Text style={styles.Price}>{data.quantity}</Text>
+              X <Text style={styles.Price}>{quantity}</Text>
             </Text>
             <Text style={styles.CardQuantityPriceText}>
-              $ {(data.quantity * data.price).toFixed(2).toString()}
+            ₹ {(quantity * data.price).toFixed(2).toString()}
             </Text>
           </View>
         </View>
@@ -104,10 +98,15 @@ const styles = StyleSheet.create({
     width: 90,
     borderRadius: BORDERRADIUS.radius_15,
   },
+  CardTitleContainer: {
+    flex: 1,
+    maxWidth: '70%',
+  },
   CardTitle: {
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_18,
     color: COLORS.primaryWhiteHex,
+    maxWidth: '100%',
   },
   CardSubtitle: {
     fontFamily: FONTFAMILY.poppins_regular,

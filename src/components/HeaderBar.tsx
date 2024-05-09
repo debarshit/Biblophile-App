@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, Image} from 'react-native';
 import React from 'react';
 import {COLORS, FONTFAMILY, FONTSIZE, SPACING} from '../theme/theme';
 import GradientBGIcon from './GradientBGIcon';
@@ -11,11 +11,15 @@ interface HeaderBarProps {
 const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
   return (
     <View style={styles.HeaderContainer}>
-      <GradientBGIcon
+      {/* <GradientBGIcon
         name="menufold"
         color={COLORS.primaryLightGreyHex}
         size={FONTSIZE.size_16}
-      />
+      /> */}
+      <Image
+          source={{uri: "https://i.postimg.cc/MTkWjTSx/Biblophile-logo-white.png"}}
+          style={styles.Image}
+        />
       <Text style={styles.HeaderText}>{title}</Text>
       <ProfilePic />
     </View>
@@ -33,6 +37,10 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_20,
     color: COLORS.primaryWhiteHex,
+  },
+  Image: {
+    height: SPACING.space_36,
+    width: SPACING.space_36,
   },
 });
 

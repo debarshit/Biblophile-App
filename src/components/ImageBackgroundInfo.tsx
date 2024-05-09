@@ -19,16 +19,16 @@ import {
 
 interface ImageBackgroundInfoProps {
   EnableBackHandler: boolean;
-  imagelink_portrait: ImageProps;
-  type: string;
-  id: string;
+  imagelink_portrait: string;
+  id: number;
   favourite: boolean;
   name: string;
-  special_ingredient: string;
-  ingredients: string;
+  type: string;
+  // special_ingredient: string;
+  // ingredients: string;
   average_rating: number;
   ratings_count: string;
-  roasted: string;
+  genre: string;
   BackHandler?: any;
   ToggleFavourite: any;
 }
@@ -36,22 +36,20 @@ interface ImageBackgroundInfoProps {
 const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   EnableBackHandler,
   imagelink_portrait,
-  type,
   id,
   favourite,
   name,
-  special_ingredient,
-  ingredients,
+  type,
   average_rating,
   ratings_count,
-  roasted,
+  genre,
   BackHandler,
   ToggleFavourite,
 }) => {
   return (
     <View>
       <ImageBackground
-        source={imagelink_portrait}
+        source={{uri: imagelink_portrait}}
         style={styles.ItemBackgroundImage}>
         {EnableBackHandler ? (
           <View style={styles.ImageHeaderBarContainerWithBack}>
@@ -67,7 +65,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
-                ToggleFavourite(favourite, type, id);
+                ToggleFavourite(favourite, id);
               }}>
               <GradientBGIcon
                 name="heart"
@@ -82,7 +80,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
           <View style={styles.ImageHeaderBarContainerWithoutBack}>
             <TouchableOpacity
               onPress={() => {
-                ToggleFavourite(favourite, type, id);
+                ToggleFavourite(favourite, id);
               }}>
               <GradientBGIcon
                 name="heart"
@@ -98,17 +96,17 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         <View style={styles.ImageInfoOuterContainer}>
           <View style={styles.ImageInfoInnerContainer}>
             <View style={styles.InfoContainerRow}>
-              <View>
+              <View style={styles.ItemTitleContainer}>
                 <Text style={styles.ItemTitleText}>{name}</Text>
-                <Text style={styles.ItemSubtitleText}>
-                  {special_ingredient}
-                </Text>
+                {/* <Text style={styles.ItemSubtitleText}>
+                  {genre}
+                </Text> */}
               </View>
-              <View style={styles.ItemPropertiesContainer}>
+              { type === "Book" && <View style={styles.ItemPropertiesContainer}>
                 <View style={styles.ProperFirst}>
                   <MaterialCommunityIcons
-                    name={type == 'Bean' ? 'seed' : 'coffee'}
-                    size={type == 'Bean' ? FONTSIZE.size_18 : FONTSIZE.size_24}
+                    name={type == 'Book' ? 'check' : 'check'}
+                    size={type == 'Book' ? FONTSIZE.size_18 : FONTSIZE.size_24}
                     color={COLORS.primaryOrangeHex}
                   />
                   <Text
@@ -116,26 +114,26 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
                       styles.PropertyTextFirst,
                       {
                         marginTop:
-                          type == 'Bean'
+                          type == 'Book'
                             ? SPACING.space_4 + SPACING.space_2
                             : 0,
                       },
                     ]}>
-                    {type}
+                    Buy
                   </Text>
                 </View>
                 <View style={styles.ProperFirst}>
-                  <FontAwesome6
-                    name={type == 'Bean' ? 'location-dot' : 'droplet'}
+                  <MaterialCommunityIcons
+                    name={type == 'Book' ? 'check' : 'check'}
                     size={FONTSIZE.size_16}
                     color={COLORS.primaryOrangeHex}
                   />
-                  <Text style={styles.PropertyTextLast}>{ingredients}</Text>
+                  <Text style={styles.PropertyTextLast}>Rent</Text>
                 </View>
-              </View>
+              </View>}
             </View>
             <View style={styles.InfoContainerRow}>
-              <View style={styles.RatingContainer}>
+              {type === "Book" && <View style={styles.RatingContainer}>
                 <AntDesign
                   name={'star'}
                   color={COLORS.primaryOrangeHex}
@@ -143,9 +141,9 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
                 />
                 <Text style={styles.RatingText}>{average_rating}</Text>
                 <Text style={styles.RatingCountText}>({ratings_count})</Text>
-              </View>
+              </View>}
               <View style={styles.RoastedContainer}>
-                <Text style={styles.RoastedText}>{roasted}</Text>
+                <Text style={styles.RoastedText}>{genre}</Text>
               </View>
             </View>
           </View>
@@ -189,10 +187,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  ItemTitleContainer: {
+    flex: 1,
+    maxWidth: '70%', // Adjust this value according to your layout requirements
+  },
   ItemTitleText: {
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_24,
     color: COLORS.primaryWhiteHex,
+    maxWidth: '100%',
   },
   ItemSubtitleText: {
     fontFamily: FONTFAMILY.poppins_medium,

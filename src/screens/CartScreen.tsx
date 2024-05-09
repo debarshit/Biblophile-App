@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   View,
+  SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
@@ -28,7 +29,7 @@ const CartScreen = ({navigation, route}: any) => {
   const tabBarHeight = useBottomTabBarHeight();
 
   const buttonPressHandler = () => {
-    navigation.push('Payment', {amount: CartPrice});
+    navigation.push('Payment', {amount: CartPrice, cart: CartList});
   };
 
   const incrementCartItemQuantityHandler = (id: string, size: string) => {
@@ -41,7 +42,7 @@ const CartScreen = ({navigation, route}: any) => {
     calculateCartPrice();
   };
   return (
-    <View style={styles.ScreenContainer}>
+    <SafeAreaView style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
 
       <ScrollView
@@ -60,20 +61,26 @@ const CartScreen = ({navigation, route}: any) => {
                   <TouchableOpacity
                     onPress={() => {
                       navigation.push('Details', {
-                        index: data.index,
                         id: data.id,
                         type: data.type,
+                        price: data.prices[0].size === "Buy"? data.prices[0].price : data.prices[0].price*10,
+                        name: data.name,
+                        genre: data.genre,
+                        poster: data.poster,
+                        photo: data.photo,
+                        averageRating: data.averageRating,
+                        ratingCount: data.ratingCount,
+                        description: data.description,
                       });
                     }}
                     key={data.id}>
                     <CartItem
                       id={data.id}
                       name={data.name}
-                      imagelink_square={data.imagelink_square}
-                      special_ingredient={data.special_ingredient}
-                      roasted={data.roasted}
+                      photo={data.photo}
+                      genre={data.genre}
                       prices={data.prices}
-                      type={data.type}
+                      type="Book"
                       incrementCartItemQuantityHandler={
                         incrementCartItemQuantityHandler
                       }
@@ -91,14 +98,14 @@ const CartScreen = ({navigation, route}: any) => {
             <PaymentFooter
               buttonPressHandler={buttonPressHandler}
               buttonTitle="Pay"
-              price={{price: CartPrice, currency: '$'}}
+              price={{price: CartPrice, currency: '₹'}}
             />
           ) : (
             <></>
           )}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

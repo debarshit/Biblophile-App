@@ -73,9 +73,9 @@ const TabNavigator = () => {
         component={OrderHistoryScreen}
         options={{
           tabBarIcon: ({focused, color, size}) => (
-            <AntDesign
-              name="bells"
-              size={25}
+            <MaterialIcons
+              name="history"
+              size={30}
               color={
                 focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
               }

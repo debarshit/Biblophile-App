@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -16,25 +16,52 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
+import instance from '../services/axios';
+import requests from '../services/requests';
 import ImageBackgroundInfo from '../components/ImageBackgroundInfo';
 import PaymentFooter from '../components/PaymentFooter';
 
 const DetailsScreen = ({navigation, route}: any) => {
-  const ItemOfIndex = useStore((state: any) =>
-    route.params.type == 'Coffee' ? state.CoffeeList : state.BeanList,
-  )[route.params.index];
-  const addToFavoriteList = useStore((state: any) => state.addToFavoriteList);
-  const deleteFromFavoriteList = useStore(
-    (state: any) => state.deleteFromFavoriteList,
-  );
+  const updateFavoriteList = useStore((state: any) => state.updateFavoriteList);
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
+  const favoritesList = useStore((state: any) => state.FavoritesList);
+  const userDetails = useStore((state: any) => state.userDetails);
 
-  const [price, setPrice] = useState(ItemOfIndex.prices[0]);
+  const [subscription, setSubscription] = useState(false);
+
+  //Array of buy and rent prices
+  const prices: { size: string; price: string; currency: string }[] = 
+  route.params.type === 'Book'
+  ? [
+      { size: 'Buy', price: route.params.price, currency: '₹' },
+      { size: 'Rent', price: subscription === true ? 0 : (route.params.price) * 0.1, currency: '₹' }, // Assuming rent price is 10% of buy price
+    ]
+  : [
+      { size: 'PVC', price: route.params.price, currency: '₹' },
+      { size: 'Laminated', price: (route.params.price) * 1.5, currency: '₹' },
+    ];
+
+  const [price, setPrice] = useState(prices[0]);
   const [fullDesc, setFullDesc] = useState(false);
+  const [favourite, setFavourite] = useState(false);
 
-  const ToggleFavourite = (favourite: boolean, type: string, id: string) => {
-    favourite ? deleteFromFavoriteList(type, id) : addToFavoriteList(type, id);
+  const ToggleFavourite = (isFavourite, id) => {
+    const book = {
+      id: route.params.id,
+      type: route.params.type,
+      price: route.params.price,
+      name: route.params.name,
+      genre: route.params.genre,
+      poster: route.params.poster,
+      photo: route.params.photo,
+      averageRating: route.params.averageRating,
+      ratingCount: route.params.ratingCount,
+      description: route.params.description,
+      favourite: !favourite,
+    };
+    updateFavoriteList(route.params.type, route.params.id, book);
+    setFavourite(!favourite);
   };
 
   const BackHandler = () => {
@@ -43,27 +70,52 @@ const DetailsScreen = ({navigation, route}: any) => {
 
   const addToCarthandler = ({
     id,
-    index,
     name,
-    roasted,
-    imagelink_square,
-    special_ingredient,
+    genre,
+    photo,
+    poster,
     type,
     price,
+    averageRating,
+    ratingCount,
+    description, 
   }: any) => {
     addToCart({
       id,
-      index,
       name,
-      roasted,
-      imagelink_square,
-      special_ingredient,
+      genre,
+      photo,
+      poster,
       type,
+      averageRating,
+      ratingCount,
+      description, 
       prices: [{...price, quantity: 1}],
     });
     calculateCartPrice();
     navigation.navigate('Cart');
   };
+
+  useEffect(() => {
+    const isBookInFavorites = favoritesList.some((book: any) => book.id == route.params.id);
+    setFavourite(isBookInFavorites);
+  }, [favoritesList, route.params.id]);
+
+  useEffect(() => {
+    async function fetchActivePlan() {
+        try {
+            const response = await instance(requests.fetchActivePlan+userDetails[0].userId);
+            const data = response.data;
+            if (data[0].PlanId !== null) {
+              setSubscription(true);
+            }
+          } catch (error) {
+            console.error('Error fetching plans:', error);
+          }
+    }
+  
+    fetchActivePlan();
+  }, []);
 
   return (
     <View style={styles.ScreenContainer}>
@@ -73,16 +125,17 @@ const DetailsScreen = ({navigation, route}: any) => {
         contentContainerStyle={styles.ScrollViewFlex}>
         <ImageBackgroundInfo
           EnableBackHandler={true}
-          imagelink_portrait={ItemOfIndex.imagelink_portrait}
-          type={ItemOfIndex.type}
-          id={ItemOfIndex.id}
-          favourite={ItemOfIndex.favourite}
-          name={ItemOfIndex.name}
-          special_ingredient={ItemOfIndex.special_ingredient}
-          ingredients={ItemOfIndex.ingredients}
-          average_rating={ItemOfIndex.average_rating}
-          ratings_count={ItemOfIndex.ratings_count}
-          roasted={ItemOfIndex.roasted}
+          imagelink_portrait={route.params.poster}
+          type={route.params.type}
+          id={route.params.id}
+          favourite={favourite}
+          name={route.params.name}
+          genre={route.params.genre}
+          // special_ingredient={ItemOfIndex.special_ingredient}
+          // ingredients={ItemOfIndex.ingredients}
+          average_rating={route.params.averageRating}
+          ratings_count={route.params.ratingCount}
+          // roasted={ItemOfIndex.roasted}
           BackHandler={BackHandler}
           ToggleFavourite={ToggleFavourite}
         />
@@ -95,7 +148,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                 setFullDesc(prev => !prev);
               }}>
               <Text style={styles.DescriptionText}>
-                {ItemOfIndex.description}
+                {route.params.description}
               </Text>
             </TouchableWithoutFeedback>
           ) : (
@@ -104,13 +157,13 @@ const DetailsScreen = ({navigation, route}: any) => {
                 setFullDesc(prev => !prev);
               }}>
               <Text numberOfLines={3} style={styles.DescriptionText}>
-                {ItemOfIndex.description}
+                {route.params.description}
               </Text>
             </TouchableWithoutFeedback>
           )}
           <Text style={styles.InfoTitle}>Size</Text>
           <View style={styles.SizeOuterContainer}>
-            {ItemOfIndex.prices.map((data: any) => (
+            {prices.map((data: any) => (
               <TouchableOpacity
                 key={data.size}
                 onPress={() => {
@@ -130,7 +183,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                     styles.SizeText,
                     {
                       fontSize:
-                        ItemOfIndex.type == 'Bean'
+                      route.params.type == 'Book'
                           ? FONTSIZE.size_14
                           : FONTSIZE.size_16,
                       color:
@@ -150,14 +203,16 @@ const DetailsScreen = ({navigation, route}: any) => {
           buttonTitle="Add to Cart"
           buttonPressHandler={() => {
             addToCarthandler({
-              id: ItemOfIndex.id,
-              index: ItemOfIndex.index,
-              name: ItemOfIndex.name,
-              roasted: ItemOfIndex.roasted,
-              imagelink_square: ItemOfIndex.imagelink_square,
-              special_ingredient: ItemOfIndex.special_ingredient,
-              type: ItemOfIndex.type,
+              id: route.params.id,
+              name: route.params.name,
+              genre: route.params.genre,
+              photo: route.params.photo,
+              poster: route.params.poster,
+              type: route.params.type,
               price: price,
+              averageRating: route.params.averageRating,
+              ratingCount: route.params.ratingCount,
+              description: route.params.description,
             });
           }}
         />

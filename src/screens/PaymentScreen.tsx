@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,17 +6,17 @@ import {
   StatusBar,
   ScrollView,
   TouchableOpacity,
+  SafeAreaView,
 } from 'react-native';
-import {LinearGradient} from 'expo-linear-gradient';
-import { FontAwesome } from '@expo/vector-icons';
 import {
-  BORDERRADIUS,
   COLORS,
   FONTFAMILY,
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
 import {useStore} from '../store/store';
+import instance from '../services/axios';
+import requests from '../services/requests';
 import GradientBGIcon from '../components/GradientBGIcon';
 import PaymentMethod from '../components/PaymentMethod';
 import PaymentFooter from '../components/PaymentFooter';
@@ -24,48 +24,176 @@ import PopUpAnimation from '../components/PopUpAnimation';
 
 const PaymentList = [
   {
-    name: 'Wallet',
-    icon: 'icon',
+    name: 'Online',
+    icon: 'credit-card',
     isIcon: true,
   },
   {
-    name: 'Google Pay',
-    icon: require('../assets/app_images/gpay.png'),
-    isIcon: false,
-  },
-  {
-    name: 'Apple Pay',
-    icon: require('../assets/app_images/applepay.png'),
-    isIcon: false,
-  },
-  {
-    name: 'Amazon Pay',
-    icon: require('../assets/app_images/amazonpay.png'),
+    name: 'COD',
+    icon: 'wallet',
     isIcon: false,
   },
 ];
 
 const PaymentScreen = ({navigation, route}: any) => {
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
-  const addToOrderHistoryListFromCart = useStore(
-    (state: any) => state.addToOrderHistoryListFromCart,
+  const clearCart = useStore(
+    (state: any) => state.clearCart,
   );
+  const userDetails = useStore((state: any) => state.userDetails);
 
-  const [paymentMode, setPaymentMode] = useState('Credit Card');
+  const [paymentMode, setPaymentMode] = useState('Online');
   const [showAnimation, setShowAnimation] = useState(false);
+  const [isSubscription, setIsSubscription] = useState(false);
+
+  const placeOrder = async (paymentStatus) => {
+    if (userDetails[0].userAddress === null) {
+      navigation.push('Profile', {
+        update: "Please fill your address",
+      });
+    }
+    else {
+      try {
+        for (const data of route.params.cart) {
+          const response = await instance.post(requests.placeOrder, {
+            custId: userDetails[0].userId,
+            custName: userDetails[0].userName,
+            custPhone: userDetails[0].userPhone,
+            custAddress: userDetails[0].userAddress,
+            orderedBook: data.name,
+            OrderImage: data.photo,
+            payment: paymentStatus,
+            orderMode: data.prices[0].size,
+            custOrderDuration: data.prices[0].quantity, //duration for rent and qty for buy
+            amount: route.params.amount,
+          });
+          
+          if (response.data.message === 1) {
+            setShowAnimation(true);
+            clearCart();
+            calculateCartPrice();
+            setTimeout(() => {
+              setShowAnimation(false);
+              navigation.navigate('History');
+            }, 2000);
+          } else {
+            alert(response.data.message);
+            console.log(response);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
+  const placeSubscriptionOrder = async () => {
+    try {
+        const response = await instance.post(requests.placeSubscriptionOrder, {
+          custId: userDetails[0].userId,
+          planId: route.params.subscription,
+        });
+        
+        if (response.data.message === 1) {
+          //navigate to subscription page or just do navigation.back
+          setShowAnimation(true);
+            setTimeout(() => {
+              setShowAnimation(false);
+              navigation.navigate('Subscription');
+            }, 2000);
+
+        } else {
+          alert(response.data.message);
+          console.log(response);
+        }
+      
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (route.params.subscription) {
+      setIsSubscription(true);
+    }
+  }, [isSubscription]);
+  
 
   const buttonPressHandler = () => {
-    setShowAnimation(true);
-    addToOrderHistoryListFromCart();
-    calculateCartPrice();
-    setTimeout(() => {
-      setShowAnimation(false);
-      navigation.navigate('History');
-    }, 2000);
+    if (paymentMode === 'Online') {      
+      //open payment portal
+      let link_id; // Declare link_id variable here to make it accessible
+      if (route.params.amount > 0) {
+        async function fetchData() {
+          try {
+            const response = await instance.post(requests.paymentRequest, {
+                customerName: userDetails[0].userName,
+                customerPhone: userDetails[0].userPhone,
+                amount: route.params.amount,
+              });  
+            if (response.data && response.data.link_url) {
+              navigation.push('PaymentGateway', {
+                url: response.data.link_url
+              });
+              
+              // Assign link_id after successfully receiving link_url
+              link_id = response.data.link_id;
+    
+              // Polling backend to check payment status
+              const pollPaymentStatus = setInterval(async () => {
+                try {
+                  const statusResponse = await instance.post(requests.paymentSuccessful + link_id, {
+                    customerId: userDetails[0].userId,
+                    customerPhone: userDetails[0].userPhone,
+                    amount: route.params.amount,
+                  });
+                  if (statusResponse.data.status === "success") {
+                    clearInterval(pollPaymentStatus); // Stop polling
+                    if (isSubscription) {
+                      placeSubscriptionOrder();
+                    }
+                    else {
+                      placeOrder(1);
+                    }
+                  }
+                } catch (error) {
+                  console.error("Error occurred while checking payment status:", error);
+                }
+              }, 5000); // Polling interval (5 seconds in this example)
+              
+            } else {
+              alert("Network error! Please try again.");
+            }
+          } catch (error) {
+            console.error("Error occurred during payment:", error);
+          } 
+        }
+      
+        fetchData();
+      }
+      else {
+        placeOrder(0);
+      }
+    }
+    else {
+      if (isSubscription) {
+        placeSubscriptionOrder();
+      }
+      else {
+        placeOrder(0);
+      }
+    }
+    // setShowAnimation(true);
+    // addToOrderHistoryListFromCart();
+    // calculateCartPrice();
+    // setTimeout(() => {
+    //   setShowAnimation(false);
+    //   navigation.navigate('History');
+    // }, 2000);
   };
 
   return (
-    <View style={styles.ScreenContainer}>
+    <SafeAreaView style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
 
       {showAnimation ? (
@@ -96,65 +224,6 @@ const PaymentScreen = ({navigation, route}: any) => {
         </View>
 
         <View style={styles.PaymentOptionsContainer}>
-          <TouchableOpacity
-            onPress={() => {
-              setPaymentMode('Credit Card');
-            }}>
-            <View
-              style={[
-                styles.CreditCardContainer,
-                {
-                  borderColor:
-                    paymentMode == 'Credit Card'
-                      ? COLORS.primaryOrangeHex
-                      : COLORS.primaryGreyHex,
-                },
-              ]}>
-              <Text style={styles.CreditCardTitle}>Credit Card</Text>
-              <View style={styles.CreditCardBG}>
-                <LinearGradient
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 1}}
-                  style={styles.LinearGradientStyle}
-                  colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}>
-                  <View style={styles.CreditCardRow}>
-                    <FontAwesome
-                      name="credit-card"
-                      size={FONTSIZE.size_20 * 2}
-                      color={COLORS.primaryOrangeHex}
-                    />
-                    <FontAwesome
-                      name="cc-visa"
-                      size={FONTSIZE.size_30 * 2}
-                      color={COLORS.primaryWhiteHex}
-                    />
-                  </View>
-                  <View style={styles.CreditCardNumberContainer}>
-                    <Text style={styles.CreditCardNumber}>3879</Text>
-                    <Text style={styles.CreditCardNumber}>8923</Text>
-                    <Text style={styles.CreditCardNumber}>6745</Text>
-                    <Text style={styles.CreditCardNumber}>4638</Text>
-                  </View>
-                  <View style={styles.CreditCardRow}>
-                    <View style={styles.CreditCardNameContainer}>
-                      <Text style={styles.CreditCardNameSubitle}>
-                        Card Holder Name
-                      </Text>
-                      <Text style={styles.CreditCardNameTitle}>
-                        Robert Evans
-                      </Text>
-                    </View>
-                    <View style={styles.CreditCardDateContainer}>
-                      <Text style={styles.CreditCardNameSubitle}>
-                        Expiry Date
-                      </Text>
-                      <Text style={styles.CreditCardNameTitle}>02/30</Text>
-                    </View>
-                  </View>
-                </LinearGradient>
-              </View>
-            </View>
-          </TouchableOpacity>
           {PaymentList.map((data: any) => (
             <TouchableOpacity
               key={data.name}
@@ -173,11 +242,11 @@ const PaymentScreen = ({navigation, route}: any) => {
       </ScrollView>
 
       <PaymentFooter
-        buttonTitle={`Pay with ${paymentMode}`}
-        price={{price: route.params.amount, currency: '$'}}
+        buttonTitle={`Pay ${paymentMode}`}
+        price={{price: route.params.amount, currency: '₹'}}
         buttonPressHandler={buttonPressHandler}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -211,60 +280,6 @@ const styles = StyleSheet.create({
   PaymentOptionsContainer: {
     padding: SPACING.space_15,
     gap: SPACING.space_15,
-  },
-  CreditCardContainer: {
-    padding: SPACING.space_10,
-    gap: SPACING.space_10,
-    borderRadius: BORDERRADIUS.radius_15 * 2,
-    borderWidth: 3,
-  },
-  CreditCardTitle: {
-    fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_14,
-    color: COLORS.primaryWhiteHex,
-    marginLeft: SPACING.space_10,
-  },
-  CreditCardBG: {
-    backgroundColor: COLORS.primaryGreyHex,
-    borderRadius: BORDERRADIUS.radius_25,
-  },
-  LinearGradientStyle: {
-    borderRadius: BORDERRADIUS.radius_25,
-    gap: SPACING.space_36,
-    paddingHorizontal: SPACING.space_15,
-    paddingVertical: SPACING.space_10,
-  },
-  CreditCardRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  CreditCardNumberContainer: {
-    flexDirection: 'row',
-    gap: SPACING.space_10,
-    alignItems: 'center',
-  },
-  CreditCardNumber: {
-    fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_18,
-    color: COLORS.primaryWhiteHex,
-    letterSpacing: SPACING.space_4 + SPACING.space_2,
-  },
-  CreditCardNameSubitle: {
-    fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_12,
-    color: COLORS.secondaryLightGreyHex,
-  },
-  CreditCardNameTitle: {
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_18,
-    color: COLORS.primaryWhiteHex,
-  },
-  CreditCardNameContainer: {
-    alignItems: 'flex-start',
-  },
-  CreditCardDateContainer: {
-    alignItems: 'flex-end',
   },
 });
 
