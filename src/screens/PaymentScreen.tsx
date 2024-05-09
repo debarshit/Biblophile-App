@@ -61,6 +61,7 @@ const PaymentScreen = ({navigation, route}: any) => {
             custPhone: userDetails[0].userPhone,
             custAddress: userDetails[0].userAddress,
             orderedBook: data.name,
+            OrderImage: data.photo,
             payment: paymentStatus,
             orderMode: data.prices[0].size,
             custOrderDuration: data.prices[0].quantity, //duration for rent and qty for buy

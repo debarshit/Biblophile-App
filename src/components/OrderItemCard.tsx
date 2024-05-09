@@ -15,6 +15,7 @@ interface OrderItemCardProps {
   photo: string;
   prices: any;
   ItemPrice: string;
+  quantity: number
 }
 
 const OrderItemCard: React.FC<OrderItemCardProps> = ({
@@ -23,6 +24,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
   photo,
   prices,
   ItemPrice,
+  quantity,
 }) => {
   return (
     <LinearGradient
@@ -36,11 +38,6 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
           <View style={styles.CardTitleContainer}>
             <Text style={styles.CardTitle}>{name}</Text>
           </View>
-        </View>
-        <View>
-          {/* <Text style={styles.CardCurrency}>
-          ₹ <Text style={styles.CardPrice}>{ItemPrice}</Text>
-          </Text> */}
         </View>
       </View>
       {prices.map((data: any, index: any) => (
@@ -68,10 +65,10 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
 
           <View style={styles.CardTableRow}>
             <Text style={styles.CardQuantityPriceText}>
-              X <Text style={styles.Price}>{data.quantity}</Text>
+              X <Text style={styles.Price}>{quantity}</Text>
             </Text>
             <Text style={styles.CardQuantityPriceText}>
-            ₹ {(data.quantity * data.price).toFixed(2).toString()}
+            ₹ {(quantity * data.price).toFixed(2).toString()}
             </Text>
           </View>
         </View>

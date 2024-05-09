@@ -10,56 +10,34 @@ import {COLORS, FONTFAMILY, FONTSIZE, SPACING} from '../theme/theme';
 import OrderItemCard from './OrderItemCard';
 
 interface OrderHistoryCardProps {
-  navigationHandler: any;
-  CartList: any;
-  CartListPrice: string;
-  OrderDate: string;
+  order: any;
 }
 const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
-  navigationHandler,
-  CartList,
-  CartListPrice,
-  OrderDate,
+  order,
 }) => {
   return (
     <View style={styles.CardContainer}>
       <View style={styles.CardHeader}>
         <View>
-          <Text style={styles.HeaderTitle}>Order Time</Text>
-          <Text style={styles.HeaderSubtitle}>{OrderDate}</Text>
+          <Text style={styles.HeaderTitle}>Order Date</Text>
+          <Text style={styles.HeaderSubtitle}>{order.OrderDate}</Text>
         </View>
         <View style={styles.PriceContainer}>
           <Text style={styles.HeaderTitle}>Total Amount</Text>
-          <Text style={styles.HeaderPrice}>₹ {CartListPrice}</Text>
+          <Text style={styles.HeaderPrice}>₹ {order.OrderAmount}</Text>
         </View>
       </View>
       <View style={styles.ListContainer}>
-        {CartList.map((data: any, index: any) => (
-          <TouchableOpacity
-            key={index.toString() + data.id}
-            onPress={() => {
-              navigationHandler({
-                id: data.id,
-                type: data.type,
-                price: data.price,
-                name: data.name,
-                genre: data.genre,
-                poster: data.poster,
-                photo: data.photo,
-                averageRating: data.averageRating,
-                ratingCount: data.ratingCount,
-                description: data.description,
-              });
-            }}>
             <OrderItemCard
-              type={data.type}
-              name={data.name}
-              photo={data.photo}
-              prices={data.prices}
-              ItemPrice={data.ItemPrice}
+              type={order.OrderStatus}
+              name={order.OrderItem}
+              photo={order.OrderImage}
+              prices={[
+                { size: order.OrderType === '0' ? 'Rent' : 'Buy', price: order.OrderType === '0' ? order.OrderAmount/order.OrderDuration : order.OrderAmount/order.OrderQuantity, currency: '₹' },
+              ]}
+              ItemPrice={order.OrderAmount}
+              quantity={order.OrderType === '0' ? order.OrderDuration : order.OrderQuantity}
             />
-          </TouchableOpacity>
-        ))}
       </View>
     </View>
   );
