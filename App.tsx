@@ -66,6 +66,10 @@ const App = () => {
             name="SignupLogin"
             component={SignupLogin}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
+          <Stack.Screen
+            name="Resources"
+            component={ResourceScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>
     );

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { FontAwesome as FaIcon, MaterialCommunityIcons as MdIcon } from '@expo/vector-icons';
 import instance from '../services/axios';
 import requests from '../services/requests'; 
 import {useStore} from '../store/store';
 import { COLORS } from '../theme/theme';
+import Mascot from '../components/Mascot';
 
 
 const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible, onPress }) => {
@@ -26,6 +27,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const [isRegistration, setIsRegistration] = useState<boolean>(false);
     const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
     const [focusedInput, setFocusedInput] = useState<string>('');
+    const [mascotEmotion, setMascotEmotion] = useState<string>('welcome');
 
     //input states
     const [loginEmail , setLoginEmail] = useState<string>('');
@@ -74,10 +76,18 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
 
     function togglePasswordVisibility() {
         setPasswordVisible(!passwordVisible);
+        // Change mascot emotion when toggling password visibility
+        setMascotEmotion(mascotEmotion ==  'eyesClosed'? 'eyesPeeping' : 'eyesClosed');
     }
 
     function handleFocus(inputName: string) {
         setFocusedInput(inputName);
+        // Change mascot emotion based on input focus
+        if (inputName === 'loginPass' || inputName === 'signupPass' || inputName === 'signupPassCnf') {
+            setMascotEmotion(passwordVisible ? 'eyesPeeping' : 'eyesClosed');
+        } else {
+            setMascotEmotion('welcome');
+        }
     }
 
     const handleSignup = () => {
@@ -180,167 +190,179 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     }
 
     const openWebView = (url: string) => {
-        navigation.navigate('Resources', {
+        navigation.push('Resources', {
           url: url
         });
       };
 
+      useEffect(() => {
+        
+      
+      }, [mascotEmotion])
+      
+
     return (
-        <View style={styles.wrapper}>
-            {!isRegistration ? (
-                <View>
-                    <Image source={require('../assets/app_images/welcome.jpg')} style={styles.image} />
-                    <Text style={styles.title}>Login</Text>
-                    <Text style={[styles.successMessage, { color: loginMessage.color }]}>{loginMessage.text}</Text>
-                    <View style={styles.inputBox}>
-                        <View style={[styles.inputWrapper, focusedInput === 'loginEmail' && styles.highlightedInput]}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='Email id'
-                                placeholderTextColor={COLORS.secondaryLightGreyHex}
-                                autoCapitalize='none'
-                                keyboardType='email-address'
-                                onFocus={() => handleFocus('loginEmail')}
-                                value={loginEmail} 
-                                onChangeText={(text) => handleLoginEmail(text)}
-                            />
-                            <FaIcon name='user' style={styles.icon} />
+        <ScrollView contentContainerStyle={styles.contentContainer}>
+            <View style={styles.wrapper}>
+                {!isRegistration ? (
+                    <View>
+                        <Mascot emotion={mascotEmotion} />
+                        <Text style={styles.title}>Login</Text>
+                        <Text style={[styles.successMessage, { color: loginMessage.color }]}>{loginMessage.text}</Text>
+                        <View style={styles.inputBox}>
+                            <View style={[styles.inputWrapper, focusedInput === 'loginEmail' && styles.highlightedInput]}>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Email id'
+                                    placeholderTextColor={COLORS.secondaryLightGreyHex}
+                                    autoCapitalize='none'
+                                    keyboardType='email-address'
+                                    onFocus={() => handleFocus('loginEmail')}
+                                    value={loginEmail} 
+                                    onChangeText={(text) => handleLoginEmail(text)}
+                                />
+                                <FaIcon name='user' style={styles.icon} />
+                            </View>
+                        </View>
+                        <View style={styles.inputBox}>
+                            <View style={[styles.inputWrapper, focusedInput === 'loginPass' && styles.highlightedInput]}>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Password'
+                                    placeholderTextColor={COLORS.secondaryLightGreyHex}
+                                    secureTextEntry={!passwordVisible}
+                                    autoCapitalize='none'
+                                    keyboardType='default'
+                                    onFocus={() => handleFocus('loginPass')}
+                                    value={loginPass} 
+                                    onChangeText={(text) => handleLoginPass(text)}
+                                />
+                                <EyeIcon visible={passwordVisible} onPress={togglePasswordVisibility} />
+                            </View>
+                        </View>
+                        <TouchableOpacity onPress={() => forgotPassword()}>
+                            <Text style={styles.forgotText}>Forgot password?</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleLogin()} style={styles.button}>
+                            <Text style={styles.buttonText}>Login</Text>
+                        </TouchableOpacity>
+                        <View style={styles.registerLink}>
+                            <Text style={styles.switchText}>Don't have an account? <Text style={styles.linkText} onPress={toggleRegistration}>Register</Text></Text>
                         </View>
                     </View>
-                    <View style={styles.inputBox}>
-                        <View style={[styles.inputWrapper, focusedInput === 'loginPass' && styles.highlightedInput]}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='Password'
-                                placeholderTextColor={COLORS.secondaryLightGreyHex}
-                                secureTextEntry={!passwordVisible}
-                                autoCapitalize='none'
-                                keyboardType='default'
-                                onFocus={() => handleFocus('loginPass')}
-                                value={loginPass} 
-                                onChangeText={(text) => handleLoginPass(text)}
-                            />
-                            <EyeIcon visible={passwordVisible} onPress={togglePasswordVisibility} />
+                ) : (
+                    <View>
+                        <Mascot emotion={mascotEmotion}/>
+                        <Text style={styles.title}>Sign up</Text>
+                        <Text style={[styles.successMessage, { color: signupMessage.color }]}>{signupMessage.text}</Text>
+                        <View style={styles.inputBox}>
+                            <View style={[styles.inputWrapper, focusedInput === 'signupUsername' && styles.highlightedInput]}>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Username'
+                                    placeholderTextColor={COLORS.secondaryLightGreyHex}
+                                    autoCapitalize='none'
+                                    keyboardType='default'
+                                    onFocus={() => handleFocus('signupUsername')}
+                                    value={signupName} 
+                                    onChangeText={(text) => handleSignupName(text)}
+                                />
+                                <FaIcon name='user' style={styles.icon} />
+                            </View>
+                        </View>
+                        <View style={styles.inputBox}>
+                            <View style={[styles.inputWrapper, focusedInput === 'signupEmail' && styles.highlightedInput]}>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Email id'
+                                    placeholderTextColor={COLORS.secondaryLightGreyHex}
+                                    autoCapitalize='none'
+                                    keyboardType='email-address'
+                                    onFocus={() => handleFocus('signupEmail')}
+                                    value={signupEmail} 
+                                    onChangeText={(text) => handleSignupEmail(text)}
+                                />
+                                <MdIcon name='email' style={styles.icon} />
+                            </View>
+                        </View>
+                        <View style={styles.inputBox}>
+                            <View style={[styles.inputWrapper, focusedInput === 'signupPhone' && styles.highlightedInput]}>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Phone'
+                                    placeholderTextColor={COLORS.secondaryLightGreyHex}
+                                    autoCapitalize='none'
+                                    keyboardType='phone-pad'
+                                    onFocus={() => handleFocus('signupPhone')}
+                                    value={signupPhone} 
+                                    onChangeText={(text) => handleSignupPhone(text)}
+                                />
+                                <FaIcon name='phone' style={styles.icon} />
+                            </View>
+                        </View>
+                        <View style={styles.inputBox}>
+                            <View style={[styles.inputWrapper, focusedInput === 'signupPass' && styles.highlightedInput]}>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Password'
+                                    placeholderTextColor={COLORS.secondaryLightGreyHex}
+                                    secureTextEntry={true}
+                                    autoCapitalize='none'
+                                    keyboardType='default'
+                                    onFocus={() => handleFocus('signupPass')}
+                                    value={signupPass} 
+                                    onChangeText={(text) => handleSignupPass(text)}
+                                />
+                                <FaIcon name='lock' style={styles.icon} />
+                            </View>
+                        </View>
+                        <View style={styles.inputBox}>
+                            <View style={[styles.inputWrapper, focusedInput === 'signupPassCnf' && styles.highlightedInput]}>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Confirm password'
+                                    placeholderTextColor={COLORS.secondaryLightGreyHex}
+                                    secureTextEntry={true}
+                                    autoCapitalize='none'
+                                    keyboardType='default'
+                                    onFocus={() => handleFocus('signupPassCnf')}
+                                    value={signupPassCnf} 
+                                    onChangeText={(text) => handleSignupPassCnf(text)}
+                                />
+                                <FaIcon name='lock' style={styles.icon} />
+                            </View>
+                        </View>
+                        <TouchableOpacity onPress={() => handleSignup()} style={styles.button}>
+                            <Text style={styles.buttonText}>Sign up</Text>
+                        </TouchableOpacity>
+                        <View style={styles.registerLink}>
+                            <Text style={styles.switchText}>Already have an account? <Text style={styles.linkText} onPress={toggleRegistration}>Login</Text></Text>
                         </View>
                     </View>
-                    <TouchableOpacity onPress={() => forgotPassword()}>
-                        <Text style={styles.forgotText}>Forgot password?</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleLogin()} style={styles.button}>
-                        <Text style={styles.buttonText}>Login</Text>
-                    </TouchableOpacity>
-                    <View style={styles.registerLink}>
-                        <Text style={styles.switchText}>Don't have an account? <Text style={styles.linkText} onPress={toggleRegistration}>Register</Text></Text>
-                    </View>
+                )}
+                <Text  style={styles.agreementMessageText}>By continuing you agree to our</Text>
+                <View style={styles.agreementTextContainer}>
+                <TouchableOpacity onPress={() => {
+                    openWebView('https://biblophile.com/policies/terms-of-service.php')
+                }}>
+                    <Text  style={styles.agreementText}>Terms of service</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                    openWebView('https://biblophile.com/policies/privacy-policy.php')
+                }}>
+                    <Text  style={styles.agreementText}>Privacy policy</Text>
+                </TouchableOpacity>
                 </View>
-            ) : (
-                <View>
-                    <Image source={require('../assets/app_images/welcome.jpg')} style={styles.image} />
-                    <Text style={styles.title}>Sign up</Text>
-                    <Text style={[styles.successMessage, { color: signupMessage.color }]}>{signupMessage.text}</Text>
-                    <View style={styles.inputBox}>
-                        <View style={[styles.inputWrapper, focusedInput === 'signupUsername' && styles.highlightedInput]}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='Username'
-                                placeholderTextColor={COLORS.secondaryLightGreyHex}
-                                autoCapitalize='none'
-                                keyboardType='default'
-                                onFocus={() => handleFocus('signupUsername')}
-                                value={signupName} 
-                                onChangeText={(text) => handleSignupName(text)}
-                            />
-                            <FaIcon name='user' style={styles.icon} />
-                        </View>
-                    </View>
-                    <View style={styles.inputBox}>
-                        <View style={[styles.inputWrapper, focusedInput === 'signupEmail' && styles.highlightedInput]}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='Email id'
-                                placeholderTextColor={COLORS.secondaryLightGreyHex}
-                                autoCapitalize='none'
-                                keyboardType='email-address'
-                                onFocus={() => handleFocus('signupEmail')}
-                                value={signupEmail} 
-                                onChangeText={(text) => handleSignupEmail(text)}
-                            />
-                            <MdIcon name='email' style={styles.icon} />
-                        </View>
-                    </View>
-                    <View style={styles.inputBox}>
-                        <View style={[styles.inputWrapper, focusedInput === 'signupPhone' && styles.highlightedInput]}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='Phone'
-                                placeholderTextColor={COLORS.secondaryLightGreyHex}
-                                autoCapitalize='none'
-                                keyboardType='phone-pad'
-                                onFocus={() => handleFocus('signupPhone')}
-                                value={signupPhone} 
-                                onChangeText={(text) => handleSignupPhone(text)}
-                            />
-                            <FaIcon name='phone' style={styles.icon} />
-                        </View>
-                    </View>
-                    <View style={styles.inputBox}>
-                        <View style={[styles.inputWrapper, focusedInput === 'signupPass' && styles.highlightedInput]}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='Password'
-                                placeholderTextColor={COLORS.secondaryLightGreyHex}
-                                secureTextEntry={true}
-                                autoCapitalize='none'
-                                keyboardType='default'
-                                onFocus={() => handleFocus('signupPass')}
-                                value={signupPass} 
-                                onChangeText={(text) => handleSignupPass(text)}
-                            />
-                            <FaIcon name='lock' style={styles.icon} />
-                        </View>
-                    </View>
-                    <View style={styles.inputBox}>
-                        <View style={[styles.inputWrapper, focusedInput === 'signupPassCnf' && styles.highlightedInput]}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder='Confirm password'
-                                placeholderTextColor={COLORS.secondaryLightGreyHex}
-                                secureTextEntry={true}
-                                autoCapitalize='none'
-                                keyboardType='default'
-                                onFocus={() => handleFocus('signupPassCnf')}
-                                value={signupPassCnf} 
-                                onChangeText={(text) => handleSignupPassCnf(text)}
-                            />
-                            <FaIcon name='lock' style={styles.icon} />
-                        </View>
-                    </View>
-                    <TouchableOpacity onPress={() => handleSignup()} style={styles.button}>
-                        <Text style={styles.buttonText}>Sign up</Text>
-                    </TouchableOpacity>
-                    <View style={styles.registerLink}>
-                        <Text style={styles.switchText}>Already have an account? <Text style={styles.linkText} onPress={toggleRegistration}>Login</Text></Text>
-                    </View>
-                </View>
-            )}
-            <Text  style={styles.agreementMessageText}>By continuing you agree to our</Text>
-            <View style={styles.agreementTextContainer}>
-            <TouchableOpacity onPress={() => {
-                openWebView('https://biblophile.com/policies/terms-of-service.php')
-              }}>
-                <Text  style={styles.agreementText}>Terms of service</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => {
-                openWebView('https://biblophile.com/policies/terms-of-service.php')
-              }}>
-                <Text  style={styles.agreementText}>Privacy policy</Text>
-            </TouchableOpacity>
             </View>
-        </View>
+    </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
+    contentContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+    },
     wrapper: {
         flex: 1,
         justifyContent: 'center',
@@ -352,16 +374,10 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         textAlign: 'center',
     },
-    image: {
-        width: 200, 
-        height: 200, 
-        resizeMode: 'contain',
-        alignSelf: 'center',
-    },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginTop: 20,
+        marginTop: 0,
         marginBottom: 20,
         textAlign: 'center',
         color: COLORS.secondaryLightGreyHex,
