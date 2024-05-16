@@ -24,6 +24,16 @@ export const useStore = create(
         logout: (userData) => {
           set({ isAuthenticated: false, user: null, userDetails: [] })
         },
+        updateProfile: (name, email, phone, address) => {
+          set(
+            produce((state) => {
+                state.userDetails[0].userName = name;
+                state.userDetails[0].userEmail = email;
+                state.userDetails[0].userPhone = phone;
+                state.userDetails[0].userAddress = address;
+            })
+          );
+        },
         fetchGenres: async () => {
           try {
             const response = await instance(requests.getBookGenre);
