@@ -1,5 +1,6 @@
-import {StyleSheet, Text, View, Image} from 'react-native';
 import React from 'react';
+import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import {COLORS, FONTFAMILY, FONTSIZE, SPACING} from '../theme/theme';
 import GradientBGIcon from './GradientBGIcon';
 import ProfilePic from './ProfilePic';
@@ -8,7 +9,10 @@ interface HeaderBarProps {
   title?: string;
 }
 
-const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
+const HeaderBar: React.FC<HeaderBarProps> = ({navigation, route}: any, {title}) => {
+  
+  navigation = useNavigation();
+
   return (
     <View style={styles.HeaderContainer}>
       {/* <GradientBGIcon
@@ -21,6 +25,13 @@ const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
           style={styles.Image}
         />
       <Text style={styles.HeaderText}>{title}</Text>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate('Streaks');
+        }}
+      >
+        <Text style={styles.StreakText}>Active Streak: 2 days</Text>
+      </TouchableOpacity>
       <ProfilePic />
     </View>
   );
@@ -37,6 +48,11 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_20,
     color: COLORS.primaryWhiteHex,
+  },
+  StreakText: {
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_16,
+    color: COLORS.primaryOrangeHex,
   },
   Image: {
     height: SPACING.space_36,
