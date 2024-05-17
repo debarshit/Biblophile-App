@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Platform, KeyboardAvoidingView } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import instance from '../../services/axios';
 import requests from '../../services/requests';
 import { useStore } from '../../store/store';
@@ -7,6 +7,7 @@ import { COLORS, FONTFAMILY, FONTSIZE } from '../../theme/theme';
 
 const ProfileScreen = ({navigation, route}: any) => {
     const userDetails = useStore((state: any) => state.userDetails);
+    const updateProfile = useStore((state: any) => state.updateProfile);
 
     const [name, setName] = useState<string>(userDetails[0].userName);
     const [email, setEmail] = useState<string>(userDetails[0].userEmail);
@@ -43,10 +44,8 @@ const ProfileScreen = ({navigation, route}: any) => {
                     if (response.data.message === 1)
                     {
                         setUpdateMessage({ text: "Your details have been successfully updated", color: COLORS.primaryOrangeHex });
-                        userDetails[0].userName = name;
-                        userDetails[0].userEmail = email;
-                        userDetails[0].userPhone = phone;
-                        userDetails[0].userAddress = address;
+                        updateProfile(name, email, phone, address);
+                        console.log(userDetails[0].userAddress);
                     }
                     else
                     {
@@ -74,10 +73,11 @@ const ProfileScreen = ({navigation, route}: any) => {
 
     return (
         <KeyboardAvoidingView
-            style={{ flex: 1 }}
+            style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior for different platforms
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 100} // Offset to adjust the view position
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0} // Offset to adjust the view position
         >
+            <ScrollView>
             <View style={styles.wrapper}>
                 <Text style={styles.title}>Edit Profile</Text>
                 <TouchableOpacity onPress={() => {}}>
@@ -151,6 +151,7 @@ const ProfileScreen = ({navigation, route}: any) => {
                             style={styles.input}
                             placeholder='Password'
                             placeholderTextColor={COLORS.secondaryLightGreyHex}
+                            secureTextEntry={true}
                             autoCapitalize='none'
                             keyboardType='default'
                             onFocus={() => handleFocus('password')}
@@ -165,6 +166,7 @@ const ProfileScreen = ({navigation, route}: any) => {
                             style={styles.input}
                             placeholder='Confirm password'
                             placeholderTextColor={COLORS.secondaryLightGreyHex}
+                            secureTextEntry={true}
                             autoCapitalize='none'
                             keyboardType='default'
                             textContentType='password'
@@ -179,6 +181,7 @@ const ProfileScreen = ({navigation, route}: any) => {
                     <Text style={styles.buttonText}>Save</Text>
                 </TouchableOpacity>
             </View>
+            </ScrollView>
         </KeyboardAvoidingView>
     );
 };

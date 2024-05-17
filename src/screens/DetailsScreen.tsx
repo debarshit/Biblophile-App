@@ -35,12 +35,14 @@ const DetailsScreen = ({navigation, route}: any) => {
   route.params.type === 'Book'
   ? [
       { size: 'Buy', price: route.params.price, currency: '₹' },
-      { size: 'Rent', price: subscription === true ? 0 : (route.params.price) * 0.1, currency: '₹' }, // Assuming rent price is 10% of buy price
+      { size: 'Rent', price: subscription === true ? 0 : Math.floor(route.params.price * 0.1), currency: '₹' },
     ]
-  : [
-      { size: 'PVC', price: route.params.price, currency: '₹' },
-      { size: 'Laminated', price: (route.params.price) * 1.5, currency: '₹' },
-    ];
+  : route.params.type === 'Bookmark'
+    ? [
+        { size: 'PVC', price: route.params.price, currency: '₹' },
+        { size: 'Laminated', price: Math.floor(route.params.price * 1.3), currency: '₹' }, 
+      ]
+    : []; // Handle other cases or leave it as empty array if not handled
 
   const [price, setPrice] = useState(prices[0]);
   const [fullDesc, setFullDesc] = useState(false);
