@@ -151,6 +151,7 @@ const ProfileScreen = ({navigation, route}: any) => {
                             style={styles.input}
                             placeholder='Password'
                             placeholderTextColor={COLORS.secondaryLightGreyHex}
+                            secureTextEntry={true}
                             autoCapitalize='none'
                             keyboardType='default'
                             onFocus={() => handleFocus('password')}
@@ -165,6 +166,7 @@ const ProfileScreen = ({navigation, route}: any) => {
                             style={styles.input}
                             placeholder='Confirm password'
                             placeholderTextColor={COLORS.secondaryLightGreyHex}
+                            secureTextEntry={true}
                             autoCapitalize='none'
                             keyboardType='default'
                             textContentType='password'
