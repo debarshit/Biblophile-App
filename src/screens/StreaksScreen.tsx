@@ -1,25 +1,28 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Animated, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Animated, TextInput, SafeAreaView } from 'react-native';
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useStore } from '../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import ProgressBar from '../components/ProgressBar';
 
 const StreaksScreen: React.FC = ({navigation, route}: any) => {
+
+  const userDetails = useStore((state: any) => state.userDetails);
     
-  const [bookName, setBookName] = useState<string>(null);
-  const [pagesRead, setPagesRead] = useState<string>(null);
-  const [focusedInput, setFocusedInput] = useState<string>('');
+  const [pagesRead, setPagesRead] = useState<string>('');
 
   const progress = useRef(new Animated.Value(0)).current;
 
-  function handleFocus(inputName: string) {
-    setFocusedInput(inputName);
+  const handleSave = () => {
+    //update pages read to database
   }
 
-  const handleSave = () => {
-    
-}
+  const openWebView = (url: string) => {
+    navigation.push('Resources', {
+      url: url
+    });
+  };
 
   useEffect(() => {
       // Animate the progress bar from 0 to 100 over 10 seconds (example)
@@ -38,92 +41,96 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
       Alert.alert("Share", "Share functionality coming soon!");
   };
 
+  const handleTipsPress = () => {
+    //add function to fetch tips from database
+    Alert.alert("Reading tips", "Will show randomly fetched reading tips from database");
+};
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-            <View style={styles.backIconContainer}>
-                <LinearGradient
-                    start={{x: 0, y: 0}}
-                    end={{x: 1, y: 1}}
-                    colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}
-                    style={styles.LinearGradientBG}>
-                    <AntDesign name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16}/>
-                </LinearGradient>
-            </View>
-        </TouchableOpacity>
-        <Text style={styles.headerText}>Reading Streak</Text>
-      </View>
-      <View style={styles.streakInfo}>
-        <Text style={styles.streakText}>🌟 10-Day Streak</Text>
-      </View>
-      <View style={styles.progressContainer}>
-        <Text style={styles.infoText}>Progress till next achievement</Text>
-        <ProgressBar progress={progress}/> 
-        <Text style={styles.greeting}>Hello, [Name]! Keep up the good work! 🎉</Text>
-      </View>
-      <View style={styles.achievements}>
-        <Text style={styles.sectionTitle}>Highest Streak:</Text>
-        <Text style={styles.maxStreak}>🏅 7-day Streak</Text>
-      </View>
-      <Text style={styles.infoText}>Optional</Text>
-      <View style={styles.inputBox}>
-        <View style={[styles.inputWrapper, focusedInput === 'pagesRead' && styles.highlightedInput]}>
-            <TextInput
-                style={styles.input}
-                placeholder='Pages read today?'
-                placeholderTextColor={COLORS.secondaryLightGreyHex}
-                autoCapitalize='none'
-                keyboardType='numeric'
-                onFocus={() => handleFocus('pagesRead')}
-                value={pagesRead} 
-                onChangeText={(text) => setPagesRead(text)}
-            />
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+              <View style={styles.backIconContainer}>
+                  <LinearGradient
+                      start={{x: 0, y: 0}}
+                      end={{x: 1, y: 1}}
+                      colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}
+                      style={styles.LinearGradientBG}>
+                      <AntDesign name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16}/>
+                  </LinearGradient>
+              </View>
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Reading Streak</Text>
         </View>
-      </View>
-      <TouchableOpacity onPress={() => handleSave()} style={styles.button}>
-        <Text style={styles.buttonText}>Save</Text>
-      </TouchableOpacity>
-      <View style={styles.recentReads}>
-        <Text style={styles.sectionTitle}>Recent Reads:</Text>
-        <ScrollView horizontal>
-          <Image source={{uri: 'https://via.placeholder.com/100'}} style={styles.bookCover} />
-          <Image source={{uri: 'https://via.placeholder.com/100'}} style={styles.bookCover} />
-        </ScrollView>
-      </View>
-      <View style={styles.recommendations}>
-        <Text style={styles.sectionTitle}>Recommendations:</Text>
-        <ScrollView horizontal>
-          <Image source={{uri: 'https://via.placeholder.com/100'}} style={styles.bookCover} />
-          <Image source={{uri: 'https://via.placeholder.com/100'}} style={styles.bookCover} />
-        </ScrollView>
-      </View>
-      <View style={styles.reminders}>
-        <TouchableOpacity onPress={handleReminderPress} style={styles.reminderButton}>
-          <AntDesign name="notification" size={24} color={COLORS.secondaryLightGreyHex}/>
-          <Text style={styles.reminderText}>Enable Reminders</Text>
+        <View style={styles.streakInfo}>
+          <Text style={styles.streakText}>🌟 10-Day Streak</Text>
+        </View>
+        <View style={styles.progressContainer}>
+          <Text style={styles.infoText}>Progress till next achievement</Text>
+          <ProgressBar progress={progress}/> 
+          <Text style={styles.greeting}>Hello, {userDetails[0].userName.split(' ')[0]}! Keep up the good work! 🎉</Text>
+        </View>
+        <View style={styles.achievements}>
+          <Text style={styles.sectionTitle}>Highest Streak:</Text>
+          <Text style={styles.maxStreak}>🏅 7-day Streak</Text>
+        </View>
+        <Text style={styles.infoText}>Pages read today?</Text>
+        <View style={styles.inputBox}>
+          <View style={styles.inputWrapper}>
+              <TextInput
+                  style={styles.input}
+                  placeholder='Optional'
+                  placeholderTextColor={COLORS.secondaryLightGreyHex}
+                  autoCapitalize='none'
+                  keyboardType='numeric'
+                  value={pagesRead} 
+                  onChangeText={(text) => setPagesRead(text)}
+              />
+          </View>
+        </View>
+        <TouchableOpacity onPress={() => handleSave()} style={styles.button}>
+          <Text style={styles.buttonText}>Update</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleReminderPress} style={styles.reminderButton}>
-          <Entypo name="clock" size={24} color={COLORS.secondaryLightGreyHex} />
-          <Text style={styles.reminderText}>Set Reading Time</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.community}>
-        <TouchableOpacity onPress={() => {}} style={styles.communityButton}>
-          <AntDesign name="team" size={24} color={COLORS.secondaryLightGreyHex} />
-          <Text style={styles.communityText}>Join the Discussion</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleSharePress} style={styles.communityButton}>
-          <Entypo name="share" size={24} color={COLORS.secondaryLightGreyHex} />
-          <Text style={styles.communityText}>Share Your Progress</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.reminders}>
+          <TouchableOpacity onPress={handleReminderPress} style={styles.reminderButton}>
+            <AntDesign name="notification" size={20} color={COLORS.secondaryLightGreyHex}/>
+            <Text style={styles.reminderText}>Enable Reminders</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleReminderPress} style={styles.reminderButton}>
+            <Entypo name="clock" size={20} color={COLORS.secondaryLightGreyHex} />
+            <Text style={styles.reminderText}>Set Reading Time</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.community}>
+          <TouchableOpacity onPress={() => {}} style={styles.communityButton}>
+            <AntDesign name="team" size={20} color={COLORS.secondaryLightGreyHex} />
+            <Text style={styles.communityText}>Join the Discussion</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSharePress} style={styles.communityButton}>
+            <Entypo name="share" size={20} color={COLORS.secondaryLightGreyHex} />
+            <Text style={styles.communityText}>Share Your Progress</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
       <View style={styles.footer}>
-        <Text style={styles.footerLink}>📝 Tips</Text>
-        <Text style={styles.footerLink}>📞 Contact</Text>
-        <Text style={styles.footerLink}>🔒 Legal</Text>
+        <TouchableOpacity onPress={handleTipsPress}>
+          <Text style={styles.footerLink}>📝 Tips</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            openWebView('https://biblophile.com/policies/customer-support.php')
+          }}>
+            <Text style={styles.footerLink}>📞 Contact</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            openWebView('https://biblophile.com/policies/privacy-policy.php')
+          }}>
+            <Text style={styles.footerLink}>🔒 Privacy</Text>
+        </TouchableOpacity>
       </View>
-    </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -132,6 +139,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 16,
     backgroundColor: COLORS.primaryBlackHex,
+  },
+  scrollContent: {
+    paddingBottom: 80,
   },
   header: {
     marginBottom: 16,
@@ -193,6 +203,7 @@ const styles = StyleSheet.create({
   },
   achievements: {
     marginBottom: SPACING.space_16,
+    flexDirection: 'row',
   },
   sectionTitle: {
     fontSize: FONTSIZE.size_18,
@@ -226,16 +237,13 @@ const styles = StyleSheet.create({
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_regular,
   },
-  highlightedInput: {
-    borderColor: COLORS.primaryOrangeHex, 
-    borderWidth: 2,
-  },
   button: {
     backgroundColor: COLORS.primaryOrangeHex,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
     marginTop: 10,
+    marginBottom: 20,
     width: '30%',
     alignSelf: 'center',
   },
@@ -245,19 +253,9 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_medium,
     textAlign: 'center',
   },
-  recentReads: {
-    marginBottom: 16,
-  },
-  bookCover: {
-    width: 100,
-    height: 150,
-    marginRight: 8,
-  },
-  recommendations: {
-    marginBottom: 16,
-  },
   reminders: {
-    marginBottom: 16,
+    marginTop: SPACING.space_20,
+    marginBottom: SPACING.space_16,
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
@@ -281,16 +279,24 @@ const styles = StyleSheet.create({
   },
   communityText: {
     marginLeft: 8,
-    fontSize: 16,
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_14,
+    margin: 2,
     color: COLORS.primaryOrangeHex,
   },
   footer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    backgroundColor: COLORS.primaryBlackHex,
+    padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
   footerLink: {
-    fontSize: 16,
-    color: COLORS.primaryWhiteHex,
+    color: COLORS.secondaryLightGreyHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_light,
   },
 });
 
