@@ -13,16 +13,50 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
     
   const [pagesRead, setPagesRead] = useState<string>('');
-  const [currentStreak, setCurrentStreak] = useState<number>(0);
-  const [maxStreak, setMaxStreak] = useState<number>(0);
+  const [currentStreak, setCurrentStreak] = useState<number>(1);
+  const [maxStreak, setMaxStreak] = useState<number>(1);
+
+  const { action } = route.params || {}; // Ensure params exist
+
+  //handle the deep linked function
+  const handleAction = (action) => {
+    switch (action) {
+      case 'updateReadingStreak':
+        updateReadingStreak();
+        break;
+      default:
+        alert('Uh oh! Please try again.');
+    }
+  };
+
+  const updateReadingStreak = () => {
+    async function updateData() {
+      try {
+          const response = await instance.post(requests.updateReadingStreak, {
+            userId: userDetails[0].userId,
+            currentStreak: currentStreak,
+            });
+            if (response.data.message) {
+              if (response.data.message === "Updated")
+                {
+                    setCurrentStreak(response.data.streak);
+                    setMaxStreak(response.data.maxStreak);
+                }
+                else
+                {
+                    alert(response.data.message);
+                }
+            }
+        } catch (error) {
+          console.log(error);
+        }
+    }
+    updateData();
+  }
 
   const progress = useRef(new Animated.Value(0)).current;
 
   const updatePagesRead = () => {
-    /*
-    1. Check whether same userId exists in the database for same date
-    2. If it does, then update the pageCount otherwise insert a new row
-    */
     async function updateData() {
       try {
           const response = await instance.post(requests.updatePagesRead, {
@@ -52,13 +86,16 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   };
 
   useEffect(() => {
-      // Animate the progress bar from 0 to 100 over 10 seconds (example)
-      Animated.timing(progress, {
-      toValue: 51,
-      duration: 2000,
-      useNativeDriver: false,
-      }).start();
-  }, [progress]);
+    // Calculate the target value as the next higher multiple of 10
+    const targetValue = Math.ceil(currentStreak / 10) * 10;
+
+    // Animate the progress bar from 0 to 100 over 10 seconds (example)
+    Animated.timing(progress, {
+    toValue: ((currentStreak/targetValue)*100),
+    duration: 2000,
+    useNativeDriver: false,
+    }).start();
+  }, [currentStreak, progress]);
 
   useEffect(() => {
     async function fetchReadingStreak() {
@@ -69,6 +106,9 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
             const data = response.data;
             setCurrentStreak(data.currentStreak);
             setMaxStreak(data.maxStreak);
+            if (action) {
+              handleAction(action);
+            }
           } catch (error) {
             console.error('Error fetching plans:', error);
           }

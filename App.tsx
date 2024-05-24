@@ -36,7 +36,12 @@ const linking = {
   prefixes: [Linking.createURL('/')],
   config: {
     screens: {
-      Streaks: 'streak/',
+      Streaks: {
+        path: 'streak/:action',
+        parse: {
+          action: (action) => `${action}`,
+        },
+      },
     },
   },
 };
