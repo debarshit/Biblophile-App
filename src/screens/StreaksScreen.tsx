@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Animated, TextInput, SafeAreaView } from 'react-native';
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import instance from '../services/axios';
+import requests from '../services/requests';
 import { useStore } from '../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import ProgressBar from '../components/ProgressBar';
@@ -11,11 +13,36 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
     
   const [pagesRead, setPagesRead] = useState<string>('');
+  const [currentStreak, setCurrentStreak] = useState<number>(0);
+  const [maxStreak, setMaxStreak] = useState<number>(0);
 
   const progress = useRef(new Animated.Value(0)).current;
 
-  const handleSave = () => {
-    //update pages read to database
+  const updatePagesRead = () => {
+    /*
+    1. Check whether same userId exists in the database for same date
+    2. If it does, then update the pageCount otherwise insert a new row
+    */
+    async function updateData() {
+      try {
+          const response = await instance.post(requests.updatePagesRead, {
+            userId: userDetails[0].userId,
+            pageCount: pagesRead,
+            });
+          if (response.data.message === "Updated")
+          {
+              alert("Updated");
+          }
+          else
+          {
+              alert(response.data.message);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+  }
+  updateData();
+
   }
 
   const openWebView = (url: string) => {
@@ -32,6 +59,23 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
       useNativeDriver: false,
       }).start();
   }, [progress]);
+
+  useEffect(() => {
+    async function fetchReadingStreak() {
+        try {
+            const response = await instance.post(requests.fetchReadingStreak, {
+              userId: userDetails[0].userId,
+            });
+            const data = response.data;
+            setCurrentStreak(data.currentStreak);
+            setMaxStreak(data.maxStreak);
+          } catch (error) {
+            console.error('Error fetching plans:', error);
+          }
+    }
+  
+    fetchReadingStreak();
+  }, []);
 
   const handleReminderPress = () => {
       Alert.alert("Set Reminder", "Reminder functionality coming soon!");
@@ -64,7 +108,7 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
           <Text style={styles.headerText}>Reading Streak</Text>
         </View>
         <View style={styles.streakInfo}>
-          <Text style={styles.streakText}>🌟 10-Day Streak</Text>
+          <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
         </View>
         <View style={styles.progressContainer}>
           <Text style={styles.infoText}>Progress till next achievement</Text>
@@ -73,7 +117,7 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
         </View>
         <View style={styles.achievements}>
           <Text style={styles.sectionTitle}>Highest Streak:</Text>
-          <Text style={styles.maxStreak}>🏅 7-day Streak</Text>
+          <Text style={styles.maxStreak}>🏅 {maxStreak}-day Streak</Text>
         </View>
         <Text style={styles.infoText}>Pages read today?</Text>
         <View style={styles.inputBox}>
@@ -89,7 +133,7 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
               />
           </View>
         </View>
-        <TouchableOpacity onPress={() => handleSave()} style={styles.button}>
+        <TouchableOpacity onPress={() => updatePagesRead()} style={styles.button}>
           <Text style={styles.buttonText}>Update</Text>
         </TouchableOpacity>
         <View style={styles.reminders}>

@@ -16,6 +16,8 @@ const requests = {
     fetchSubscriptionPlans: `/actions.php?action=fetchSubscriptionPlans`,
     fetchActivePlan: `/actions.php?action=fetchActivePlan&userId=`,
     getBookmarks: `/actions.php?action=getBookmarks`,
+    fetchReadingStreak: `/actions.php?action=fetchReadingStreak&userId=`,
+    updatePagesRead: `/actions.php?action=updatePagesRead&userId=`,
     paymentRequest: `/actions.php?action=paymentRequest`,
     paymentSuccessful: `/actions.php?action=paymentSuccessful&linkId=`,
 }
