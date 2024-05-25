@@ -36,7 +36,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({navigation, route}: any, {title}) 
     }
   
     fetchCurrentStreak();
-  }, []);
+  }, [streak]);
 
   return (
     <View style={styles.HeaderContainer}>
