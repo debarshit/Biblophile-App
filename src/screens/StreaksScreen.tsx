@@ -126,8 +126,16 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   };
 
   const handleTipsPress = () => {
-    //add function to fetch tips from database
-    Alert.alert("Reading tips", "Will show randomly fetched reading tips from database");
+    async function fetchReadingTips() {
+      try {
+        const response = await instance(requests.fetchReadingTips);
+        const data = response.data;
+        Alert.alert("Reading tips", response.data.tip);
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+      }
+    }
+    fetchReadingTips();
 };
 
   return (

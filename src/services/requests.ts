@@ -19,6 +19,7 @@ const requests = {
     fetchReadingStreak: `/actions.php?action=fetchReadingStreak&userId=`,
     updateReadingStreak: `/actions.php?action=updateReadingStreak&userId=`,
     updatePagesRead: `/actions.php?action=updatePagesRead&userId=`,
+    fetchReadingTips: `/actions.php?action=fetchReadingTips`,
     paymentRequest: `/actions.php?action=paymentRequest`,
     paymentSuccessful: `/actions.php?action=paymentSuccessful&linkId=`,
 }

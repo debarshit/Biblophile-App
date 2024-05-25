@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {COLORS, FONTFAMILY, FONTSIZE, SPACING} from '../theme/theme';
+import { useStore } from '../store/store';
+import instance from '../services/axios';
+import requests from '../services/requests';
 import GradientBGIcon from './GradientBGIcon';
 import ProfilePic from './ProfilePic';
 
@@ -10,8 +13,30 @@ interface HeaderBarProps {
 }
 
 const HeaderBar: React.FC<HeaderBarProps> = ({navigation, route}: any, {title}) => {
-  
+
   navigation = useNavigation();
+
+  const [streak, setStreak] = useState(null);
+
+  const userDetails = useStore((state: any) => state.userDetails);
+
+  useEffect(() => {
+    async function fetchCurrentStreak() {
+      try {
+        const response = await instance.post(requests.fetchReadingStreak, {
+          userId: userDetails[0].userId,
+        });
+        const data = response.data;
+        if (data.message === 1) {
+          setStreak(data.currentStreak);
+        }
+      } catch (error) {
+        console.error('Error fetching plans:', error);
+      }
+    }
+  
+    fetchCurrentStreak();
+  }, []);
 
   return (
     <View style={styles.HeaderContainer}>
@@ -30,7 +55,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({navigation, route}: any, {title}) 
           navigation.navigate('Streaks');
         }}
       >
-        <Text style={styles.StreakText}>Active Streak: 2 days</Text>
+        <Text style={styles.StreakText}>{streak !== null && `Active Streak: ${streak} days`}</Text>
       </TouchableOpacity>
       <ProfilePic />
     </View>
