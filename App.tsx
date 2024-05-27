@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import * as Linking from 'expo-linking';
 import Toast from 'react-native-toast-message';
 import * as Font from 'expo-font';
 import {useStore} from './src/store/store';
@@ -15,6 +16,7 @@ import ProfileScreen from './src/screens/settings/ProfileScreen';
 import SubscriptionScreen from './src/screens/settings/SubscriptionScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import PaymentGatewayScreen from './src/screens/PaymentGatewayScreen';
+import StreaksScreen from './src/screens/StreaksScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +30,20 @@ const poppins = {
   'Poppins-SemiBold': require('./src/assets/fonts/Poppins-SemiBold.ttf'),
   'Poppins-Regular': require('./src/assets/fonts/Poppins-Regular.ttf'),
   'Poppins-Thin': require('./src/assets/fonts/Poppins-Thin.ttf'),
+};
+
+const linking = {
+  prefixes: [Linking.createURL('/')],
+  config: {
+    screens: {
+      Streaks: {
+        path: 'streak/:action',
+        parse: {
+          action: (action) => `${action}`,
+        },
+      },
+    },
+  },
 };
 
 const App = () => {
@@ -47,6 +63,11 @@ const App = () => {
     }
 
     loadFontsAsync();
+  }, []);
+
+  useEffect(() => {
+    const url = Linking.createURL('streak/');
+    console.log(url); //delete this once streak screen is completed
   }, []);
 
   if (!fontsLoaded) {
@@ -76,11 +97,15 @@ const App = () => {
   }
   else {
     return (
-      <NavigationContainer>
+      <NavigationContainer linking={linking}>
         <Stack.Navigator screenOptions={{headerShown: false}}>
           <Stack.Screen
             name="Tab"
             component={TabNavigator}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="Streaks"
+            component={StreaksScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
           <Stack.Screen
             name="Details"

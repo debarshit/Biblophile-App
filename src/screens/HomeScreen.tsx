@@ -207,7 +207,7 @@ const HomeScreen = ({navigation}: any) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.ScrollViewFlex}>
         {/* App Header */}
-        <HeaderBar />
+        <HeaderBar title="Home Screen"/>
 
         <Text style={styles.ScreenTitle}>
           Find the best{'\n'}book for you

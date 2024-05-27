@@ -163,7 +163,7 @@ const DetailsScreen = ({navigation, route}: any) => {
               </Text>
             </TouchableWithoutFeedback>
           )}
-          <Text style={styles.InfoTitle}>Size</Text>
+          <Text style={styles.InfoTitle}>Options</Text>
           <View style={styles.SizeOuterContainer}>
             {prices.map((data: any) => (
               <TouchableOpacity
