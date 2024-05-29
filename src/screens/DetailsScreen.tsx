@@ -35,7 +35,7 @@ const DetailsScreen = ({navigation, route}: any) => {
   route.params.type === 'Book'
   ? [
       { size: 'Buy', price: route.params.price, currency: '₹' },
-      { size: 'Rent', price: subscription === true ? 0 : Math.floor(route.params.price * 0.1), currency: '₹' },
+      { size: 'Rent', price: subscription === true ? 0 : Math.max(25, Math.min(35, Math.floor(route.params.price * 0.1))), currency: '₹' },
     ]
   : route.params.type === 'Bookmark'
     ? [
