@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {COLORS, FONTFAMILY, FONTSIZE, SPACING} from '../theme/theme';
 import { useStore } from '../store/store';
 import instance from '../services/axios';
@@ -31,12 +31,33 @@ const HeaderBar: React.FC<HeaderBarProps> = ({navigation, route}: any, {title}) 
           setStreak(data.currentStreak);
         }
       } catch (error) {
-        console.error('Error fetching plans:', error);
+        console.error('Error fetching streak:', error);
       }
     }
   
     fetchCurrentStreak();
   }, [streak]);
+
+    // This useFocusEffect will run each time the component comes into focus
+    useFocusEffect(
+      React.useCallback(() => {
+        async function fetchCurrentStreak() {
+          try {
+            const response = await instance.post(requests.fetchReadingStreak, {
+              userId: userDetails[0].userId,
+            });
+            const data = response.data;
+            if (data.message === 1) {
+              setStreak(data.currentStreak);
+            }
+          } catch (error) {
+            console.error('Error fetching streak:', error);
+          }
+        }
+      
+        fetchCurrentStreak();
+      }, [])
+  );
 
   return (
     <View style={styles.HeaderContainer}>
