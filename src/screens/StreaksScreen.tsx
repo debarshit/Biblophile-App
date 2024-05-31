@@ -57,26 +57,30 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   const progress = useRef(new Animated.Value(0)).current;
 
   const updatePagesRead = () => {
-    async function updateData() {
-      try {
-          const response = await instance.post(requests.updatePagesRead, {
-            userId: userDetails[0].userId,
-            pageCount: pagesRead,
-            });
-          if (response.data.message === "Updated")
-          {
-              alert("Updated");
+    if (pagesRead !== "") {
+      async function updateData() {
+        try {
+            const response = await instance.post(requests.updatePagesRead, {
+              userId: userDetails[0].userId,
+              pageCount: pagesRead,
+              });
+            if (response.data.message === "Updated")
+            {
+              Alert.alert("Success Message", "Updated");
+            }
+            else
+            {
+              Alert.alert("Error Message", response.data.message);
+            }
+          } catch (error) {
+            console.log(error);
           }
-          else
-          {
-              alert(response.data.message);
-          }
-        } catch (error) {
-          console.log(error);
-        }
-  }
-  updateData();
-
+      }
+      updateData();
+    }
+    else {
+      Alert.alert("Page count is 0", "Please enter number of pages read!");
+    }
   }
 
   const openWebView = (url: string) => {
@@ -120,6 +124,11 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   const handleReminderPress = () => {
       Alert.alert("Set Reminder", "Reminder functionality coming soon!");
   };
+
+  //add functionality to add user to book clubs
+  const handleDiscussionPress = () => {
+    Alert.alert("Coming Soon", "This feature is coming soon!");
+};
 
   const handleSharePress = async () => {
     try {
@@ -211,7 +220,7 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
           </TouchableOpacity>
         </View>
         <View style={styles.community}>
-          <TouchableOpacity onPress={() => {}} style={styles.communityButton}>
+          <TouchableOpacity onPress={handleDiscussionPress} style={styles.communityButton}>
             <AntDesign name="team" size={20} color={COLORS.secondaryLightGreyHex} />
             <Text style={styles.communityText}>Join the Discussion</Text>
           </TouchableOpacity>
