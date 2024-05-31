@@ -39,8 +39,8 @@ const DetailsScreen = ({navigation, route}: any) => {
     ]
   : route.params.type === 'Bookmark'
     ? [
-        { size: 'PVC', price: route.params.price, currency: '₹' },
-        { size: 'Laminated', price: Math.floor(route.params.price * 1.3), currency: '₹' }, 
+        { size: 'QR', price: route.params.price, currency: '₹' },
+        { size: 'QR & NFC', price: Math.floor(route.params.price * 1.3), currency: '₹' }, 
       ]
     : []; // Handle other cases or leave it as empty array if not handled
 
