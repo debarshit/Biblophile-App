@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Animated, TextInput, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Animated, TextInput, SafeAreaView, Share } from 'react-native';
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../services/axios';
@@ -121,8 +121,24 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
       Alert.alert("Set Reminder", "Reminder functionality coming soon!");
   };
 
-  const handleSharePress = () => {
-      Alert.alert("Share", "Share functionality coming soon!");
+  const handleSharePress = async () => {
+    try {
+      const result = await Share.share({
+        message: `I've been on a reading streak for ${currentStreak} days! 📚✨ Join me and let's read together on Biblophile!`,
+      });
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          // Shared with activity type of result.activityType
+        } else {
+          // Shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        // Dismissed
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to share the streak.');
+    }
   };
 
   const handleTipsPress = () => {
