@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: COLORS.primaryOrangeHex,
-    paddingVertical: 10,
+    paddingVertical: 5,
     paddingHorizontal: 20,
     borderRadius: 5,
     marginTop: 10,
