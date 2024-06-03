@@ -163,11 +163,19 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
     fetchReadingTips();
 };
 
+const handleBackPress = () => {
+  if (action === "updateReadingStreak") {
+    navigation.navigate('Tab');
+  } else {
+    navigation.goBack();
+  }
+};
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={handleBackPress}>
               <View style={styles.backIconContainer}>
                   <LinearGradient
                       start={{x: 0, y: 0}}
