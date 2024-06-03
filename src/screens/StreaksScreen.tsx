@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Animated, TextInput, SafeAreaView, Share } from 'react-native';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../services/axios';
@@ -15,6 +16,7 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   const [pagesRead, setPagesRead] = useState<string>('');
   const [currentStreak, setCurrentStreak] = useState<number>(1);
   const [maxStreak, setMaxStreak] = useState<number>(1);
+  const [celebration, setCelebration] = useState(false);
 
   const { action } = route.params || {}; // Ensure params exist
 
@@ -98,7 +100,11 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
     toValue: progressValue,
     duration: 2000,
     useNativeDriver: false,
-    }).start();
+    }).start(() => {
+      if (progressValue === 100) {
+        setCelebration(true);
+      }
+    });
   }, [currentStreak, progress]);
 
   useEffect(() => {
@@ -173,6 +179,7 @@ const handleBackPress = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {celebration && <ConfettiCannon count={200} origin={{x: -10, y: 0}} />}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
         <TouchableOpacity onPress={handleBackPress}>
