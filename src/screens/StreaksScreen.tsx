@@ -90,12 +90,12 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   };
 
   useEffect(() => {
-    // Calculate the target value as the next higher multiple of 10
-    const targetValue = Math.ceil(currentStreak / 10) * 10;
+    // Making the target value as the next higher multiple of 10
+    const progressValue = ((currentStreak % 10) || 10) * 10;
 
     // Animate the progress bar from 0 to 100 over 10 seconds (example)
     Animated.timing(progress, {
-    toValue: ((currentStreak/targetValue)*100),
+    toValue: progressValue,
     duration: 2000,
     useNativeDriver: false,
     }).start();
