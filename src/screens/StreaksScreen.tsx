@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Animated, TextInput, SafeAreaView, Share } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import { AntDesign, Entypo } from '@expo/vector-icons';
+import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../services/axios';
 import requests from '../services/requests';
@@ -225,10 +225,10 @@ const handleBackPress = () => {
           <Text style={styles.buttonText}>Update</Text>
         </TouchableOpacity>
         <View style={styles.reminders}>
-          <TouchableOpacity onPress={handleReminderPress} style={styles.reminderButton}>
-            <AntDesign name="notification" size={20} color={COLORS.secondaryLightGreyHex}/>
-            <Text style={styles.reminderText}>Enable Reminders</Text>
-          </TouchableOpacity>
+          <TouchableOpacity onPress={handleTipsPress} style={styles.reminderButton}>
+          <MaterialIcons name="tips-and-updates" size={20} color={COLORS.secondaryLightGreyHex}/>
+          <Text style={styles.reminderText}>Reading Tips</Text>
+        </TouchableOpacity>
           <TouchableOpacity onPress={handleReminderPress} style={styles.reminderButton}>
             <Entypo name="clock" size={20} color={COLORS.secondaryLightGreyHex} />
             <Text style={styles.reminderText}>Set Reading Time</Text>
@@ -246,9 +246,6 @@ const handleBackPress = () => {
         </View>
       </ScrollView>
       <View style={styles.footer}>
-        <TouchableOpacity onPress={handleTipsPress}>
-          <Text style={styles.footerLink}>📝 Tips</Text>
-        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
             openWebView('https://biblophile.com/policies/customer-support.php')
