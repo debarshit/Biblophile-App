@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Animated, TextInput, SafeAreaView, Share } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated, TextInput, SafeAreaView, Share } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,6 +19,8 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   const [currentStreak, setCurrentStreak] = useState<number>(1);
   const [maxStreak, setMaxStreak] = useState<number>(1);
   const [celebration, setCelebration] = useState(false);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [reminderTime, setReminderTime] = useState<Date | null>(null);
 
   const { action } = route.params || {}; // Ensure params exist
 
@@ -131,7 +135,30 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   }, []);
 
   const handleReminderPress = () => {
-      Alert.alert("Set Reminder", "Reminder functionality coming soon!");
+    setDatePickerVisible(true);
+  };
+
+  const scheduleNotification = async (date: Date) => {
+    const now = new Date();
+    const notificationTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), date.getHours(), date.getMinutes(), 0);
+
+    if (notificationTime <= now) {
+      notificationTime.setDate(notificationTime.getDate() + 1);
+    }
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Time to read!",
+        body: "Don't forget to read a few pages today!",
+      },
+      trigger: {
+        hour: notificationTime.getHours(),
+        minute: notificationTime.getMinutes(),
+        repeats: true,
+      },
+    });
+
+    Alert.alert("Reminder Set", `Notification set for ${notificationTime.toLocaleTimeString()}`);
   };
 
   //add functionality to add user to book clubs
@@ -181,7 +208,7 @@ const handleBackPress = () => {
       {celebration && <ConfettiCannon count={200} origin={{x: -10, y: 0}} />}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-        <TouchableOpacity onPress={handleBackPress}>
+        <TouchableOpacity onPress={handleBackPress} accessibilityLabel="Back" accessibilityHint="Go back to the previous screen">
               <View style={styles.backIconContainer}>
                   <LinearGradient
                       start={{x: 0, y: 0}}
@@ -225,6 +252,23 @@ const handleBackPress = () => {
         <TouchableOpacity onPress={() => updatePagesRead()} style={styles.button}>
           <Text style={styles.buttonText}>Update</Text>
         </TouchableOpacity>
+        {datePickerVisible && (
+          <View style={styles.modalContainer}>
+            <DateTimePicker
+              value={reminderTime || new Date()}
+              mode="time"
+              is24Hour={true}
+              display="spinner"
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  setReminderTime(selectedDate);
+                  setDatePickerVisible(false);
+                  scheduleNotification(selectedDate);
+                }
+              }}
+            />
+          </View>
+        )}
         <View style={styles.reminders}>
           <TouchableOpacity onPress={handleTipsPress} style={styles.reminderButton}>
           <MaterialIcons name="tips-and-updates" size={20} color={COLORS.secondaryLightGreyHex}/>
@@ -427,6 +471,12 @@ const styles = StyleSheet.create({
     color: COLORS.secondaryLightGreyHex,
     fontSize: FONTSIZE.size_16,
     fontFamily: FONTFAMILY.poppins_light,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });
 

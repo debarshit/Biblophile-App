@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react';
+import { Platform } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import * as Linking from 'expo-linking';
 import Toast from 'react-native-toast-message';
+import * as Notifications from 'expo-notifications';
 import * as Font from 'expo-font';
 import {useStore} from './src/store/store';
 import TabNavigator from './src/navigators/TabNavigator';
@@ -46,6 +48,14 @@ const linking = {
   },
 };
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
 const App = () => {
   const isAuthenticated = useStore((state: any) => state.isAuthenticated);
  const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -70,10 +80,38 @@ const App = () => {
     console.log(url); //delete this once streak screen is completed
   }, []);
 
+  // for expo notifications start
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+  }, []);
+
+  async function registerForPushNotificationsAsync() {
+    let { status } = await Notifications.getPermissionsAsync();
+    if (status !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
+  }
+
+    const token = (await Notifications.getExpoPushTokenAsync()).data;
+    console.log(token);
+
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+  }
+  // for expo notifications end
+
   if (!fontsLoaded) {
     return null;
   }
-
 
   if (!isAuthenticated) {
     return (
