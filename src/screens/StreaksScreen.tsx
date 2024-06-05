@@ -27,7 +27,7 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
         updateReadingStreak();
         break;
       default:
-        alert('Uh oh! Please try again.');
+        Alert.alert('Uh oh!', 'Please try again.');
     }
   };
 
@@ -41,15 +41,16 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
             if (response.data.message) {
               if (response.data.message === "Updated")
                 {
-                    setCurrentStreak(response.data.streak);
-                    setMaxStreak(response.data.maxStreak);
+                  setCurrentStreak(response.data.streak);
+                  setMaxStreak(response.data.maxStreak);
                 }
                 else
                 {
-                    alert(response.data.message);
+                  Alert.alert('Error', response.data.message);
                 }
             }
         } catch (error) {
+          Alert.alert('Error', 'Failed to update reading streak.');
           console.log(error);
         }
     }
@@ -68,13 +69,14 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
               });
             if (response.data.message === "Updated")
             {
-              Alert.alert("Success Message", "Updated");
+              Alert.alert("Success", "Updated");
             }
             else
             {
-              Alert.alert("Error Message", response.data.message);
+              Alert.alert("Error", response.data.message);
             }
           } catch (error) {
+            Alert.alert('Error', 'Failed to update pages read.');
             console.log(error);
           }
       }
@@ -120,6 +122,7 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
               handleAction(action);
             }
           } catch (error) {
+            Alert.alert('Error', 'Failed to fetch reading streak.');
             console.error('Error fetching plans:', error);
           }
     }
@@ -136,33 +139,29 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
     Alert.alert("Coming Soon", "This feature is coming soon!");
 };
 
-  const handleSharePress = async () => {
-    try {
-      const result = await Share.share({
-        message: `I've been on a reading streak for ${currentStreak} days! 📚✨ Join me and let's read together on Biblophile!`,
-      });
-
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          // Shared with activity type of result.activityType
-        } else {
-          // Shared
-        }
-      } else if (result.action === Share.dismissedAction) {
-        // Dismissed
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to share the streak.');
+const handleSharePress = async () => {
+  try {
+    const result = await Share.share({
+      message: `I've been on a reading streak for ${currentStreak} days! 📚✨ Join me and let's read together on Biblophile!`,
+    });
+    if (result.action === Share.sharedAction && result.activityType) {
+      // Shared with activity type
+    } else if (result.action === Share.dismissedAction) {
+      // Dismissed
     }
-  };
+  } catch (error) {
+    Alert.alert('Error', 'Failed to share the streak.');
+  }
+};
 
   const handleTipsPress = () => {
     async function fetchReadingTips() {
       try {
         const response = await instance(requests.fetchReadingTips);
         const data = response.data;
-        Alert.alert("Reading tips", response.data.tip);
+        Alert.alert("Reading tips", data.tip);
       } catch (error) {
+        Alert.alert('Error', 'Failed to fetch reading tips.');
         console.error('Error fetching genres:', error);
       }
     }
@@ -218,6 +217,8 @@ const handleBackPress = () => {
                   keyboardType='numeric'
                   value={pagesRead} 
                   onChangeText={(text) => setPagesRead(text)}
+                  accessibilityLabel="Pages Read"
+                  accessibilityHint="Enter the number of pages read today"
               />
           </View>
         </View>
