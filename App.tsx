@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import { Platform } from 'react-native';
+import { Alert, Platform } from 'react-native';
+import * as Updates from 'expo-updates';
 import * as SplashScreen from 'expo-splash-screen';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -79,6 +80,30 @@ const App = () => {
     const url = Linking.createURL('streak/');
     console.log(url); //delete this once streak screen is completed
   }, []);
+
+  //check for OTA updates start
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          // Notify user and reload the app
+          Alert.alert('Update Available', 'An update is available and will be applied on restart.', [
+            { text: 'Restart Now', onPress: () => Updates.reloadAsync() },
+          ]);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    checkForUpdates();
+  }, []);
+  //check for OTA updates end
+
+  //check for appstores update and implement accordingly start
+  //check for appstores update and implement accordingly end
 
   // for expo notifications start
   useEffect(() => {
