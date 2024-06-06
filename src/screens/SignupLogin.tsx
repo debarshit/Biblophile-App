@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { FontAwesome as FaIcon, MaterialCommunityIcons as MdIcon } from '@expo/vector-icons';
 import instance from '../services/axios';
 import requests from '../services/requests'; 
@@ -133,6 +134,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
         if (!loginEmail || !loginPass)
         {
             setLoginMessage({ text: "Please fill all the details", color: COLORS.primaryRedHex });
+            return;
         }
         else {
             async function fetchData() {
@@ -154,8 +156,21 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                             profilePic: response.data.profilePic,
                           };
                           
-                          login(newUser);
+                        login(newUser);
+
+                        const expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
             
+                        try {
+                            const updateResponse = await instance.post(requests.updateNotificationToken, {
+                            userId: response.data.userId,
+                            token: expoPushToken,
+                            });
+                            if (updateResponse.data.message !== 1) {
+                                console.log('Failed to update notification token');
+                            }
+                        } catch (error) {
+                            console.log(error);
+                        }
                     }
                     else
                     {

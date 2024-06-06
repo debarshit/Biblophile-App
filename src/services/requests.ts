@@ -20,6 +20,7 @@ const requests = {
     updateReadingStreak: `/actions.php?action=updateReadingStreak&userId=`,
     updatePagesRead: `/actions.php?action=updatePagesRead&userId=`,
     fetchReadingTips: `/actions.php?action=fetchReadingTips`,
+    updateNotificationToken: `/actions.php?action=updateNotificationToken`,
     paymentRequest: `/actions.php?action=paymentRequest`,
     paymentSuccessful: `/actions.php?action=paymentSuccessful&linkId=`,
 }
