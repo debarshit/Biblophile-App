@@ -306,7 +306,8 @@ const SettingsScreen = ({navigation, route}: any) => {
                 size={20} />
             </TouchableOpacity>
 
-            <TouchableOpacity
+              {/* delete account hidden */}
+            {/* <TouchableOpacity
               onPress={() => {
                 // handle onPress
               }}
@@ -323,7 +324,7 @@ const SettingsScreen = ({navigation, route}: any) => {
                 color="#C6C6C6"
                 name="chevron-right"
                 size={20} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </ScrollView>
       </View>
