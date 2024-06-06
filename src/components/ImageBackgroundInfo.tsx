@@ -140,7 +140,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
                   size={FONTSIZE.size_20}
                 />
                 <Text style={styles.RatingText}>{average_rating}</Text>
-                <Text style={styles.RatingCountText}>({ratings_count})</Text>
+                <Text style={styles.RatingCountText}>({Number(ratings_count).toLocaleString()})</Text>
               </View>}
               <View style={styles.RoastedContainer}>
                 <Text style={styles.RoastedText}>{genre}</Text>
