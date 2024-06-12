@@ -193,7 +193,7 @@ const HomeScreen = ({navigation}: any) => {
             setBookmarks(data);
             setLoading(false);
           } catch (error) {
-            console.error('Error fetching plans:', error);
+            console.error('Error fetching bookmarks:', error);
           }
     }
   

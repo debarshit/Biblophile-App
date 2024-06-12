@@ -65,7 +65,7 @@ const PaymentScreen = ({navigation, route}: any) => {
             payment: paymentStatus,
             orderMode: data.prices[0].size,
             custOrderDuration: data.prices[0].quantity, //duration for rent and qty for buy
-            amount: route.params.amount,
+            amount: (data.prices[0].price*data.prices[0].quantity),
           });
           
           if (response.data.message === 1) {

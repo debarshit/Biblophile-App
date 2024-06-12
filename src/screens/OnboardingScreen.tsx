@@ -16,7 +16,9 @@ const OnboardingScreen = ({ navigation }: any) => {
         {
         //to ignore the warning saying title and subtitle are required
           title: (<Text style={styles.titleText}>Welcome to Biblophile!</Text>),
-          subtitle: (<Text style={styles.subtitleText}>Explore our vast catalogue of books.</Text>),
+          subtitle: (<Text style={styles.subtitleText}>Discover a world of endless possibilities with Biblophile. 
+            Whether you're an avid reader or just starting your literary journey, we're here to help you explore, 
+            learn, and grow. Let's get started!</Text>),
           backgroundColor: COLORS.primaryBlackHex,
           image: (
             <View style={styles.container}>
@@ -33,7 +35,10 @@ const OnboardingScreen = ({ navigation }: any) => {
         },
         {   
             title: (<Text style={styles.titleText}>Rent, Read, Return, Repeat!</Text>),
-            subtitle: (<Text style={styles.subtitleText}>We deliver books right at your doorstep.</Text>),
+            subtitle: (<Text style={styles.subtitleText}>Experience the joy of reading without the commitment. 
+              With Biblophile, you can easily rent books, immerse yourself in captivating stories, and 
+              return them when you're ready for your next adventure. {"\n"}Start your reading journey today!
+              We deliver books right at your doorstep.</Text>),
             backgroundColor: COLORS.primaryBlackHex,
             image: (
               <View style={styles.container}>
@@ -54,7 +59,9 @@ const OnboardingScreen = ({ navigation }: any) => {
         },
         {
             title: (<Text style={styles.titleText}>Choose Your Plan</Text>),
-            subtitle: (<Text style={styles.subtitleText}>Rent individual books or subscribe for maximum savings</Text>),
+            subtitle: (<Text style={styles.subtitleText}>Tailor your reading experience to fit your lifestyle. Select a 
+              subscription plan for unlimited access to our vast library of books, or opt to rent without commitment.{"\n\n"} 
+              Whether you're a casual reader or a bookworm, we have the perfect option for you. Dive into your next story now!</Text>),
             backgroundColor: COLORS.primaryBlackHex,
             image: (
               <View style={styles.container}>
@@ -71,7 +78,7 @@ const OnboardingScreen = ({ navigation }: any) => {
         },
         {
             title: (<Text style={styles.titleText}>Start Exploring</Text>),
-            subtitle: (<Text style={styles.subtitleText}>Sign up to discover your next read.</Text>),
+            subtitle: (<Text style={styles.subtitleText}>Your literary journey awaits! Begin exploring our collection and embark on an adventure through the pages. Happy reading! Sign up to discover your next read.</Text>),
             backgroundColor: COLORS.primaryBlackHex,
             image: (
               <View style={styles.container}>
@@ -108,7 +115,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     lottie: {
-        width: width * 0.9,
+        width: width * 0.85,
         height: width,
     },
     tempImage: {

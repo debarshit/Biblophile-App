@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -7,6 +7,7 @@ import {
   View,
   SafeAreaView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useStore} from '../store/store';
@@ -29,7 +30,20 @@ const CartScreen = ({navigation, route}: any) => {
   const tabBarHeight = useBottomTabBarHeight();
 
   const buttonPressHandler = () => {
-    navigation.push('Payment', {amount: CartPrice, cart: CartList});
+    if (CartList.length != 0) {
+      Alert.alert("Delivery Fees", "1. Buying Books: Orders <  ₹120 incur ₹50 delivery fee; otherwise, delivery is free.\n2. Renting Books: Orders < ₹120 incur ₹90 for delivery and pickup; otherwise, both are free.",
+        [
+          {
+              text: "Cancel",
+              style: "cancel"
+          },
+          {
+              text: "OK",
+              onPress: () => navigation.push('Payment', { amount: CartPrice, cart: CartList })
+          }
+        ]
+      )
+    }
   };
 
   const incrementCartItemQuantityHandler = (id: string, size: string) => {
@@ -41,6 +55,14 @@ const CartScreen = ({navigation, route}: any) => {
     decrementCartItemQuantity(id, size);
     calculateCartPrice();
   };
+
+  // useEffect(() => {
+  //   if (CartList.length != 0) {
+  //     Alert.alert("Delivery Fees", "1. Buying Books: Orders <  ₹120 incur ₹50 delivery fee; otherwise, delivery is free.\n2. Renting Books: Orders < ₹120 incur ₹90 for delivery and pickup; otherwise, both are free.")
+  //   }
+  // }, []);
+
+
   return (
     <SafeAreaView style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />

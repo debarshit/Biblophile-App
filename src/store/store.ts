@@ -15,11 +15,11 @@ export const useStore = create(
         CartPrice: 0,
         FavoritesList: [],
         CartList: [],
-        login: (userData) => {
-          set({ isAuthenticated: true, user: userData['userId'] });
-          set(state => ({
+        login: async (userData) => {
+          await set(state => ({
             userDetails: [...state.userDetails, userData],
           }));
+          set({ isAuthenticated: true, user: userData['userId'] });
         },
         logout: (userData) => {
           set({ isAuthenticated: false, user: null, userDetails: [] })
