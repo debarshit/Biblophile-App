@@ -38,17 +38,13 @@ const SettingsScreen = ({navigation, route}: any) => {
                 }}
                 style={styles.profileAvatar} />
 
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.push('Profile');
-                }}>
                 <View style={styles.profileAction}>
                   <Feather
                     color="#fff"
                     name="edit-3"
                     size={15} />
                 </View>
-              </TouchableOpacity>
+
             </View>
           </TouchableOpacity>
 
@@ -75,6 +71,49 @@ const SettingsScreen = ({navigation, route}: any) => {
               </View>
 
               <Text style={styles.rowLabel}>Manage Subscription</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Games</Text>
+
+            <TouchableOpacity
+              onPress={() => {
+                openWebView('https://biblophile.com/quiz')
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <MaterialIcons color="#fff" name="quiz" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Quiz</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                openWebView('https://biblophile.com/hangman')
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <MaterialIcons color="#fff" name="man" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Hangman</Text>
 
               <View style={styles.rowSpacer} />
 
