@@ -292,6 +292,25 @@ const SettingsScreen = ({navigation, route}: any) => {
 
             <TouchableOpacity
               onPress={() => {
+                openWebView('https://biblophile.com/blog/2023/11/13/introducing-biblophile-your-gateway-to-a-world-of-books/')
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <FontAwesome color="#fff" name="group" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>About Us</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
                 // handle onPress
               }}
               style={styles.row}>
