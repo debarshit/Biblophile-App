@@ -39,7 +39,8 @@
     },
     "updates": {
       "enabled": true,
-      "checkAutomatically": "ON_LOAD"
+      "checkAutomatically": "ON_LOAD",
+      "url": "https://u.expo.dev/1c34706d-2df8-4c6b-939c-9e3f1e5185d3"
     }
   }
 }
