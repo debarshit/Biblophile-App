@@ -7,7 +7,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "scheme": "biblophile",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -24,7 +28,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0C0F14"
       },
-      "versionCode": 3
+      "versionCode": 3,
+      "package": "com.debar_shit.BiblophileApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -40,7 +45,11 @@
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/1c34706d-2df8-4c6b-939c-9e3f1e5185d3"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }
