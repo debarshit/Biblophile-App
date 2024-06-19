@@ -111,26 +111,44 @@ const App = () => {
   }, []);
 
   async function registerForPushNotificationsAsync() {
-    let { status } = await Notifications.getPermissionsAsync();
-    if (status !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Failed to get push token for push notification!');
+    try {
+      // Check existing permissions
+      let { status: existingStatus } = await Notifications.getPermissionsAsync();
+      console.log('Existing permission status:', existingStatus);
+
+      let finalStatus = existingStatus;
+
+      // Request permissions if not already granted
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+        console.log('New permission status:', finalStatus);
+      }
+
+      // Handle permissions
+      if (finalStatus !== 'granted') {
+        Alert.alert('Failed to get push token for push notification!');
         return;
       }
-  }
 
-    const token = (await Notifications.getExpoPushTokenAsync()).data;
+    const token = (await Notifications.getExpoPushTokenAsync({
+      projectId: "1c34706d-2df8-4c6b-939c-9e3f1e5185d3",  //project id copied from app.json
+    })).data;
     console.log(token);
 
+    // Configure Android-specific settings
     if (Platform.OS === 'android') {
-      Notifications.setNotificationChannelAsync('default', {
+      await Notifications.setNotificationChannelAsync('default', {
         name: 'default',
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#FF231F7C',
       });
     }
+  } catch (error) {
+    console.error('Error in registering for push notifications:', error);
+    Alert.alert('Error in registering for push notifications!');
+  }
   }
   // for expo notifications end
 
