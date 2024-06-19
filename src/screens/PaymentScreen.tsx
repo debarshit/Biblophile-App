@@ -119,60 +119,68 @@ const PaymentScreen = ({navigation, route}: any) => {
   }, [isSubscription]);
   
 
+  //try to reduce code redundancy
   const buttonPressHandler = () => {
     if (paymentMode === 'Online') {      
-      //open payment portal
-      let link_id; // Declare link_id variable here to make it accessible
-      if (route.params.amount > 0) {
-        async function fetchData() {
-          try {
-            const response = await instance.post(requests.paymentRequest, {
-                customerName: userDetails[0].userName,
-                customerPhone: userDetails[0].userPhone,
-                amount: route.params.amount,
-              });  
-            if (response.data && response.data.link_url) {
-              navigation.push('PaymentGateway', {
-                url: response.data.link_url
-              });
-              
-              // Assign link_id after successfully receiving link_url
-              link_id = response.data.link_id;
-    
-              // Polling backend to check payment status
-              const pollPaymentStatus = setInterval(async () => {
-                try {
-                  const statusResponse = await instance.post(requests.paymentSuccessful + link_id, {
-                    customerId: userDetails[0].userId,
-                    customerPhone: userDetails[0].userPhone,
-                    amount: route.params.amount,
-                  });
-                  if (statusResponse.data.status === "success") {
-                    clearInterval(pollPaymentStatus); // Stop polling
-                    if (isSubscription) {
-                      placeSubscriptionOrder();
-                    }
-                    else {
-                      placeOrder(1);
-                    }
-                  }
-                } catch (error) {
-                  console.error("Error occurred while checking payment status:", error);
-                }
-              }, 5000); // Polling interval (5 seconds in this example)
-              
-            } else {
-              alert("Network error! Please try again.");
-            }
-          } catch (error) {
-            console.error("Error occurred during payment:", error);
-          } 
-        }
-      
-        fetchData();
+      if (userDetails[0].userAddress === null) {
+        navigation.push('Profile', {
+          update: "Please fill your address",
+        });
       }
       else {
-        placeOrder(0);
+        //open payment portal
+        let link_id; // Declare link_id variable here to make it accessible
+        if (route.params.amount > 0) {
+          async function fetchData() {
+            try {
+              const response = await instance.post(requests.paymentRequest, {
+                  customerName: userDetails[0].userName,
+                  customerPhone: userDetails[0].userPhone,
+                  amount: route.params.amount,
+                });  
+              if (response.data && response.data.link_url) {
+                navigation.push('PaymentGateway', {
+                  url: response.data.link_url
+                });
+                
+                // Assign link_id after successfully receiving link_url
+                link_id = response.data.link_id;
+      
+                // Polling backend to check payment status
+                const pollPaymentStatus = setInterval(async () => {
+                  try {
+                    const statusResponse = await instance.post(requests.paymentSuccessful + link_id, {
+                      customerId: userDetails[0].userId,
+                      customerPhone: userDetails[0].userPhone,
+                      amount: route.params.amount,
+                    });
+                    if (statusResponse.data.status === "success") {
+                      clearInterval(pollPaymentStatus); // Stop polling
+                      if (isSubscription) {
+                        placeSubscriptionOrder();
+                      }
+                      else {
+                        placeOrder(1);
+                      }
+                    }
+                  } catch (error) {
+                    console.error("Error occurred while checking payment status:", error);
+                  }
+                }, 5000); // Polling interval (5 seconds in this example)
+                
+              } else {
+                alert("Network error! Please try again.");
+              }
+            } catch (error) {
+              console.error("Error occurred during payment:", error);
+            } 
+          }
+        
+          fetchData();
+        }
+        else {
+          placeOrder(0);
+        }
       }
     }
     else {
@@ -183,13 +191,6 @@ const PaymentScreen = ({navigation, route}: any) => {
         placeOrder(0);
       }
     }
-    // setShowAnimation(true);
-    // addToOrderHistoryListFromCart();
-    // calculateCartPrice();
-    // setTimeout(() => {
-    //   setShowAnimation(false);
-    //   navigation.navigate('History');
-    // }, 2000);
   };
 
   return (
