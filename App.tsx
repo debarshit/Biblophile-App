@@ -120,7 +120,9 @@ const App = () => {
       }
   }
 
-    const token = (await Notifications.getExpoPushTokenAsync()).data;
+    const token = (await Notifications.getExpoPushTokenAsync({
+      projectId: "1c34706d-2df8-4c6b-939c-9e3f1e5185d3",  //project id copied from app.json
+    })).data;
     console.log(token);
 
     if (Platform.OS === 'android') {

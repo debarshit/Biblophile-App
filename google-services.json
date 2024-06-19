@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "120371317823",
+    "project_id": "biblophile-ae9a2",
+    "storage_bucket": "biblophile-ae9a2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:120371317823:android:32e7b2298d3d249fe33c8a",
+        "android_client_info": {
+          "package_name": "com.debar_shit.BiblophileApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8kwoXXvoW_bJ9UFEvX2n1_cM8bh6l6mI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

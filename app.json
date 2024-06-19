@@ -21,15 +21,22 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["fetch", "remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0C0F14"
       },
+      "googleServicesFile": "./google-services.json",
       "versionCode": 3,
-      "package": "com.debar_shit.BiblophileApp"
+      "package": "com.debar_shit.BiblophileApp",
+      "permissions": [
+        "NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -50,6 +57,11 @@
     },
     "runtimeVersion": {
       "policy": "appVersion"
+    },
+    "notification": {
+      "icon": "./assets/icon.png",
+      "color": "#0C0F14",
+      "iosDisplayInForeground": true
     }
   }
 }
