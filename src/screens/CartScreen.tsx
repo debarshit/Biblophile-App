@@ -39,7 +39,7 @@ const CartScreen = ({navigation, route}: any) => {
           },
           {
               text: "OK",
-              onPress: () => navigation.push('Payment', { amount: CartPrice, cart: CartList })
+              onPress: () => navigation.push('Payment', { amount: calculateFinalPrice(), cart: CartList })
           }
         ]
       )
@@ -65,6 +65,21 @@ const CartScreen = ({navigation, route}: any) => {
     } else {
       return priceInfo.size === "QR" ? priceInfo.price : priceInfo.price / 1.3;
     }
+  };
+
+  const calculateFinalPrice = () => {
+    let additionalCost = 0;
+    const numericCartPrice = parseFloat(CartPrice); // Ensure CartPrice is a number
+  
+    if (numericCartPrice < 120) {
+      CartList.forEach((item: any) => {
+        if (item.type === "Book") {
+          const priceInfo = item.prices[0];
+          additionalCost += priceInfo.size === "Buy" ? 50 : 90;
+        }
+      });
+    }
+    return (numericCartPrice + additionalCost).toFixed(2);
   };
 
   return (
