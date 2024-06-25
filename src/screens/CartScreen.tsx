@@ -39,7 +39,7 @@ const CartScreen = ({navigation, route}: any) => {
           },
           {
               text: "OK",
-              onPress: () => navigation.push('Payment', { amount: CartPrice, cart: CartList })
+              onPress: () => navigation.push('Payment', { amount: calculateFinalPrice(), cart: CartList })
           }
         ]
       )
@@ -56,12 +56,31 @@ const CartScreen = ({navigation, route}: any) => {
     calculateCartPrice();
   };
 
-  // useEffect(() => {
-  //   if (CartList.length != 0) {
-  //     Alert.alert("Delivery Fees", "1. Buying Books: Orders <  ₹120 incur ₹50 delivery fee; otherwise, delivery is free.\n2. Renting Books: Orders < ₹120 incur ₹90 for delivery and pickup; otherwise, both are free.")
-  //   }
-  // }, []);
+  const getPrice = (item) => {
+    const { type, prices, actualPrice } = item;
+    const priceInfo = prices[0];
+  
+    if (type === "Book") {
+      return priceInfo.size === "Buy" ? priceInfo.price : actualPrice;
+    } else {
+      return priceInfo.size === "QR" ? priceInfo.price : priceInfo.price / 1.3;
+    }
+  };
 
+  const calculateFinalPrice = () => {
+    let additionalCost = 0;
+    const numericCartPrice = parseFloat(CartPrice); // Ensure CartPrice is a number
+  
+    if (numericCartPrice < 120) {
+      CartList.forEach((item: any) => {
+        if (item.type === "Book") {
+          const priceInfo = item.prices[0];
+          additionalCost += priceInfo.size === "Buy" ? 50 : 90;
+        }
+      });
+    }
+    return (numericCartPrice + additionalCost).toFixed(2);
+  };
 
   return (
     <SafeAreaView style={styles.ScreenContainer}>
@@ -85,7 +104,7 @@ const CartScreen = ({navigation, route}: any) => {
                       navigation.push('Details', {
                         id: data.id,
                         type: data.type,
-                        price: data.prices[0].size === "Buy"? data.prices[0].price : data.prices[0].price*10,
+                        price: getPrice(data),
                         name: data.name,
                         genre: data.genre,
                         poster: data.poster,

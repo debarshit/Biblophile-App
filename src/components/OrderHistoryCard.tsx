@@ -39,6 +39,16 @@ const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
               quantity={order.OrderType === '0' ? order.OrderDuration : order.OrderQuantity}
             />
       </View>
+      <View style={styles.CardFooter}>
+        {order.DeliveryDate !== "0000-00-00" && <View>
+            <Text style={styles.FooterTitle}>Delivery Date</Text>
+            <Text style={styles.FooterSubtitle}>{order.DeliveryDate}</Text>
+          </View>}
+        {order.DueDate !== "0000-00-00" &&  <View style={styles.ReturnContainer}>
+            <Text style={styles.FooterTitle}>Return Date</Text>
+            <Text style={styles.FooterPrice}> {order.DueDate}</Text>
+          </View>}
+      </View>
     </View>
   );
 };
@@ -73,6 +83,30 @@ const styles = StyleSheet.create({
   },
   ListContainer: {
     gap: SPACING.space_20,
+  },
+  CardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: SPACING.space_20,
+    alignItems: 'center',
+  },
+  FooterTitle: {
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_16,
+    color: COLORS.primaryWhiteHex,
+  },
+  FooterSubtitle: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_16,
+    color: COLORS.primaryWhiteHex,
+  },
+  ReturnContainer: {
+    alignItems: 'flex-end',
+  },
+  FooterPrice: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_18,
+    color: COLORS.primaryOrangeHex,
   },
 });
 

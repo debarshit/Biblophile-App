@@ -91,6 +91,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
               poster,
               type,
               prices: [{...prices[0], quantity: 1}],
+              actualPrice: prices[0].price,
               averageRating,
               ratingCount,
               description,  

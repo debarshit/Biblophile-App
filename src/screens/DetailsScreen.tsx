@@ -39,11 +39,12 @@ const DetailsScreen = ({navigation, route}: any) => {
     ]
   : route.params.type === 'Bookmark'
     ? [
-        { size: 'QR', price: route.params.price, currency: '₹' },
+        { size: 'QR', price: Math.ceil(route.params.price), currency: '₹' },
         { size: 'QR & NFC', price: Math.floor(route.params.price * 1.3), currency: '₹' }, 
       ]
     : []; // Handle other cases or leave it as empty array if not handled
 
+  const [actualPrice, setActualPrice] = useState(prices[0].price);  //to be passed across pages to maintain the actual price post various operations
   const [price, setPrice] = useState(prices[0]);
   const [fullDesc, setFullDesc] = useState(false);
   const [favourite, setFavourite] = useState(false);
@@ -78,6 +79,7 @@ const DetailsScreen = ({navigation, route}: any) => {
     poster,
     type,
     price,
+    actualPrice,
     averageRating,
     ratingCount,
     description, 
@@ -93,6 +95,7 @@ const DetailsScreen = ({navigation, route}: any) => {
       ratingCount,
       description, 
       prices: [{...price, quantity: 1}],
+      actualPrice: actualPrice,
     });
     calculateCartPrice();
     navigation.navigate('Cart');
@@ -212,6 +215,7 @@ const DetailsScreen = ({navigation, route}: any) => {
               poster: route.params.poster,
               type: route.params.type,
               price: price,
+              actualPrice: actualPrice,
               averageRating: route.params.averageRating,
               ratingCount: route.params.ratingCount,
               description: route.params.description,
