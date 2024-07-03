@@ -244,127 +244,107 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
           <Text style={styles.sectionTitle}>Highest Streak:</Text>
           <Text style={styles.maxStreak}>🏅 {maxStreak}-day Streak</Text>
         </View>
-        <Text style={styles.infoText}>Pages read today?</Text>
-        <View style={styles.inputBox}>
-          <View style={styles.inputWrapper}>
+        <Text style={styles.sectionTitle}>Have you read today?</Text>
+        <View style={styles.inputContainer}>
           <TextInput
+            placeholder="Enter pages read(optional)"
+            placeholderTextColor={COLORS.secondaryLightGreyHex}
+            keyboardType="numeric"
             style={styles.input}
-                  placeholder='Optional'
-                  placeholderTextColor={COLORS.secondaryLightGreyHex}
-                  autoCapitalize='none'
-                  keyboardType='numeric'
             value={pagesRead}
-                  onChangeText={(text) => setPagesRead(text)}
-                  accessibilityLabel="Pages Read"
+            onChangeText={setPagesRead}
+            accessibilityLabel="Pages read"
             accessibilityHint="Enter the number of pages read today"
           />
+          <TouchableOpacity onPress={updatePagesRead} accessibilityLabel="Submit" accessibilityHint="Submit the number of pages read">
+            <View style={styles.iconContainer}>
+              <LinearGradient
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}
+                style={styles.LinearGradientBG}>
+                <AntDesign name="check" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_24} />
+              </LinearGradient>
             </View>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => updatePagesRead()} style={styles.button}>
-          <Text style={styles.buttonText}>Update</Text>
+        <View style={styles.reminderContainer}>
+          <TouchableOpacity onPress={handleReminderPress} accessibilityLabel="Set Reminder" accessibilityHint="Set a reminder for your reading">
+            <LinearGradient
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}
+              style={styles.reminderButton}>
+              <MaterialIcons name="access-alarm" size={24} color={COLORS.primaryOrangeHex} />
+              <Text style={styles.reminderText}>Set Reminder</Text>
+            </LinearGradient>
           </TouchableOpacity>
           {datePickerVisible && (
-          <View style={styles.modalContainer}>
             <DateTimePicker
               value={reminderTime || new Date()}
               mode="time"
-              is24Hour={true}
-              display="spinner"
+              display="default"
               onChange={(event, selectedDate) => {
+                setDatePickerVisible(false);
                 if (selectedDate) {
                   setReminderTime(selectedDate);
-                  setDatePickerVisible(false);
                   scheduleNotification(selectedDate);
                 }
               }}
             />
+          )}
+        </View>
+        <View style={styles.socialContainer}>
+          <TouchableOpacity onPress={handleDiscussionPress} accessibilityLabel="Join Discussion" accessibilityHint="Join the book discussion">
+            <View style={styles.socialButton}>
+              <MaterialIcons name="chat" size={24} color={COLORS.primaryOrangeHex} />
+              <Text style={styles.socialButtonText}>Join Discussion</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSharePress} accessibilityLabel="Share Streak" accessibilityHint="Share your reading streak">
+            <View style={styles.socialButton}>
+              <AntDesign name="sharealt" size={24} color={COLORS.primaryOrangeHex} />
+              <Text style={styles.socialButtonText}>Share Streak</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity onPress={handleTipsPress} accessibilityLabel="Reading Tips" accessibilityHint="Get reading tips">
+          <View style={styles.tipsButton}>
+            <AntDesign name="book" size={24} color={COLORS.primaryOrangeHex} />
+            <Text style={styles.tipsButtonText}>Get Reading Tips</Text>
           </View>
-        )}
-        <View style={styles.reminders}>
-          <TouchableOpacity onPress={handleTipsPress} style={styles.reminderButton}>
-          <MaterialIcons name="tips-and-updates" size={20} color={COLORS.secondaryLightGreyHex}/>
-          <Text style={styles.reminderText}>Reading Tips</Text>
         </TouchableOpacity>
-          <TouchableOpacity onPress={handleReminderPress} style={styles.reminderButton}>
-            <Entypo name="clock" size={20} color={COLORS.secondaryLightGreyHex} />
-            <Text style={styles.reminderText}>Set Reading Time</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.community}>
-          <TouchableOpacity onPress={handleDiscussionPress} style={styles.communityButton}>
-            <AntDesign name="team" size={20} color={COLORS.secondaryLightGreyHex} />
-            <Text style={styles.communityText}>Join the Discussion</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSharePress} style={styles.communityButton}>
-            <Entypo name="share" size={20} color={COLORS.secondaryLightGreyHex} />
-            <Text style={styles.communityText}>Share Your Progress</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
-      <View style={styles.footer}>
-        <TouchableOpacity
-          onPress={() => {
-            openWebView('https://biblophile.com/policies/customer-support.php')
-          }}>
-            <Text style={styles.footerLink}>📞 Contact</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            openWebView('https://biblophile.com/policies/privacy-policy.php')
-          }}>
-            <Text style={styles.footerLink}>🔒 Privacy</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    padding: 16,
+    flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
   },
   scrollContent: {
+    margin: SPACING.space_12,
     paddingBottom: 80,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: SPACING.space_16,
+    justifyContent: 'space-between',
   },
   backIconContainer: {
-    marginRight: SPACING.space_10,
-    borderWidth: 2,
-    borderColor: COLORS.secondaryDarkGreyHex,
-    borderRadius: SPACING.space_12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    overflow: 'hidden',
+    marginRight: SPACING.space_8,
+    
+  },
+  headerText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_24,
+    fontFamily: FONTFAMILY.poppins_medium,
   },
   graphIconContainer: {
     marginLeft: 'auto',
-    borderWidth: 2,
-    borderColor: COLORS.secondaryDarkGreyHex,
-    borderRadius: SPACING.space_12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    overflow: 'hidden',
-  },
-  LinearGradientBG: {
-    height: SPACING.space_36,
-    width: SPACING.space_36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerText: {
-    flex: 1, // Take up remaining space
-    textAlign: 'center', // Center the text
-    fontSize: FONTSIZE.size_24,
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_bold,
   },
   streakInfo: {
     alignItems: 'center',
@@ -377,127 +357,107 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     alignItems: 'center',
-    marginBottom: SPACING.space_16,
-  },
-  greeting: {
-    fontSize: FONTSIZE.size_16,
-    fontFamily: FONTFAMILY.poppins_medium,
-    color: COLORS.secondaryLightGreyHex,
-    marginTop: SPACING.space_8,
-  },
-  progressBar: {
-    width: '100%',
-    height: 10,
-    borderRadius: 5,
+    marginBottom: SPACING.space_24,
   },
   infoText: {
     fontSize: FONTSIZE.size_16,
-    color: COLORS.secondaryLightGreyHex,
     fontFamily: FONTFAMILY.poppins_light,
+    color: COLORS.secondaryLightGreyHex,
     marginBottom: SPACING.space_8,
+  },
+  greeting: {
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
+    marginTop: SPACING.space_8,
   },
   achievements: {
-    marginBottom: SPACING.space_16,
-    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.space_24,
   },
   sectionTitle: {
-    fontSize: FONTSIZE.size_18,
-    fontWeight: 'bold',
-    marginBottom: SPACING.space_8,
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_bold,
     color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_8,
   },
   maxStreak: {
-    fontSize: FONTSIZE.size_18,
+    fontSize: FONTSIZE.size_24,
     fontFamily: FONTFAMILY.poppins_bold,
-    marginBottom: SPACING.space_8,
     color: COLORS.primaryOrangeHex,
   },
-  inputBox: {
-    marginBottom: 10,
-    width: 300,
-  },
-  inputWrapper: {
-    flexDirection: 'row-reverse',
+  inputContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    borderColor: COLORS.primaryLightGreyHex,
-    borderRadius: 5,
-    paddingHorizontal: 10,
+    marginBottom: SPACING.space_16,
   },
   input: {
     flex: 1,
     height: 40,
-    paddingHorizontal: 10,
+    borderColor: COLORS.primaryGreyHex,
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: SPACING.space_8,
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_regular,
   },
-  button: {
-    backgroundColor: COLORS.primaryOrangeHex,
-    paddingVertical: 5,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginTop: 10,
-    marginBottom: 20,
-    width: '30%',
-    alignSelf: 'center',
+  iconContainer: {
+    marginLeft: SPACING.space_8,
   },
-  buttonText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_medium,
-    textAlign: 'center',
-  },
-  reminders: {
-    marginTop: SPACING.space_20,
-    marginBottom: SPACING.space_16,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  reminderContainer: {
+    marginBottom: SPACING.space_24,
+    alignItems: 'center',
   },
   reminderButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: SPACING.space_8,
+    paddingHorizontal: SPACING.space_16,
+    borderRadius: 5,
   },
   reminderText: {
-    marginLeft: 8,
-    fontSize: 16,
-    color: COLORS.primaryOrangeHex,
-  },
-  community: {
-    marginBottom: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  communityButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  communityText: {
-    marginLeft: 8,
-    fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_14,
-    margin: 2,
-    color: COLORS.primaryOrangeHex,
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    backgroundColor: COLORS.primaryBlackHex,
-    padding: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  footerLink: {
+    marginLeft: SPACING.space_8,
     color: COLORS.secondaryLightGreyHex,
     fontSize: FONTSIZE.size_16,
-    fontFamily: FONTFAMILY.poppins_light,
+    fontFamily: FONTFAMILY.poppins_regular,
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  socialContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.space_24,
+  },
+  socialButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingVertical: SPACING.space_8,
+    paddingHorizontal: SPACING.space_16,
+    borderRadius: 5,
+    borderWidth: 1,
+  },
+  socialButtonText: {
+    marginLeft: SPACING.space_8,
+    color: COLORS.primaryLightGreyHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_regular,
+  },
+  tipsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.space_12,
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  tipsButtonText: {
+    marginLeft: SPACING.space_8,
+    color: COLORS.primaryLightGreyHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_regular,
+  },
+  LinearGradientBG: {
+    padding: SPACING.space_4,
+    borderRadius: 5,
   },
 });
 
