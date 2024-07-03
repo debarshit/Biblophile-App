@@ -11,10 +11,10 @@ import { useStore } from '../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import ProgressBar from '../components/ProgressBar';
 
-const StreaksScreen: React.FC = ({navigation, route}: any) => {
+const StreaksScreen: React.FC = ({ navigation, route }: any) => {
 
   const userDetails = useStore((state: any) => state.userDetails);
-    
+
   const [pagesRead, setPagesRead] = useState<string>('');
   const [currentStreak, setCurrentStreak] = useState<number>(1);
   const [maxStreak, setMaxStreak] = useState<number>(1);
@@ -38,25 +38,23 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   const updateReadingStreak = () => {
     async function updateData() {
       try {
-          const response = await instance.post(requests.updateReadingStreak, {
-            userId: userDetails[0].userId,
-            currentStreak: currentStreak,
-            });
-            if (response.data.message) {
-              if (response.data.message === "Updated")
-                {
-                  setCurrentStreak(response.data.streak);
-                  setMaxStreak(response.data.maxStreak);
-                }
-                else
-                {
-                  Alert.alert('Error', response.data.message);
-                }
-            }
-        } catch (error) {
-          Alert.alert('Error', 'Failed to update reading streak.');
-          console.log(error);
+        const response = await instance.post(requests.updateReadingStreak, {
+          userId: userDetails[0].userId,
+          currentStreak: currentStreak,
+        });
+        if (response.data.message) {
+          if (response.data.message === "Updated") {
+            setCurrentStreak(response.data.streak);
+            setMaxStreak(response.data.maxStreak);
+          }
+          else {
+            Alert.alert('Error', response.data.message);
+          }
         }
+      } catch (error) {
+        Alert.alert('Error', 'Failed to update reading streak.');
+        console.log(error);
+      }
     }
     updateData();
   }
@@ -67,22 +65,20 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
     if (pagesRead !== "") {
       async function updateData() {
         try {
-            const response = await instance.post(requests.updatePagesRead, {
-              userId: userDetails[0].userId,
-              pageCount: pagesRead,
-              });
-            if (response.data.message === "Updated")
-            {
-              Alert.alert("Success", "Updated");
-            }
-            else
-            {
-              Alert.alert("Error", response.data.message);
-            }
-          } catch (error) {
-            Alert.alert('Error', 'Failed to update pages read.');
-            console.log(error);
+          const response = await instance.post(requests.updatePagesRead, {
+            userId: userDetails[0].userId,
+            pageCount: pagesRead,
+          });
+          if (response.data.message === "Updated") {
+            Alert.alert("Success", "Updated");
           }
+          else {
+            Alert.alert("Error", response.data.message);
+          }
+        } catch (error) {
+          Alert.alert('Error', 'Failed to update pages read.');
+          console.log(error);
+        }
       }
       updateData();
     }
@@ -103,9 +99,9 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
 
     // Animate the progress bar from 0 to 100 over 10 seconds (example)
     Animated.timing(progress, {
-    toValue: progressValue,
-    duration: 2000,
-    useNativeDriver: false,
+      toValue: progressValue,
+      duration: 2000,
+      useNativeDriver: false,
     }).start(() => {
       if (progressValue === 100) {
         setCelebration(true);
@@ -115,22 +111,22 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
 
   useEffect(() => {
     async function fetchReadingStreak() {
-        try {
-            const response = await instance.post(requests.fetchReadingStreak, {
-              userId: userDetails[0].userId,
-            });
-            const data = response.data;
-            setCurrentStreak(data.currentStreak);
-            setMaxStreak(data.maxStreak);
-            if (action) {
-              handleAction(action);
-            }
-          } catch (error) {
-            Alert.alert('Error', 'Failed to fetch reading streak.');
-            console.error('Error fetching plans:', error);
-          }
+      try {
+        const response = await instance.post(requests.fetchReadingStreak, {
+          userId: userDetails[0].userId,
+        });
+        const data = response.data;
+        setCurrentStreak(data.currentStreak);
+        setMaxStreak(data.maxStreak);
+        if (action) {
+          handleAction(action);
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Failed to fetch reading streak.');
+        console.error('Error fetching plans:', error);
+      }
     }
-  
+
     fetchReadingStreak();
   }, []);
 
@@ -164,22 +160,22 @@ const StreaksScreen: React.FC = ({navigation, route}: any) => {
   //add functionality to add user to book clubs
   const handleDiscussionPress = () => {
     Alert.alert("Coming Soon", "This feature is coming soon!");
-};
+  };
 
-const handleSharePress = async () => {
-  try {
-    const result = await Share.share({
-      message: `I've been on a reading streak for ${currentStreak} days! 📚✨ Join me and let's read together on Biblophile!`,
-    });
-    if (result.action === Share.sharedAction && result.activityType) {
-      // Shared with activity type
-    } else if (result.action === Share.dismissedAction) {
-      // Dismissed
+  const handleSharePress = async () => {
+    try {
+      const result = await Share.share({
+        message: `I've been on a reading streak for ${currentStreak} days! 📚✨ Join me and let's read together on Biblophile!`,
+      });
+      if (result.action === Share.sharedAction && result.activityType) {
+        // Shared with activity type
+      } else if (result.action === Share.dismissedAction) {
+        // Dismissed
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to share the streak.');
     }
-  } catch (error) {
-    Alert.alert('Error', 'Failed to share the streak.');
-  }
-};
+  };
 
   const handleTipsPress = () => {
     async function fetchReadingTips() {
@@ -193,40 +189,55 @@ const handleSharePress = async () => {
       }
     }
     fetchReadingTips();
-};
+  };
 
-const handleBackPress = () => {
-  if (action === "updateReadingStreak") {
-    navigation.navigate('Tab');
-  } else {
-    navigation.goBack();
-  }
-};
+  const handleBackPress = () => {
+    if (action === "updateReadingStreak") {
+      navigation.navigate('Tab');
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  const handleGraphPress = () => {
+    navigation.navigate('Stats');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {celebration && <ConfettiCannon count={200} origin={{x: -10, y: 0}} />}
+      {celebration && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} />}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-        <TouchableOpacity onPress={handleBackPress} accessibilityLabel="Back" accessibilityHint="Go back to the previous screen">
-              <View style={styles.backIconContainer}>
-                  <LinearGradient
-                      start={{x: 0, y: 0}}
-                      end={{x: 1, y: 1}}
-                      colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}
-                      style={styles.LinearGradientBG}>
-                      <AntDesign name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16}/>
-                  </LinearGradient>
-              </View>
+          <TouchableOpacity onPress={handleBackPress} accessibilityLabel="Back" accessibilityHint="Go back to the previous screen">
+            <View style={styles.backIconContainer}>
+              <LinearGradient
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}
+                style={styles.LinearGradientBG}>
+                <AntDesign name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+              </LinearGradient>
+            </View>
           </TouchableOpacity>
           <Text style={styles.headerText}>Reading Streak</Text>
+          <TouchableOpacity onPress={handleGraphPress} accessibilityLabel="stats" accessibilityHint="Go to the stats screen">
+            <View style={styles.graphIconContainer}>
+              <LinearGradient
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}
+                style={styles.LinearGradientBG}>
+                <Entypo name="bar-graph" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_16} />
+              </LinearGradient>
+            </View>
+          </TouchableOpacity>
         </View>
         <View style={styles.streakInfo}>
           <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
         </View>
         <View style={styles.progressContainer}>
           <Text style={styles.infoText}>Progress till next achievement</Text>
-          <ProgressBar progress={progress}/> 
+          <ProgressBar progress={progress} />
           <Text style={styles.greeting}>Hello, {userDetails[0].userName.split(' ')[0]}! Keep up the good work! 🎉</Text>
         </View>
         <View style={styles.achievements}>
@@ -236,23 +247,23 @@ const handleBackPress = () => {
         <Text style={styles.infoText}>Pages read today?</Text>
         <View style={styles.inputBox}>
           <View style={styles.inputWrapper}>
-              <TextInput
-                  style={styles.input}
+          <TextInput
+            style={styles.input}
                   placeholder='Optional'
                   placeholderTextColor={COLORS.secondaryLightGreyHex}
                   autoCapitalize='none'
                   keyboardType='numeric'
-                  value={pagesRead} 
+            value={pagesRead}
                   onChangeText={(text) => setPagesRead(text)}
                   accessibilityLabel="Pages Read"
-                  accessibilityHint="Enter the number of pages read today"
-              />
-          </View>
+            accessibilityHint="Enter the number of pages read today"
+          />
+            </View>
         </View>
         <TouchableOpacity onPress={() => updatePagesRead()} style={styles.button}>
           <Text style={styles.buttonText}>Update</Text>
-        </TouchableOpacity>
-        {datePickerVisible && (
+          </TouchableOpacity>
+          {datePickerVisible && (
           <View style={styles.modalContainer}>
             <DateTimePicker
               value={reminderTime || new Date()}
@@ -318,11 +329,22 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 16,
   },
   backIconContainer: {
-    position: 'absolute',
-    top: SPACING.space_10,
+    marginRight: SPACING.space_10,
+    borderWidth: 2,
+    borderColor: COLORS.secondaryDarkGreyHex,
+    borderRadius: SPACING.space_12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    overflow: 'hidden',
+  },
+  graphIconContainer: {
+    marginLeft: 'auto',
     borderWidth: 2,
     borderColor: COLORS.secondaryDarkGreyHex,
     borderRadius: SPACING.space_12,
@@ -338,12 +360,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerText: {
-    marginLeft: SPACING.space_20,
-    top: SPACING.space_10,
+    flex: 1, // Take up remaining space
+    textAlign: 'center', // Center the text
     fontSize: FONTSIZE.size_24,
-    fontFamily: FONTFAMILY.poppins_medium,
     color: COLORS.primaryWhiteHex,
-    alignSelf: 'center',
+    fontFamily: FONTFAMILY.poppins_bold,
   },
   streakInfo: {
     alignItems: 'center',
