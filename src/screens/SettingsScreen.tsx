@@ -7,7 +7,10 @@ import {
   Text,
   TouchableOpacity,
   Image,
+  Share,
+  Alert,
 } from 'react-native';
+import * as Linking from 'expo-linking';
 import { Feather, FontAwesome, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useStore } from '../store/store';
 import  { COLORS, FONTFAMILY, FONTSIZE } from '../theme/theme';
@@ -20,6 +23,30 @@ const SettingsScreen = ({navigation, route}: any) => {
     navigation.push('Resources', {
       url: url
     });
+  };
+
+  const handleRefer = async () => {
+    try {
+      const result = await Share.share({
+        message: `📚 Discover the Ultimate library App! 📚
+
+Join me on Biblophile, the app that brings together book lovers, offering a seamless experience for buying, selling, renting books, and more! Explore our extensive collection and enjoy exclusive features today.
+
+📲 Download now: https://play.google.com/store/apps/details?id=com.debar_shit.BiblophileApp`,
+      });
+      if (result.action === Share.sharedAction && result.activityType) {
+        // Shared with activity type
+      } else if (result.action === Share.dismissedAction) {
+        // Dismissed
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to refer.');
+    }
+  };
+
+  const rateApp = () => {
+    const url = 'https://play.google.com/store/apps/details?id=com.debar_shit.BiblophileApp&pcampaignid=web_share';
+    Linking.openURL(url).catch(err => console.error("Couldn't load page", err));
   };
 
   return (
@@ -310,9 +337,7 @@ const SettingsScreen = ({navigation, route}: any) => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => {
-                // handle onPress
-              }}
+              onPress={handleRefer}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
                 <FontAwesome5 color="#fff" name="user-friends" size={20} />
@@ -329,9 +354,7 @@ const SettingsScreen = ({navigation, route}: any) => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => {
-                // handle onPress
-              }}
+              onPress={rateApp}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
                 <Feather color="#fff" name="star" size={20} />
