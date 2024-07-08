@@ -21,6 +21,8 @@ const requests = {
     updatePagesRead: `/actions.php?action=updatePagesRead&userId=`,
     fetchReadingTips: `/actions.php?action=fetchReadingTips`,
     updateNotificationToken: `/actions.php?action=updateNotificationToken`,
+    fetchReadingStreakLeaderboard: `/actions.php?action=fetchReadingStreakLeaderboard&userId=`,
+    fetchPagesRead: `/actions.php?action=fetchPagesRead&userId=`,
     paymentRequest: `/actions.php?action=paymentRequest`,
     paymentSuccessful: `/actions.php?action=paymentSuccessful&linkId=`,
 }

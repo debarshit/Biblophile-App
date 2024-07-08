@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, FlatList } from 'react-native';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../theme/theme';
-import instance from '../services/axios';
 import { useStore } from '../store/store';
+import instance from '../services/axios';
+import requests from '../services/requests';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -14,7 +15,7 @@ const StatScreen = () => {
   useEffect(() => {
     async function fetchLeaderboard() {
       try {
-        const response = await instance('https://biblophile.com/actions.php?action=fetchReadingStreakLeaderboard&userId=' + userDetails[0].userId);
+        const response = await instance(requests.fetchReadingStreakLeaderboard + userDetails[0].userId);
         const data = response.data;
         setLeaderboard(data);
       } catch (error) {
@@ -26,7 +27,7 @@ const StatScreen = () => {
 
     async function fetchPagesRead() {
       try {
-        const response = await instance('https://biblophile.com/actions.php?action=fetchPagesRead&userId=' + userDetails[0].userId);
+        const response = await instance(requests.fetchPagesRead + userDetails[0].userId);
         const data = response.data;
         setPagesRead(data);
       } catch (error) {

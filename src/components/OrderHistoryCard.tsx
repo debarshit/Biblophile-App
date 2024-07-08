@@ -44,6 +44,9 @@ const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
             <Text style={styles.FooterTitle}>Delivery Date</Text>
             <Text style={styles.FooterSubtitle}>{order.DeliveryDate}</Text>
           </View>}
+        {order.OrderStatus === '0' && <View>
+          <Text style={styles.FooterSubtitle}>Order Cancelled</Text>
+        </View>}
         {order.DueDate !== "0000-00-00" &&  <View style={styles.ReturnContainer}>
             <Text style={styles.FooterTitle}>Return Date</Text>
             <Text style={styles.FooterPrice}> {order.DueDate}</Text>
