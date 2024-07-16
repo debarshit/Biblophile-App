@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 10,
     marginBottom: 20,
-    width: '30%',
+    width: 'auto',
     alignSelf: 'center',
   },
   buttonText: {
