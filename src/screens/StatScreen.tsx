@@ -50,20 +50,23 @@ const StatScreen = () => {
   const renderBarChart = () => {
     const labels = ["Day Before", "Yesterday", "Today"];
     const bars = [0, 0, 0];
-
+  
     pagesRead.forEach(item => {
       const dayDiff = Math.floor((new Date().getTime() - new Date(item.dateRead).getTime()) / (1000 * 60 * 60 * 24));
       if (dayDiff <= 2) {
         bars[2 - dayDiff] = item.pagesRead;
       }
     });
-
+  
+    const maxPages = Math.max(...bars);
+    const scale = maxPages > 0 ? 100 / maxPages : 0; // Adjust the scale factor as needed
+  
     return (
       <View style={styles.barChartContainer}>
         {bars.map((pages, index) => (
           <View key={index} style={styles.barContainer}>
             <Text style={styles.barValue}>{pages}</Text>
-            <View style={[styles.bar, { height: pages * 10 }]} />
+            <View style={[styles.bar, { height: pages * scale }]} />
             <Text style={styles.barLabel}>{labels[index]}</Text>
           </View>
         ))}
