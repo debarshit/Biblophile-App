@@ -148,7 +148,7 @@ const App = () => {
     }
   } catch (error) {
     console.error('Error in registering for push notifications:', error);
-    Alert.alert('Error in registering for push notifications!');
+    // Alert.alert('Error in registering for push notifications!');
   }
   }
   // for expo notifications end
