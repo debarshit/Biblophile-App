@@ -22,6 +22,7 @@ interface CartItemProps {
   name: string;
   photo: string;
   genre: string;
+  author: string;
   prices: any;
   type: string;
   incrementCartItemQuantityHandler: any;
@@ -33,6 +34,7 @@ const CartItem: React.FC<CartItemProps> = ({
   name,
   photo,
   genre,
+  author,
   prices,
   type,
   incrementCartItemQuantityHandler,
@@ -51,9 +53,6 @@ const CartItem: React.FC<CartItemProps> = ({
             <View style={styles.CartItemInfo}>
               <View>
                 <Text style={styles.CartItemTitle}>{name}</Text>
-                {/* <Text style={styles.CartItemSubtitle}>
-                  {special_ingredient}
-                </Text> */}
               </View>
               <View style={styles.CartItemRoastedContainer}>
                 <Text style={styles.CartItemRoastedText}>{genre}</Text>
@@ -212,11 +211,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_18,
     color: COLORS.primaryWhiteHex,
-  },
-  CartItemSubtitle: {
-    fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_12,
-    color: COLORS.secondaryLightGreyHex,
   },
   CartItemRoastedContainer: {
     height: 50,

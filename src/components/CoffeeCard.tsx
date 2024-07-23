@@ -29,6 +29,7 @@ interface CoffeeCardProps {
   poster: string;
   ratingCount: number;
   name: string;
+  author: string;
   averageRating: number;
   price: any;
   description: string;
@@ -42,6 +43,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
   photo,
   poster,
   name,
+  author,
   averageRating,
   ratingCount,
   price,
@@ -90,6 +92,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
               photo,
               poster,
               type,
+              author,
               prices: [{...prices[0], quantity: 1}],
               actualPrice: prices[0].price,
               averageRating,

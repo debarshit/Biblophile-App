@@ -107,6 +107,7 @@ const CartScreen = ({navigation, route}: any) => {
                         price: getPrice(data),
                         name: data.name,
                         genre: data.genre,
+                        author: data.author,
                         poster: data.poster,
                         photo: data.photo,
                         averageRating: data.averageRating,
@@ -120,8 +121,9 @@ const CartScreen = ({navigation, route}: any) => {
                       name={data.name}
                       photo={data.photo}
                       genre={data.genre}
+                      author={data.author}
                       prices={data.prices}
-                      type="Book"
+                      type={data.type}
                       incrementCartItemQuantityHandler={
                         incrementCartItemQuantityHandler
                       }

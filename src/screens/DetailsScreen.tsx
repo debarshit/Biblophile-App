@@ -211,6 +211,7 @@ const DetailsScreen = ({navigation, route}: any) => {
               id: route.params.id,
               name: route.params.name,
               genre: route.params.genre,
+              author: route.params.author,
               photo: route.params.photo,
               poster: route.params.poster,
               type: route.params.type,

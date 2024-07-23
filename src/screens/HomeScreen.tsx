@@ -46,16 +46,6 @@ const getBookList = async (genre: any) => {
   }
 };
 
-// const getBookmarks = async () => {
-//   try {
-//     const response = await instance(requests.getBookmarks);
-//     const data = response.data;
-//     return data;
-//   } catch (error) {
-//     console.error('Error fetching genres:', error);
-//   }
-// };
-
 const HomeScreen = ({navigation}: any) => {
   //useStore variables
   const addToCart = useStore((state: any) => state.addToCart);
@@ -360,7 +350,8 @@ const HomeScreen = ({navigation}: any) => {
                 <CoffeeCard
                   id={item.BookId}
                   name={item.BookName}
-                  genre={item.BookGenre}
+                  genre={item.BookGenres}
+                  author={item.BookAuthor}
                   photo={item.BookPhoto}
                   poster={item.BookPoster}
                   type="Book"
@@ -431,7 +422,8 @@ const HomeScreen = ({navigation}: any) => {
                   <CoffeeCard
                     id={item.BookmarkId}
                     name={item.BookmarkTitle}
-                    genre="Bookmark"
+                    author="Bookmark"
+                    genre={null}
                     photo={item.BookmarkPhoto}
                     poster={item.BookmarkPoster}
                     type="Bookmark"
