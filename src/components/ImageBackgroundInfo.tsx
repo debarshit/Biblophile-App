@@ -24,8 +24,7 @@ interface ImageBackgroundInfoProps {
   favourite: boolean;
   name: string;
   type: string;
-  // special_ingredient: string;
-  // ingredients: string;
+  author: string;
   average_rating: number;
   ratings_count: string;
   genre: string;
@@ -40,6 +39,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   favourite,
   name,
   type,
+  author,
   average_rating,
   ratings_count,
   genre,
@@ -133,17 +133,20 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
               </View>}
             </View>
             <View style={styles.InfoContainerRow}>
-              {type === "Book" && <View style={styles.RatingContainer}>
-                <AntDesign
-                  name={'star'}
-                  color={COLORS.primaryOrangeHex}
-                  size={FONTSIZE.size_20}
-                />
-                <Text style={styles.RatingText}>{average_rating}</Text>
-                <Text style={styles.RatingCountText}>({Number(ratings_count).toLocaleString()})</Text>
+              {type === "Book" && <View>
+                <Text style={styles.GenreText}>{genre}</Text>
+                <View style={styles.RatingContainer}>
+                  <AntDesign
+                    name={'star'}
+                    color={COLORS.primaryOrangeHex}
+                    size={FONTSIZE.size_20}
+                  />
+                  <Text style={styles.RatingText}>{average_rating}</Text>
+                  <Text style={styles.RatingCountText}>({Number(ratings_count).toLocaleString()})</Text>
+                </View>
               </View>}
               <View style={styles.RoastedContainer}>
-                <Text style={styles.RoastedText}>{genre}</Text>
+                <Text style={styles.RoastedText}>{author}</Text>
               </View>
             </View>
           </View>
@@ -249,9 +252,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.primaryBlackHex,
   },
+  GenreText: {
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_12,
+    color: COLORS.primaryWhiteHex,
+    maxWidth: 150,
+  },
   RoastedText: {
     fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_10,
+    fontSize: FONTSIZE.size_12,
     color: COLORS.primaryWhiteHex,
   },
 });

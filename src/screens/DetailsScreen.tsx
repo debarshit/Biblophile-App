@@ -82,7 +82,8 @@ const DetailsScreen = ({navigation, route}: any) => {
     actualPrice,
     averageRating,
     ratingCount,
-    description, 
+    description,
+    author, 
   }: any) => {
     addToCart({
       id,
@@ -93,7 +94,8 @@ const DetailsScreen = ({navigation, route}: any) => {
       type,
       averageRating,
       ratingCount,
-      description, 
+      description,
+      author, 
       prices: [{...price, quantity: 1}],
       actualPrice: actualPrice,
     });
@@ -136,11 +138,9 @@ const DetailsScreen = ({navigation, route}: any) => {
           favourite={favourite}
           name={route.params.name}
           genre={route.params.genre}
-          // special_ingredient={ItemOfIndex.special_ingredient}
-          // ingredients={ItemOfIndex.ingredients}
           average_rating={route.params.averageRating}
           ratings_count={route.params.ratingCount}
-          // roasted={ItemOfIndex.roasted}
+          author={route.params.author}
           BackHandler={BackHandler}
           ToggleFavourite={ToggleFavourite}
         />

@@ -127,7 +127,8 @@ const HomeScreen = ({navigation}: any) => {
     actualPrice,
     averageRating,
     ratingCount,
-    description,                    
+    description,
+    author,                    
   }: any) => {
     addToCart({
       id,
@@ -140,7 +141,8 @@ const HomeScreen = ({navigation}: any) => {
       actualPrice,
       averageRating,
       ratingCount,
-      description, 
+      description,
+      author, 
     });
     calculateCartPrice();
     if (Platform.OS == 'android') {
@@ -346,12 +348,13 @@ const HomeScreen = ({navigation}: any) => {
                     type: "Book",
                     price: item.BookPrice,
                     name: item.BookName,
-                    genre: item.BookGenre,
+                    genre: item.BookGenres,
                     poster: item.BookPoster,
                     photo: item.BookPhoto,
                     averageRating: item.BookAverageRating,
                     ratingCount: item.BookRatingCount,
                     description: item.BookDescription,
+                    author: item.BookAuthor,
                   });
                 }}>
                 <CoffeeCard
@@ -417,7 +420,7 @@ const HomeScreen = ({navigation}: any) => {
                       type: "Bookmark",
                       price: item.BookmarkPrice,
                       name: item.BookmarkTitle,
-                      genre: "Bookmark",
+                      author: "Bookmark",
                       poster: item.BookmarkPoster,
                       photo: item.BookmarkPhoto,
                       averageRating: null,
