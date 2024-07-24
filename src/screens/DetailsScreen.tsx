@@ -28,41 +28,65 @@ const DetailsScreen = ({navigation, route}: any) => {
   const favoritesList = useStore((state: any) => state.FavoritesList);
   const userDetails = useStore((state: any) => state.userDetails);
 
+  const [id, setId] = useState(route.params.id);
+  const [type, setType] = useState(route.params.type); 
+
   const [subscription, setSubscription] = useState(false);
   const [product, setProduct] = useState([]);
 
-  //Array of buy and rent prices
-  const prices: { size: string; price: string; currency: string }[] = 
-  route.params.type === 'Book'
-  ? [
-      { size: 'Buy', price: product['ProductPrice'], currency: '₹' },
-      { size: 'Rent', price: subscription === true ? 0 : Math.max(25, Math.min(35, Math.floor(product['ProductPrice'] * 0.1))), currency: '₹' },
-    ]
-  : route.params.type === 'Bookmark'
-    ? [
+  const getPrices = () => {
+    if (type === 'Book') {
+      return [
+        { size: 'Buy', price: product['ProductPrice'], currency: '₹' },
+        {
+          size: 'Rent',
+          price: subscription === true ? 0 : Math.max(25, Math.min(35, Math.floor(product['ProductPrice'] * 0.1))),
+          currency: '₹',
+        },
+      ];
+    } else if (type === 'Bookmark') {
+      return [
         { size: 'QR', price: Math.ceil(product['ProductPrice']), currency: '₹' },
-        { size: 'QR & NFC', price: Math.floor(product['ProductPrice'] * 1.3), currency: '₹' }, 
-      ]
-    : []; // Handle other cases or leave it as empty array if not handled
+        { size: 'QR & NFC', price: Math.floor(product['ProductPrice'] * 1.3), currency: '₹' },
+      ];
+    }
+    return [];
+  };
 
-  const [actualPrice, setActualPrice] = useState(prices[0].price);
-  const [price, setPrice] = useState(prices[0]);
+  const [actualPrice, setActualPrice] = useState(0);  //used as a hook to fetch initial price after screen load
+  const [prices, setPrices] = useState(getPrices());
+  const [price, setPrice] = useState(prices[0] || { size: '', price: 0, currency: '₹' });
   const [fullDesc, setFullDesc] = useState(false);
   const [favourite, setFavourite] = useState(false);
 
+  const { action, productId, productType } = route.params || {}; // Ensure params exist
+
+  //handle the deep linked function
+  const handleAction = (action) => {
+    if (action === 'fetchProductDetails') {
+        setId(productId);
+        setType(productType);
+    }
+  };
+
   const ToggleFavourite = (isFavourite, id) => {
     const book = {
-      id: route.params.id,
-      type: route.params.type,
+      id: id,
+      type: type,
       favourite: !favourite,
     };
-    updateFavoriteList(route.params.type, route.params.id, book);
+    updateFavoriteList(type, id, book);
     setFavourite(!favourite);
   };
 
   const BackHandler = () => {
-    navigation.pop();
+    if (navigation.canGoBack()) {
+      navigation.pop();
+    } else {
+      navigation.navigate('Tab');
+    }
   };
+  
 
   const addToCarthandler = ({
     id,
@@ -83,9 +107,9 @@ const DetailsScreen = ({navigation, route}: any) => {
   };
 
   useEffect(() => {
-    const isBookInFavorites = favoritesList.some((book: any) => book.id == route.params.id);
+    const isBookInFavorites = favoritesList.some((book: any) => book.id == id);
     setFavourite(isBookInFavorites);
-  }, [favoritesList, route.params.id]);
+  }, [favoritesList, id]);
 
   useEffect(() => {
     async function fetchActivePlan() {
@@ -106,18 +130,21 @@ const DetailsScreen = ({navigation, route}: any) => {
   useEffect(() => {
     async function fetchProductDetails() {
       try {
-        const response = await instance(`${requests.fetchProductDetails}${route.params.id}&type=${route.params.type}`);
+        if (action) {
+          handleAction(action);
+        }
+        const response = await instance(`${requests.fetchProductDetails}${id}&type=${type}`);
         const data = response.data;
         setProduct(data);
-        var newPrice = price;
-        newPrice.price = data['ProductPrice'];
-        setPrice(newPrice);
-        setActualPrice(data['ProductPrice']);
+        setActualPrice(data.ProductPrice);
+        const updatedPrices = getPrices();
+        setPrices(updatedPrices);
+        setPrice(updatedPrices[0] || { size: '', price: 0, currency: '₹' });
       } catch (error) {
         console.error('Error fetching items:', error);
       }
     }
-  
+
     fetchProductDetails();
   }, [actualPrice]);
 
@@ -130,8 +157,8 @@ const DetailsScreen = ({navigation, route}: any) => {
         <ImageBackgroundInfo
           EnableBackHandler={true}
           imagelink_portrait={product['ProductPoster']}
-          type={route.params.type}
-          id={route.params.id}
+          type={type}
+          id={id}
           favourite={favourite}
           name={product['ProductName']}
           genre={product['ProductGenres']}
@@ -185,7 +212,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                     styles.SizeText,
                     {
                       fontSize:
-                      route.params.type == 'Book'
+                      type == 'Book'
                           ? FONTSIZE.size_14
                           : FONTSIZE.size_16,
                       color:
@@ -200,19 +227,19 @@ const DetailsScreen = ({navigation, route}: any) => {
             ))}
           </View>
         </View>
-        <PaymentFooter
+        {price && <PaymentFooter
           price={price}
           buttonTitle="Add to Cart"
           buttonPressHandler={() => {
             addToCarthandler({
-              id: route.params.id,
+              id: id,
               name: product['ProductName'],
               photo: product['ProductPhoto'],
-              type: route.params.type,
+              type: type,
               price: price,
             });
           }}
-        />
+        />}
       </ScrollView>
     </View>
   );

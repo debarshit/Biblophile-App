@@ -46,6 +46,14 @@ const linking = {
           action: (action) => `${action}`,
         },
       },
+      Details: {
+        path: 'details/:action',
+        parse: {
+          action: (action) => `${action}`,
+          productId: (id) => `${id}`,
+          productType: (type) => `${type}`,
+        },
+      },
       Payment: {
         path: 'payment/:action',
         parse: {
