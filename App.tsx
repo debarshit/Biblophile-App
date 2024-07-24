@@ -123,6 +123,14 @@ const App = () => {
   // for expo notifications start
   useEffect(() => {
     registerForPushNotificationsAsync();
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const url = response.notification.request.content.data.urlScheme;
+      if (url) {
+        Linking.openURL(url);
+      }
+    });
+  
+    return () => subscription.remove();
   }, []);
 
   async function registerForPushNotificationsAsync() {
