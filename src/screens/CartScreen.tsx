@@ -104,15 +104,6 @@ const CartScreen = ({navigation, route}: any) => {
                       navigation.push('Details', {
                         id: data.id,
                         type: data.type,
-                        price: getPrice(data),
-                        name: data.name,
-                        genre: data.genre,
-                        author: data.author,
-                        poster: data.poster,
-                        photo: data.photo,
-                        averageRating: data.averageRating,
-                        ratingCount: data.ratingCount,
-                        description: data.description,
                       });
                     }}
                     key={data.id}>
@@ -120,8 +111,6 @@ const CartScreen = ({navigation, route}: any) => {
                       id={data.id}
                       name={data.name}
                       photo={data.photo}
-                      genre={data.genre}
-                      author={data.author}
                       prices={data.prices}
                       type={data.type}
                       incrementCartItemQuantityHandler={

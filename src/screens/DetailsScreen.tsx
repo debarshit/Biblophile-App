@@ -29,22 +29,23 @@ const DetailsScreen = ({navigation, route}: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
 
   const [subscription, setSubscription] = useState(false);
+  const [product, setProduct] = useState([]);
 
   //Array of buy and rent prices
   const prices: { size: string; price: string; currency: string }[] = 
   route.params.type === 'Book'
   ? [
-      { size: 'Buy', price: route.params.price, currency: '₹' },
-      { size: 'Rent', price: subscription === true ? 0 : Math.max(25, Math.min(35, Math.floor(route.params.price * 0.1))), currency: '₹' },
+      { size: 'Buy', price: product['ProductPrice'], currency: '₹' },
+      { size: 'Rent', price: subscription === true ? 0 : Math.max(25, Math.min(35, Math.floor(product['ProductPrice'] * 0.1))), currency: '₹' },
     ]
   : route.params.type === 'Bookmark'
     ? [
-        { size: 'QR', price: Math.ceil(route.params.price), currency: '₹' },
-        { size: 'QR & NFC', price: Math.floor(route.params.price * 1.3), currency: '₹' }, 
+        { size: 'QR', price: Math.ceil(product['ProductPrice']), currency: '₹' },
+        { size: 'QR & NFC', price: Math.floor(product['ProductPrice'] * 1.3), currency: '₹' }, 
       ]
     : []; // Handle other cases or leave it as empty array if not handled
 
-  const [actualPrice, setActualPrice] = useState(prices[0].price);  //to be passed across pages to maintain the actual price post various operations
+  const [actualPrice, setActualPrice] = useState(prices[0].price);
   const [price, setPrice] = useState(prices[0]);
   const [fullDesc, setFullDesc] = useState(false);
   const [favourite, setFavourite] = useState(false);
@@ -53,14 +54,6 @@ const DetailsScreen = ({navigation, route}: any) => {
     const book = {
       id: route.params.id,
       type: route.params.type,
-      price: route.params.price,
-      name: route.params.name,
-      genre: route.params.genre,
-      poster: route.params.poster,
-      photo: route.params.photo,
-      averageRating: route.params.averageRating,
-      ratingCount: route.params.ratingCount,
-      description: route.params.description,
       favourite: !favourite,
     };
     updateFavoriteList(route.params.type, route.params.id, book);
@@ -74,30 +67,16 @@ const DetailsScreen = ({navigation, route}: any) => {
   const addToCarthandler = ({
     id,
     name,
-    genre,
     photo,
-    poster,
     type,
     price,
-    actualPrice,
-    averageRating,
-    ratingCount,
-    description,
-    author, 
   }: any) => {
     addToCart({
       id,
       name,
-      genre,
       photo,
-      poster,
-      type,
-      averageRating,
-      ratingCount,
-      description,
-      author, 
+      type, 
       prices: [{...price, quantity: 1}],
-      actualPrice: actualPrice,
     });
     calculateCartPrice();
     navigation.navigate('Cart');
@@ -124,6 +103,24 @@ const DetailsScreen = ({navigation, route}: any) => {
     fetchActivePlan();
   }, []);
 
+  useEffect(() => {
+    async function fetchProductDetails() {
+      try {
+        const response = await instance(`${requests.fetchProductDetails}${route.params.id}&type=${route.params.type}`);
+        const data = response.data;
+        setProduct(data);
+        var newPrice = price;
+        newPrice.price = data['ProductPrice'];
+        setPrice(newPrice);
+        setActualPrice(data['ProductPrice']);
+      } catch (error) {
+        console.error('Error fetching items:', error);
+      }
+    }
+  
+    fetchProductDetails();
+  }, [actualPrice]);
+
   return (
     <View style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
@@ -132,15 +129,15 @@ const DetailsScreen = ({navigation, route}: any) => {
         contentContainerStyle={styles.ScrollViewFlex}>
         <ImageBackgroundInfo
           EnableBackHandler={true}
-          imagelink_portrait={route.params.poster}
+          imagelink_portrait={product['ProductPoster']}
           type={route.params.type}
           id={route.params.id}
           favourite={favourite}
-          name={route.params.name}
-          genre={route.params.genre}
-          average_rating={route.params.averageRating}
-          ratings_count={route.params.ratingCount}
-          author={route.params.author}
+          name={product['ProductName']}
+          genre={product['ProductGenres']}
+          average_rating={product['ProductAverageRating']}
+          ratings_count={product['ProductRatingCount']}
+          author={product['ProductAuthor']}
           BackHandler={BackHandler}
           ToggleFavourite={ToggleFavourite}
         />
@@ -153,7 +150,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                 setFullDesc(prev => !prev);
               }}>
               <Text style={styles.DescriptionText}>
-                {route.params.description}
+                {product['ProductDescription']}
               </Text>
             </TouchableWithoutFeedback>
           ) : (
@@ -162,7 +159,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                 setFullDesc(prev => !prev);
               }}>
               <Text numberOfLines={3} style={styles.DescriptionText}>
-                {route.params.description}
+                {product['ProductDescription']}
               </Text>
             </TouchableWithoutFeedback>
           )}
@@ -209,17 +206,10 @@ const DetailsScreen = ({navigation, route}: any) => {
           buttonPressHandler={() => {
             addToCarthandler({
               id: route.params.id,
-              name: route.params.name,
-              genre: route.params.genre,
-              author: route.params.author,
-              photo: route.params.photo,
-              poster: route.params.poster,
+              name: product['ProductName'],
+              photo: product['ProductPhoto'],
               type: route.params.type,
               price: price,
-              actualPrice: actualPrice,
-              averageRating: route.params.averageRating,
-              ratingCount: route.params.ratingCount,
-              description: route.params.description,
             });
           }}
         />

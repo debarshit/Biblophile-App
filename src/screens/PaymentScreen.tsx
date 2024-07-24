@@ -45,7 +45,7 @@ const PaymentScreen = ({navigation, route}: any) => {
   const [paymentMode, setPaymentMode] = useState('Online');
   const [showAnimation, setShowAnimation] = useState(false);
   const [isSubscription, setIsSubscription] = useState(false);
-  const [amount, setAmount] = useState(route.params.amount)
+  const [amount, setAmount] = useState(route.params.amount);
 
   const { action } = route.params || {}; // Ensure params exist
 

@@ -21,8 +21,6 @@ interface CartItemProps {
   id: string;
   name: string;
   photo: string;
-  genre: string;
-  author: string;
   prices: any;
   type: string;
   incrementCartItemQuantityHandler: any;
@@ -33,8 +31,6 @@ const CartItem: React.FC<CartItemProps> = ({
   id,
   name,
   photo,
-  genre,
-  author,
   prices,
   type,
   incrementCartItemQuantityHandler,
@@ -55,7 +51,7 @@ const CartItem: React.FC<CartItemProps> = ({
                 <Text style={styles.CartItemTitle}>{name}</Text>
               </View>
               <View style={styles.CartItemRoastedContainer}>
-                <Text style={styles.CartItemRoastedText}>{genre}</Text>
+                {/* <Text style={styles.CartItemRoastedText}>{genre}</Text> */}
               </View>
             </View>
           </View>

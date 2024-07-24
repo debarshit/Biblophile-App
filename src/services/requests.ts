@@ -2,6 +2,7 @@ const requests = {
     //request to biblophile actions api
     getBookGenre:`/actions1.php?action=getBookGenre`,
     getBooks:`/actions1.php?action=getBooks&bookGenre=`,
+    fetchProductDetails:`/actions1.php?action=fetchProductDetails&id=`, 
     placeOrder: `/actions1.php?action=placeOrder`,
     placeSubscriptionOrder: `/actions1.php?action=placeSubscriptionOrder`,
     userLogin: `/actions1.php?action=userLogin`,

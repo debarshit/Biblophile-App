@@ -24,30 +24,22 @@ const CARD_WIDTH = Dimensions.get('window').width * 0.32;
 interface CoffeeCardProps {
   id: string;
   type: string;
-  genre: string;
   photo: string;
-  poster: string;
   ratingCount: number;
   name: string;
-  author: string;
   averageRating: number;
   price: any;
-  description: string;
   buttonPressHandler: any;
 }
 
 const CoffeeCard: React.FC<CoffeeCardProps> = ({
   id,
   type,
-  genre,
   photo,
-  poster,
   name,
-  author,
   averageRating,
   ratingCount,
   price,
-  description,
   buttonPressHandler,
 }) => {
    //Array of buy and rent prices
@@ -88,16 +80,9 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
             buttonPressHandler({
               id,
               name,
-              genre,
               photo,
-              poster,
               type,
-              author,
               prices: [{...prices[0], quantity: 1}],
-              actualPrice: prices[0].price,
-              averageRating,
-              ratingCount,
-              description,  
             });
           }}>
           <BGIcon

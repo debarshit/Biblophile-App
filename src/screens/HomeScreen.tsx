@@ -336,29 +336,16 @@ const HomeScreen = ({navigation}: any) => {
                   navigation.push('Details', {
                     id: item.BookId,
                     type: "Book",
-                    price: item.BookPrice,
-                    name: item.BookName,
-                    genre: item.BookGenres,
-                    poster: item.BookPoster,
-                    photo: item.BookPhoto,
-                    averageRating: item.BookAverageRating,
-                    ratingCount: item.BookRatingCount,
-                    description: item.BookDescription,
-                    author: item.BookAuthor,
                   });
                 }}>
                 <CoffeeCard
                   id={item.BookId}
                   name={item.BookName}
-                  genre={item.BookGenres}
-                  author={item.BookAuthor}
                   photo={item.BookPhoto}
-                  poster={item.BookPoster}
                   type="Book"
                   price={item.BookPrice}
                   averageRating={item.BookAverageRating}
                   ratingCount={item.BookRatingCount}
-                  description={item.BookDescription}  
                   buttonPressHandler={CoffeeCardAddToCart}
                 />
               </TouchableOpacity>
@@ -409,28 +396,16 @@ const HomeScreen = ({navigation}: any) => {
                     navigation.push('Details', {
                       id: item.BookmarkId,
                       type: "Bookmark",
-                      price: item.BookmarkPrice,
-                      name: item.BookmarkTitle,
-                      author: "Bookmark",
-                      poster: item.BookmarkPoster,
-                      photo: item.BookmarkPhoto,
-                      averageRating: null,
-                      ratingCount: null,
-                      description: item.BookmarkDescription,
                     });
                   }}>
                   <CoffeeCard
                     id={item.BookmarkId}
                     name={item.BookmarkTitle}
-                    author="Bookmark"
-                    genre={null}
                     photo={item.BookmarkPhoto}
-                    poster={item.BookmarkPoster}
                     type="Bookmark"
                     price={item.BookmarkPrice}
                     averageRating={null}
                     ratingCount={null}
-                    description={item.BookmarkDescription}  
                     buttonPressHandler={CoffeeCardAddToCart}
                   />
                 </TouchableOpacity>
