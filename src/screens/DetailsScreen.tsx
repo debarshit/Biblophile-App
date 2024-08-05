@@ -159,7 +159,7 @@ const DetailsScreen = ({navigation, route}: any) => {
 
   const renderScene = SceneMap({
     description: () => (
-      <View style={styles.TabContent}>
+      <View style={[styles.TabContent, index !== 0 && styles.hidden]}>
         <Text style={styles.InfoTitle}>Description</Text>
           {fullDesc ? (
             <TouchableWithoutFeedback
@@ -219,14 +219,14 @@ const DetailsScreen = ({navigation, route}: any) => {
       </View>
     ),
     reviews: () => (
-      <View style={styles.TabContent}>
-        <Text style={styles.InfoTitle}>Reviews Content</Text>
+      <View style={[styles.TabContent, index !== 1 && styles.hidden]}>
+        <Text style={styles.InfoTitle}>Reviews</Text>
         <ProductReview id={id} isGoogleBook={false} product={product}/>
       </View>
     ),
     emotions: () => (
-      <View style={styles.TabContent}>
-        <Text style={styles.InfoTitle}>Emotions Content</Text>
+      <View style={[styles.TabContent, index !== 2 && styles.hidden]}>
+        <Text style={styles.InfoTitle}>Emotions</Text>
         <BookEmotions id={id} isGoogleBook={false} product={product}/>
       </View>
     ),
@@ -304,6 +304,9 @@ const styles = StyleSheet.create({
   },
   FooterInfoArea: {
     padding: SPACING.space_20,
+  },
+  hidden: { 
+    display: "none" ,
   },
   TabContent: {
     padding: SPACING.space_20,
