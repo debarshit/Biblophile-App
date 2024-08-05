@@ -165,6 +165,7 @@ const DetailsScreen = ({navigation, route}: any) => {
           author={product['ProductAuthor']}
           BackHandler={BackHandler}
           ToggleFavourite={ToggleFavourite}
+          product={product} //later remove all other params and just pass product
         />
 
         <View style={styles.FooterInfoArea}>

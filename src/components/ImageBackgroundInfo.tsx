@@ -18,6 +18,7 @@ import {
 } from '../theme/theme';
 import instance from '../services/axios';
 import requests from '../services/requests';
+import ReadingStatus from './ReadingStatus';
 
 interface ImageBackgroundInfoProps {
   EnableBackHandler: boolean;
@@ -30,6 +31,7 @@ interface ImageBackgroundInfoProps {
   genre: string;
   BackHandler?: any;
   ToggleFavourite: any;
+  product: any;
 }
 
 const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
@@ -43,6 +45,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   genre,
   BackHandler,
   ToggleFavourite,
+  product,
 }) => {
   const [averageRating, setAverageRating] = useState(null);
   const [ratingsCount, setRatingsCount] = useState(null);
@@ -66,7 +69,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             //     }
             // }
         }
-        const response = await instance(`${requests.fetchAverageRating}${id}`);
+        const response = await instance(`${requests.fetchAverageRating}${bookId}`);
         const data = response.data;
         setAverageRating(data.averageRating);
         setRatingsCount(data.totalRatings);
@@ -131,6 +134,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
                 size={FONTSIZE.size_16}
               />
             </TouchableOpacity>
+            <ReadingStatus id={id} isGoogleBook={false} product={product}/>
             <TouchableOpacity
               onPress={() => {
                 ToggleFavourite(favourite, id);
@@ -146,6 +150,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
           </View>
         ) : (
           <View style={styles.ImageHeaderBarContainerWithoutBack}>
+            <ReadingStatus id={id} isGoogleBook={false} product={product}/>
             <TouchableOpacity
               onPress={() => {
                 ToggleFavourite(favourite, id);
@@ -171,7 +176,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             <View style={styles.InfoContainerRow}>
               {type === "Book" && <View>
                 {topEmotions && topEmotions.map((emotion, index) => (
-                  <Text style={styles.ItemSubtitleText}>
+                  <Text style={styles.ItemSubtitleText} key={emotion.EmotionId}>
                   {emotion.Emotion}
                   </Text>
                 ))}
@@ -207,6 +212,7 @@ const styles = StyleSheet.create({
   },
   ImageHeaderBarContainerWithBack: {
     padding: SPACING.space_30,
+    verticalAlign: 'middle',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
