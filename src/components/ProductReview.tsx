@@ -4,7 +4,7 @@ import instance from '../services/axios';
 import requests from '../services/requests';
 import { useStore } from '../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
-// import { AirbnbRating } from 'react-native-ratings';
+import StarRating from 'react-native-star-rating';
 
 interface ProductReviewProps {
   id: string;
@@ -105,17 +105,24 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
     }
   };
 
+  const onStarRatingPress = (rating) => {
+    setRating(rating);
+  };
+
   return (
     <View style={styles.container}>
       {userDetails[0].userId ? (
         <View style={styles.reviewForm}>
-          <Text style={styles.label}>Rating:</Text>
-          {/* <AirbnbRating
-            count={5}
-            defaultRating={rating}
-            size={30}
-            onFinishRating={setRating}
-          /> */}
+          {/* <Text style={styles.label}>Rating:</Text> */}
+          <StarRating
+            disabled={false}
+            maxStars={5}
+            rating={rating}
+            fullStarColor={COLORS.primaryOrangeHex}
+            selectedStar={(rating) => onStarRatingPress(rating)}
+            halfStarEnabled={true}  
+            starSize={30}       
+          />
           <TextInput
             style={styles.textInput}
             multiline
@@ -176,6 +183,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryGreyHex,
     color: COLORS.primaryWhiteHex,
     padding: SPACING.space_12,
+    marginTop: SPACING.space_10,
     marginBottom: SPACING.space_10,
     borderRadius: BORDERRADIUS.radius_10,
     textAlignVertical: 'top',
