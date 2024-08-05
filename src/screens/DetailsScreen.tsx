@@ -16,6 +16,7 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import ImageBackgroundInfo from '../components/ImageBackgroundInfo';
@@ -33,6 +34,12 @@ const DetailsScreen = ({navigation, route}: any) => {
 
   const [subscription, setSubscription] = useState(false);
   const [product, setProduct] = useState([]);
+  const [index, setIndex] = useState(0);  // Tab index
+  const [routes] = useState([
+    { key: 'description', title: 'Description' },
+    { key: 'reviews', title: 'Reviews' },
+    { key: 'emotions', title: 'Emotions' },
+  ]);
 
   const getPrices = () => {
     if (type === 'Book') {
@@ -148,28 +155,10 @@ const DetailsScreen = ({navigation, route}: any) => {
     fetchProductDetails();
   }, [actualPrice]);
 
-  return (
-    <View style={styles.ScreenContainer}>
-      <StatusBar backgroundColor={COLORS.primaryBlackHex} />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.ScrollViewFlex}>
-        <ImageBackgroundInfo
-          EnableBackHandler={true}
-          imagelink_portrait={product['ProductPoster']}
-          type={type}
-          id={id}
-          favourite={favourite}
-          name={product['ProductName']}
-          genre={product['ProductGenres']}
-          author={product['ProductAuthor']}
-          BackHandler={BackHandler}
-          ToggleFavourite={ToggleFavourite}
-          product={product} //later remove all other params and just pass product
-        />
-
-        <View style={styles.FooterInfoArea}>
-          <Text style={styles.InfoTitle}>Description</Text>
+  const renderScene = SceneMap({
+    description: () => (
+      <View style={styles.TabContent}>
+        <Text style={styles.InfoTitle}>Description</Text>
           {fullDesc ? (
             <TouchableWithoutFeedback
               onPress={() => {
@@ -225,6 +214,62 @@ const DetailsScreen = ({navigation, route}: any) => {
               </TouchableOpacity>
             ))}
           </View>
+      </View>
+    ),
+    reviews: () => (
+      <View style={styles.TabContent}>
+        <Text style={styles.InfoTitle}>Reviews Content</Text>
+      </View>
+    ),
+    emotions: () => (
+      <View style={styles.TabContent}>
+        <Text style={styles.InfoTitle}>Emotions Content</Text>
+      </View>
+    ),
+  });
+
+  const renderTabBar = props => (
+    <TabBar
+      {...props}
+      indicatorStyle={{ backgroundColor: COLORS.primaryOrangeHex }}
+      style={{ backgroundColor: COLORS.primaryBlackHex }}
+      renderLabel={({ route, focused, color }) => (
+        <Text style={[styles.TabLabel, focused && styles.TabLabelFocused]}>
+          {route.title}
+        </Text>
+      )}
+    />
+  );
+
+  return (
+    <View style={styles.ScreenContainer}>
+      <StatusBar backgroundColor={COLORS.primaryBlackHex} />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.ScrollViewFlex}>
+        <ImageBackgroundInfo
+          EnableBackHandler={true}
+          imagelink_portrait={product['ProductPoster']}
+          type={type}
+          id={id}
+          favourite={favourite}
+          name={product['ProductName']}
+          genre={product['ProductGenres']}
+          author={product['ProductAuthor']}
+          BackHandler={BackHandler}
+          ToggleFavourite={ToggleFavourite}
+          product={product} //later remove all other params and just pass product
+        />
+
+        <View style={styles.FooterInfoArea}>
+        <TabView
+            navigationState={{ index, routes }}
+            renderScene={renderScene}
+            renderTabBar={renderTabBar}
+            onIndexChange={setIndex}
+            initialLayout={{ width: 100 }}
+            style={styles.TabView}
+          />
         </View>
         {price && <PaymentFooter
           price={price}
@@ -256,6 +301,17 @@ const styles = StyleSheet.create({
   FooterInfoArea: {
     padding: SPACING.space_20,
   },
+  TabContent: {
+    padding: SPACING.space_20,
+  },
+  TabLabel: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryWhiteHex,
+  },
+  TabLabelFocused: {
+    color: COLORS.primaryOrangeHex,
+  },
   InfoTitle: {
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_16,
@@ -286,6 +342,9 @@ const styles = StyleSheet.create({
   },
   SizeText: {
     fontFamily: FONTFAMILY.poppins_medium,
+  },
+  TabView: {
+    flex: 1,
   },
 });
 
