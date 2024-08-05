@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
+import Slider from '@react-native-community/slider';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import { useStore } from '../store/store';
@@ -44,7 +45,7 @@ const BookEmotions: React.FC<BookEmotionsProps> = ({ id, isGoogleBook, product }
             bookId: bookIdToFetch,
         });
 
-        setEmotions(response.data.map((emotion: any) => ({ ...emotion, value: emotion.value })));
+        setEmotions(response.data.map((emotion: any) => ({ ...emotion, value: Number(emotion.value) })));
     } catch (error) {
         console.error('Error fetching emotions:', error);
     }
@@ -119,16 +120,16 @@ const handleEmotionSubmit = async () => {
                     {emotions.map((mood, index) => (
                         <View key={mood.emotionId} style={styles.moodSlider}>
                             <Text style={styles.moodLabel}>{mood.emotion}</Text>
-                            {/* <Slider
+                            <Slider
                                 style={styles.moodRange}
                                 minimumValue={0}
                                 maximumValue={100}
                                 value={mood.value}
                                 onValueChange={(value) => handleMoodChange(index, value)}
-                                minimumTrackTintColor="#FFA500"
-                                maximumTrackTintColor="#FFFFFF"
-                                thumbTintColor="#FFA500"
-                            /> */}
+                                minimumTrackTintColor={COLORS.primaryOrangeHex}
+                                maximumTrackTintColor={COLORS.primaryWhiteHex}
+                                thumbTintColor={COLORS.primaryOrangeHex}
+                            />
                             <Text style={styles.moodValue}>{Math.round(mood.value)}</Text>
                         </View>
                     ))}
@@ -161,10 +162,9 @@ const styles = StyleSheet.create({
         borderRadius: BORDERRADIUS.radius_10,
     },
     moodLabel: {
-        fontSize: FONTSIZE.size_18,
+        fontSize: FONTSIZE.size_14,
         fontFamily: FONTFAMILY.poppins_regular,
         color: COLORS.primaryWhiteHex,
-        flex: 1,
     },
     moodRange: {
         flex: 3,

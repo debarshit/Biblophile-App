@@ -125,7 +125,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
             placeholder="Write your review here..."
             placeholderTextColor="#AAAAAA"
           />
-          <Button title="Submit Review" onPress={handleReviewSubmit} />
+          <Button title="Submit Review" onPress={handleReviewSubmit} color={COLORS.primaryOrangeHex} />
         </View>
       ) : (
         <Text style={styles.loginPrompt}>Login to put a review.</Text>
