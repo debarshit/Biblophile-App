@@ -145,12 +145,15 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
             <Text style={styles.reviewAuthor}>By {item.userName}</Text>
             <Text style={styles.reviewDate}>{item.ratingDate}</Text>
             <View style={styles.reviewRating}>
-              {/* <AirbnbRating
-                isDisabled
-                showRating={false}
-                defaultRating={item.rating}
-                size={20}
-              /> */}
+              <StarRating
+                disabled={true}
+                maxStars={5}
+                rating={Number(item.rating)}
+                fullStarColor={COLORS.primaryOrangeHex}
+                selectedStar={(rating) => onStarRatingPress(rating)}
+                halfStarEnabled={true}  
+                starSize={30}       
+              />
               <Text>{item.rating}</Text>
             </View>
             <Text style={styles.reviewText}>{item.review}</Text>
