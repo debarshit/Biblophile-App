@@ -137,6 +137,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
       ) : (
         <Text style={styles.loginPrompt}>Login to put a review.</Text>
       )}
+      {/* This virtual list causing warnings due to being inside scrollView of DetailScreen */}
       <FlatList
         data={reviews}
         keyExtractor={(item) => item.id}
