@@ -21,6 +21,8 @@ import instance from '../services/axios';
 import requests from '../services/requests';
 import ImageBackgroundInfo from '../components/ImageBackgroundInfo';
 import PaymentFooter from '../components/PaymentFooter';
+import ProductReview from '../components/ProductReview';
+import BookEmotions from '../components/BookEmotions';
 
 const DetailsScreen = ({navigation, route}: any) => {
   const updateFavoriteList = useStore((state: any) => state.updateFavoriteList);
@@ -219,11 +221,13 @@ const DetailsScreen = ({navigation, route}: any) => {
     reviews: () => (
       <View style={styles.TabContent}>
         <Text style={styles.InfoTitle}>Reviews Content</Text>
+        <ProductReview id={id} isGoogleBook={false} product={product}/>
       </View>
     ),
     emotions: () => (
       <View style={styles.TabContent}>
         <Text style={styles.InfoTitle}>Emotions Content</Text>
+        <BookEmotions id={id} isGoogleBook={false} product={product}/>
       </View>
     ),
   });
