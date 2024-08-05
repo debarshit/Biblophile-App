@@ -12,6 +12,7 @@ import {
     FONTSIZE,
     SPACING,
   } from '../theme/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 const ReadingStatus = ({ id, isGoogleBook, product }) => {
@@ -61,6 +62,13 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
         fetchReadingStatus();
     }, [product]);
 
+    interface ReadingStatusRequest {
+        userId: any;
+        bookId: any;
+        status: string;
+        currentPage?: string; // Optional property
+    }
+
     const submitReadingStatus = async () => {
         if (userDetails) {
             try {
@@ -88,11 +96,10 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     }
                 }
 
-                const requestData = {
+                const requestData: ReadingStatusRequest = {
                     userId: userDetails[0].userId,
                     bookId: bookId,
                     status: status,
-                    currentPage: currentPage,
                 };
 
                 if (status === "Currently reading") {
@@ -129,21 +136,31 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     <Picker.Item label="Currently reading" value="Currently reading" />
                     <Picker.Item label="To be read" value="To be read" />
                 </Picker>
-                <TouchableOpacity onPress={submitReadingStatus}>
-                <Entypo name="check" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_24}/>
-                </TouchableOpacity>
             </View>
             {status === 'Currently reading' && (
                 <View style={styles.pageNumberInput}>
-                    <Text style={styles.label}>Current Page:</Text>
+                    {/* <Text style={styles.label}>Current Page:</Text> */}
                     <TextInput
                         style={styles.input}
+                        placeholder='current page'
+                        placeholderTextColor={COLORS.secondaryLightGreyHex}
                         keyboardType="numeric"
                         value={String(currentPage)}
                         onChangeText={(text) => setCurrentPage(text)}
                     />
                 </View>
             )}
+            <TouchableOpacity onPress={submitReadingStatus}>
+                <View style={styles.iconContainer}>
+                    <LinearGradient
+                        start={{x: 0, y: 0}}
+                        end={{x: 1, y: 1}}
+                        colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}
+                        style={styles.LinearGradientBG}>
+                        <Entypo name="check" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_24}/>
+                    </LinearGradient>
+                </View>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -151,13 +168,31 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'column',
-        padding: SPACING.space_16,
+        
     },
+    iconContainer: {
+        height: SPACING.space_36,
+        width: SPACING.space_36,
+        borderWidth: 2,
+        borderColor: COLORS.secondaryDarkGreyHex,
+        borderRadius: SPACING.space_12,
+        alignSelf: 'center',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: COLORS.secondaryDarkGreyHex,
+        overflow: 'hidden',
+      },
+      LinearGradientBG: {
+        height: SPACING.space_36,
+        width: SPACING.space_36,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
     updateMessage: {
-        fontFamily: 'Poppins-Bold',
-        fontSize: 16,
-        color: 'orange',
-        marginBottom: 8,
+        fontFamily: FONTFAMILY.poppins_bold,
+        fontSize: FONTSIZE.size_16,
+        color: COLORS.primaryOrangeHex,
+        marginBottom: SPACING.space_8,
     },
     statusDropdown: {
         flexDirection: 'row',
@@ -166,17 +201,17 @@ const styles = StyleSheet.create({
         fontFamily: FONTFAMILY.poppins_regular,
         color: COLORS.primaryWhiteHex,
     },
-    label: {
-        marginRight: SPACING.space_8,
-        color: COLORS.primaryWhiteHex,
-    },
+    // label: {
+    //     marginRight: SPACING.space_8,
+    //     color: COLORS.primaryWhiteHex,
+    // },
     picker: {
         width: 150,
         padding: SPACING.space_8,
         borderColor: COLORS.secondaryLightGreyHex,
         borderRadius: BORDERRADIUS.radius_8,
         fontFamily: FONTFAMILY.poppins_regular,
-        color: 'white',
+        color: COLORS.primaryWhiteHex,
         backgroundColor: COLORS.primaryGreyHex,
     },
     pageNumberInput: {
@@ -193,8 +228,7 @@ const styles = StyleSheet.create({
         color: COLORS.primaryWhiteHex,
         fontFamily: FONTFAMILY.poppins_regular,
         fontSize: FONTSIZE.size_16,
-        width: 100,
-        maxWidth: 120,
+        width: 150,
     },
 });
 

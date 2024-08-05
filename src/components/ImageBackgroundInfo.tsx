@@ -212,15 +212,12 @@ const styles = StyleSheet.create({
   },
   ImageHeaderBarContainerWithBack: {
     padding: SPACING.space_30,
-    verticalAlign: 'middle',
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
   },
   ImageHeaderBarContainerWithoutBack: {
     padding: SPACING.space_30,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'flex-end',
   },
   ImageInfoOuterContainer: {
