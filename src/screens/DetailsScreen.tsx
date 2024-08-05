@@ -162,8 +162,6 @@ const DetailsScreen = ({navigation, route}: any) => {
           favourite={favourite}
           name={product['ProductName']}
           genre={product['ProductGenres']}
-          average_rating={product['ProductAverageRating']}
-          ratings_count={product['ProductRatingCount']}
           author={product['ProductAuthor']}
           BackHandler={BackHandler}
           ToggleFavourite={ToggleFavourite}

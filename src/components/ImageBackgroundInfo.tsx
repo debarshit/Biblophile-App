@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -16,6 +16,8 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
+import instance from '../services/axios';
+import requests from '../services/requests';
 
 interface ImageBackgroundInfoProps {
   EnableBackHandler: boolean;
@@ -25,8 +27,6 @@ interface ImageBackgroundInfoProps {
   name: string;
   type: string;
   author: string;
-  average_rating: number;
-  ratings_count: string;
   genre: string;
   BackHandler?: any;
   ToggleFavourite: any;
@@ -40,12 +40,80 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   name,
   type,
   author,
-  average_rating,
-  ratings_count,
   genre,
   BackHandler,
   ToggleFavourite,
 }) => {
+  const [averageRating, setAverageRating] = useState(null);
+  const [ratingsCount, setRatingsCount] = useState(null);
+  const [topEmotions, setTopEmotions] = useState(null);
+
+  useEffect(() => {
+    async function fetchProductRatings() {
+      try {
+        let bookId = id;
+
+        if (type === "ExternalBook") {
+            // Fetch the BookId based on ISBN13 in case of google books
+            // const isbn = product.volumeInfo?.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier || '';
+            // if (isbn) {
+            //     const bookIdResponse = await axios.post(requests.fetchBookId, { ISBN: isbn });
+            //     if (bookIdResponse.data.bookId) {
+            //         id = bookIdResponse.data.bookId;
+            //     } else {
+            //         console.log("Failed to fetch BookId");
+            //         return;
+            //     }
+            // }
+        }
+        const response = await instance(`${requests.fetchAverageRating}${id}`);
+        const data = response.data;
+        setAverageRating(data.averageRating);
+        setRatingsCount(data.totalRatings);
+      }
+      catch (error) {
+        console.error('Error fetching items:', error);
+      }
+    }
+
+    fetchProductRatings();
+  
+
+  }, [id])
+
+  useEffect(() => {
+    async function fetchTopEmotions() {
+      try {
+        let bookId = id;
+
+        if (type === "ExternalBook") {
+            // Fetch the BookId based on ISBN13 in case of google books
+            // const isbn = product.volumeInfo?.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier || '';
+            // if (isbn) {
+            //     const bookIdResponse = await axios.post(requests.fetchBookId, { ISBN: isbn });
+            //     if (bookIdResponse.data.bookId) {
+            //         id = bookIdResponse.data.bookId;
+            //     } else {
+            //         console.log("Failed to fetch BookId");
+            //         return;
+            //     }
+            // }
+        }
+        const response = await instance(`${requests.fetchAverageEmotions}${bookId}`);
+        const data = response.data;
+        setTopEmotions(data.topEmotions);
+      }
+      catch (error) {
+        console.error('Error fetching items:', error);
+      }
+    }
+
+    fetchTopEmotions();
+  
+
+  }, [id])
+  
+
   return (
     <View>
       <ImageBackground
@@ -98,55 +166,30 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             <View style={styles.InfoContainerRow}>
               <View style={styles.ItemTitleContainer}>
                 <Text style={styles.ItemTitleText}>{name}</Text>
-                {/* <Text style={styles.ItemSubtitleText}>
-                  {genre}
-                </Text> */}
               </View>
-              { type === "Book" && <View style={styles.ItemPropertiesContainer}>
-                <View style={styles.ProperFirst}>
-                  <MaterialCommunityIcons
-                    name={type == 'Book' ? 'check' : 'check'}
-                    size={type == 'Book' ? FONTSIZE.size_18 : FONTSIZE.size_24}
-                    color={COLORS.primaryOrangeHex}
-                  />
-                  <Text
-                    style={[
-                      styles.PropertyTextFirst,
-                      {
-                        marginTop:
-                          type == 'Book'
-                            ? SPACING.space_4 + SPACING.space_2
-                            : 0,
-                      },
-                    ]}>
-                    Buy
-                  </Text>
-                </View>
-                <View style={styles.ProperFirst}>
-                  <MaterialCommunityIcons
-                    name={type == 'Book' ? 'check' : 'check'}
-                    size={FONTSIZE.size_16}
-                    color={COLORS.primaryOrangeHex}
-                  />
-                  <Text style={styles.PropertyTextLast}>Rent</Text>
-                </View>
-              </View>}
             </View>
             <View style={styles.InfoContainerRow}>
               {type === "Book" && <View>
-                <Text style={styles.GenreText}>{genre}</Text>
+                {topEmotions && topEmotions.map((emotion, index) => (
+                  <Text style={styles.ItemSubtitleText}>
+                  {emotion.Emotion}
+                  </Text>
+                ))}
                 <View style={styles.RatingContainer}>
                   <AntDesign
                     name={'star'}
                     color={COLORS.primaryOrangeHex}
                     size={FONTSIZE.size_20}
                   />
-                  <Text style={styles.RatingText}>{average_rating}</Text>
-                  <Text style={styles.RatingCountText}>({Number(ratings_count).toLocaleString()})</Text>
+                  <Text style={styles.RatingText}>{averageRating}</Text>
+                  <Text style={styles.RatingCountText}>({Number(ratingsCount).toLocaleString()})</Text>
                 </View>
               </View>}
-              <View style={styles.RoastedContainer}>
-                <Text style={styles.RoastedText}>{author}</Text>
+              <View>
+                <Text style={styles.GenreText}>{genre}</Text>
+                <View style={styles.RoastedContainer}>
+                  <Text style={styles.RoastedText}>{author}</Text>
+                </View>
               </View>
             </View>
           </View>
@@ -192,7 +235,7 @@ const styles = StyleSheet.create({
   },
   ItemTitleContainer: {
     flex: 1,
-    maxWidth: '70%', // Adjust this value according to your layout requirements
+    maxWidth: '80%', // Adjust this value according to your layout requirements
   },
   ItemTitleText: {
     fontFamily: FONTFAMILY.poppins_semibold,

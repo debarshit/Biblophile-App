@@ -3,6 +3,8 @@ const requests = {
     getBookGenre:`/actions1.php?action=getBookGenre`,
     getBooks:`/actions1.php?action=getBooks&bookGenre=`,
     fetchProductDetails:`/actions1.php?action=fetchProductDetails&id=`, 
+    fetchAverageRating:`/actions1.php?action=fetchAverageRating&id=`,
+    fetchAverageEmotions:`/actions1.php?action=fetchAverageEmotions&id=`,
     placeOrder: `/actions1.php?action=placeOrder`,
     placeSubscriptionOrder: `/actions1.php?action=placeSubscriptionOrder`,
     userLogin: `/actions1.php?action=userLogin`,
