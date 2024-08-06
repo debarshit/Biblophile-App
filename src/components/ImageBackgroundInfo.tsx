@@ -6,6 +6,7 @@ import {
   ImageProps,
   TouchableOpacity,
   ImageBackground,
+  ScrollView,
 } from 'react-native';
 import { AntDesign, MaterialCommunityIcons, FontAwesome6 } from '@expo/vector-icons';
 import GradientBGIcon from './GradientBGIcon';
@@ -23,7 +24,7 @@ import ReadingStatus from './ReadingStatus';
 interface ImageBackgroundInfoProps {
   EnableBackHandler: boolean;
   imagelink_portrait: string;
-  id: number;
+  id: string;
   favourite: boolean;
   name: string;
   type: string;
@@ -32,6 +33,7 @@ interface ImageBackgroundInfoProps {
   BackHandler?: any;
   ToggleFavourite: any;
   product: any;
+  isGoogleBook: boolean;
 }
 
 const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
@@ -46,28 +48,29 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   BackHandler,
   ToggleFavourite,
   product,
+  isGoogleBook,
 }) => {
   const [averageRating, setAverageRating] = useState(null);
   const [ratingsCount, setRatingsCount] = useState(null);
   const [topEmotions, setTopEmotions] = useState(null);
 
   useEffect(() => {
-    async function fetchProductRatings() {
+    async function fetchAverageRating() {
       try {
         let bookId = id;
 
         if (type === "ExternalBook") {
-            // Fetch the BookId based on ISBN13 in case of google books
-            // const isbn = product.volumeInfo?.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier || '';
-            // if (isbn) {
-            //     const bookIdResponse = await axios.post(requests.fetchBookId, { ISBN: isbn });
-            //     if (bookIdResponse.data.bookId) {
-            //         id = bookIdResponse.data.bookId;
-            //     } else {
-            //         console.log("Failed to fetch BookId");
-            //         return;
-            //     }
-            // }
+            //Fetch the BookId based on ISBN13 in case of google books
+            const isbn = product.volumeInfo?.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier || '';
+            if (isbn) {
+                const bookIdResponse = await instance.post(requests.fetchBookId, { ISBN: isbn });
+                if (bookIdResponse.data.bookId) {
+                    bookId = bookIdResponse.data.bookId;
+                } else {
+                    console.log("Failed to fetch BookId");
+                    return;
+                }
+            }
         }
         const response = await instance(`${requests.fetchAverageRating}${bookId}`);
         const data = response.data;
@@ -79,10 +82,10 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
       }
     }
 
-    fetchProductRatings();
+    fetchAverageRating();
   
 
-  }, [id])
+  }, [product])
 
   useEffect(() => {
     async function fetchTopEmotions() {
@@ -91,16 +94,16 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
 
         if (type === "ExternalBook") {
             // Fetch the BookId based on ISBN13 in case of google books
-            // const isbn = product.volumeInfo?.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier || '';
-            // if (isbn) {
-            //     const bookIdResponse = await axios.post(requests.fetchBookId, { ISBN: isbn });
-            //     if (bookIdResponse.data.bookId) {
-            //         id = bookIdResponse.data.bookId;
-            //     } else {
-            //         console.log("Failed to fetch BookId");
-            //         return;
-            //     }
-            // }
+            const isbn = product.volumeInfo?.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier || '';
+            if (isbn) {
+                const bookIdResponse = await instance.post(requests.fetchBookId, { ISBN: isbn });
+                if (bookIdResponse.data.bookId) {
+                    bookId = bookIdResponse.data.bookId;
+                } else {
+                    console.log("Failed to fetch BookId");
+                    return;
+                }
+            }
         }
         const response = await instance(`${requests.fetchAverageEmotions}${bookId}`);
         const data = response.data;
@@ -114,7 +117,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     fetchTopEmotions();
   
 
-  }, [id])
+  }, [product])
   
 
   return (
@@ -134,7 +137,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
                 size={FONTSIZE.size_16}
               />
             </TouchableOpacity>
-            <ReadingStatus id={id} isGoogleBook={false} product={product}/>
+            <ReadingStatus id={id} isGoogleBook={isGoogleBook} product={product}/>
             <TouchableOpacity
               onPress={() => {
                 ToggleFavourite(favourite, id);
@@ -174,24 +177,32 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
               </View>
             </View>
             <View style={styles.InfoContainerRow}>
-              {type === "Book" && <View>
+              {type !== "Bookmark" && <View>
                 {topEmotions && topEmotions.map((emotion, index) => (
-                  <Text style={styles.ItemSubtitleText} key={emotion.EmotionId}>
+                  <Text style={styles.ItemSubtitleText} key={index}>
                   {emotion.Emotion}
                   </Text>
                 ))}
                 <View style={styles.RatingContainer}>
-                  <AntDesign
-                    name={'star'}
-                    color={COLORS.primaryOrangeHex}
-                    size={FONTSIZE.size_20}
-                  />
-                  <Text style={styles.RatingText}>{averageRating}</Text>
-                  <Text style={styles.RatingCountText}>({Number(ratingsCount).toLocaleString()})</Text>
+                  { averageRating > 0 ?
+                  <>
+                    <AntDesign
+                      name={'star'}
+                      color={COLORS.primaryOrangeHex}
+                      size={FONTSIZE.size_20}
+                    />
+                    <Text style={styles.RatingText}>{averageRating}</Text>
+                    <Text style={styles.RatingCountText}>({Number(ratingsCount).toLocaleString()})</Text>
+                  </>
+                  :
+                  <Text style={styles.RatingCountText}>No ratings yet</Text>
+                  }
                 </View>
               </View>}
               <View>
-                <Text style={styles.GenreText}>{genre}</Text>
+                <ScrollView style={styles.GenreScrollView}>
+                  <Text style={styles.GenreText}>{genre}</Text>
+                </ScrollView>
                 <View style={styles.RoastedContainer}>
                   <Text style={styles.RoastedText}>{author}</Text>
                 </View>
@@ -297,6 +308,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.primaryBlackHex,
+  },
+  GenreScrollView: {
+    maxHeight: 70,
+    overflow: 'scroll',
+    marginBottom: SPACING.space_4,
   },
   GenreText: {
     fontFamily: FONTFAMILY.poppins_semibold,

@@ -142,7 +142,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
         data={reviews}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.review}>
+          <View style={styles.review} key={item.id}>
             <Text style={styles.reviewAuthor}>By {item.userName}</Text>
             <Text style={styles.reviewDate}>{item.ratingDate}</Text>
             <View style={styles.reviewRating}>
