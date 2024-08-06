@@ -8,19 +8,21 @@ import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import { useStore } from '../store/store';
-import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
+import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import ProgressBar from '../components/ProgressBar';
+import { transform } from 'typescript';
+import PagesReadInput from '../components/PagesReadInput';
 
 const StreaksScreen: React.FC = ({ navigation, route }: any) => {
 
   const userDetails = useStore((state: any) => state.userDetails);
 
-  const [pagesRead, setPagesRead] = useState<string>('');
   const [currentStreak, setCurrentStreak] = useState<number>(1);
   const [maxStreak, setMaxStreak] = useState<number>(1);
   const [celebration, setCelebration] = useState(false);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState<Date | null>(null);
+  const [activeTab, setActiveTab] = useState('streaks');
 
   const { action } = route.params || {}; // Ensure params exist
 
@@ -60,32 +62,6 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   }
 
   const progress = useRef(new Animated.Value(0)).current;
-
-  const updatePagesRead = () => {
-    if (pagesRead !== "") {
-      async function updateData() {
-        try {
-          const response = await instance.post(requests.updatePagesRead, {
-            userId: userDetails[0].userId,
-            pageCount: pagesRead,
-          });
-          if (response.data.message === "Updated") {
-            Alert.alert("Success", "Updated");
-          }
-          else {
-            Alert.alert("Error", response.data.message);
-          }
-        } catch (error) {
-          Alert.alert('Error', 'Failed to update pages read.');
-          console.log(error);
-        }
-      }
-      updateData();
-    }
-    else {
-      Alert.alert("Page count is 0", "Please enter number of pages read!");
-    }
-  }
 
   const openWebView = (url: string) => {
     navigation.push('Resources', {
@@ -232,37 +208,42 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
             </View>
           </TouchableOpacity>
         </View>
-        <View style={styles.streakInfo}>
-          <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
-        </View>
-        <View style={styles.progressContainer}>
-          <Text style={styles.infoText}>Progress till next achievement</Text>
-          <ProgressBar progress={progress} />
-          <Text style={styles.greeting}>Hello, {userDetails[0].userName.split(' ')[0]}! Keep up the good work! 🎉</Text>
-        </View>
-        <View style={styles.achievements}>
-          <Text style={styles.sectionTitle}>Highest Streak:</Text>
-          <Text style={styles.maxStreak}>🏅 {maxStreak}-day Streak</Text>
-        </View>
-        <Text style={styles.infoText}>Pages read today?</Text>
-        <View style={styles.inputBox}>
-          <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.input}
-                  placeholder='Optional'
-                  placeholderTextColor={COLORS.secondaryLightGreyHex}
-                  autoCapitalize='none'
-                  keyboardType='numeric'
-            value={pagesRead}
-                  onChangeText={(text) => setPagesRead(text)}
-                  accessibilityLabel="Pages Read"
-            accessibilityHint="Enter the number of pages read today"
-          />
-            </View>
-        </View>
-        <TouchableOpacity onPress={() => updatePagesRead()} style={styles.button}>
-          <Text style={styles.buttonText}>Update</Text>
+        <View style={styles.tabs}>
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === 'streaks' && styles.activeTab
+            ]}
+            onPress={() => setActiveTab('streaks')}
+          >
+            <Text style={styles.tabText}>Streaks</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === 'pages' && styles.activeTab
+            ]}
+            onPress={() => setActiveTab('pages')}
+          >
+            <Text style={styles.tabText}>Pages</Text>
+          </TouchableOpacity>
+        </View>
+        {activeTab === "streaks" ? <>
+          <View style={styles.streakInfo}>
+            <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
+          </View>
+          <View style={styles.progressContainer}>
+            <Text style={styles.infoText}>Progress till next achievement</Text>
+            <ProgressBar progress={progress} />
+            <Text style={styles.greeting}>Hello, {userDetails[0].userName.split(' ')[0]}! Keep up the good work! 🎉</Text>
+          </View>
+          <View style={styles.achievements}>
+            <Text style={styles.sectionTitle}>Highest Streak:</Text>
+            <Text style={styles.maxStreak}>🏅 {maxStreak}-day Streak</Text>
+          </View>
+        </> :
+        <PagesReadInput />
+        }
           {datePickerVisible && (
           <View style={styles.modalContainer}>
             <DateTimePicker
@@ -366,6 +347,26 @@ const styles = StyleSheet.create({
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_bold,
   },
+  tabs: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: SPACING.space_20,
+  },
+  tabButton: {
+    width: '40%',
+    padding: SPACING.space_10,
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    color: COLORS.primaryWhiteHex,
+    borderRadius: BORDERRADIUS.radius_8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeTab: {
+    backgroundColor: COLORS.primaryOrangeHex,
+  },
+  tabText: {
+    color: COLORS.primaryWhiteHex,
+  },
   streakInfo: {
     alignItems: 'center',
     marginBottom: SPACING.space_16,
@@ -411,42 +412,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_bold,
     marginBottom: SPACING.space_8,
     color: COLORS.primaryOrangeHex,
-  },
-  inputBox: {
-    marginBottom: 10,
-    width: 300,
-  },
-  inputWrapper: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    borderWidth: 1,
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    borderColor: COLORS.primaryLightGreyHex,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-  },
-  input: {
-    flex: 1,
-    height: 40,
-    paddingHorizontal: 10,
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_regular,
-  },
-  button: {
-    backgroundColor: COLORS.primaryOrangeHex,
-    paddingVertical: 5,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginTop: 10,
-    marginBottom: 20,
-    width: 'auto',
-    alignSelf: 'center',
-  },
-  buttonText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_medium,
-    textAlign: 'center',
   },
   reminders: {
     marginTop: SPACING.space_20,
