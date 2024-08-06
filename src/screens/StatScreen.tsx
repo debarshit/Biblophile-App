@@ -39,13 +39,18 @@ const StatScreen = () => {
     fetchPagesRead();
   }, []);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.itemContainer}>
-      <Text style={styles.rank}>{item.Rank}</Text>
-      <Text style={styles.username}>{item.UserName}</Text>
-      <Text style={styles.streak}>{item.CurrentStreak} days</Text>
-    </View>
-  );
+  const renderItem = ({ item }) => {
+    const isCurrentUser = item.UserId === userDetails[0].userId;
+    const itemStyle = isCurrentUser ? [styles.itemContainer, styles.currentUserItem] : styles.itemContainer;
+  
+    return (
+      <View style={itemStyle}>
+        <Text style={styles.rank}>{item.Rank}</Text>
+        <Text style={styles.username}>{item.UserName}</Text>
+        <Text style={styles.streak}>{item.CurrentStreak} days</Text>
+      </View>
+    );
+  };
 
   const renderBarChart = () => {
     const labels = ["Day Before", "Yesterday", "Today"];
@@ -143,6 +148,9 @@ const styles = StyleSheet.create({
     color: COLORS.primaryWhiteHex,
     flex: 2,
     textAlign: 'right',
+  },
+  currentUserItem: {
+    backgroundColor: COLORS.primaryOrangeHex,
   },
   loadingContainer: {
     flex: 1,
