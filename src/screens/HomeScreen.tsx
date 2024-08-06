@@ -67,6 +67,7 @@ const HomeScreen = ({navigation}: any) => {
   const [sortedCoffee, setSortedCoffee] = useState<any>(
     getBookList(genreIndex.genre),
   );
+  const [externalBooks, setExternalBooks] = useState<any>([]);
   const [loading, setLoading] = useState(true);
   const [booksLoading, setBooksLoading] = useState(true);
 
@@ -88,6 +89,11 @@ const HomeScreen = ({navigation}: any) => {
           const response = await instance(requests.searchBooks + search);
           const data = response.data;
           setSortedCoffee(data);
+
+          const externalBooksResponse = await instance.get(requests.searchExternalBooks + search);
+          const externalData = externalBooksResponse.data;
+          setExternalBooks(externalData);
+
           setBooksLoading(false);
         } catch (error) {
           console.error('Error fetching books:', error);
@@ -103,6 +109,7 @@ const HomeScreen = ({navigation}: any) => {
     });
     setGenreIndex({index: 0, genre: genres[0]});
     setSortedCoffee(bookList);
+    setExternalBooks([]);
     setSearchText('');
   };
 
@@ -318,11 +325,12 @@ const HomeScreen = ({navigation}: any) => {
       ) : (
 
         <FlatList
+          {...sortedCoffee.length === 0 && styles.hidden}
           ref={ListRef}
           horizontal
           ListEmptyComponent={
             <View style={styles.EmptyListContainer}>
-              <Text style={styles.genreText}>No Books Available</Text>
+              <Text style={styles.genreText}>No Books found</Text>
             </View>
           }
           showsHorizontalScrollIndicator={false}
@@ -353,6 +361,74 @@ const HomeScreen = ({navigation}: any) => {
           }}
         />
 )}
+
+      {/* External Books FlatList */}
+      {searchText !== '' &&
+        <>
+        <Text style={styles.CoffeeBeansTitle}>External Books</Text>
+
+        {booksLoading ? (
+          // Render shimmer effect while loading
+          <View style={styles.shimmerFlex}>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!booksLoading}>
+            </ShimmerPlaceholder>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!setBooksLoading}>
+            </ShimmerPlaceholder>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!booksLoading}>
+            </ShimmerPlaceholder>
+          </View>
+        ) : (
+
+          <FlatList
+            ref={ListRef}
+            horizontal
+            ListEmptyComponent={
+              <View style={styles.EmptyListContainer}>
+                <Text style={styles.genreText}>No Books found</Text>
+              </View>
+            }
+            showsHorizontalScrollIndicator={false}
+            data={externalBooks}
+            contentContainerStyle={styles.FlatListContainer}
+            keyExtractor={item => item.GoogleBookId}
+            renderItem={({item}) => {
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.push('Details', {
+                      id: item.GoogleBookId,
+                      type: "ExternalBook",
+                    });
+                  }}>
+                  <CoffeeCard
+                    id={item.GoogleBookId}
+                    name={item.BookName}
+                    photo={item.BookPhoto}
+                    type="ExternalBook"
+                    price={item.BookPrice}
+                    averageRating={item.BookAverageRating}
+                    ratingCount={item.BookRatingCount}
+                    buttonPressHandler={CoffeeCardAddToCart}
+                  />
+                </TouchableOpacity>
+              );
+            }}
+          />
+        )}
+        </>
+      }
 
         <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
 
@@ -430,6 +506,9 @@ const styles = StyleSheet.create({
   },
   shimmerFlex: {
     flexDirection: 'row',
+  },
+  hidden: {
+    display: 'none',
   },
   ScreenContainer: {
     flex: 1,

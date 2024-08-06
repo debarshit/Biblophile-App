@@ -16,10 +16,13 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import ImageBackgroundInfo from '../components/ImageBackgroundInfo';
 import PaymentFooter from '../components/PaymentFooter';
+import ProductReview from '../components/ProductReview';
+import BookEmotions from '../components/BookEmotions';
 
 const DetailsScreen = ({navigation, route}: any) => {
   const updateFavoriteList = useStore((state: any) => state.updateFavoriteList);
@@ -29,10 +32,19 @@ const DetailsScreen = ({navigation, route}: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
 
   const [id, setId] = useState(route.params.id);
-  const [type, setType] = useState(route.params.type); 
+  const [type, setType] = useState(route.params.type);
+  const [isGoogleBook, setIsGoogleBook] = useState(false); 
 
   const [subscription, setSubscription] = useState(false);
   const [product, setProduct] = useState([]);
+  const [index, setIndex] = useState(0);  // Tab index
+  const [routes, setRoutes] = useState([
+    { key: 'description', title: 'Description' },
+    ...(type !== 'Bookmark' ? [
+      { key: 'reviews', title: 'Reviews' },
+      { key: 'emotions', title: 'Emotions' }
+    ] : [])
+  ]);
 
   const getPrices = () => {
     if (type === 'Book') {
@@ -133,13 +145,30 @@ const DetailsScreen = ({navigation, route}: any) => {
         if (action) {
           handleAction(action);
         }
-        const response = await instance(`${requests.fetchProductDetails}${id}&type=${type}`);
+        let response;
+        if (type === 'ExternalBook') {
+            response = await instance(`https://www.googleapis.com/books/v1/volumes/${id}`);
+            // response = await instance.get(`https://www.googleapis.com/books/v1/volumes/${id}&key=AIzaSyBbA065umVCvOmPW5GB7i2iS0Il3HD1uL4`);    //temporary api key addition to circumvent rate limit
+            setIsGoogleBook(true);
+        } else {
+            response = await instance(`${requests.fetchProductDetails}${id}&type=${type}`);
+            setIsGoogleBook(false);
+        }
+
         const data = response.data;
         setProduct(data);
-        setActualPrice(data.ProductPrice);
+        console.log(product);
+        setActualPrice(data.ProductPrice || data.saleInfo?.listPrice?.amount || 0);
         const updatedPrices = getPrices();
         setPrices(updatedPrices);
         setPrice(updatedPrices[0] || { size: '', price: 0, currency: '₹' });
+        setRoutes([
+          { key: 'description', title: 'Description' },
+          ...(type !== 'Bookmark' ? [
+            { key: 'reviews', title: 'Reviews' },
+            { key: 'emotions', title: 'Emotions' }
+          ] : [])
+        ]);
       } catch (error) {
         console.error('Error fetching items:', error);
       }
@@ -147,6 +176,98 @@ const DetailsScreen = ({navigation, route}: any) => {
 
     fetchProductDetails();
   }, [actualPrice]);
+
+  const renderScene = SceneMap({
+    description: () => (
+      <View style={[styles.TabContent, index !== 0 && styles.hidden]}>
+        <Text style={styles.InfoTitle}>Description</Text>
+          {fullDesc ? (
+            <TouchableWithoutFeedback
+              onPress={() => {
+                setFullDesc(prev => !prev);
+              }}>
+              <Text style={styles.DescriptionText}>
+                {isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription']}
+              </Text>
+            </TouchableWithoutFeedback>
+          ) : (
+            <TouchableWithoutFeedback
+              onPress={() => {
+                setFullDesc(prev => !prev);
+              }}>
+              <Text numberOfLines={3} style={styles.DescriptionText}>
+                {isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription']}
+              </Text>
+            </TouchableWithoutFeedback>
+          )}
+          { type !== "ExternalBook" &&
+          <>
+            <Text style={styles.InfoTitle}>Options</Text>
+            <View style={styles.SizeOuterContainer}>
+              {prices.map((data: any) => (
+                <TouchableOpacity
+                  key={data.size}
+                  onPress={() => {
+                    setPrice(data);
+                  }}
+                  style={[
+                    styles.SizeBox,
+                    {
+                      borderColor:
+                        data.size == price.size
+                          ? COLORS.primaryOrangeHex
+                          : COLORS.primaryDarkGreyHex,
+                    },
+                  ]}>
+                  <Text
+                    style={[
+                      styles.SizeText,
+                      {
+                        fontSize:
+                        type == 'Book'
+                            ? FONTSIZE.size_14
+                            : FONTSIZE.size_16,
+                        color:
+                          data.size == price.size
+                            ? COLORS.primaryOrangeHex
+                            : COLORS.secondaryLightGreyHex,
+                      },
+                    ]}>
+                    {data.size}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+          }
+      </View>
+    ),
+    reviews: () => (
+      <View style={[styles.TabContent, index !== 1 && styles.hidden]}>
+        <Text style={styles.InfoTitle}>Reviews</Text>
+        <ProductReview id={id} isGoogleBook={isGoogleBook} product={product}/>
+      </View>
+    ),
+    emotions: () => (
+      <View style={[styles.TabContent, index !== 2 && styles.hidden]}>
+        <Text style={styles.InfoTitle}>Emotions</Text>
+        <BookEmotions id={id} isGoogleBook={isGoogleBook} product={product}/>
+      </View>
+    ),
+  });
+
+  const renderTabBar = props => (
+    <TabBar
+      {...props}
+      indicatorStyle={{ backgroundColor: COLORS.primaryOrangeHex }}
+      style={{ backgroundColor: COLORS.primaryBlackHex }}
+      renderLabel={({ route, focused, color }) => (
+        <Text style={[styles.TabLabel, focused && styles.TabLabelFocused]}>
+          {route.title}
+        </Text>
+      )}
+    />
+  );
 
   return (
     <View style={styles.ScreenContainer}>
@@ -156,78 +277,30 @@ const DetailsScreen = ({navigation, route}: any) => {
         contentContainerStyle={styles.ScrollViewFlex}>
         <ImageBackgroundInfo
           EnableBackHandler={true}
-          imagelink_portrait={product['ProductPoster']}
+          imagelink_portrait={isGoogleBook ? product['volumeInfo']?.imageLinks?.thumbnail : product['ProductPhoto']}
           type={type}
           id={id}
+          isGoogleBook={isGoogleBook}
           favourite={favourite}
-          name={product['ProductName']}
-          genre={product['ProductGenres']}
-          average_rating={product['ProductAverageRating']}
-          ratings_count={product['ProductRatingCount']}
-          author={product['ProductAuthor']}
+          name={isGoogleBook ? product['volumeInfo']?.title : product['ProductName']}
+          genre={isGoogleBook ? product['volumeInfo']?.categories?.join(", ") : product['ProductGenres']}
+          author={isGoogleBook ? product['volumeInfo']?.authors?.join(", ") : product['ProductAuthor']}
           BackHandler={BackHandler}
           ToggleFavourite={ToggleFavourite}
+          product={product} //later remove all other params and just pass product
         />
 
         <View style={styles.FooterInfoArea}>
-          <Text style={styles.InfoTitle}>Description</Text>
-          {fullDesc ? (
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setFullDesc(prev => !prev);
-              }}>
-              <Text style={styles.DescriptionText}>
-                {product['ProductDescription']}
-              </Text>
-            </TouchableWithoutFeedback>
-          ) : (
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setFullDesc(prev => !prev);
-              }}>
-              <Text numberOfLines={3} style={styles.DescriptionText}>
-                {product['ProductDescription']}
-              </Text>
-            </TouchableWithoutFeedback>
-          )}
-          <Text style={styles.InfoTitle}>Options</Text>
-          <View style={styles.SizeOuterContainer}>
-            {prices.map((data: any) => (
-              <TouchableOpacity
-                key={data.size}
-                onPress={() => {
-                  setPrice(data);
-                }}
-                style={[
-                  styles.SizeBox,
-                  {
-                    borderColor:
-                      data.size == price.size
-                        ? COLORS.primaryOrangeHex
-                        : COLORS.primaryDarkGreyHex,
-                  },
-                ]}>
-                <Text
-                  style={[
-                    styles.SizeText,
-                    {
-                      fontSize:
-                      type == 'Book'
-                          ? FONTSIZE.size_14
-                          : FONTSIZE.size_16,
-                      color:
-                        data.size == price.size
-                          ? COLORS.primaryOrangeHex
-                          : COLORS.secondaryLightGreyHex,
-                    },
-                  ]}>
-                  {data.size}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        <TabView
+            navigationState={{ index, routes }}
+            renderScene={renderScene}
+            renderTabBar={renderTabBar}
+            onIndexChange={setIndex}
+            initialLayout={{ width: 100 }}
+            style={styles.TabView}
+          />
         </View>
-        {price && <PaymentFooter
+        {price && type !== "ExternalBook" && <PaymentFooter
           price={price}
           buttonTitle="Add to Cart"
           buttonPressHandler={() => {
@@ -256,6 +329,20 @@ const styles = StyleSheet.create({
   },
   FooterInfoArea: {
     padding: SPACING.space_20,
+  },
+  hidden: { 
+    display: "none" ,
+  },
+  TabContent: {
+    padding: SPACING.space_20,
+  },
+  TabLabel: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryWhiteHex,
+  },
+  TabLabelFocused: {
+    color: COLORS.primaryOrangeHex,
   },
   InfoTitle: {
     fontFamily: FONTFAMILY.poppins_semibold,
@@ -287,6 +374,9 @@ const styles = StyleSheet.create({
   },
   SizeText: {
     fontFamily: FONTFAMILY.poppins_medium,
+  },
+  TabView: {
+    flex: 1,
   },
 });
 
