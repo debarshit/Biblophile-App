@@ -24,6 +24,7 @@ const requests = {
     updateAppUserData: `/actions1.php?action=updateAppUserData`,
     fetchDeposit: `/actions1.php?action=fetchDeposit`,
     searchBooks: `/actions1.php?action=searchBooks&searchQuery=`,
+    searchExternalBooks: `/actions1.php?action=searchExternalBooks&searchQuery=`,
     fetchSubscriptionPlans: `/actions1.php?action=fetchSubscriptionPlans`,
     fetchActivePlan: `/actions1.php?action=fetchActivePlan&userId=`,
     getBookmarks: `/actions1.php?action=getBookmarks`,
