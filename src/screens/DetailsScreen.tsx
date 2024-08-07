@@ -147,8 +147,7 @@ const DetailsScreen = ({navigation, route}: any) => {
         }
         let response;
         if (type === 'ExternalBook') {
-            response = await instance(`https://www.googleapis.com/books/v1/volumes/${id}`);
-            // response = await instance.get(`https://www.googleapis.com/books/v1/volumes/${id}&key=AIzaSyBbA065umVCvOmPW5GB7i2iS0Il3HD1uL4`);    //temporary api key addition to circumvent rate limit
+            response = await instance(`${requests.fetchExternalBookDetails}${id}`);
             setIsGoogleBook(true);
         } else {
             response = await instance(`${requests.fetchProductDetails}${id}&type=${type}`);
