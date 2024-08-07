@@ -91,6 +91,13 @@ const DetailsScreen = ({navigation, route}: any) => {
     setFavourite(!favourite);
   };
 
+  const convertHttpToHttps = (url) => {
+    if (url && url.startsWith('http://')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
+  };
+
   const BackHandler = () => {
     if (navigation.canGoBack()) {
       navigation.pop();
@@ -276,7 +283,7 @@ const DetailsScreen = ({navigation, route}: any) => {
         contentContainerStyle={styles.ScrollViewFlex}>
         <ImageBackgroundInfo
           EnableBackHandler={true}
-          imagelink_portrait={isGoogleBook ? product['volumeInfo']?.imageLinks?.thumbnail : product['ProductPhoto']}
+          imagelink_portrait={isGoogleBook ? convertHttpToHttps(product['volumeInfo']?.imageLinks?.thumbnail) : convertHttpToHttps(product['ProductPhoto'])}
           type={type}
           id={id}
           isGoogleBook={isGoogleBook}

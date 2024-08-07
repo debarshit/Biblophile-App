@@ -49,6 +49,13 @@ const PagesReadInput = () => {
     }
   };
 
+  const convertHttpToHttps = (url) => {
+    if (url && url.startsWith('http://')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
+  };
+
   useEffect(() => {
     fetchCurrentReads();
     fetchPagesRead();
@@ -86,7 +93,7 @@ const PagesReadInput = () => {
         <ScrollView horizontal contentContainerStyle={styles.currentReads}>
           {currentReads.map((book) => (
             <View key={book.BookId} style={styles.book}>
-              <Image source={{ uri: book.BookPhoto }} style={styles.bookPhoto} />
+              <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
               <PageStatus id={book.BookId} page={book.CurrentPage} onUpdate={() => setRefreshData(prev => !prev)}/>
             </View>
           ))}
