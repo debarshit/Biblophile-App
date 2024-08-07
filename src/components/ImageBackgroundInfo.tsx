@@ -137,7 +137,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
                 size={FONTSIZE.size_16}
               />
             </TouchableOpacity>
-            <ReadingStatus id={id} isGoogleBook={isGoogleBook} product={product}/>
+            {type !== "Bookmark" && <ReadingStatus id={id} isGoogleBook={isGoogleBook} product={product}/>}
             <TouchableOpacity
               onPress={() => {
                 ToggleFavourite(favourite, id);
