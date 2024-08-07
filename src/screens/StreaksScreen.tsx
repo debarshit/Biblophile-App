@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated, SafeAreaView, Share } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -22,7 +22,8 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState('streaks');
-
+  const [allDaysFilled, setAllDaysFilled] = useState(false);
+  
   const { action } = route.params || {}; // Ensure params exist
 
   const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
@@ -63,6 +64,29 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
 
     return styles.day;
   };
+
+  useEffect(() => {
+    const checkAllDaysFilled = () => {
+      const today = new Date();
+      const currentDayIndex = today.getDay();
+      const lastUpdateDate = new Date(latestUpdateTime);
+      const lastUpdateDayIndex = lastUpdateDate.getDay();
+
+      const weekStartIndex = 0;
+      const streakEndDayIndex = lastUpdateDayIndex;
+
+      const fillStartDayIndex = Math.max(weekStartIndex, streakEndDayIndex - (currentStreak - 1));
+      const fillEndDayIndex = Math.min(currentDayIndex, streakEndDayIndex);
+
+      if (fillStartDayIndex === 0 && fillEndDayIndex === 6) {
+        setCelebration(true);
+      } else {
+        setCelebration(false);
+      }
+    };
+
+    checkAllDaysFilled();
+  }, [currentStreak, latestUpdateTime]);
 
   const updateReadingStreak = () => {
     async function updateData() {
