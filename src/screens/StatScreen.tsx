@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   },
   tooltip: {
     position: 'absolute',
-    backgroundColor: COLORS.primaryOrangeHex,
+    backgroundColor: COLORS.primaryDarkGreyHex,
     padding: SPACING.space_8,
     borderRadius: BORDERRADIUS.radius_8,
     zIndex: 1000,
