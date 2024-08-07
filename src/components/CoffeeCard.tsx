@@ -75,7 +75,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
         <Text style={styles.CardPriceCurrency}>
         ₹ <Text style={styles.CardPrice}>{price}</Text>
         </Text>
-        <TouchableOpacity
+        {type !== "ExternalBook" && <TouchableOpacity
           onPress={() => {
             buttonPressHandler({
               id,
@@ -91,7 +91,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
             BGColor={COLORS.primaryOrangeHex}
             size={FONTSIZE.size_10}
           />
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
     </LinearGradient>
   );
