@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Dimensions, TouchableWithoutFeedback } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../theme/theme';
 import { useStore } from '../store/store';
@@ -151,7 +151,9 @@ const StatScreen = () => {
         contentContainerStyle={styles.listContainer}
       />
       <Text style={styles.title}>Pages Read in Last 7 Days</Text>
-      {renderLineChart()}
+      <TouchableWithoutFeedback onPress={() => setTooltipPos({ ...tooltipPos, visible: false })}>
+        {renderLineChart()}
+      </TouchableWithoutFeedback>
     </View>
   );
 };
