@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform, ToastAndroid } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Entypo from '@expo/vector-icons/Entypo';
 import instance from '../services/axios';
@@ -13,6 +13,7 @@ import {
     SPACING,
   } from '../theme/theme';
 import { LinearGradient } from 'expo-linear-gradient';
+import Toast from 'react-native-toast-message';
 
 
 const ReadingStatus = ({ id, isGoogleBook, product }) => {
@@ -110,8 +111,42 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
 
                 if (response.data.message === "Updated") {
                     setUpdateMessage("Updated successfully!");
+                    if (Platform.OS == 'android') {
+                        ToastAndroid.showWithGravity(
+                          `Updated successfully!`,
+                          ToastAndroid.SHORT,
+                          ToastAndroid.CENTER,
+                        );
+                      }
+                      else {
+                        Toast.show({
+                          type: 'info', 
+                          text1: `Updated successfully!`,
+                          visibilityTime: 2000, 
+                          autoHide: true, 
+                          position: 'bottom',
+                          bottomOffset: 100, 
+                        });
+                      }
                 } else {
                     setUpdateMessage(response.data.message);
+                    if (Platform.OS == 'android') {
+                        ToastAndroid.showWithGravity(
+                          `Updated successfully!`,
+                          ToastAndroid.SHORT,
+                          ToastAndroid.CENTER,
+                        );
+                      }
+                      else {
+                        Toast.show({
+                          type: 'info', 
+                          text1: `Updated successfully!`,
+                          visibilityTime: 2000, 
+                          autoHide: true, 
+                          position: 'bottom',
+                          bottomOffset: 100, 
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Error submitting score:', error);
@@ -135,6 +170,7 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     <Picker.Item label="Read" value="Read" />
                     <Picker.Item label="Currently reading" value="Currently reading" />
                     <Picker.Item label="To be read" value="To be read" />
+                    <Picker.Item label="Did not finish" value="Did not finish" />
                 </Picker>
             </View>
             {status === 'Currently reading' && (
@@ -168,7 +204,6 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'column',
-        
     },
     iconContainer: {
         height: SPACING.space_36,

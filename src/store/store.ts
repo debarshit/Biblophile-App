@@ -13,7 +13,6 @@ export const useStore = create(
         userDetails: [],
         GenreList: [], 
         CartPrice: 0,
-        FavoritesList: [],
         CartList: [],
         login: async (userData) => {
           await set(state => ({
@@ -98,19 +97,6 @@ export const useStore = create(
               state.CartPrice = totalprice.toFixed(2).toString();
             }),
           ),
-        updateFavoriteList: (type: string, id: string, book: any) =>
-        set(
-          produce(state => {
-            const bookIndex = state.FavoritesList.findIndex(item => item.id === id);
-            if (bookIndex !== -1) {
-              // If the book is already in the favorites list, remove it
-              state.FavoritesList.splice(bookIndex, 1);
-            } else {
-              // If the book is not in the favorites list, add it to the beginning of the list
-              state.FavoritesList.unshift(book);
-            }
-          }),
-        ),
           incrementCartItemQuantity: (id: string, size: string) =>
           set(
             produce(state => {

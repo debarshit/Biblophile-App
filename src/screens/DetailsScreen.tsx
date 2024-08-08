@@ -25,10 +25,8 @@ import ProductReview from '../components/ProductReview';
 import BookEmotions from '../components/BookEmotions';
 
 const DetailsScreen = ({navigation, route}: any) => {
-  const updateFavoriteList = useStore((state: any) => state.updateFavoriteList);
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
-  const favoritesList = useStore((state: any) => state.FavoritesList);
   const userDetails = useStore((state: any) => state.userDetails);
 
   const [id, setId] = useState(route.params.id);
@@ -81,16 +79,6 @@ const DetailsScreen = ({navigation, route}: any) => {
     }
   };
 
-  const ToggleFavourite = (isFavourite, id) => {
-    const book = {
-      id: id,
-      type: type,
-      favourite: !favourite,
-    };
-    updateFavoriteList(type, id, book);
-    setFavourite(!favourite);
-  };
-
   const convertHttpToHttps = (url) => {
     if (url && url.startsWith('http://')) {
       return url.replace('http://', 'https://');
@@ -124,11 +112,6 @@ const DetailsScreen = ({navigation, route}: any) => {
     calculateCartPrice();
     navigation.navigate('Cart');
   };
-
-  useEffect(() => {
-    const isBookInFavorites = favoritesList.some((book: any) => book.id == id);
-    setFavourite(isBookInFavorites);
-  }, [favoritesList, id]);
 
   useEffect(() => {
     async function fetchActivePlan() {
@@ -292,7 +275,6 @@ const DetailsScreen = ({navigation, route}: any) => {
           genre={isGoogleBook ? product['volumeInfo']?.categories?.join(", ") : product['ProductGenres']}
           author={isGoogleBook ? product['volumeInfo']?.authors?.join(", ") : product['ProductAuthor']}
           BackHandler={BackHandler}
-          ToggleFavourite={ToggleFavourite}
           product={product} //later remove all other params and just pass product
         />
 

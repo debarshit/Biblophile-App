@@ -3,12 +3,11 @@ import {
   StyleSheet,
   Text,
   View,
-  ImageProps,
   TouchableOpacity,
   ImageBackground,
   ScrollView,
 } from 'react-native';
-import { AntDesign, MaterialCommunityIcons, FontAwesome6 } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
 import GradientBGIcon from './GradientBGIcon';
 import {
   BORDERRADIUS,
@@ -31,7 +30,6 @@ interface ImageBackgroundInfoProps {
   author: string;
   genre: string;
   BackHandler?: any;
-  ToggleFavourite: any;
   product: any;
   isGoogleBook: boolean;
 }
@@ -40,13 +38,11 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   EnableBackHandler,
   imagelink_portrait,
   id,
-  favourite,
   name,
   type,
   author,
   genre,
   BackHandler,
-  ToggleFavourite,
   product,
   isGoogleBook,
 }) => {
@@ -138,34 +134,10 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
               />
             </TouchableOpacity>
             {type !== "Bookmark" && <ReadingStatus id={id} isGoogleBook={isGoogleBook} product={product}/>}
-            <TouchableOpacity
-              onPress={() => {
-                ToggleFavourite(favourite, id);
-              }}>
-              <GradientBGIcon
-                name="heart"
-                color={
-                  favourite ? COLORS.primaryRedHex : COLORS.primaryLightGreyHex
-                }
-                size={FONTSIZE.size_16}
-              />
-            </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.ImageHeaderBarContainerWithoutBack}>
             <ReadingStatus id={id} isGoogleBook={false} product={product}/>
-            <TouchableOpacity
-              onPress={() => {
-                ToggleFavourite(favourite, id);
-              }}>
-              <GradientBGIcon
-                name="heart"
-                color={
-                  favourite ? COLORS.primaryRedHex : COLORS.primaryLightGreyHex
-                }
-                size={FONTSIZE.size_16}
-              />
-            </TouchableOpacity>
           </View>
         )}
 

@@ -1,11 +1,11 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import { MaterialIcons, AntDesign } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import {COLORS} from '../theme/theme';
 import HomeScreen from '../screens/HomeScreen';
-import FavoritesScreen from '../screens/FavoritesScreen';
+import BookshelfScreen from '../screens/BookshelfScreen';
 import CartScreen from '../screens/CartScreen';
 import OrderHistoryScreen from '../screens/OrderHistoryScreen';
 
@@ -55,12 +55,12 @@ const TabNavigator = () => {
           ),
         }}></Tab.Screen>
       <Tab.Screen
-        name="Favorite"
-        component={FavoritesScreen}
+        name="Bookshelf"
+        component={BookshelfScreen}
         options={{
           tabBarIcon: ({focused, color, size}) => (
-            <AntDesign
-              name="heart"
+            <MaterialCommunityIcons
+              name="bookshelf"
               size={25}
               color={
                 focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
