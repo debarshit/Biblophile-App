@@ -91,6 +91,13 @@ const DetailsScreen = ({navigation, route}: any) => {
     setFavourite(!favourite);
   };
 
+  const convertHttpToHttps = (url) => {
+    if (url && url.startsWith('http://')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
+  };
+
   const BackHandler = () => {
     if (navigation.canGoBack()) {
       navigation.pop();
@@ -147,8 +154,7 @@ const DetailsScreen = ({navigation, route}: any) => {
         }
         let response;
         if (type === 'ExternalBook') {
-            response = await instance(`https://www.googleapis.com/books/v1/volumes/${id}`);
-            // response = await instance.get(`https://www.googleapis.com/books/v1/volumes/${id}&key=AIzaSyBbA065umVCvOmPW5GB7i2iS0Il3HD1uL4`);    //temporary api key addition to circumvent rate limit
+            response = await instance(`${requests.fetchExternalBookDetails}${id}`);
             setIsGoogleBook(true);
         } else {
             response = await instance(`${requests.fetchProductDetails}${id}&type=${type}`);
@@ -277,7 +283,7 @@ const DetailsScreen = ({navigation, route}: any) => {
         contentContainerStyle={styles.ScrollViewFlex}>
         <ImageBackgroundInfo
           EnableBackHandler={true}
-          imagelink_portrait={isGoogleBook ? product['volumeInfo']?.imageLinks?.thumbnail : product['ProductPhoto']}
+          imagelink_portrait={isGoogleBook ? convertHttpToHttps(product['volumeInfo']?.imageLinks?.thumbnail) : convertHttpToHttps(product['ProductPhoto'])}
           type={type}
           id={id}
           isGoogleBook={isGoogleBook}

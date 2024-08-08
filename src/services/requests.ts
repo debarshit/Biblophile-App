@@ -2,7 +2,8 @@ const requests = {
     //request to biblophile actions api
     getBookGenre:`/actions1.php?action=getBookGenre`,
     getBooks:`/actions1.php?action=getBooks&bookGenre=`,
-    fetchProductDetails:`/actions1.php?action=fetchProductDetails&id=`, 
+    fetchProductDetails:`/actions1.php?action=fetchProductDetails&id=`,
+    fetchExternalBookDetails:`/actions1.php?action=fetchExternalBookDetails&id=`, 
     fetchAverageRating:`/actions1.php?action=fetchAverageRating&id=`,
     fetchAverageEmotions:`/actions1.php?action=fetchAverageEmotions&id=`,
     addBook: `/actions1.php?action=addBook`,
@@ -35,6 +36,7 @@ const requests = {
     updateNotificationToken: `/actions1.php?action=updateNotificationToken`,
     fetchReadingStreakLeaderboard: `/actions1.php?action=fetchReadingStreakLeaderboard&userId=`,
     fetchPagesRead: `/actions1.php?action=fetchPagesRead&userId=`,
+    fetchCurrentReads: `/actions1.php?action=fetchCurrentReads`,
     paymentRequest: `/actions1.php?action=paymentRequest`,
     paymentSuccessful: `/actions1.php?action=paymentSuccessful&linkId=`,
 }

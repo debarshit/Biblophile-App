@@ -161,6 +161,13 @@ const HomeScreen = ({navigation}: any) => {
     }
   };
 
+  const convertHttpToHttps = (url) => {
+    if (url && url.startsWith('http://')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
+  };
+
   useEffect(() => {
     // Fetch genres when component mounts
     fetchGenres();
@@ -349,7 +356,7 @@ const HomeScreen = ({navigation}: any) => {
                 <CoffeeCard
                   id={item.BookId}
                   name={item.BookName}
-                  photo={item.BookPhoto}
+                  photo={convertHttpToHttps(item.BookPhoto)}
                   type="Book"
                   price={item.BookPrice}
                   averageRating={item.BookAverageRating}
@@ -415,7 +422,7 @@ const HomeScreen = ({navigation}: any) => {
                   <CoffeeCard
                     id={item.GoogleBookId}
                     name={item.BookName}
-                    photo={item.BookPhoto}
+                    photo={convertHttpToHttps(item.BookPhoto)}
                     type="ExternalBook"
                     price={item.BookPrice}
                     averageRating={item.BookAverageRating}
@@ -477,7 +484,7 @@ const HomeScreen = ({navigation}: any) => {
                   <CoffeeCard
                     id={item.BookmarkId}
                     name={item.BookmarkTitle}
-                    photo={item.BookmarkPhoto}
+                    photo={convertHttpToHttps(item.BookmarkPhoto)}
                     type="Bookmark"
                     price={item.BookmarkPrice}
                     averageRating={null}
