@@ -37,6 +37,7 @@ const requests = {
     fetchReadingStreakLeaderboard: `/actions1.php?action=fetchReadingStreakLeaderboard&userId=`,
     fetchPagesRead: `/actions1.php?action=fetchPagesRead&userId=`,
     fetchCurrentReads: `/actions1.php?action=fetchCurrentReads`,
+    fetchUserBooks: `/actions1.php?action=fetchUserBooks`,
     paymentRequest: `/actions1.php?action=paymentRequest`,
     paymentSuccessful: `/actions1.php?action=paymentSuccessful&linkId=`,
 }

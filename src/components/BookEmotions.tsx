@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Platform, ToastAndroid } from 'react-native';
 import Slider from '@react-native-community/slider';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import { useStore } from '../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
+import Toast from 'react-native-toast-message';
 
 interface BookEmotionsProps {
     id: string;
@@ -103,6 +104,23 @@ const handleEmotionSubmit = async () => {
 
         if (response.data.message === "Updated") {
             setUpdateMessage("Updated successfully!");
+            if (Platform.OS == 'android') {
+                ToastAndroid.showWithGravity(
+                  `Updated successfully!`,
+                  ToastAndroid.SHORT,
+                  ToastAndroid.CENTER,
+                );
+              }
+              else {
+                Toast.show({
+                  type: 'info', 
+                  text1: `Updated successfully!`,
+                  visibilityTime: 2000, 
+                  autoHide: true, 
+                  position: 'bottom',
+                  bottomOffset: 100, 
+                });
+            }
         } else {
             setUpdateMessage("Uh oh! Please try again");
         }

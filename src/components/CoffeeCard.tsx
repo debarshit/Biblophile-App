@@ -2,7 +2,6 @@ import React from 'react';
 import {
   Dimensions,
   ImageBackground,
-  ImageProps,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -58,14 +57,14 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
         source={{ uri: photo }}
         style={styles.CardImageBG}
         resizeMode="cover">
-        {type === "Book" && <View style={styles.CardRatingContainer}>
+        {/* {type === "Book" && <View style={styles.CardRatingContainer}>
           <AntDesign
             name={'star'}
             color={COLORS.primaryOrangeHex}
             size={FONTSIZE.size_16}
           />
           <Text style={styles.CardRatingText}>{averageRating}</Text>
-        </View>}
+        </View>} */}
       </ImageBackground>
       <Text style={styles.CardTitle}>
         {name.length > 20 ? name.substring(0, 20) + '...' : name}

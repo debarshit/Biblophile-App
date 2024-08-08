@@ -3,12 +3,13 @@ import {
   StyleSheet,
   Text,
   View,
-  ImageProps,
   TouchableOpacity,
   ImageBackground,
   ScrollView,
+  Alert,
+  Share,
 } from 'react-native';
-import { AntDesign, MaterialCommunityIcons, FontAwesome6 } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
 import GradientBGIcon from './GradientBGIcon';
 import {
   BORDERRADIUS,
@@ -31,7 +32,6 @@ interface ImageBackgroundInfoProps {
   author: string;
   genre: string;
   BackHandler?: any;
-  ToggleFavourite: any;
   product: any;
   isGoogleBook: boolean;
 }
@@ -40,19 +40,32 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   EnableBackHandler,
   imagelink_portrait,
   id,
-  favourite,
   name,
   type,
   author,
   genre,
   BackHandler,
-  ToggleFavourite,
   product,
   isGoogleBook,
 }) => {
   const [averageRating, setAverageRating] = useState(null);
   const [ratingsCount, setRatingsCount] = useState(null);
   const [topEmotions, setTopEmotions] = useState(null);
+
+  const handleSharePress = async () => {
+    try {
+      const result = await Share.share({
+        message: `Checkout this book at https://biblophile.com/product/?type=${type}&id=${id}`,
+      });
+      if (result.action === Share.sharedAction && result.activityType) {
+        // Shared with activity type
+      } else if (result.action === Share.dismissedAction) {
+        // Dismissed
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to share.');
+    }
+  };
 
   useEffect(() => {
     async function fetchAverageRating() {
@@ -138,15 +151,10 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
               />
             </TouchableOpacity>
             {type !== "Bookmark" && <ReadingStatus id={id} isGoogleBook={isGoogleBook} product={product}/>}
-            <TouchableOpacity
-              onPress={() => {
-                ToggleFavourite(favourite, id);
-              }}>
+            <TouchableOpacity onPress={handleSharePress}>
               <GradientBGIcon
-                name="heart"
-                color={
-                  favourite ? COLORS.primaryRedHex : COLORS.primaryLightGreyHex
-                }
+                name="sharealt"
+                color={COLORS.primaryLightGreyHex}
                 size={FONTSIZE.size_16}
               />
             </TouchableOpacity>
@@ -154,15 +162,10 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         ) : (
           <View style={styles.ImageHeaderBarContainerWithoutBack}>
             <ReadingStatus id={id} isGoogleBook={false} product={product}/>
-            <TouchableOpacity
-              onPress={() => {
-                ToggleFavourite(favourite, id);
-              }}>
+            <TouchableOpacity onPress={handleSharePress}>
               <GradientBGIcon
-                name="heart"
-                color={
-                  favourite ? COLORS.primaryRedHex : COLORS.primaryLightGreyHex
-                }
+                name="sharealt"
+                color={COLORS.primaryLightGreyHex}
                 size={FONTSIZE.size_16}
               />
             </TouchableOpacity>
