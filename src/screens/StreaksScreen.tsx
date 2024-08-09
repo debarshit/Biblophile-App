@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated, 
 import * as Notifications from 'expo-notifications';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../services/axios';
 import requests from '../services/requests';
@@ -22,6 +22,7 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState('streaks');
+  const [showTooltip, setShowTooltip] = useState(false);
   const [allDaysFilled, setAllDaysFilled] = useState(false);
   
   const { action } = route.params || {}; // Ensure params exist
@@ -182,7 +183,7 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   const handleSharePress = async () => {
     try {
       const result = await Share.share({
-        message: `I've been on a reading streak for ${currentStreak} days! 📚✨ Join me and let's read together on Biblophile!`,
+        message: `I've been on a reading streak for ${currentStreak} days! 📚✨ Join me and let's read together on Biblophile! https://biblophile.com/`,
       });
       if (result.action === Share.sharedAction && result.activityType) {
         // Shared with activity type
@@ -218,6 +219,10 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
 
   const handleGraphPress = () => {
     navigation.navigate('Stats');
+  };
+
+  const toggleTooltip = () => {
+    setShowTooltip(prev => !prev);
   };
 
   return (
@@ -274,7 +279,19 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
             <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
           </View>
           <View style={styles.progressContainer}>
-            <Text style={styles.infoText}>Progress for the week</Text>
+            <View style={styles.progressText}>
+              <Text style={styles.infoText}>Progress for the week</Text>
+              <TouchableOpacity onPress={toggleTooltip} style={styles.infoIconContainer}>
+              <FontAwesome name="info-circle" style={styles.infoIcon} />
+              {showTooltip && (
+                <View style={styles.tooltip}>
+                  <Text style={styles.tooltipText}>
+                    Use our nfc bookmarks to maintain reading streak
+                  </Text>
+                </View>
+              )}
+          </TouchableOpacity>
+            </View>
             <View style={styles.weekContainer}>
               {daysOfWeek.map((day, index) => (
                 <View key={index} style={[styles.dayContainer, getDayClasses(index)]}>
@@ -431,6 +448,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: SPACING.space_24,
+    zIndex: -1,
   },
   dayContainer: {
     width: 40,
@@ -550,6 +568,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  infoIconContainer: {
+    position: 'relative',
+  },
+  tooltip: {
+    position: 'absolute',
+    top: 20,
+    right: 5,
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    color: COLORS.primaryWhiteHex,
+    padding: SPACING.space_4,
+    borderRadius: 4,
+    fontSize: FONTSIZE.size_12,
+    width: 200,
+    zIndex: 1000,
+    shadowColor: COLORS.primaryBlackHex,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  tooltipText: {
+    fontSize: FONTSIZE.size_12,
+    color: COLORS.primaryWhiteHex,
+  },
+  infoIcon: {
+    color: COLORS.primaryLightGreyHex,
+    fontSize: FONTSIZE.size_18,
+  },
+  progressText: {
+    flexDirection: 'row',
   },
 });
 
