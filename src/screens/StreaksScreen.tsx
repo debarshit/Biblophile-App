@@ -571,6 +571,7 @@ const styles = StyleSheet.create({
   },
   infoIconContainer: {
     position: 'relative',
+    marginLeft: SPACING.space_4,
   },
   tooltip: {
     position: 'absolute',
