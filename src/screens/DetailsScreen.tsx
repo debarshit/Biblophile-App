@@ -16,95 +16,102 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import ImageBackgroundInfo from '../components/ImageBackgroundInfo';
 import PaymentFooter from '../components/PaymentFooter';
+import ProductReview from '../components/ProductReview';
+import BookEmotions from '../components/BookEmotions';
 
 const DetailsScreen = ({navigation, route}: any) => {
-  const updateFavoriteList = useStore((state: any) => state.updateFavoriteList);
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
-  const favoritesList = useStore((state: any) => state.FavoritesList);
   const userDetails = useStore((state: any) => state.userDetails);
 
+  const [id, setId] = useState(route.params.id);
+  const [type, setType] = useState(route.params.type);
+  const [isGoogleBook, setIsGoogleBook] = useState(false); 
+
   const [subscription, setSubscription] = useState(false);
+  const [product, setProduct] = useState([]);
+  const [index, setIndex] = useState(0);  // Tab index
+  const [routes, setRoutes] = useState([
+    { key: 'description', title: 'Description' },
+    ...(type !== 'Bookmark' ? [
+      { key: 'reviews', title: 'Reviews' },
+      { key: 'emotions', title: 'Emotions' }
+    ] : [])
+  ]);
 
-  //Array of buy and rent prices
-  const prices: { size: string; price: string; currency: string }[] = 
-  route.params.type === 'Book'
-  ? [
-      { size: 'Buy', price: route.params.price, currency: '₹' },
-      { size: 'Rent', price: subscription === true ? 0 : Math.max(25, Math.min(35, Math.floor(route.params.price * 0.1))), currency: '₹' },
-    ]
-  : route.params.type === 'Bookmark'
-    ? [
-        { size: 'QR', price: Math.ceil(route.params.price), currency: '₹' },
-        { size: 'QR & NFC', price: Math.floor(route.params.price * 1.3), currency: '₹' }, 
-      ]
-    : []; // Handle other cases or leave it as empty array if not handled
+  const getPrices = () => {
+    if (type === 'Book') {
+      return [
+        { size: 'Buy', price: product['ProductPrice'], currency: '₹' },
+        {
+          size: 'Rent',
+          price: subscription === true ? 0 : Math.max(25, Math.min(35, Math.floor(product['ProductPrice'] * 0.1))),
+          currency: '₹',
+        },
+      ];
+    } else if (type === 'Bookmark') {
+      return [
+        { size: 'QR', price: Math.ceil(product['ProductPrice']), currency: '₹' },
+        { size: 'QR & NFC', price: Math.floor(product['ProductPrice'] * 1.3), currency: '₹' },
+      ];
+    }
+    return [];
+  };
 
-  const [actualPrice, setActualPrice] = useState(prices[0].price);  //to be passed across pages to maintain the actual price post various operations
-  const [price, setPrice] = useState(prices[0]);
+  const [actualPrice, setActualPrice] = useState(0);  //used as a hook to fetch initial price after screen load
+  const [prices, setPrices] = useState(getPrices());
+  const [price, setPrice] = useState(prices[0] || { size: '', price: 0, currency: '₹' });
   const [fullDesc, setFullDesc] = useState(false);
   const [favourite, setFavourite] = useState(false);
 
-  const ToggleFavourite = (isFavourite, id) => {
-    const book = {
-      id: route.params.id,
-      type: route.params.type,
-      price: route.params.price,
-      name: route.params.name,
-      genre: route.params.genre,
-      poster: route.params.poster,
-      photo: route.params.photo,
-      averageRating: route.params.averageRating,
-      ratingCount: route.params.ratingCount,
-      description: route.params.description,
-      favourite: !favourite,
-    };
-    updateFavoriteList(route.params.type, route.params.id, book);
-    setFavourite(!favourite);
+  const { action, productId, productType } = route.params || {}; // Ensure params exist
+
+  //handle the deep linked function
+  const handleAction = (action) => {
+    if (action === 'fetchProductDetails') {
+        setId(productId);
+        setType(productType);
+    }
+  };
+
+  const convertHttpToHttps = (url) => {
+    if (url && url.startsWith('http://')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
   };
 
   const BackHandler = () => {
-    navigation.pop();
+    if (navigation.canGoBack()) {
+      navigation.pop();
+    } else {
+      navigation.navigate('Tab');
+    }
   };
+  
 
   const addToCarthandler = ({
     id,
     name,
-    genre,
     photo,
-    poster,
     type,
     price,
-    actualPrice,
-    averageRating,
-    ratingCount,
-    description, 
   }: any) => {
     addToCart({
       id,
       name,
-      genre,
       photo,
-      poster,
-      type,
-      averageRating,
-      ratingCount,
-      description, 
+      type, 
       prices: [{...price, quantity: 1}],
-      actualPrice: actualPrice,
     });
     calculateCartPrice();
     navigation.navigate('Cart');
   };
-
-  useEffect(() => {
-    const isBookInFavorites = favoritesList.some((book: any) => book.id == route.params.id);
-    setFavourite(isBookInFavorites);
-  }, [favoritesList, route.params.id]);
 
   useEffect(() => {
     async function fetchActivePlan() {
@@ -122,38 +129,54 @@ const DetailsScreen = ({navigation, route}: any) => {
     fetchActivePlan();
   }, []);
 
-  return (
-    <View style={styles.ScreenContainer}>
-      <StatusBar backgroundColor={COLORS.primaryBlackHex} />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.ScrollViewFlex}>
-        <ImageBackgroundInfo
-          EnableBackHandler={true}
-          imagelink_portrait={route.params.poster}
-          type={route.params.type}
-          id={route.params.id}
-          favourite={favourite}
-          name={route.params.name}
-          genre={route.params.genre}
-          // special_ingredient={ItemOfIndex.special_ingredient}
-          // ingredients={ItemOfIndex.ingredients}
-          average_rating={route.params.averageRating}
-          ratings_count={route.params.ratingCount}
-          // roasted={ItemOfIndex.roasted}
-          BackHandler={BackHandler}
-          ToggleFavourite={ToggleFavourite}
-        />
+  useEffect(() => {
+    async function fetchProductDetails() {
+      try {
+        if (action) {
+          handleAction(action);
+        }
+        let response;
+        if (type === 'ExternalBook') {
+            response = await instance(`${requests.fetchExternalBookDetails}${id}`);
+            setIsGoogleBook(true);
+        } else {
+            response = await instance(`${requests.fetchProductDetails}${id}&type=${type}`);
+            setIsGoogleBook(false);
+        }
 
-        <View style={styles.FooterInfoArea}>
-          <Text style={styles.InfoTitle}>Description</Text>
+        const data = response.data;
+        setProduct(data);
+        console.log(product);
+        setActualPrice(data.ProductPrice || data.saleInfo?.listPrice?.amount || 0);
+        const updatedPrices = getPrices();
+        setPrices(updatedPrices);
+        setPrice(updatedPrices[0] || { size: '', price: 0, currency: '₹' });
+        setRoutes([
+          { key: 'description', title: 'Description' },
+          ...(type !== 'Bookmark' ? [
+            { key: 'reviews', title: 'Reviews' },
+            { key: 'emotions', title: 'Emotions' }
+          ] : [])
+        ]);
+      } catch (error) {
+        console.error('Error fetching items:', error);
+      }
+    }
+
+    fetchProductDetails();
+  }, [actualPrice]);
+
+  const renderScene = SceneMap({
+    description: () => (
+      <View style={[styles.TabContent, index !== 0 && styles.hidden]}>
+        <Text style={styles.InfoTitle}>Description</Text>
           {fullDesc ? (
             <TouchableWithoutFeedback
               onPress={() => {
                 setFullDesc(prev => !prev);
               }}>
               <Text style={styles.DescriptionText}>
-                {route.params.description}
+                {isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription']}
               </Text>
             </TouchableWithoutFeedback>
           ) : (
@@ -162,66 +185,122 @@ const DetailsScreen = ({navigation, route}: any) => {
                 setFullDesc(prev => !prev);
               }}>
               <Text numberOfLines={3} style={styles.DescriptionText}>
-                {route.params.description}
+                {isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription']}
               </Text>
             </TouchableWithoutFeedback>
           )}
-          <Text style={styles.InfoTitle}>Options</Text>
-          <View style={styles.SizeOuterContainer}>
-            {prices.map((data: any) => (
-              <TouchableOpacity
-                key={data.size}
-                onPress={() => {
-                  setPrice(data);
-                }}
-                style={[
-                  styles.SizeBox,
-                  {
-                    borderColor:
-                      data.size == price.size
-                        ? COLORS.primaryOrangeHex
-                        : COLORS.primaryDarkGreyHex,
-                  },
-                ]}>
-                <Text
+          { type !== "ExternalBook" &&
+          <>
+            <Text style={styles.InfoTitle}>Options</Text>
+            <View style={styles.SizeOuterContainer}>
+              {prices.map((data: any) => (
+                <TouchableOpacity
+                  key={data.size}
+                  onPress={() => {
+                    setPrice(data);
+                  }}
                   style={[
-                    styles.SizeText,
+                    styles.SizeBox,
                     {
-                      fontSize:
-                      route.params.type == 'Book'
-                          ? FONTSIZE.size_14
-                          : FONTSIZE.size_16,
-                      color:
+                      borderColor:
                         data.size == price.size
                           ? COLORS.primaryOrangeHex
-                          : COLORS.secondaryLightGreyHex,
+                          : COLORS.primaryDarkGreyHex,
                     },
                   ]}>
-                  {data.size}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+                  <Text
+                    style={[
+                      styles.SizeText,
+                      {
+                        fontSize:
+                        type == 'Book'
+                            ? FONTSIZE.size_14
+                            : FONTSIZE.size_16,
+                        color:
+                          data.size == price.size
+                            ? COLORS.primaryOrangeHex
+                            : COLORS.secondaryLightGreyHex,
+                      },
+                    ]}>
+                    {data.size}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+          }
+      </View>
+    ),
+    reviews: () => (
+      <View style={[styles.TabContent, index !== 1 && styles.hidden]}>
+        <Text style={styles.InfoTitle}>Reviews</Text>
+        <ProductReview id={id} isGoogleBook={isGoogleBook} product={product}/>
+      </View>
+    ),
+    emotions: () => (
+      <View style={[styles.TabContent, index !== 2 && styles.hidden]}>
+        <Text style={styles.InfoTitle}>Emotions</Text>
+        <BookEmotions id={id} isGoogleBook={isGoogleBook} product={product}/>
+      </View>
+    ),
+  });
+
+  const renderTabBar = props => (
+    <TabBar
+      {...props}
+      indicatorStyle={{ backgroundColor: COLORS.primaryOrangeHex }}
+      style={{ backgroundColor: COLORS.primaryBlackHex }}
+      renderLabel={({ route, focused, color }) => (
+        <Text style={[styles.TabLabel, focused && styles.TabLabelFocused]}>
+          {route.title}
+        </Text>
+      )}
+    />
+  );
+
+  return (
+    <View style={styles.ScreenContainer}>
+      <StatusBar backgroundColor={COLORS.primaryBlackHex} />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.ScrollViewFlex}>
+        <ImageBackgroundInfo
+          EnableBackHandler={true}
+          imagelink_portrait={isGoogleBook ? convertHttpToHttps(product['volumeInfo']?.imageLinks?.thumbnail) : convertHttpToHttps(product['ProductPhoto'])}
+          type={type}
+          id={id}
+          isGoogleBook={isGoogleBook}
+          favourite={favourite}
+          name={isGoogleBook ? product['volumeInfo']?.title : product['ProductName']}
+          genre={isGoogleBook ? product['volumeInfo']?.categories?.join(", ") : product['ProductGenres']}
+          author={isGoogleBook ? product['volumeInfo']?.authors?.join(", ") : product['ProductAuthor']}
+          BackHandler={BackHandler}
+          product={product} //later remove all other params and just pass product
+        />
+
+        <View style={styles.FooterInfoArea}>
+        <TabView
+            navigationState={{ index, routes }}
+            renderScene={renderScene}
+            renderTabBar={renderTabBar}
+            onIndexChange={setIndex}
+            initialLayout={{ width: 100 }}
+            style={styles.TabView}
+          />
         </View>
-        <PaymentFooter
+        {price && type !== "ExternalBook" && <PaymentFooter
           price={price}
           buttonTitle="Add to Cart"
           buttonPressHandler={() => {
             addToCarthandler({
-              id: route.params.id,
-              name: route.params.name,
-              genre: route.params.genre,
-              photo: route.params.photo,
-              poster: route.params.poster,
-              type: route.params.type,
+              id: id,
+              name: product['ProductName'],
+              photo: product['ProductPhoto'],
+              type: type,
               price: price,
-              actualPrice: actualPrice,
-              averageRating: route.params.averageRating,
-              ratingCount: route.params.ratingCount,
-              description: route.params.description,
             });
           }}
-        />
+        />}
       </ScrollView>
     </View>
   );
@@ -238,6 +317,20 @@ const styles = StyleSheet.create({
   },
   FooterInfoArea: {
     padding: SPACING.space_20,
+  },
+  hidden: { 
+    display: "none" ,
+  },
+  TabContent: {
+    padding: SPACING.space_20,
+  },
+  TabLabel: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryWhiteHex,
+  },
+  TabLabelFocused: {
+    color: COLORS.primaryOrangeHex,
   },
   InfoTitle: {
     fontFamily: FONTFAMILY.poppins_semibold,
@@ -269,6 +362,9 @@ const styles = StyleSheet.create({
   },
   SizeText: {
     fontFamily: FONTFAMILY.poppins_medium,
+  },
+  TabView: {
+    flex: 1,
   },
 });
 

@@ -46,6 +46,20 @@ const linking = {
           action: (action) => `${action}`,
         },
       },
+      Details: {
+        path: 'details/:action',
+        parse: {
+          action: (action) => `${action}`,
+          productId: (id) => `${id}`,
+          productType: (type) => `${type}`,
+        },
+      },
+      Payment: {
+        path: 'payment/:action',
+        parse: {
+          action: (action) => `${action}`,
+        },
+      },
     },
   },
 };
@@ -109,6 +123,14 @@ const App = () => {
   // for expo notifications start
   useEffect(() => {
     registerForPushNotificationsAsync();
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const url = response.notification.request.content.data.urlScheme;
+      if (url) {
+        Linking.openURL(url);
+      }
+    });
+  
+    return () => subscription.remove();
   }, []);
 
   async function registerForPushNotificationsAsync() {
@@ -148,7 +170,7 @@ const App = () => {
     }
   } catch (error) {
     console.error('Error in registering for push notifications:', error);
-    Alert.alert('Error in registering for push notifications!');
+    // Alert.alert('Error in registering for push notifications!');
   }
   }
   // for expo notifications end

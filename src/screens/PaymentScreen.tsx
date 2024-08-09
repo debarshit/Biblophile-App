@@ -45,6 +45,14 @@ const PaymentScreen = ({navigation, route}: any) => {
   const [paymentMode, setPaymentMode] = useState('Online');
   const [showAnimation, setShowAnimation] = useState(false);
   const [isSubscription, setIsSubscription] = useState(false);
+  const [amount, setAmount] = useState(route.params.amount);
+
+  const { action } = route.params || {}; // Ensure params exist
+
+  //handle the deep linked function
+  const handleAction = (action) => {
+    setAmount(action);
+  };
 
   const placeOrder = async (paymentStatus) => {
     if (userDetails[0].userAddress === null) {
@@ -117,78 +125,86 @@ const PaymentScreen = ({navigation, route}: any) => {
       setIsSubscription(true);
     }
   }, [isSubscription]);
+
+  useEffect(() => {
+    if (action) {
+      handleAction(action);
+    }
+  }, [action]);
   
 
-  //try to reduce code redundancy
-  const buttonPressHandler = () => {
-    if (paymentMode === 'Online') {      
-      if (userDetails[0].userAddress === null) {
-        navigation.push('Profile', {
-          update: "Please fill your address",
-        });
-      }
-      else {
-        //open payment portal
-        let link_id; // Declare link_id variable here to make it accessible
-        if (route.params.amount > 0) {
-          async function fetchData() {
-            try {
-              const response = await instance.post(requests.paymentRequest, {
-                  customerName: userDetails[0].userName,
-                  customerPhone: userDetails[0].userPhone,
-                  amount: route.params.amount,
-                });  
-              if (response.data && response.data.link_url) {
-                navigation.push('PaymentGateway', {
-                  url: response.data.link_url
-                });
-                
-                // Assign link_id after successfully receiving link_url
-                link_id = response.data.link_id;
-      
-                // Polling backend to check payment status
-                const pollPaymentStatus = setInterval(async () => {
-                  try {
-                    const statusResponse = await instance.post(requests.paymentSuccessful + link_id, {
-                      customerId: userDetails[0].userId,
-                      customerPhone: userDetails[0].userPhone,
-                      amount: route.params.amount,
-                    });
-                    if (statusResponse.data.status === "success") {
-                      clearInterval(pollPaymentStatus); // Stop polling
-                      if (isSubscription) {
-                        placeSubscriptionOrder();
-                      }
-                      else {
-                        placeOrder(1);
-                      }
+  const handleOnlinePayment = async () => {
+    if (userDetails[0].userAddress === null) {
+      navigation.push('Profile', {
+        update: 'Please fill your address',
+      });
+    } else {
+      if (amount > 0) {
+        try {
+          const response = await instance.post(requests.paymentRequest, {
+            customerName: userDetails[0].userName,
+            customerPhone: userDetails[0].userPhone,
+            amount: amount,
+          });
+
+          if (response.data && response.data.link_url) {
+            navigation.push('PaymentGateway', {
+              url: response.data.link_url,
+            });
+
+            const link_id = response.data.link_id;
+
+            const pollPaymentStatus = setInterval(async () => {
+              try {
+                const statusResponse = await instance.post(
+                  requests.paymentSuccessful + link_id,
+                  {
+                    customerId: userDetails[0].userId,
+                    customerPhone: userDetails[0].userPhone,
+                    amount: route.params.amount,
+                  },
+                );
+                if (statusResponse.data.status === 'success') {
+                  clearInterval(pollPaymentStatus);
+                  if (action) {
+                    navigation.navigate('History');
+                  } else {
+                    if (isSubscription) {
+                      placeSubscriptionOrder();
+                    } else {
+                      placeOrder(1);
                     }
-                  } catch (error) {
-                    console.error("Error occurred while checking payment status:", error);
                   }
-                }, 5000); // Polling interval (5 seconds in this example)
-                
-              } else {
-                alert("Network error! Please try again.");
+                }
+              } catch (error) {
+                console.error(
+                  'Error occurred while checking payment status:',
+                  error,
+                );
               }
-            } catch (error) {
-              console.error("Error occurred during payment:", error);
-            } 
+            }, 5000);
+          } else {
+            alert('Network error! Please try again.');
           }
-        
-          fetchData();
+        } catch (error) {
+          console.error('Error occurred during payment:', error);
         }
-        else {
-          placeOrder(0);
-        }
+      } else {
+        placeOrder(0);
       }
     }
-    else {
-      if (isSubscription) {
-        placeSubscriptionOrder();
-      }
-      else {
-        placeOrder(0);
+  };
+
+  const buttonPressHandler = () => {
+    if (paymentMode === 'Online') {
+      handleOnlinePayment();
+    } else {
+      if (!action) {
+        if (isSubscription) {
+          placeSubscriptionOrder();
+        } else {
+          placeOrder(0);
+        }
       }
     }
   };
@@ -244,7 +260,7 @@ const PaymentScreen = ({navigation, route}: any) => {
 
       <PaymentFooter
         buttonTitle={`Pay ${paymentMode}`}
-        price={{price: route.params.amount, currency: '₹'}}
+        price={{price: amount, currency: '₹'}}
         buttonPressHandler={buttonPressHandler}
       />
     </SafeAreaView>

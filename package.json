@@ -1,6 +1,6 @@
 {
   "name": "biblophile",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
@@ -12,6 +12,8 @@
     "@expo/vector-icons": "^14.0.0",
     "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-native-community/datetimepicker": "^8.1.0",
+    "@react-native-community/slider": "4.4.2",
+    "@react-native-picker/picker": "2.6.1",
     "@react-navigation/bottom-tabs": "^6.5.20",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
@@ -25,20 +27,25 @@
     "expo-notifications": "~0.27.7",
     "expo-splash-screen": "~0.26.4",
     "expo-status-bar": "~1.11.1",
+    "expo-updates": "~0.24.13",
     "immer": "^10.0.4",
     "lottie-react-native": "^6.7.0",
     "react": "18.2.0",
     "react-native": "0.73.6",
+    "react-native-chart-kit": "^6.12.0",
     "react-native-confetti-cannon": "^1.5.2",
     "react-native-onboarding-swiper": "^1.2.0",
+    "react-native-pager-view": "^6.3.3",
     "react-native-safe-area-context": "^4.9.0",
     "react-native-screens": "^3.29.0",
     "react-native-shimmer-placeholder": "^2.0.9",
+    "react-native-star-rating": "^1.1.0",
+    "react-native-svg": "^15.5.0",
+    "react-native-tab-view": "^3.5.2",
     "react-native-toast-message": "^2.2.0",
     "react-native-webview": "^13.8.4",
     "typescript": "^5.3.0",
-    "zustand": "^4.5.2",
-    "expo-updates": "~0.24.13"
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

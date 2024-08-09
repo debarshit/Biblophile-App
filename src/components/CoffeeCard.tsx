@@ -2,7 +2,6 @@ import React from 'react';
 import {
   Dimensions,
   ImageBackground,
-  ImageProps,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -24,28 +23,22 @@ const CARD_WIDTH = Dimensions.get('window').width * 0.32;
 interface CoffeeCardProps {
   id: string;
   type: string;
-  genre: string;
   photo: string;
-  poster: string;
   ratingCount: number;
   name: string;
   averageRating: number;
   price: any;
-  description: string;
   buttonPressHandler: any;
 }
 
 const CoffeeCard: React.FC<CoffeeCardProps> = ({
   id,
   type,
-  genre,
   photo,
-  poster,
   name,
   averageRating,
   ratingCount,
   price,
-  description,
   buttonPressHandler,
 }) => {
    //Array of buy and rent prices
@@ -64,14 +57,14 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
         source={{ uri: photo }}
         style={styles.CardImageBG}
         resizeMode="cover">
-        {type === "Book" && <View style={styles.CardRatingContainer}>
+        {/* {type === "Book" && <View style={styles.CardRatingContainer}>
           <AntDesign
             name={'star'}
             color={COLORS.primaryOrangeHex}
             size={FONTSIZE.size_16}
           />
           <Text style={styles.CardRatingText}>{averageRating}</Text>
-        </View>}
+        </View>} */}
       </ImageBackground>
       <Text style={styles.CardTitle}>
         {name.length > 20 ? name.substring(0, 20) + '...' : name}
@@ -81,20 +74,14 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
         <Text style={styles.CardPriceCurrency}>
         ₹ <Text style={styles.CardPrice}>{price}</Text>
         </Text>
-        <TouchableOpacity
+        {type !== "ExternalBook" && <TouchableOpacity
           onPress={() => {
             buttonPressHandler({
               id,
               name,
-              genre,
               photo,
-              poster,
               type,
               prices: [{...prices[0], quantity: 1}],
-              actualPrice: prices[0].price,
-              averageRating,
-              ratingCount,
-              description,  
             });
           }}>
           <BGIcon
@@ -103,7 +90,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
             BGColor={COLORS.primaryOrangeHex}
             size={FONTSIZE.size_10}
           />
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
     </LinearGradient>
   );

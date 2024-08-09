@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { FontAwesome as FaIcon, MaterialCommunityIcons as MdIcon } from '@expo/vector-icons';
 import instance from '../services/axios';
@@ -23,7 +23,6 @@ const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible,
 
 const SignupLogin: React.FC = ({ navigation }: any) => {
     const login = useStore((state: any) => state.login);
-    const addUser = useStore((state: any) => state.addUser);
 
     const [isRegistration, setIsRegistration] = useState<boolean>(false);
     const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -40,6 +39,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const [signupPassCnf, setSignupPassCnf] = useState<string>('');
     const [loginMessage, setLoginMessage] = useState<{ text: string; color: string }>({ text: '', color: COLORS.primaryBlackHex });
     const [signupMessage, setSignupMessage] = useState<{ text: string; color: string }>({ text: '', color: COLORS.primaryBlackHex });
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     // function to update state of input with
     // values entered by user in form
@@ -91,16 +91,37 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
         }
     }
 
+    const validateEmail = (email: string) => {
+        const re = /\S+@\S+\.\S+/;
+        return re.test(email);
+    };
+
+    const validatePhone = (phone: string) => {
+        const re = /^\d{10}$/;
+        return re.test(phone);
+    };
+
     const handleSignup = () => {
         if (!signupName || !signupEmail || !signupPhone || !signupPass || !signupPassCnf)
         {
             alert("Please fill all the details!");
+            return;
+        }
+        if (!validateEmail(signupEmail)) {
+            alert("Invalid email format!");
+            return;
+        }
+        if (!validatePhone(signupPhone)) {
+            alert("Invalid phone number format!");
+            return;
         }
         else if (signupPass !== signupPassCnf) {
             alert("Passwords don't match");
+            return;
         }
         else {
             async function fetchData() {
+                setIsLoading(true);
                 try {
                     const response = await instance.post(requests.userSignup, {
                         name: signupName,
@@ -124,7 +145,9 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                     }
                   } catch (error) {
                     console.log(error);
-                  }
+                  } finally {
+                    setIsLoading(false);
+                }
             }
             fetchData();
         }
@@ -138,6 +161,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
         }
         else {
             async function fetchData() {
+                setIsLoading(true);
                 try {
                     const response = await instance.post(requests.userLogin, {
                         email: loginEmail,
@@ -176,9 +200,11 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                     {
                         setLoginMessage({ text: response.data.message, color: COLORS.primaryRedHex });
                     }
-                  } catch (error) {
+                } catch (error) {
                     setLoginMessage({ text: "There was an error! Please try again.", color: COLORS.primaryRedHex });
-                  }
+                } finally {
+                    setIsLoading(false); 
+                }
             }
             fetchData();
         }
@@ -258,8 +284,12 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                         <TouchableOpacity onPress={() => forgotPassword()}>
                             <Text style={styles.forgotText}>Forgot password?</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleLogin()} style={styles.button}>
-                            <Text style={styles.buttonText}>Login</Text>
+                        <TouchableOpacity onPress={handleLogin} style={styles.button} disabled={isLoading}>
+                            {isLoading ? (
+                                <ActivityIndicator size='small' color={COLORS.primaryWhiteHex} />
+                            ) : (
+                                <Text style={styles.buttonText}>Login</Text>
+                            )}
                         </TouchableOpacity>
                         <View style={styles.registerLink}>
                             <Text style={styles.switchText}>Don't have an account? <Text style={styles.linkText} onPress={toggleRegistration}>Register</Text></Text>
@@ -347,8 +377,12 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                                 <FaIcon name='lock' style={styles.icon} />
                             </View>
                         </View>
-                        <TouchableOpacity onPress={() => handleSignup()} style={styles.button}>
-                            <Text style={styles.buttonText}>Sign up</Text>
+                        <TouchableOpacity onPress={handleSignup} style={styles.button} disabled={isLoading}>
+                            {isLoading ? (
+                                <ActivityIndicator size='small' color={COLORS.primaryWhiteHex} />
+                            ) : (
+                                <Text style={styles.buttonText}>Signup</Text>
+                            )}
                         </TouchableOpacity>
                         <View style={styles.registerLink}>
                             <Text style={styles.switchText}>Already have an account? <Text style={styles.linkText} onPress={toggleRegistration}>Login</Text></Text>

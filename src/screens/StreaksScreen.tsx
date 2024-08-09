@@ -1,31 +1,36 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated, TextInput, SafeAreaView, Share } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated, SafeAreaView, Share } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import { useStore } from '../store/store';
-import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
-import ProgressBar from '../components/ProgressBar';
+import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
+import PagesReadInput from '../components/PagesReadInput';
 
 const StreaksScreen: React.FC = ({ navigation, route }: any) => {
 
   const userDetails = useStore((state: any) => state.userDetails);
 
-  const [pagesRead, setPagesRead] = useState<string>('');
   const [currentStreak, setCurrentStreak] = useState<number>(1);
   const [maxStreak, setMaxStreak] = useState<number>(1);
+  const [latestUpdateTime, setLatestUpdateTime] = useState<string>("");
   const [celebration, setCelebration] = useState(false);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState<Date | null>(null);
-
+  const [activeTab, setActiveTab] = useState('streaks');
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [allDaysFilled, setAllDaysFilled] = useState(false);
+  
   const { action } = route.params || {}; // Ensure params exist
 
-  //handle the deep linked function
-  const handleAction = (action) => {
+  const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
+
+  // Handle the deep linked function
+  const handleAction = (action: string) => {
     switch (action) {
       case 'updateReadingStreak':
         updateReadingStreak();
@@ -34,6 +39,55 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
         Alert.alert('Uh oh!', 'Please try again.');
     }
   };
+
+  const getDayClasses = (dayIndex: number) => {
+    if (!latestUpdateTime) return styles.day;
+
+    const today = new Date();
+    const currentDayIndex = today.getDay();
+    const lastUpdateDate = new Date(latestUpdateTime);
+    const lastUpdateDayIndex = lastUpdateDate.getDay();
+
+    const weekStartIndex = 0;
+
+    const firstDayOfWeek = new Date(today);
+    firstDayOfWeek.setDate(today.getDate() - currentDayIndex + weekStartIndex);
+
+    const streakEndDayIndex = lastUpdateDayIndex;
+
+    const fillStartDayIndex = Math.max(weekStartIndex, streakEndDayIndex - (currentStreak - 1));
+    const fillEndDayIndex = Math.min(currentDayIndex, streakEndDayIndex);
+
+    // Check if the current day index falls within the streak days
+    if (dayIndex >= fillStartDayIndex && dayIndex <= fillEndDayIndex) {
+      return styles.filledDay;
+    }
+
+    return styles.day;
+  };
+
+  useEffect(() => {
+    const checkAllDaysFilled = () => {
+      const today = new Date();
+      const currentDayIndex = today.getDay();
+      const lastUpdateDate = new Date(latestUpdateTime);
+      const lastUpdateDayIndex = lastUpdateDate.getDay();
+
+      const weekStartIndex = 0;
+      const streakEndDayIndex = lastUpdateDayIndex;
+
+      const fillStartDayIndex = Math.max(weekStartIndex, streakEndDayIndex - (currentStreak - 1));
+      const fillEndDayIndex = Math.min(currentDayIndex, streakEndDayIndex);
+
+      if (fillStartDayIndex === 0 && fillEndDayIndex === 6) {
+        setCelebration(true);
+      } else {
+        setCelebration(false);
+      }
+    };
+
+    checkAllDaysFilled();
+  }, [currentStreak, latestUpdateTime]);
 
   const updateReadingStreak = () => {
     async function updateData() {
@@ -46,6 +100,7 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
           if (response.data.message === "Updated") {
             setCurrentStreak(response.data.streak);
             setMaxStreak(response.data.maxStreak);
+            setLatestUpdateTime(response.data.latestUpdateTime);
           }
           else {
             Alert.alert('Error', response.data.message);
@@ -58,56 +113,11 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
     }
     updateData();
   }
-
-  const progress = useRef(new Animated.Value(0)).current;
-
-  const updatePagesRead = () => {
-    if (pagesRead !== "") {
-      async function updateData() {
-        try {
-          const response = await instance.post(requests.updatePagesRead, {
-            userId: userDetails[0].userId,
-            pageCount: pagesRead,
-          });
-          if (response.data.message === "Updated") {
-            Alert.alert("Success", "Updated");
-          }
-          else {
-            Alert.alert("Error", response.data.message);
-          }
-        } catch (error) {
-          Alert.alert('Error', 'Failed to update pages read.');
-          console.log(error);
-        }
-      }
-      updateData();
-    }
-    else {
-      Alert.alert("Page count is 0", "Please enter number of pages read!");
-    }
-  }
-
   const openWebView = (url: string) => {
     navigation.push('Resources', {
       url: url
     });
   };
-
-  useEffect(() => {
-    // Making the target value as the next higher multiple of 10
-    const progressValue = ((currentStreak % 10) || 10) * 10;
-
-    // Animate the progress bar from 0 to 100 over 10 seconds (example)
-    Animated.timing(progress, {
-      toValue: progressValue,
-      duration: 2000,
-      useNativeDriver: false,
-    }).start(() => {
-      if (progressValue === 100) {
-        setCelebration(true);
-      }
-    });
-  }, [currentStreak, progress]);
 
   useEffect(() => {
     async function fetchReadingStreak() {
@@ -118,6 +128,7 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
         const data = response.data;
         setCurrentStreak(data.currentStreak);
         setMaxStreak(data.maxStreak);
+        setLatestUpdateTime(data.latestUpdateTime);
         if (action) {
           handleAction(action);
         }
@@ -129,6 +140,13 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
 
     fetchReadingStreak();
   }, []);
+
+  useEffect(() => {
+    // Example of how you can handle the action param from route
+    if (action === 'updateReadingStreak') {
+      updateReadingStreak();
+    }
+  }, [action]);
 
   const handleReminderPress = () => {
     setDatePickerVisible(true);
@@ -165,7 +183,7 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   const handleSharePress = async () => {
     try {
       const result = await Share.share({
-        message: `I've been on a reading streak for ${currentStreak} days! 📚✨ Join me and let's read together on Biblophile!`,
+        message: `I've been on a reading streak for ${currentStreak} days! 📚✨ Join me and let's read together on Biblophile! https://biblophile.com/`,
       });
       if (result.action === Share.sharedAction && result.activityType) {
         // Shared with activity type
@@ -203,6 +221,10 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
     navigation.navigate('Stats');
   };
 
+  const toggleTooltip = () => {
+    setShowTooltip(prev => !prev);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {celebration && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} />}
@@ -232,54 +254,77 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
             </View>
           </TouchableOpacity>
         </View>
-        <View style={styles.streakInfo}>
-          <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
-        </View>
-        <View style={styles.progressContainer}>
-          <Text style={styles.infoText}>Progress till next achievement</Text>
-          <ProgressBar progress={progress} />
-          <Text style={styles.greeting}>Hello, {userDetails[0].userName.split(' ')[0]}! Keep up the good work! 🎉</Text>
-        </View>
-        <View style={styles.achievements}>
-          <Text style={styles.sectionTitle}>Highest Streak:</Text>
-          <Text style={styles.maxStreak}>🏅 {maxStreak}-day Streak</Text>
-        </View>
-        <Text style={styles.infoText}>Pages read today?</Text>
-        <View style={styles.inputBox}>
-          <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.input}
-                  placeholder='Optional'
-                  placeholderTextColor={COLORS.secondaryLightGreyHex}
-                  autoCapitalize='none'
-                  keyboardType='numeric'
-            value={pagesRead}
-                  onChangeText={(text) => setPagesRead(text)}
-                  accessibilityLabel="Pages Read"
-            accessibilityHint="Enter the number of pages read today"
-          />
-            </View>
-        </View>
-        <TouchableOpacity onPress={() => updatePagesRead()} style={styles.button}>
-          <Text style={styles.buttonText}>Update</Text>
+        <View style={styles.tabs}>
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === 'streaks' && styles.activeTab
+            ]}
+            onPress={() => setActiveTab('streaks')}
+          >
+            <Text style={styles.tabText}>Streaks</Text>
           </TouchableOpacity>
-          {datePickerVisible && (
-          <View style={styles.modalContainer}>
-            <DateTimePicker
-              value={reminderTime || new Date()}
-              mode="time"
-              is24Hour={true}
-              display="spinner"
-              onChange={(event, selectedDate) => {
-                if (selectedDate) {
-                  setReminderTime(selectedDate);
-                  setDatePickerVisible(false);
-                  scheduleNotification(selectedDate);
-                }
-              }}
-            />
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === 'pages' && styles.activeTab
+            ]}
+            onPress={() => setActiveTab('pages')}
+          >
+            <Text style={styles.tabText}>Pages</Text>
+          </TouchableOpacity>
+        </View>
+        {activeTab === "streaks" ? <>
+          <View style={styles.streakInfo}>
+            <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
           </View>
-        )}
+          <View style={styles.progressContainer}>
+            <View style={styles.progressText}>
+              <Text style={styles.infoText}>Progress for the week</Text>
+              <TouchableOpacity onPress={toggleTooltip} style={styles.infoIconContainer}>
+              <FontAwesome name="info-circle" style={styles.infoIcon} />
+              {showTooltip && (
+                <View style={styles.tooltip}>
+                  <Text style={styles.tooltipText}>
+                    Use our nfc bookmarks to maintain reading streak
+                  </Text>
+                </View>
+              )}
+          </TouchableOpacity>
+            </View>
+            <View style={styles.weekContainer}>
+              {daysOfWeek.map((day, index) => (
+                <View key={index} style={[styles.dayContainer, getDayClasses(index)]}>
+                  <Text style={styles.dayText}>{day}</Text>
+                </View>
+              ))}
+            </View>
+            <Text style={styles.greeting}>Hello, {userDetails[0].userName.split(' ')[0]}! Keep up the good work! 🎉</Text>
+          </View>
+          <View style={styles.achievements}>
+            <Text style={styles.sectionTitle}>Highest Streak:</Text>
+            <Text style={styles.maxStreak}>🏅 {maxStreak}-day Streak</Text>
+          </View>
+        </> :
+        <PagesReadInput />
+        }
+      {datePickerVisible && (
+      <View style={styles.modalContainer}>
+        <DateTimePicker
+          value={reminderTime || new Date()}
+          mode="time"
+          is24Hour={true}
+          display="spinner"
+          onChange={(event, selectedDate) => {
+            if (selectedDate) {
+              setReminderTime(selectedDate);
+              setDatePickerVisible(false);
+              scheduleNotification(selectedDate);
+            }
+          }}
+        />
+          </View>
+      )}
         <View style={styles.reminders}>
           <TouchableOpacity onPress={handleTipsPress} style={styles.reminderButton}>
           <MaterialIcons name="tips-and-updates" size={20} color={COLORS.secondaryLightGreyHex}/>
@@ -366,6 +411,26 @@ const styles = StyleSheet.create({
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_bold,
   },
+  tabs: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: SPACING.space_20,
+  },
+  tabButton: {
+    width: '40%',
+    padding: SPACING.space_10,
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    color: COLORS.primaryWhiteHex,
+    borderRadius: BORDERRADIUS.radius_8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeTab: {
+    backgroundColor: COLORS.primaryOrangeHex,
+  },
+  tabText: {
+    color: COLORS.primaryWhiteHex,
+  },
   streakInfo: {
     alignItems: 'center',
     marginBottom: SPACING.space_16,
@@ -376,19 +441,59 @@ const styles = StyleSheet.create({
     color: COLORS.primaryOrangeHex,
   },
   progressContainer: {
+    flexDirection: 'column',
     alignItems: 'center',
-    marginBottom: SPACING.space_16,
+  },
+  weekContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: SPACING.space_24,
+    zIndex: -1,
+  },
+  dayContainer: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: SPACING.space_4,
+    borderRadius: BORDERRADIUS.radius_20,
+  },
+  filledDay: {
+    backgroundColor: COLORS.primaryOrangeHex,
+  },
+  day: {
+    backgroundColor: COLORS.primaryGreyHex,
+  },
+  dayText: {
+    fontFamily: FONTFAMILY.poppins_bold,
+    fontSize: FONTSIZE.size_18,
+    color: COLORS.primaryWhiteHex,
+  },
+  streakButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  streakButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.space_12,
+    borderRadius: BORDERRADIUS.radius_8,
+    backgroundColor: COLORS.primaryBlackHex,
+    marginBottom: SPACING.space_12,
+    width: '48%',
+  },
+  buttonText: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_16,
+    color: COLORS.primaryWhiteHex,
+    marginLeft: SPACING.space_8,
   },
   greeting: {
     fontSize: FONTSIZE.size_16,
     fontFamily: FONTFAMILY.poppins_medium,
     color: COLORS.secondaryLightGreyHex,
     marginTop: SPACING.space_8,
-  },
-  progressBar: {
-    width: '100%',
-    height: 10,
-    borderRadius: 5,
   },
   infoText: {
     fontSize: FONTSIZE.size_16,
@@ -397,6 +502,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.space_8,
   },
   achievements: {
+    marginTop: SPACING.space_15,
     marginBottom: SPACING.space_16,
     flexDirection: 'row',
   },
@@ -411,42 +517,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_bold,
     marginBottom: SPACING.space_8,
     color: COLORS.primaryOrangeHex,
-  },
-  inputBox: {
-    marginBottom: 10,
-    width: 300,
-  },
-  inputWrapper: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    borderWidth: 1,
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    borderColor: COLORS.primaryLightGreyHex,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-  },
-  input: {
-    flex: 1,
-    height: 40,
-    paddingHorizontal: 10,
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_regular,
-  },
-  button: {
-    backgroundColor: COLORS.primaryOrangeHex,
-    paddingVertical: 5,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginTop: 10,
-    marginBottom: 20,
-    width: '30%',
-    alignSelf: 'center',
-  },
-  buttonText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_medium,
-    textAlign: 'center',
   },
   reminders: {
     marginTop: SPACING.space_20,
@@ -498,6 +568,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  infoIconContainer: {
+    position: 'relative',
+    marginLeft: SPACING.space_4,
+  },
+  tooltip: {
+    position: 'absolute',
+    top: 20,
+    right: 5,
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    color: COLORS.primaryWhiteHex,
+    padding: SPACING.space_4,
+    borderRadius: 4,
+    fontSize: FONTSIZE.size_12,
+    width: 200,
+    zIndex: 1000,
+    shadowColor: COLORS.primaryBlackHex,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  tooltipText: {
+    fontSize: FONTSIZE.size_12,
+    color: COLORS.primaryWhiteHex,
+  },
+  infoIcon: {
+    color: COLORS.primaryLightGreyHex,
+    fontSize: FONTSIZE.size_18,
+  },
+  progressText: {
+    flexDirection: 'row',
   },
 });
 

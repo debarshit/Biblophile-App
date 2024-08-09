@@ -46,16 +46,6 @@ const getBookList = async (genre: any) => {
   }
 };
 
-// const getBookmarks = async () => {
-//   try {
-//     const response = await instance(requests.getBookmarks);
-//     const data = response.data;
-//     return data;
-//   } catch (error) {
-//     console.error('Error fetching genres:', error);
-//   }
-// };
-
 const HomeScreen = ({navigation}: any) => {
   //useStore variables
   const addToCart = useStore((state: any) => state.addToCart);
@@ -77,6 +67,7 @@ const HomeScreen = ({navigation}: any) => {
   const [sortedCoffee, setSortedCoffee] = useState<any>(
     getBookList(genreIndex.genre),
   );
+  const [externalBooks, setExternalBooks] = useState<any>([]);
   const [loading, setLoading] = useState(true);
   const [booksLoading, setBooksLoading] = useState(true);
 
@@ -98,6 +89,11 @@ const HomeScreen = ({navigation}: any) => {
           const response = await instance(requests.searchBooks + search);
           const data = response.data;
           setSortedCoffee(data);
+
+          const externalBooksResponse = await instance.get(requests.searchExternalBooks + search);
+          const externalData = externalBooksResponse.data;
+          setExternalBooks(externalData);
+
           setBooksLoading(false);
         } catch (error) {
           console.error('Error fetching books:', error);
@@ -113,6 +109,7 @@ const HomeScreen = ({navigation}: any) => {
     });
     setGenreIndex({index: 0, genre: genres[0]});
     setSortedCoffee(bookList);
+    setExternalBooks([]);
     setSearchText('');
   };
 
@@ -127,7 +124,8 @@ const HomeScreen = ({navigation}: any) => {
     actualPrice,
     averageRating,
     ratingCount,
-    description,                    
+    description,
+    author,                    
   }: any) => {
     addToCart({
       id,
@@ -140,7 +138,8 @@ const HomeScreen = ({navigation}: any) => {
       actualPrice,
       averageRating,
       ratingCount,
-      description, 
+      description,
+      author, 
     });
     calculateCartPrice();
     if (Platform.OS == 'android') {
@@ -160,6 +159,13 @@ const HomeScreen = ({navigation}: any) => {
         bottomOffset: 100, // Adjust the offset as needed
       });
     }
+  };
+
+  const convertHttpToHttps = (url) => {
+    if (url && url.startsWith('http://')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
   };
 
   useEffect(() => {
@@ -326,11 +332,12 @@ const HomeScreen = ({navigation}: any) => {
       ) : (
 
         <FlatList
+          {...sortedCoffee.length === 0 && styles.hidden}
           ref={ListRef}
           horizontal
           ListEmptyComponent={
             <View style={styles.EmptyListContainer}>
-              <Text style={styles.genreText}>No Books Available</Text>
+              <Text style={styles.genreText}>No Books found</Text>
             </View>
           }
           showsHorizontalScrollIndicator={false}
@@ -344,27 +351,16 @@ const HomeScreen = ({navigation}: any) => {
                   navigation.push('Details', {
                     id: item.BookId,
                     type: "Book",
-                    price: item.BookPrice,
-                    name: item.BookName,
-                    genre: item.BookGenre,
-                    poster: item.BookPoster,
-                    photo: item.BookPhoto,
-                    averageRating: item.BookAverageRating,
-                    ratingCount: item.BookRatingCount,
-                    description: item.BookDescription,
                   });
                 }}>
                 <CoffeeCard
                   id={item.BookId}
                   name={item.BookName}
-                  genre={item.BookGenre}
-                  photo={item.BookPhoto}
-                  poster={item.BookPoster}
+                  photo={convertHttpToHttps(item.BookPhoto)}
                   type="Book"
                   price={item.BookPrice}
                   averageRating={item.BookAverageRating}
                   ratingCount={item.BookRatingCount}
-                  description={item.BookDescription}  
                   buttonPressHandler={CoffeeCardAddToCart}
                 />
               </TouchableOpacity>
@@ -372,6 +368,74 @@ const HomeScreen = ({navigation}: any) => {
           }}
         />
 )}
+
+      {/* External Books FlatList */}
+      {searchText !== '' &&
+        <>
+        <Text style={styles.CoffeeBeansTitle}>External Books</Text>
+
+        {booksLoading ? (
+          // Render shimmer effect while loading
+          <View style={styles.shimmerFlex}>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!booksLoading}>
+            </ShimmerPlaceholder>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!setBooksLoading}>
+            </ShimmerPlaceholder>
+            <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+              style={styles.ShimmerPlaceholder}
+              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+              visible={!booksLoading}>
+            </ShimmerPlaceholder>
+          </View>
+        ) : (
+
+          <FlatList
+            ref={ListRef}
+            horizontal
+            ListEmptyComponent={
+              <View style={styles.EmptyListContainer}>
+                <Text style={styles.genreText}>No Books found</Text>
+              </View>
+            }
+            showsHorizontalScrollIndicator={false}
+            data={externalBooks}
+            contentContainerStyle={styles.FlatListContainer}
+            keyExtractor={item => item.GoogleBookId}
+            renderItem={({item}) => {
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.push('Details', {
+                      id: item.GoogleBookId,
+                      type: "ExternalBook",
+                    });
+                  }}>
+                  <CoffeeCard
+                    id={item.GoogleBookId}
+                    name={item.BookName}
+                    photo={convertHttpToHttps(item.BookPhoto)}
+                    type="ExternalBook"
+                    price={item.BookPrice}
+                    averageRating={item.BookAverageRating}
+                    ratingCount={item.BookRatingCount}
+                    buttonPressHandler={CoffeeCardAddToCart}
+                  />
+                </TouchableOpacity>
+              );
+            }}
+          />
+        )}
+        </>
+      }
 
         <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
 
@@ -415,27 +479,16 @@ const HomeScreen = ({navigation}: any) => {
                     navigation.push('Details', {
                       id: item.BookmarkId,
                       type: "Bookmark",
-                      price: item.BookmarkPrice,
-                      name: item.BookmarkTitle,
-                      genre: "Bookmark",
-                      poster: item.BookmarkPoster,
-                      photo: item.BookmarkPhoto,
-                      averageRating: null,
-                      ratingCount: null,
-                      description: item.BookmarkDescription,
                     });
                   }}>
                   <CoffeeCard
                     id={item.BookmarkId}
                     name={item.BookmarkTitle}
-                    genre="Bookmark"
-                    photo={item.BookmarkPhoto}
-                    poster={item.BookmarkPoster}
+                    photo={convertHttpToHttps(item.BookmarkPhoto)}
                     type="Bookmark"
                     price={item.BookmarkPrice}
                     averageRating={null}
                     ratingCount={null}
-                    description={item.BookmarkDescription}  
                     buttonPressHandler={CoffeeCardAddToCart}
                   />
                 </TouchableOpacity>
@@ -460,6 +513,9 @@ const styles = StyleSheet.create({
   },
   shimmerFlex: {
     flexDirection: 'row',
+  },
+  hidden: {
+    display: 'none',
   },
   ScreenContainer: {
     flex: 1,
