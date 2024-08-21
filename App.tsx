@@ -103,10 +103,7 @@ const App = () => {
         const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
           await Updates.fetchUpdateAsync();
-          // Notify user and reload the app
-          Alert.alert('Update Available', 'An update is available and will be applied on restart.', [
-            { text: 'Restart Now', onPress: () => Updates.reloadAsync() },
-          ]);
+          await Updates.reloadAsync(); 
         }
       } catch (e) {
         console.log(e);
