@@ -21,6 +21,7 @@ import OnboardingScreen from './src/screens/OnboardingScreen';
 import PaymentGatewayScreen from './src/screens/PaymentGatewayScreen';
 import StreaksScreen from './src/screens/StreaksScreen';
 import StatScreen from './src/screens/StatScreen';
+import AboutScreen from './src/screens/settings/AboutScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -231,6 +232,10 @@ const App = () => {
             <Stack.Screen
             name="Resources"
             component={ResourceScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
+            <Stack.Screen
+            name="About"
+            component={AboutScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
             <Stack.Screen
             name="Profile"

@@ -319,7 +319,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
-                openWebView('https://biblophile.com/blog/2023/11/13/introducing-biblophile-your-gateway-to-a-world-of-books/')
+                navigation.push('About');
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
