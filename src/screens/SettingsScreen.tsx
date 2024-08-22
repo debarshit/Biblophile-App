@@ -86,7 +86,26 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
         <ScrollView>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Subscription</Text>
+            <Text style={styles.sectionTitle}>My Account</Text>
+
+            <TouchableOpacity
+              onPress={() => {
+                navigation.push('Review');
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <MaterialIcons name="rate-review" size={20} color="#fff" />
+              </View>
+
+              <Text style={styles.rowLabel}>My Reviews</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => {

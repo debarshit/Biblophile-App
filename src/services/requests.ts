@@ -40,6 +40,10 @@ const requests = {
     fetchUserBooks: `/actions1.php?action=fetchUserBooks`,
     paymentRequest: `/actions1.php?action=paymentRequest`,
     paymentSuccessful: `/actions1.php?action=paymentSuccessful&linkId=`,
+
+    //request to biblophile user-insights api
+    fetchUserReviews: `/userInsights.php?action=fetchUserReviews&userId=`,
+    updateUserReview: `/userInsights.php?action=updateUserReview`,
 }
 
 export default requests;
