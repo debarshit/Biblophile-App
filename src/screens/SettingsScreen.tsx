@@ -11,7 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import * as Linking from 'expo-linking';
-import { Feather, FontAwesome, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { Feather, FontAwesome, MaterialIcons, FontAwesome5, Entypo } from '@expo/vector-icons';
 import { useStore } from '../store/store';
 import  { COLORS, FONTFAMILY, FONTSIZE } from '../theme/theme';
 
@@ -98,6 +98,25 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
               </View>
 
               <Text style={styles.rowLabel}>Reading Journal</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                navigation.push('Streaks');
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <Entypo name="bar-graph" size={20} color="#fff" />
+              </View>
+
+              <Text style={styles.rowLabel}>My Stats</Text>
 
               <View style={styles.rowSpacer} />
 
