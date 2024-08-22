@@ -83,9 +83,9 @@ const AboutScreen: React.FC = () => {
       <View style={styles.section}>
         <Text style={styles.heading}>Fun Company Facts</Text>
         <View style={styles.list}>
-          <Text style={styles.listItem}>1. Did you know? The name "Biblophile" came about in a rather unconventional way...</Text>
-          <Text style={styles.listItem}>2. We’re a dynamic duo here at Biblophile. One of us focuses on coding...</Text>
-          <Text style={styles.listItem}>3. Here’s a quirky touch: we’ve incorporated a “Book Discovery Challenge”...</Text>
+          <Text style={styles.listItem}>1. Did you know? The name "Biblophile" came about in a rather unconventional way—during a late-night search for a domain name, a typo led to our unique name. We were so thrilled to snag the domain that we decided to keep the playful misspelling, and it’s become a charming part of our identity!</Text>
+          <Text style={styles.listItem}>2. We’re a dynamic duo here at Biblophile. One of us focuses on coding and the technical wizardry behind our platform, while the other handles design, social media, and operations. Our teamwork ensures a seamless experience for our readers, blending technical expertise with creative flair.</Text>
+          <Text style={styles.listItem}>3. Here’s a quirky touch: we’ve incorporated a “Book Discovery Challenge” into our service, where each month, we feature a surprise book genre or theme to ignite your curiosity and expand your reading horizons. Plus, our smart bookmarks not only track your reading streak but also come with customizable motivational quotes to keep you inspired!</Text>
         </View>
       </View>
 
