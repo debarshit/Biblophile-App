@@ -4,6 +4,7 @@ import instance from '../../services/axios';
 import requests from '../../services/requests';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme/theme';
 import { useStore } from '../../store/store';
+import Mascot from '../../components/Mascot';
 
 const ReviewScreen: React.FC = () => {
     const [reviews, setReviews] = useState([]);
@@ -79,6 +80,7 @@ const ReviewScreen: React.FC = () => {
         <>
             <ScrollView contentContainerStyle={styles.container}>
                 <Text style={styles.title}>My Ratings & Reviews</Text>
+                {reviews.length === 0 && <Mascot emotion="reading" />}
                 {reviews.map((review: any) => (
                     <View key={review.ratingId} style={styles.reviewCard}>
                         <Image source={{ uri: review.bookImage }} style={styles.bookImage} />
@@ -128,6 +130,7 @@ const styles = StyleSheet.create({
     container: {
         padding: SPACING.space_20,
         backgroundColor: COLORS.primaryBlackHex,
+        height: "100%",
     },
     title: {
         fontSize: FONTSIZE.size_24,
