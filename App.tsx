@@ -23,6 +23,7 @@ import StreaksScreen from './src/screens/StreaksScreen';
 import StatScreen from './src/screens/StatScreen';
 import AboutScreen from './src/screens/settings/AboutScreen';
 import ReviewScreen from './src/screens/settings/ReviewScreen';
+import ProfileSummaryScreen from './src/screens/settings/ProfileSummaryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -239,12 +240,16 @@ const App = () => {
             component={AboutScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
             <Stack.Screen
+            name="Profile"
+            component={ProfileScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
+            <Stack.Screen
             name="Review"
             component={ReviewScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
             <Stack.Screen
-            name="Profile"
-            component={ProfileScreen}
+            name="ProfileSummary"
+            component={ProfileSummaryScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
             <Stack.Screen
             name="Subscription"

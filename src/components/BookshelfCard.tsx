@@ -72,6 +72,7 @@ const styles = StyleSheet.create({
   CardLinearGradientContainer: {
     padding: SPACING.space_15,
     borderRadius: BORDERRADIUS.radius_25,
+    marginRight: SPACING.space_10,
   },
   CardImageBG: {
     width: CARD_WIDTH,

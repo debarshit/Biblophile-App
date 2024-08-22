@@ -42,6 +42,9 @@ const requests = {
     paymentSuccessful: `/actions1.php?action=paymentSuccessful&linkId=`,
 
     //request to biblophile user-insights api
+    fetchAverageRatingByUser:`/userInsights.php?action=fetchAverageRatingByUser&userId=`,
+    fetchAverageEmotionsByUser:`/userInsights.php?action=fetchAverageEmotionsByUser&userId=`,
+    fetchAverageDaystoFinish: `/userInsights.php?action=fetchAverageDaystoFinish&userId=`,
     fetchUserReviews: `/userInsights.php?action=fetchUserReviews&userId=`,
     updateUserReview: `/userInsights.php?action=updateUserReview`,
 }
