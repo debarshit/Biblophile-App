@@ -14,6 +14,13 @@ const ReviewScreen: React.FC = () => {
     const userDetails = useStore((state: any) => state.userDetails);
     const userId = userDetails[0].userId;
 
+    const convertHttpToHttps = (url) => {
+        if (url && url.startsWith('http://')) {
+          return url.replace('http://', 'https://');
+        }
+        return url;
+      };
+
     useEffect(() => {
         instance.get(`${requests.fetchUserReviews}${userId}`)
             .then(response => {
@@ -83,7 +90,7 @@ const ReviewScreen: React.FC = () => {
                 {reviews.length === 0 && <Mascot emotion="reading" />}
                 {reviews.map((review: any) => (
                     <View key={review.ratingId} style={styles.reviewCard}>
-                        <Image source={{ uri: review.bookImage }} style={styles.bookImage} />
+                        <Image source={{ uri: convertHttpToHttps(review.bookImage) }} style={styles.bookImage} />
                         {editing === review.ratingId ? (
                             <>
                                 <TextInput

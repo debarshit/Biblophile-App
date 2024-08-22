@@ -17,6 +17,13 @@ const ProfileSummaryScreen = () => {
   const userDetails = useStore((state: any) => state.userDetails);
   const userId = userDetails[0].userId;
 
+  const convertHttpToHttps = (url) => {
+    if (url && url.startsWith('http://')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
+  };
+
   useEffect(() => {
     const fetchUserBooks = async () => {
       try {
@@ -129,7 +136,7 @@ const ProfileSummaryScreen = () => {
                     <BookshelfCard
                     key={book.BookId}
                     id={book.BookId}
-                    photo={book.BookPhoto}
+                    photo={convertHttpToHttps(book.BookPhoto)}
                     status={book.Status}
                     startDate={book.StartDate}
                     endDate={book.EndDate}
@@ -147,7 +154,7 @@ const ProfileSummaryScreen = () => {
                     <BookshelfCard
                     key={book.BookId}
                     id={book.BookId}
-                    photo={book.BookPhoto}
+                    photo={convertHttpToHttps(book.BookPhoto)}
                     status={book.Status}
                     startDate={book.StartDate}
                     endDate={book.EndDate}
@@ -165,7 +172,7 @@ const ProfileSummaryScreen = () => {
                     <BookshelfCard
                     key={book.BookId}
                     id={book.BookId}
-                    photo={book.BookPhoto}
+                    photo={convertHttpToHttps(book.BookPhoto)}
                     status={book.Status}
                     startDate={book.StartDate}
                     endDate={book.EndDate}
