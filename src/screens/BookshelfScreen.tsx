@@ -22,6 +22,7 @@ import {
 } from '../theme/theme';
 import HeaderBar from '../components/HeaderBar';
 import BookshelfCard from '../components/BookshelfCard';
+import Mascot from '../components/Mascot';
 
 const BookshelfScreen = ({ navigation }) => {
   const [userBooks, setUserBooks] = useState([]);
@@ -91,6 +92,8 @@ const BookshelfScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollViewFlex}
       >
         <HeaderBar title="My Bookshelf" />
+
+        {userBooks.length === 0 && <Mascot emotion="sleeping"/>}
 
         {loading ? (
           <Text style={styles.loadingText}>Loading...</Text>
