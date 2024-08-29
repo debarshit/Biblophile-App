@@ -228,7 +228,7 @@ const StatScreen = () => {
           {chartData.map((item, index) => (
             <View key={index} style={styles.labelRow}>
               <View style={[styles.colorBox, { backgroundColor: item.color }]} />
-              <Text style={styles.labelText}>{item.name}: {item.population}</Text>
+              <Text style={styles.labelText}>{item.name}: {item.population}%</Text>
             </View>
           ))}
         </View>
@@ -251,7 +251,10 @@ const StatScreen = () => {
       value: statusCounts[key],
     }));
 
-    const chartData = data.map((item, index) => ({
+    // Sort data in descending order based on value
+    const sortedData = data.sort((a, b) => b.value - a.value);
+
+    const chartData = sortedData.map((item, index) => ({
       name: item.name,
       population: item.value,
       color: PIECOLORS[index % PIECOLORS.length],
@@ -320,7 +323,7 @@ const StatScreen = () => {
 
           </Picker>
           </View>
-        <Text style={styles.title}>Pages Read in Last 7 Days</Text>
+        <Text style={styles.title}>Pages Read in Last {timeFrame === 'last-week' ? '7 Days' : '30 Days'}</Text>
         <TouchableWithoutFeedback onPress={() => setTooltipPos({ ...tooltipPos, visible: false })}>
           {renderLineChart(timeFrame)}
         </TouchableWithoutFeedback>
