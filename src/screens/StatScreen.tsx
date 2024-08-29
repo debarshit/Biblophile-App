@@ -13,7 +13,7 @@ const StatScreen = () => {
   const [userAverageEmotions, setUserAverageEmotions] = useState([]);
   const [readingStatusData, setReadingStatusData] = useState([]);
   const [timeFrame, setTimeFrame] = useState('last-week');
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, value: 0 });
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, value: '', date: '' });
   const [loading, setLoading] = useState(true);
 
   const userDetails = useStore((state: any) => state.userDetails);
@@ -175,13 +175,20 @@ const StatScreen = () => {
             borderRadius: BORDERRADIUS.radius_8,
           }}
           onDataPointClick={(data) => {
-            const { x, y, value } = data;
-            setTooltipPos({ x, y, visible: true, value });
+            const { x, y, index } = data;
+            setTooltipPos({
+              x,
+              y,
+              visible: true,
+              value: `${dataPoints[index]} pages`,
+              date: labels[index],
+            });
           }}
         />
         {tooltipPos.visible && (
           <View style={[styles.tooltip, { top: tooltipPos.y - 30, left: tooltipPos.x - 25 }]}>
-            <Text style={styles.tooltipText}>{tooltipPos.value} pages</Text>
+            <Text style={styles.tooltipText}>{tooltipPos.value}</Text>
+            <Text style={styles.tooltipText}>{tooltipPos.date}</Text>
           </View>
         )}
       </View>
@@ -283,7 +290,7 @@ const StatScreen = () => {
           {chartData.map((item, index) => (
             <View key={index} style={styles.labelRow}>
               <View style={[styles.colorBox, { backgroundColor: item.color }]} />
-              <Text style={styles.labelText}>{item.name}: {item.population}</Text>
+              <Text style={styles.labelText}>{item.name}: {item.population} {item.population === 1 ? 'book' : 'books'}</Text>
             </View>
           ))}
         </View>
