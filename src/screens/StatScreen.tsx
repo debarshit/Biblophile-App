@@ -220,9 +220,18 @@ const StatScreen = () => {
             accessor={"population"}
             backgroundColor={"transparent"}
             paddingLeft={"15"}
-            center={[0, 0]}
+            center={[55, 0]}
             absolute
+            hasLegend={false}
           />
+        <View style={styles.labelsContainer}>
+          {chartData.map((item, index) => (
+            <View key={index} style={styles.labelRow}>
+              <View style={[styles.colorBox, { backgroundColor: item.color }]} />
+              <Text style={styles.labelText}>{item.name}: {item.population}</Text>
+            </View>
+          ))}
+        </View>
       </View>
     );
   };
@@ -263,9 +272,18 @@ const StatScreen = () => {
             accessor={"population"}
             backgroundColor={"transparent"}
             paddingLeft={"15"}
-            center={[0, 0]}
+            center={[55, 0]}
             absolute
-          />
+            hasLegend={false}
+        />
+        <View style={styles.labelsContainer}>
+          {chartData.map((item, index) => (
+            <View key={index} style={styles.labelRow}>
+              <View style={[styles.colorBox, { backgroundColor: item.color }]} />
+              <Text style={styles.labelText}>{item.name}: {item.population}</Text>
+            </View>
+          ))}
+        </View>
       </View>
     );
   };
@@ -418,5 +436,25 @@ picker: {
     fontFamily: FONTFAMILY.poppins_regular,
     color: COLORS.primaryWhiteHex,
     backgroundColor: COLORS.primaryGreyHex,
+},
+labelsContainer: {
+  marginTop: SPACING.space_16,
+  paddingHorizontal: SPACING.space_16,
+},
+labelRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: SPACING.space_8,
+},
+colorBox: {
+  width: 20,
+  height: 20,
+  borderRadius: BORDERRADIUS.radius_4,
+  marginRight: SPACING.space_8,
+},
+labelText: {
+  color: COLORS.primaryWhiteHex,
+  fontFamily: FONTFAMILY.poppins_regular,
+  fontSize: FONTSIZE.size_16,
 },
 });
