@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     container: {
         padding: SPACING.space_20,
         backgroundColor: COLORS.primaryBlackHex,
-        height: "100%",
+        flexGrow: 1,
     },
     title: {
         fontSize: FONTSIZE.size_24,
