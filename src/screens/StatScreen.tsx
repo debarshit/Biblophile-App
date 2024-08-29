@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, Dimensions, TouchableWithoutFeedback } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
+import { StyleSheet, Text, View, FlatList, Dimensions, TouchableWithoutFeedback, ScrollView } from 'react-native';
+import { LineChart, PieChart } from 'react-native-chart-kit';
+import { Picker } from '@react-native-picker/picker';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../theme/theme';
 import { useStore } from '../store/store';
 import instance from '../services/axios';
@@ -9,37 +10,78 @@ import requests from '../services/requests';
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [pagesRead, setPagesRead] = useState([]);
+  const [userAverageEmotions, setUserAverageEmotions] = useState([]);
+  const [readingStatusData, setReadingStatusData] = useState([]);
+  const [timeFrame, setTimeFrame] = useState('last-week');
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, value: 0 });
   const [loading, setLoading] = useState(true);
 
   const userDetails = useStore((state: any) => state.userDetails);
 
+  const screenWidth = Dimensions.get('window').width;
+
+  const PIECOLORS = ['#D17842', '#CD4349', '#3DCDA5', '#F9C74F', '#577590'];
+
+  const fetchLeaderboard = async () => {
+    try {
+      const response = await instance.get(requests.fetchReadingStreakLeaderboard + userDetails[0].userId);
+      if (Array.isArray(response.data)) {
+        setLeaderboard(response.data);
+      } else {
+        console.error('Leaderboard data is not an array:', response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch leaderboard:', error);
+    }
+  };
+
+  const fetchPagesRead = async () => {
+    try {
+      const response = await instance.get(`${requests.fetchPagesRead}${userDetails[0].userId}&timeFrame=${timeFrame}`);
+      if (Array.isArray(response.data)) {
+        setPagesRead(response.data);
+      } else {
+        console.error('Pages read data is not an array:', response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch pages read:', error);
+    }
+  };
+
+  const fetchAverageEmotionsByUser = async () => {
+    try {
+      const response = await instance.get(`${requests.fetchAverageEmotionsByUser}${userDetails[0].userId}&timeFrame=${timeFrame}`);
+      setUserAverageEmotions(response.data.topEmotions);
+    } catch (error) {
+      console.error('Failed to fetch user emotions:', error);
+    }
+  };
+
+  const fetchUserBooks = async () => {
+    try {
+      const response = await instance.post(`${requests.fetchUserBooks}&timeFrame=${timeFrame}`, {userId: userDetails[0].userId});
+      const books = response.data.userBooks;
+  
+      if (Array.isArray(books)) {
+        setReadingStatusData(books);
+      } else {
+        console.error('Books data is not an array:', books);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user books:', error);
+    }
+  };
+
   useEffect(() => {
-    async function fetchLeaderboard() {
-      try {
-        const response = await instance(requests.fetchReadingStreakLeaderboard + userDetails[0].userId);
-        const data = response.data;
-        setLeaderboard(data);
-      } catch (error) {
-        console.error('Failed to fetch leaderboard:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    async function fetchPagesRead() {
-      try {
-        const response = await instance(requests.fetchPagesRead + userDetails[0].userId);
-        const data = response.data;
-        setPagesRead(data);
-      } catch (error) {
-        console.error('Failed to fetch pages read:', error);
-      }
-    }
-
+    setLoading(true);
+    setUserAverageEmotions([]);
+    setReadingStatusData([]);
     fetchLeaderboard();
     fetchPagesRead();
-  }, []);
+    fetchAverageEmotionsByUser();
+    fetchUserBooks();
+    setLoading(false);
+  }, [timeFrame]);
 
   const renderItem = ({ item }) => {
     const isCurrentUser = item.UserId === userDetails[0].userId;
@@ -54,11 +96,24 @@ const StatScreen = () => {
     );
   };
 
-  const renderLineChart = () => {
+  const renderLineChart = (timeDuration) => {
+    if (!Array.isArray(pagesRead)) {
+      return <Text style={styles.highlightText}>No data available</Text>;
+    }
+
+    let labelCount;
+    if (timeDuration === 'last-week') {
+      labelCount = 7; 
+    } else if (timeDuration === 'last-month') {
+      labelCount = 30; 
+    } else {
+      return <Text style={styles.highlightText}>Invalid time frame</Text>;
+    }
+
     const labels = [];
-    const dataPoints = Array(7).fill(0);
+    const dataPoints = Array(labelCount).fill(0);
   
-    for (let i = 6; i >= 0; i--) {
+    for (let i = labelCount - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       labels.push(date.toISOString().split('T')[0]);
@@ -133,6 +188,88 @@ const StatScreen = () => {
     );
   };
 
+  const renderPieChart = () => {
+    if (!Array.isArray(userAverageEmotions) || userAverageEmotions.length === 0) {
+      return <Text style={styles.highlightText}>No emotions data available</Text>;
+    }
+  
+    const formattedEmotions = userAverageEmotions.map(emotion => ({
+      ...emotion,
+      AvgScore: parseFloat(emotion.AvgScore)
+    }));
+
+
+    const chartData = formattedEmotions.map((item, index) => ({
+      name: item.Emotion,
+      population: item.AvgScore,
+      color: PIECOLORS[index % PIECOLORS.length],
+      legendFontColor: COLORS.primaryWhiteHex,
+      legendFontSize: 15,
+    }));
+
+    return (
+      <View style={{ marginVertical: SPACING.space_16, borderRadius: BORDERRADIUS.radius_8, backgroundColor: COLORS.primaryDarkGreyHex, }}>
+        <PieChart
+            data={chartData}
+            width={screenWidth - SPACING.space_16 * 2}
+            height={220}
+            chartConfig={{
+              color: () => COLORS.primaryOrangeHex,
+              labelColor: () => COLORS.primaryWhiteHex,
+            }}
+            accessor={"population"}
+            backgroundColor={"transparent"}
+            paddingLeft={"15"}
+            center={[0, 0]}
+            absolute
+          />
+      </View>
+    );
+  };
+
+  const renderReadingStatusChart = () => {
+    if (!Array.isArray(readingStatusData) || readingStatusData.length === 0) {
+      return <Text style={styles.highlightText}>No reading status data available</Text>;
+    }
+
+    const statusCounts = readingStatusData.reduce((acc, book) => {
+      acc[book.Status] = (acc[book.Status] || 0) + 1;
+      return acc;
+    }, {});
+
+    const data = Object.keys(statusCounts).map((key) => ({
+      name: key,
+      value: statusCounts[key],
+    }));
+
+    const chartData = data.map((item, index) => ({
+      name: item.name,
+      population: item.value,
+      color: PIECOLORS[index % PIECOLORS.length],
+      legendFontColor: COLORS.primaryWhiteHex,
+      legendFontSize: 15,
+    }));
+
+    return (
+      <View style={{ marginVertical: SPACING.space_16, borderRadius: BORDERRADIUS.radius_8, backgroundColor: COLORS.primaryDarkGreyHex, }}>
+        <PieChart
+            data={chartData}
+            width={screenWidth - SPACING.space_16 * 2}
+            height={220}
+            chartConfig={{
+              color: () => COLORS.primaryOrangeHex,
+              labelColor: () => COLORS.primaryWhiteHex,
+            }}
+            accessor={"population"}
+            backgroundColor={"transparent"}
+            paddingLeft={"15"}
+            center={[0, 0]}
+            absolute
+          />
+      </View>
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -142,25 +279,48 @@ const StatScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Reading Streak Leaderboard</Text>
-      <FlatList
-        data={leaderboard}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.Rank.toString()}
-        contentContainerStyle={styles.listContainer}
-      />
-      <Text style={styles.title}>Pages Read in Last 7 Days</Text>
-      <TouchableWithoutFeedback onPress={() => setTooltipPos({ ...tooltipPos, visible: false })}>
-        {renderLineChart()}
-      </TouchableWithoutFeedback>
-    </View>
+    <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.ScrollViewFlex}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Reading Streak Leaderboard</Text>
+        <FlatList
+          data={leaderboard}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.Rank.toString()}
+          contentContainerStyle={styles.listContainer}
+        />
+        <View style={styles.statusDropdown}>
+          <Text style={styles.label}>Time frame: </Text>
+          <Picker
+              selectedValue={timeFrame}
+              style={styles.picker}
+              onValueChange={(itemValue) => setTimeFrame(itemValue)}
+          >
+              <Picker.Item label="Last week" value="last-week" />
+              <Picker.Item label="Last month" value="last-month" />
+
+          </Picker>
+          </View>
+        <Text style={styles.title}>Pages Read in Last 7 Days</Text>
+        <TouchableWithoutFeedback onPress={() => setTooltipPos({ ...tooltipPos, visible: false })}>
+          {renderLineChart(timeFrame)}
+        </TouchableWithoutFeedback>
+        <Text style={styles.title}>Prefer books which evoke</Text>
+        {renderPieChart()}
+        <Text style={styles.title}>Reading Progress</Text>
+        {renderReadingStatusChart()}
+      </View>
+    </ScrollView>
   );
 };
 
 export default StatScreen;
 
 const styles = StyleSheet.create({
+  ScrollViewFlex: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
@@ -231,4 +391,32 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_14,
     fontFamily: FONTFAMILY.poppins_regular,
   },
+  highlightText: {
+    color: COLORS.primaryOrangeHex,
+    fontFamily: FONTFAMILY.poppins_bold,
+    fontSize: FONTSIZE.size_18,
+  },
+  statusDropdown: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: SPACING.space_16,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.primaryWhiteHex,
+},
+label: {
+    marginRight: SPACING.space_8,
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_20,
+    marginBottom: SPACING.space_12,
+},
+picker: {
+    width: '50%',
+    padding: SPACING.space_8,
+    borderColor: COLORS.secondaryLightGreyHex,
+    borderRadius: BORDERRADIUS.radius_8,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.primaryWhiteHex,
+    backgroundColor: COLORS.primaryGreyHex,
+},
 });
