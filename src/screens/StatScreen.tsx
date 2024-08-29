@@ -182,7 +182,6 @@ const StatScreen = () => {
         {tooltipPos.visible && (
           <View style={[styles.tooltip, { top: tooltipPos.y - 30, left: tooltipPos.x - 25 }]}>
             <Text style={styles.tooltipText}>{tooltipPos.value} pages</Text>
-            <Text style={styles.tooltipText}>{tooltipPos.x}</Text>
           </View>
         )}
       </View>
