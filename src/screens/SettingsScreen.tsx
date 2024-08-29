@@ -11,7 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import * as Linking from 'expo-linking';
-import { Feather, FontAwesome, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { Feather, FontAwesome, MaterialIcons, FontAwesome5, Entypo } from '@expo/vector-icons';
 import { useStore } from '../store/store';
 import  { COLORS, FONTFAMILY, FONTSIZE } from '../theme/theme';
 
@@ -86,7 +86,64 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
         <ScrollView>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Subscription</Text>
+            <Text style={styles.sectionTitle}>My Account</Text>
+
+            <TouchableOpacity
+              onPress={() => {
+                navigation.push('ProfileSummary');
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <FontAwesome name="book" size={20} color="#fff" />
+              </View>
+
+              <Text style={styles.rowLabel}>Reading Journal</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                navigation.push('Streaks');
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <Entypo name="bar-graph" size={20} color="#fff" />
+              </View>
+
+              <Text style={styles.rowLabel}>My Stats</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                navigation.push('Review');
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <MaterialIcons name="rate-review" size={20} color="#fff" />
+              </View>
+
+              <Text style={styles.rowLabel}>My Reviews</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => {
@@ -319,7 +376,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
-                openWebView('https://biblophile.com/blog/2023/11/13/introducing-biblophile-your-gateway-to-a-world-of-books/')
+                navigation.push('About');
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>

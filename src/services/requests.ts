@@ -40,6 +40,13 @@ const requests = {
     fetchUserBooks: `/actions1.php?action=fetchUserBooks`,
     paymentRequest: `/actions1.php?action=paymentRequest`,
     paymentSuccessful: `/actions1.php?action=paymentSuccessful&linkId=`,
+
+    //request to biblophile user-insights api
+    fetchAverageRatingByUser:`/userInsights.php?action=fetchAverageRatingByUser&userId=`,
+    fetchAverageEmotionsByUser:`/userInsights.php?action=fetchAverageEmotionsByUser&userId=`,
+    fetchAverageDaystoFinish: `/userInsights.php?action=fetchAverageDaystoFinish&userId=`,
+    fetchUserReviews: `/userInsights.php?action=fetchUserReviews&userId=`,
+    updateUserReview: `/userInsights.php?action=updateUserReview`,
 }
 
 export default requests;

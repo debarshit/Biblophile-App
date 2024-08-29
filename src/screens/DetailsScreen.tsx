@@ -295,7 +295,7 @@ const DetailsScreen = ({navigation, route}: any) => {
             addToCarthandler({
               id: id,
               name: product['ProductName'],
-              photo: product['ProductPhoto'],
+              photo: convertHttpToHttps(product['ProductPhoto']),
               type: type,
               price: price,
             });

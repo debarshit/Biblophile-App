@@ -26,6 +26,12 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
   ItemPrice,
   quantity,
 }) => {
+  const convertHttpToHttps = (url) => {
+    if (url && url.startsWith('http://')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
+  };
   return (
     <LinearGradient
       start={{x: 0, y: 0}}
@@ -34,7 +40,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
       style={styles.CardLinearGradient}>
       <View style={styles.CardInfoContainer}>
         <View style={styles.CardImageInfoContainer}>
-          <Image source={{uri: photo}} style={styles.Image} />
+          <Image source={{uri: convertHttpToHttps(photo)}} style={styles.Image} />
           <View style={styles.CardTitleContainer}>
             <Text style={styles.CardTitle}>{name}</Text>
           </View>

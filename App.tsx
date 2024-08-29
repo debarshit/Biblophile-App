@@ -21,6 +21,9 @@ import OnboardingScreen from './src/screens/OnboardingScreen';
 import PaymentGatewayScreen from './src/screens/PaymentGatewayScreen';
 import StreaksScreen from './src/screens/StreaksScreen';
 import StatScreen from './src/screens/StatScreen';
+import AboutScreen from './src/screens/settings/AboutScreen';
+import ReviewScreen from './src/screens/settings/ReviewScreen';
+import ProfileSummaryScreen from './src/screens/settings/ProfileSummaryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -103,10 +106,7 @@ const App = () => {
         const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
           await Updates.fetchUpdateAsync();
-          // Notify user and reload the app
-          Alert.alert('Update Available', 'An update is available and will be applied on restart.', [
-            { text: 'Restart Now', onPress: () => Updates.reloadAsync() },
-          ]);
+          await Updates.reloadAsync(); 
         }
       } catch (e) {
         console.log(e);
@@ -236,8 +236,20 @@ const App = () => {
             component={ResourceScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
             <Stack.Screen
+            name="About"
+            component={AboutScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
+            <Stack.Screen
             name="Profile"
             component={ProfileScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
+            <Stack.Screen
+            name="Review"
+            component={ReviewScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
+            <Stack.Screen
+            name="ProfileSummary"
+            component={ProfileSummaryScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
             <Stack.Screen
             name="Subscription"
