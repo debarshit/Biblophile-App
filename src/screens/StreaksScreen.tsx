@@ -139,7 +139,7 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
     }
 
     fetchReadingStreak();
-  }, []);
+  }, [currentStreak]);
 
   useEffect(() => {
     // Example of how you can handle the action param from route
