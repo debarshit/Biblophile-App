@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
         padding: SPACING.space_18,
         backgroundColor: COLORS.primaryDarkGreyHex,
         borderRadius: BORDERRADIUS.radius_10,
-        maxWidth: 600,
+        width: '100%',
         margin: 'auto',
     },
     moodSlider: {

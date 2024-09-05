@@ -4,7 +4,7 @@ import instance from '../services/axios';
 import requests from '../services/requests';
 import { useStore } from '../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
-import StarRating from 'react-native-star-rating';
+import StarRating from 'react-native-star-rating-widget';
 
 interface ProductReviewProps {
   id: string;
@@ -114,14 +114,14 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
       {userDetails[0].userId ? (
         <View style={styles.reviewForm}>
           {/* <Text style={styles.label}>Rating:</Text> */}
-          <StarRating
-            disabled={false}
+          <StarRating 
             maxStars={5}
+            starSize={30}
+            color={COLORS.primaryOrangeHex}
             rating={rating}
-            fullStarColor={COLORS.primaryOrangeHex}
-            selectedStar={(rating) => onStarRatingPress(rating)}
-            halfStarEnabled={true}  
-            starSize={30}       
+            enableHalfStar={true}
+            enableSwiping={true}
+            onChange={(rating) => onStarRatingPress(rating)}
           />
           <TextInput
             style={styles.textInput}
@@ -146,16 +146,15 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
             <Text style={styles.reviewAuthor}>By {item.userName}</Text>
             <Text style={styles.reviewDate}>{item.ratingDate}</Text>
             <View style={styles.reviewRating}>
-              <StarRating
-                disabled={true}
-                maxStars={5}
-                rating={Number(item.rating)}
-                fullStarColor={COLORS.primaryOrangeHex}
-                selectedStar={(rating) => onStarRatingPress(rating)}
-                halfStarEnabled={true}  
-                starSize={30}       
-              />
-              <Text>{item.rating}</Text>
+            <StarRating 
+              maxStars={5}
+              starSize={30}
+              color={COLORS.primaryOrangeHex}
+              rating={item.rating}
+              enableHalfStar={true}
+              onChange={(rating) => null}
+            />
+              {/* <Text>{item.rating}</Text> */}
             </View>
             <Text style={styles.reviewText}>{item.review}</Text>
           </View>
