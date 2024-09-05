@@ -150,11 +150,11 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
               maxStars={5}
               starSize={30}
               color={COLORS.primaryOrangeHex}
-              rating={rating}
+              rating={item.rating}
               enableHalfStar={true}
               onChange={(rating) => null}
             />
-              <Text>{item.rating}</Text>
+              {/* <Text>{item.rating}</Text> */}
             </View>
             <Text style={styles.reviewText}>{item.review}</Text>
           </View>

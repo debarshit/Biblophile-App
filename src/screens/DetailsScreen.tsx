@@ -16,7 +16,6 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import ImageBackgroundInfo from '../components/ImageBackgroundInfo';
@@ -35,14 +34,7 @@ const DetailsScreen = ({navigation, route}: any) => {
 
   const [subscription, setSubscription] = useState(false);
   const [product, setProduct] = useState([]);
-  const [index, setIndex] = useState(0);  // Tab index
-  const [routes, setRoutes] = useState([
-    { key: 'description', title: 'Description' },
-    ...(type !== 'Bookmark' ? [
-      { key: 'reviews', title: 'Reviews' },
-      { key: 'emotions', title: 'Emotions' }
-    ] : [])
-  ]);
+  const [activeTab, setActiveTab] = useState('description');
 
   const getPrices = () => {
     if (type === 'Book') {
@@ -151,13 +143,6 @@ const DetailsScreen = ({navigation, route}: any) => {
         const updatedPrices = getPrices();
         setPrices(updatedPrices);
         setPrice(updatedPrices[0] || { size: '', price: 0, currency: '₹' });
-        setRoutes([
-          { key: 'description', title: 'Description' },
-          ...(type !== 'Bookmark' ? [
-            { key: 'reviews', title: 'Reviews' },
-            { key: 'emotions', title: 'Emotions' }
-          ] : [])
-        ]);
       } catch (error) {
         console.error('Error fetching items:', error);
       }
@@ -166,97 +151,66 @@ const DetailsScreen = ({navigation, route}: any) => {
     fetchProductDetails();
   }, [actualPrice]);
 
-  const renderScene = SceneMap({
-    description: () => (
-      <View style={[styles.TabContent, index !== 0 && styles.hidden]}>
-        <Text style={styles.InfoTitle}>Description</Text>
-          {fullDesc ? (
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setFullDesc(prev => !prev);
-              }}>
-              <Text style={styles.DescriptionText}>
-                {isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription']}
-              </Text>
-            </TouchableWithoutFeedback>
-          ) : (
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setFullDesc(prev => !prev);
-              }}>
-              <Text numberOfLines={3} style={styles.DescriptionText}>
-                {isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription']}
-              </Text>
-            </TouchableWithoutFeedback>
-          )}
-          { type !== "ExternalBook" &&
-          <>
-            <Text style={styles.InfoTitle}>Options</Text>
-            <View style={styles.SizeOuterContainer}>
-              {prices.map((data: any) => (
-                <TouchableOpacity
-                  key={data.size}
-                  onPress={() => {
-                    setPrice(data);
-                  }}
-                  style={[
-                    styles.SizeBox,
-                    {
-                      borderColor:
-                        data.size == price.size
-                          ? COLORS.primaryOrangeHex
-                          : COLORS.primaryDarkGreyHex,
-                    },
-                  ]}>
-                  <Text
-                    style={[
-                      styles.SizeText,
-                      {
-                        fontSize:
-                        type == 'Book'
-                            ? FONTSIZE.size_14
-                            : FONTSIZE.size_16,
-                        color:
-                          data.size == price.size
-                            ? COLORS.primaryOrangeHex
-                            : COLORS.secondaryLightGreyHex,
-                      },
-                    ]}>
-                    {data.size}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-          }
-      </View>
-    ),
-    reviews: () => (
-      <View style={[styles.TabContent, index !== 1 && styles.hidden]}>
-        <Text style={styles.InfoTitle}>Reviews</Text>
-        <ProductReview id={id} isGoogleBook={isGoogleBook} product={product}/>
-      </View>
-    ),
-    emotions: () => (
-      <View style={[styles.TabContent, index !== 2 && styles.hidden]}>
-        <Text style={styles.InfoTitle}>Emotions</Text>
-        <BookEmotions id={id} isGoogleBook={isGoogleBook} product={product}/>
-      </View>
-    ),
-  });
-
-  const renderTabBar = props => (
-    <TabBar
-      {...props}
-      indicatorStyle={{ backgroundColor: COLORS.primaryOrangeHex }}
-      style={{ backgroundColor: COLORS.primaryBlackHex }}
-      renderLabel={({ route, focused, color }) => (
-        <Text style={[styles.TabLabel, focused && styles.TabLabelFocused]}>
-          {route.title}
-        </Text>
-      )}
-    />
-  );
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'description':
+        return (
+          <View style={styles.TabContent}>
+            <Text style={styles.InfoTitle}>Description</Text>
+            {fullDesc ? (
+              <TouchableWithoutFeedback onPress={() => setFullDesc(prev => !prev)}>
+                <Text style={styles.DescriptionText}>
+                  {isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription']}
+                </Text>
+              </TouchableWithoutFeedback>
+            ) : (
+              <TouchableWithoutFeedback onPress={() => setFullDesc(prev => !prev)}>
+                <Text numberOfLines={3} style={styles.DescriptionText}>
+                  {isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription']}
+                </Text>
+              </TouchableWithoutFeedback>
+            )}
+            {type !== 'ExternalBook' && (
+              <>
+                <Text style={styles.InfoTitle}>Options</Text>
+                <View style={styles.SizeOuterContainer}>
+                  {prices.map((data: any) => (
+                    <TouchableOpacity
+                      key={data.size}
+                      onPress={() => setPrice(data)}
+                      style={[
+                        styles.SizeBox,
+                        { borderColor: data.size === price.size ? COLORS.primaryOrangeHex : COLORS.primaryDarkGreyHex },
+                      ]}
+                    >
+                      <Text style={[styles.SizeText, { fontSize: type === 'Book' ? FONTSIZE.size_14 : FONTSIZE.size_16, color: data.size === price.size ? COLORS.primaryOrangeHex : COLORS.secondaryLightGreyHex }]}>
+                        {data.size}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
+          </View>
+        );
+      case 'reviews':
+        return (
+          <View style={styles.TabContent}>
+            <Text style={styles.InfoTitle}>Reviews</Text>
+            <ProductReview id={id} isGoogleBook={isGoogleBook} product={product} />
+          </View>
+        );
+      case 'emotions':
+        return (
+          <View style={styles.TabContent}>
+            <Text style={styles.InfoTitle}>Emotions</Text>
+            <BookEmotions id={id} isGoogleBook={isGoogleBook} product={product} />
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <View style={styles.ScreenContainer}>
@@ -279,14 +233,22 @@ const DetailsScreen = ({navigation, route}: any) => {
         />
 
         <View style={styles.FooterInfoArea}>
-        <TabView
-            navigationState={{ index, routes }}
-            renderScene={renderScene}
-            renderTabBar={renderTabBar}
-            onIndexChange={setIndex}
-            initialLayout={{ width: 100 }}
-            style={styles.TabView}
-          />
+          <View style={styles.TabBar}>
+            <TouchableOpacity onPress={() => setActiveTab('description')} style={[styles.TabButton, activeTab === 'description' && styles.TabButtonActive]}>
+              <Text style={[styles.TabLabel, activeTab === 'description' && styles.TabLabelActive]}>Description</Text>
+            </TouchableOpacity>
+            {type !== 'Bookmark' && (
+              <>
+                <TouchableOpacity onPress={() => setActiveTab('reviews')} style={[styles.TabButton, activeTab === 'reviews' && styles.TabButtonActive]}>
+                  <Text style={[styles.TabLabel, activeTab === 'reviews' && styles.TabLabelActive]}>Reviews</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setActiveTab('emotions')} style={[styles.TabButton, activeTab === 'emotions' && styles.TabButtonActive]}>
+                  <Text style={[styles.TabLabel, activeTab === 'emotions' && styles.TabLabelActive]}>Emotions</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+          {renderContent()}
         </View>
         {price && type !== "ExternalBook" && <PaymentFooter
           price={price}
@@ -324,14 +286,6 @@ const styles = StyleSheet.create({
   TabContent: {
     padding: SPACING.space_20,
   },
-  TabLabel: {
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_14,
-    color: COLORS.primaryWhiteHex,
-  },
-  TabLabelFocused: {
-    color: COLORS.primaryOrangeHex,
-  },
   InfoTitle: {
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_16,
@@ -363,8 +317,26 @@ const styles = StyleSheet.create({
   SizeText: {
     fontFamily: FONTFAMILY.poppins_medium,
   },
-  TabView: {
-    flex: 1,
+  TabBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    paddingBottom: SPACING.space_8,
+  },
+  TabButton: {
+    paddingVertical: SPACING.space_12,
+    paddingHorizontal: SPACING.space_16,
+  },
+  TabButtonActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: COLORS.primaryOrangeHex,
+  },
+  TabLabel: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryWhiteHex,
+  },
+  TabLabelActive: {
+    color: COLORS.primaryOrangeHex,
   },
 });
 
