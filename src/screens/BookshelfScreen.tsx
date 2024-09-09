@@ -77,6 +77,8 @@ const BookshelfScreen = ({ navigation }) => {
             startDate={item.StartDate}
             endDate={item.EndDate}
             currentPage={item.CurrentPage}
+            onUpdate={null}
+
           />
           )}
         />

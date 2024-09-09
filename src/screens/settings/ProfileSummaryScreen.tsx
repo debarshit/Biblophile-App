@@ -141,6 +141,7 @@ const ProfileSummaryScreen = () => {
                     startDate={book.StartDate}
                     endDate={book.EndDate}
                     currentPage={book.CurrentPage}
+                    onUpdate={null}
                     />
                 ))}
                 </ScrollView>
@@ -159,6 +160,7 @@ const ProfileSummaryScreen = () => {
                     startDate={book.StartDate}
                     endDate={book.EndDate}
                     currentPage={book.CurrentPage}
+                    onUpdate={null}
                     />
                 ))}
                 </ScrollView>
@@ -177,6 +179,7 @@ const ProfileSummaryScreen = () => {
                     startDate={book.StartDate}
                     endDate={book.EndDate}
                     currentPage={book.CurrentPage}
+                    onUpdate={null}
                     />
                 ))}
                 </ScrollView>
