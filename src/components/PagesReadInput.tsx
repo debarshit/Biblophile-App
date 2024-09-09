@@ -7,7 +7,7 @@ import requests from '../services/requests';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import PageStatus from './PageStatus';
 
-const PagesReadInput = () => {
+const PagesReadInput = ({navigation}: any) => {
   const [pagesRead, setPagesRead] = useState<string>('');
   const [currentReads, setCurrentReads] = useState<any[]>([]);
   const [refreshData, setRefreshData] = useState(false);
@@ -93,7 +93,15 @@ const PagesReadInput = () => {
         <ScrollView horizontal contentContainerStyle={styles.currentReads}>
           {currentReads.map((book) => (
             <View key={book.BookId} style={styles.book}>
-              <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.push('Details', {
+                    id: book.BookId,
+                    type: "Book",
+                  });
+              }}>
+                <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
+              </TouchableOpacity>
               <PageStatus id={book.BookId} page={book.CurrentPage} onUpdate={() => setRefreshData(prev => !prev)} status='Currently reading'/>
             </View>
           ))}

@@ -4,6 +4,7 @@ import {
   ImageBackground,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -26,6 +27,7 @@ interface BookshelfCardProps {
   endDate?: string;
   currentPage?: number;
   onUpdate: () => void;
+  navigation: any;
 }
 
 const BookshelfCard: React.FC<BookshelfCardProps> = ({
@@ -36,18 +38,28 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
   endDate,
   currentPage,
   onUpdate,
+  navigation
 }) => {
+
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.CardLinearGradientContainer}
       colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}>
-      <ImageBackground
-        source={{ uri: photo }}
-        style={styles.CardImageBG}
-        resizeMode="cover">
-      </ImageBackground>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.push('Details', {
+            id: id,
+            type: "Book",
+          });
+      }}>
+        <ImageBackground
+          source={{ uri: photo }}
+          style={styles.CardImageBG}
+          resizeMode="cover">
+        </ImageBackground>
+      </TouchableOpacity>
       <View style={styles.CardFooter}>
       <PageStatus
           id={id}
