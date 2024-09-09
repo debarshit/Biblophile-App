@@ -171,6 +171,7 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     <Picker.Item label="Currently reading" value="Currently reading" />
                     <Picker.Item label="To be read" value="To be read" />
                     <Picker.Item label="Did not finish" value="Did not finish" />
+                    <Picker.Item label="Remove" value="Remove" />
                 </Picker>
             </View>
             {status === 'Currently reading' && (

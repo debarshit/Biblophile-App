@@ -14,6 +14,7 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
+import PageStatus from './PageStatus';
 
 const CARD_WIDTH = Dimensions.get('window').width * 0.32;
 
@@ -24,13 +25,8 @@ interface BookshelfCardProps {
   startDate?: string;
   endDate?: string;
   currentPage?: number;
+  onUpdate: () => void;
 }
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-  return date.toLocaleDateString('en-GB', options);
-};
 
 const BookshelfCard: React.FC<BookshelfCardProps> = ({
   id,
@@ -39,6 +35,7 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
   startDate,
   endDate,
   currentPage,
+  onUpdate,
 }) => {
   return (
     <LinearGradient
@@ -52,17 +49,14 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
         resizeMode="cover">
       </ImageBackground>
       <View style={styles.CardFooter}>
-        <View style={styles.CardFooterRow}>
-          {status === 'Read' && startDate && endDate ? (
-            <Text style={styles.CardFooterText}>
-              {`${formatDate(startDate)} - ${formatDate(endDate)}`}
-            </Text>
-          ) : status === 'Currently reading' && currentPage ? (
-            <Text style={styles.CardFooterText}>
-              {`Current Page: ${currentPage}`}
-            </Text>
-          ) : null}
-        </View>
+      <PageStatus
+          id={id}
+          page={currentPage || 0}
+          startDate={startDate}
+          endDate={endDate}
+          status={status}
+          onUpdate={onUpdate}
+        />
       </View>
     </LinearGradient>
   );
@@ -84,17 +78,6 @@ const styles = StyleSheet.create({
   },
   CardFooter: {
     flexDirection: 'column',
-  },
-  CardFooterRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: SPACING.space_15,
-  },
-  CardFooterText: {
-    fontFamily: FONTFAMILY.poppins_medium,
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_14,
   },
 });
 

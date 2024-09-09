@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import Entypo from '@expo/vector-icons/Entypo';
 import { useStore } from '../store/store';
 import instance from '../services/axios';
 import requests from '../services/requests';
@@ -9,15 +10,25 @@ import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/th
 interface PageStatusProps {
   id: string;
   page: number;
+  status: string;
+  startDate?: string;
+  endDate?: string;
   onUpdate: () => void;
 }
 
-const PageStatus: React.FC<PageStatusProps> = ({ id, page, onUpdate }) => {
-  const [status, setStatus] = useState<string>('Currently reading');
+const PageStatus: React.FC<PageStatusProps> = ({ id, page, status, startDate, endDate, onUpdate }) => {
   const [currentPage, setCurrentPage] = useState<number>(page);
+  const [bookStatus, setBookStatus] = useState<string>(status);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
 
   const userDetails = useStore((state: any) => state.userDetails);
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+    return date.toLocaleDateString('en-GB', options);
+  };
 
   const submitReadingStatus = async () => {
     const userId = userDetails?.[0]?.userId;
@@ -26,8 +37,8 @@ const PageStatus: React.FC<PageStatusProps> = ({ id, page, onUpdate }) => {
         const requestData = {
           userId: userId,
           bookId: id,
-          status: status,
-          currentPage: status === 'Currently reading' ? currentPage : undefined,
+          status: bookStatus,
+          currentPage: bookStatus === 'Currently reading' ? currentPage : undefined,
         };
 
         const response = await instance.post(requests.submitReadingStatus, requestData);
@@ -53,18 +64,19 @@ const PageStatus: React.FC<PageStatusProps> = ({ id, page, onUpdate }) => {
       <View style={styles.statusDropdown}>
         {/* <Text style={styles.label}>Status: </Text> */}
         <Picker
-          selectedValue={status}
+          selectedValue={bookStatus}
           style={styles.picker}
-          onValueChange={(itemValue) => setStatus(itemValue as string)}
+          onValueChange={(itemValue) => setBookStatus(itemValue)}
         >
           <Picker.Item label="Read" value="Read" />
           <Picker.Item label="Currently reading" value="Currently reading" />
           <Picker.Item label="To be read" value="To be read" />
+          <Picker.Item label="Did not finish" value="Did not finish" />
+          <Picker.Item label="Remove" value="Remove" />
         </Picker>
       </View>
-      {status === 'Currently reading' && (
+      {bookStatus === 'Currently reading' && (
         <View style={styles.pageNumberInput}>
-          <Text style={styles.label}>Current Page:</Text>
           <TextInput
             style={styles.input}
             keyboardType="numeric"
@@ -73,8 +85,11 @@ const PageStatus: React.FC<PageStatusProps> = ({ id, page, onUpdate }) => {
           />
         </View>
       )}
+      {bookStatus === 'Read' && startDate && endDate && (
+        <Text style={styles.dateText}>{`${formatDate(startDate)} - ${formatDate(endDate)}`}</Text>
+      )}
       <TouchableOpacity onPress={submitReadingStatus} style={styles.iconButton}>
-        <Text style={styles.iconText}>✔️</Text>
+      <Entypo name="check" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_24}/>
       </TouchableOpacity>
     </View>
   );
@@ -126,12 +141,12 @@ const styles = StyleSheet.create({
     width: 100,
     textAlign: 'center',
   },
+  dateText: {
+    color: COLORS.primaryWhiteHex,
+    marginTop: SPACING.space_10,
+  },
   iconButton: {
     marginTop: SPACING.space_16,
-  },
-  iconText: {
-    fontSize: 25,
-    color: COLORS.primaryOrangeHex,
   },
   updateMessage: {
     fontFamily: FONTFAMILY.poppins_bold,

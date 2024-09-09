@@ -94,7 +94,7 @@ const PagesReadInput = () => {
           {currentReads.map((book) => (
             <View key={book.BookId} style={styles.book}>
               <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
-              <PageStatus id={book.BookId} page={book.CurrentPage} onUpdate={() => setRefreshData(prev => !prev)}/>
+              <PageStatus id={book.BookId} page={book.CurrentPage} onUpdate={() => setRefreshData(prev => !prev)} status='Currently reading'/>
             </View>
           ))}
         </ScrollView>
