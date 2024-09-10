@@ -31,7 +31,7 @@ const requests = {
     getBookmarks: `/actions1.php?action=getBookmarks`,
     fetchReadingStreak: `/actions1.php?action=fetchReadingStreak&userId=`,
     updateReadingStreak: `/actions1.php?action=updateReadingStreak&userId=`,
-    updatePagesRead: `/actions1.php?action=updatePagesRead&userId=`,
+    updatePagesRead: `/actions1.php?action=updatePagesRead`,
     fetchReadingTips: `/actions1.php?action=fetchReadingTips`,
     updateNotificationToken: `/actions1.php?action=updateNotificationToken`,
     fetchReadingStreakLeaderboard: `/actions1.php?action=fetchReadingStreakLeaderboard&userId=`,
