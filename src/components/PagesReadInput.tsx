@@ -102,7 +102,7 @@ const PagesReadInput = ({navigation}: any) => {
               }}>
                 <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
               </TouchableOpacity>
-              <PageStatus id={book.BookId} page={book.CurrentPage} onUpdate={() => setRefreshData(prev => !prev)} status='Currently reading'/>
+              <PageStatus id={book.BookId} page={book.CurrentPage} startDate={book.StartDate} onUpdate={() => setRefreshData(prev => !prev)} status='Currently reading'/>
             </View>
           ))}
         </ScrollView>

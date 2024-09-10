@@ -38,6 +38,7 @@ const requests = {
     fetchPagesRead: `/actions1.php?action=fetchPagesRead&userId=`,
     fetchCurrentReads: `/actions1.php?action=fetchCurrentReads`,
     fetchUserBooks: `/actions1.php?action=fetchUserBooks`,
+    updateBookDates: `/actions1.php?action=updateBookDates`,
     paymentRequest: `/actions1.php?action=paymentRequest`,
     paymentSuccessful: `/actions1.php?action=paymentSuccessful&linkId=`,
 
