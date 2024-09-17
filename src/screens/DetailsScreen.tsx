@@ -170,7 +170,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                 </Text>
               </TouchableWithoutFeedback>
             )}
-            {type !== 'ExternalBook' && (
+            {(type !== "ExternalBook" && product['ProductAvailability'] === '1') && (
               <>
                 <Text style={styles.InfoTitle}>Options</Text>
                 <View style={styles.SizeOuterContainer}>
@@ -250,7 +250,7 @@ const DetailsScreen = ({navigation, route}: any) => {
           </View>
           {renderContent()}
         </View>
-        {price && type !== "ExternalBook" && <PaymentFooter
+        {price && (type !== "ExternalBook" && product['ProductAvailability'] === '1') && <PaymentFooter
           price={price}
           buttonTitle="Add to Cart"
           buttonPressHandler={() => {

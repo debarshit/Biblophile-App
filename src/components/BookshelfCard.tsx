@@ -4,6 +4,7 @@ import {
   ImageBackground,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,6 +15,7 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
+import PageStatus from './PageStatus';
 
 const CARD_WIDTH = Dimensions.get('window').width * 0.32;
 
@@ -24,13 +26,9 @@ interface BookshelfCardProps {
   startDate?: string;
   endDate?: string;
   currentPage?: number;
+  onUpdate: () => void;
+  navigation: any;
 }
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-  return date.toLocaleDateString('en-GB', options);
-};
 
 const BookshelfCard: React.FC<BookshelfCardProps> = ({
   id,
@@ -39,30 +37,38 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
   startDate,
   endDate,
   currentPage,
+  onUpdate,
+  navigation
 }) => {
+
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.CardLinearGradientContainer}
       colors={[COLORS.primaryGreyHex, COLORS.primaryBlackHex]}>
-      <ImageBackground
-        source={{ uri: photo }}
-        style={styles.CardImageBG}
-        resizeMode="cover">
-      </ImageBackground>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.push('Details', {
+            id: id,
+            type: "Book",
+          });
+      }}>
+        <ImageBackground
+          source={{ uri: photo }}
+          style={styles.CardImageBG}
+          resizeMode="cover">
+        </ImageBackground>
+      </TouchableOpacity>
       <View style={styles.CardFooter}>
-        <View style={styles.CardFooterRow}>
-          {status === 'Read' && startDate && endDate ? (
-            <Text style={styles.CardFooterText}>
-              {`${formatDate(startDate)} - ${formatDate(endDate)}`}
-            </Text>
-          ) : status === 'Currently reading' && currentPage ? (
-            <Text style={styles.CardFooterText}>
-              {`Current Page: ${currentPage}`}
-            </Text>
-          ) : null}
-        </View>
+      <PageStatus
+          id={id}
+          page={currentPage || 0}
+          startDate={startDate}
+          endDate={endDate}
+          status={status}
+          onUpdate={onUpdate}
+        />
       </View>
     </LinearGradient>
   );
@@ -84,17 +90,6 @@ const styles = StyleSheet.create({
   },
   CardFooter: {
     flexDirection: 'column',
-  },
-  CardFooterRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: SPACING.space_15,
-  },
-  CardFooterText: {
-    fontFamily: FONTFAMILY.poppins_medium,
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_14,
   },
 });
 

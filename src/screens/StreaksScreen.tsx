@@ -306,7 +306,7 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
             <Text style={styles.maxStreak}>🏅 {maxStreak}-day Streak</Text>
           </View>
         </> :
-        <PagesReadInput />
+        <PagesReadInput navigation={navigation}/>
         }
       {datePickerVisible && (
       <View style={styles.modalContainer}>

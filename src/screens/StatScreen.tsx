@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, Dimensions, TouchableWithoutFeedback, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Dimensions, TouchableWithoutFeedback, ScrollView, TextInput } from 'react-native';
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Picker } from '@react-native-picker/picker';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../theme/theme';
@@ -15,6 +15,9 @@ const StatScreen = () => {
   const [timeFrame, setTimeFrame] = useState('last-week');
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, value: '', date: '' });
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editPageCount, setEditPageCount] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
 
   const userDetails = useStore((state: any) => state.userDetails);
 
@@ -69,6 +72,28 @@ const StatScreen = () => {
       }
     } catch (error) {
       console.error('Failed to fetch user books:', error);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const updatedPageCount = parseInt(editPageCount, 10);
+      const response = await instance.post(`${requests.updatePagesRead}`, {
+        userId: userDetails[0].userId,
+        pageCount: updatedPageCount,
+        date: selectedDate
+      });
+  
+      if (response.data.message === "Updated" || response.data.message === "Inserted") {
+        alert('Page count updated successfully');
+        setIsEditing(false);
+        setTooltipPos({ ...tooltipPos, visible: false });
+        fetchPagesRead();
+      } else {
+        console.error('Error updating page count:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Failed to update page count:', error);
     }
   };
 
@@ -134,6 +159,10 @@ const StatScreen = () => {
       }
       return '';
     });
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayFormatted = yesterday.toISOString().split('T')[0];
   
     return (
       <View>
@@ -176,20 +205,45 @@ const StatScreen = () => {
           }}
           onDataPointClick={(data) => {
             const { x, y, index } = data;
+            const date = labels[index];
+            setSelectedDate(date);
+            setEditPageCount(dataPoints[index].toString());
             setTooltipPos({
               x,
               y,
               visible: true,
               value: `${dataPoints[index]} pages`,
-              date: labels[index],
+              date: date,
             });
+            setIsEditing(false);
           }}
         />
         {tooltipPos.visible && (
           <View style={[styles.tooltip, { top: tooltipPos.y - 30, left: tooltipPos.x - 25 }]}>
-            <Text style={styles.tooltipText}>{tooltipPos.value}</Text>
-            <Text style={styles.tooltipText}>{tooltipPos.date}</Text>
-          </View>
+          {isEditing ? (
+            <View>
+              <TextInput
+                style={styles.input}
+                value={editPageCount}
+                onChangeText={(text) => setEditPageCount(text)}
+                keyboardType="numeric"
+              />
+              <TouchableWithoutFeedback onPress={() => handleSave()}>
+                <Text style={styles.saveButton}>Save</Text>
+              </TouchableWithoutFeedback>
+            </View>
+          ) : (
+            <View>
+              <Text style={styles.tooltipText}>{tooltipPos.value}</Text>
+              <Text style={styles.tooltipText}>{tooltipPos.date}</Text>
+              {selectedDate === yesterdayFormatted && (
+                <TouchableWithoutFeedback onPress={() => setIsEditing(true)}>
+                  <Text style={styles.editButton}>Edit</Text>
+                </TouchableWithoutFeedback>
+              )}
+            </View>
+          )}
+        </View>
         )}
       </View>
     );
@@ -466,5 +520,27 @@ labelText: {
   color: COLORS.primaryWhiteHex,
   fontFamily: FONTFAMILY.poppins_regular,
   fontSize: FONTSIZE.size_16,
+},
+input: {
+  height: 40,
+  borderColor: COLORS.secondaryLightGreyHex,
+  borderWidth: 1,
+  borderRadius: BORDERRADIUS.radius_8,
+  paddingHorizontal: SPACING.space_8,
+  color: COLORS.primaryWhiteHex,
+  backgroundColor: COLORS.primaryGreyHex,
+  marginBottom: SPACING.space_8,
+},
+saveButton: {
+  color: COLORS.primaryOrangeHex,
+  fontSize: FONTSIZE.size_16,
+  fontFamily: FONTFAMILY.poppins_bold,
+  textAlign: 'center',
+},
+editButton: {
+  color: COLORS.primaryOrangeHex,
+  fontSize: FONTSIZE.size_16,
+  fontFamily: FONTFAMILY.poppins_bold,
+  textAlign: 'center',
 },
 });

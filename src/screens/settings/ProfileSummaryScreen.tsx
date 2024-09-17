@@ -7,7 +7,7 @@ import Mascot from '../../components/Mascot';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme/theme';
 import { useStore } from '../../store/store';
 
-const ProfileSummaryScreen = () => {
+const ProfileSummaryScreen = ({navigation}: any) => {
   const [userBooks, setUserBooks] = useState([]);
   const [userAverageRating, setUserAverageRating] = useState<number | null>(null);
   const [userAverageEmotions, setUserAverageEmotions] = useState([]);
@@ -141,6 +141,8 @@ const ProfileSummaryScreen = () => {
                     startDate={book.StartDate}
                     endDate={book.EndDate}
                     currentPage={book.CurrentPage}
+                    onUpdate={null}
+                    navigation={navigation}
                     />
                 ))}
                 </ScrollView>
@@ -159,6 +161,8 @@ const ProfileSummaryScreen = () => {
                     startDate={book.StartDate}
                     endDate={book.EndDate}
                     currentPage={book.CurrentPage}
+                    onUpdate={null}
+                    navigation={navigation}
                     />
                 ))}
                 </ScrollView>
@@ -177,6 +181,8 @@ const ProfileSummaryScreen = () => {
                     startDate={book.StartDate}
                     endDate={book.EndDate}
                     currentPage={book.CurrentPage}
+                    onUpdate={null}
+                    navigation={navigation}
                     />
                 ))}
                 </ScrollView>
