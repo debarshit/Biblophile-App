@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import { useStore } from '../store/store';
@@ -24,10 +24,14 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
   const [reviews, setReviews] = useState<Review[]>([]);
   const [userReview, setUserReview] = useState<string>('');
   const [rating, setRating] = useState<number>(0);
+  const [offset, setOffset] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const userDetails = useStore((state: any) => state.userDetails);
 
   async function fetchReviews() {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       let bookIdToFetch = id;
 
@@ -39,15 +43,21 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
             bookIdToFetch = bookIdResponse.data.bookId;
           } else {
             console.log('Failed to fetch BookId');
+            setIsLoading(false);
             return;
           }
         }
       }
 
-      const response = await instance(requests.fetchProductReviews + bookIdToFetch);
-      setReviews(response.data);
+      const response = await instance(requests.fetchProductReviews + bookIdToFetch + `&offset=${offset}`);
+      if (response.data && response.data.length > 0) {
+        setReviews(prevReviews => [...prevReviews, ...response.data]);
+        setOffset(prevOffset => prevOffset + response.data.length);
+      }
     } catch (error) {
       console.error('Error fetching reviews:', error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -98,6 +108,8 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
       if (response.data.message === 'Updated') {
         setUserReview('');
         setRating(0);
+        setReviews([]);
+        setOffset(0);
         fetchReviews(); // Refresh reviews after submitting
       }
     } catch (error) {
@@ -107,6 +119,12 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
 
   const onStarRatingPress = (rating) => {
     setRating(rating);
+  };
+
+  const loadMoreReviews = () => {
+    if (!isLoading) {
+      fetchReviews();
+    }
   };
 
   return (
@@ -159,6 +177,9 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
             <Text style={styles.reviewText}>{item.review}</Text>
           </View>
         )}
+        onEndReached={loadMoreReviews}
+        onEndReachedThreshold={0.5} // Trigger when the user is halfway down
+        ListFooterComponent={isLoading ? <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} /> : null}
       />
     </View>
   );
