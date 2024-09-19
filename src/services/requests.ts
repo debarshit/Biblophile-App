@@ -48,6 +48,7 @@ const requests = {
     fetchAverageDaystoFinish: `/userInsights.php?action=fetchAverageDaystoFinish&userId=`,
     fetchUserReviews: `/userInsights.php?action=fetchUserReviews&userId=`,
     updateUserReview: `/userInsights.php?action=updateUserReview`,
+    fetchBookShelf: `/userInsights.php?action=fetchBookShelf`,
 }
 
 export default requests;
