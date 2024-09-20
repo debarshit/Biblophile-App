@@ -1,9 +1,64 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme/theme';
 import { FontAwesome5 } from '@expo/vector-icons';
+import instance from '../../services/axios';
+import requests from '../../services/requests';
 
-const AboutScreen: React.FC = () => {
+const AboutScreen: React.FC = ({navigation}: any) => {
+  const [currentReads, setCurrentReads] = useState({});
+
+  const fetchCurrentReads = async (userId) => {
+    try {
+      const response = await instance.post(requests.fetchCurrentReads, {
+        userId: userId,
+      });
+      const books = response.data.currentReads || []; 
+      return books.length > 0 ? books.map(book => ({ name: book.BookName, id: book.BookId })) : 'nothing';
+    } catch (error) {
+      console.error('Failed to fetch current reads:', error);
+      return 'nothing';
+    } 
+  };
+
+  useEffect(() => {
+    const fetchReadsForTeam = async () => {
+      const debarshiReads = await fetchCurrentReads(1);
+      const rashmiReads = await fetchCurrentReads(7);
+
+      setCurrentReads({
+        Debarshi: debarshiReads,
+        Rashmi: rashmiReads,
+      });
+    };
+
+    fetchReadsForTeam();
+  }, []);
+
+  const renderTeamMember = (name, imageUri, description, reads, likes) => (
+    <View style={styles.teamMember}>
+      <Image style={styles.teamImage} source={{ uri: imageUri }} />
+      <Text style={styles.teamName}>{name}</Text>
+      <Text style={styles.text}>{description}</Text>
+      <Text style={styles.text}>
+        Currently reading{' '}
+         {Array.isArray(reads) ? (
+          reads.map((book, index) => (
+            <React.Fragment key={book.id}>
+              <TouchableOpacity
+                onPress={() => navigation.push('Details', { id: book.id, type: 'Book' })}
+              >
+                <Text style={styles.linkText}>{book.name}</Text>
+              </TouchableOpacity>
+              {index < reads.length - 1 && ', '}
+            </React.Fragment>
+          ))
+        ) : 'nothing'}.
+      </Text>
+      <Text style={styles.text}>{likes}</Text>
+    </View>
+  );
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.section}>
@@ -38,38 +93,20 @@ const AboutScreen: React.FC = () => {
       <View style={styles.section}>
         <Text style={styles.heading}>Meet the Team</Text>
         <View style={styles.teamGrid}>
-          <View style={styles.teamMember}>
-            <Image
-              style={styles.teamImage}
-              source={{ uri: 'https://media.istockphoto.com/id/1097490360/vector/vector-illustration-of-cute-black-cat.jpg?s=612x612&w=0&k=20&c=Ef0qYl79aZJ6NJXJVbJ0onjXVNnSyqrN_TKPjieAIGE=' }}
-            />
-            <Text style={styles.teamName}>Debarshi Das</Text>
-            <Text style={styles.text}>
-              Maintains the site, app, and other technical aspects.
-            </Text>
-            <Text style={styles.text}>
-              Currently reading True Believer. 
-            </Text>
-            <Text style={styles.text}>
-              Likes to sleep in free time.
-            </Text>
-          </View>
-          <View style={styles.teamMember}>
-            <Image
-              style={styles.teamImage}
-              source={{ uri: 'https://img.freepik.com/premium-vector/cute-cartoon-cat-vector-illustration-isolated-white-background_1151-48146.jpg' }}
-            />
-            <Text style={styles.teamName}>Rashmi Ramesh</Text>
-            <Text style={styles.text}>
-              Looks after design, social media, and operations. 
-            </Text>
-            <Text style={styles.text}>
-              Currently reading Where The Crawdads Sing. 
-            </Text>
-            <Text style={styles.text}>
-              Likes to chatter in free time.
-            </Text>
-          </View>
+        {renderTeamMember(
+            'Debarshi Das',
+            'https://media.istockphoto.com/id/1097490360/vector/vector-illustration-of-cute-black-cat.jpg?s=612x612&w=0&k=20&c=Ef0qYl79aZJ6NJXJVbJ0onjXVNnSyqrN_TKPjieAIGE=',
+            'Maintains the site, app, and other technical aspects.',
+            currentReads['Debarshi'],
+            'Likes to sleep in free time.'
+          )}
+          {renderTeamMember(
+            'Rashmi Ramesh',
+            'https://img.freepik.com/premium-vector/cute-cartoon-cat-vector-illustration-isolated-white-background_1151-48146.jpg',
+            'Looks after design, social media, and operations.',
+            currentReads['Rashmi'],
+            'Likes to chatter in free time.'
+          )}
         </View>
       </View>
 
@@ -140,19 +177,21 @@ const styles = StyleSheet.create({
     color: COLORS.primaryWhiteHex,
   },
   teamGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    alignItems: 'center',
+    width: '100%',
   },
   teamMember: {
-    width: '48%',
+    width: '100%',
     backgroundColor: COLORS.primaryGreyHex,
     borderRadius: BORDERRADIUS.radius_10,
     padding: SPACING.space_15,
     alignItems: 'center',
+    marginBottom: SPACING.space_15,
   },
   teamImage: {
-    width: '80%',
-    height: 100,
+    width: 200,
+    height: 200,
     borderRadius: BORDERRADIUS.radius_10,
     marginBottom: SPACING.space_10,
   },
