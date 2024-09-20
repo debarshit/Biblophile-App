@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TextInput, TouchableOpacity, Alert, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Image, TextInput, TouchableOpacity, Alert, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import instance from '../../services/axios';
 import requests from '../../services/requests';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme/theme';
@@ -10,6 +10,9 @@ const ReviewScreen: React.FC = () => {
     const [reviews, setReviews] = useState([]);
     const [editing, setEditing] = useState<number | null>(null);
     const [currentReview, setCurrentReview] = useState({ rating: '', review: '' });
+    const [offset, setOffset] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
 
     const userDetails = useStore((state: any) => state.userDetails);
     const userId = userDetails[0].userId;
@@ -21,12 +24,30 @@ const ReviewScreen: React.FC = () => {
         return url;
       };
 
+      const fetchReviews = async (initial = false) => {
+        if (loading || !hasMore) return;
+
+        setLoading(true);
+        try {
+            const response = await instance.get(`${requests.fetchUserReviews}${userId}?offset=${offset}&limit=10`);
+            const newReviews = response.data;
+
+            setReviews(initial ? newReviews : [...reviews, ...newReviews]);
+
+            if (newReviews.length < 10) {
+                setHasMore(false);
+            } else {
+                setOffset(offset + 10);
+            }
+        } catch (error) {
+            console.error("Error fetching reviews:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        instance.get(`${requests.fetchUserReviews}${userId}`)
-            .then(response => {
-                setReviews(response.data);
-            })
-            .catch(error => console.error("Error fetching reviews:", error));
+        fetchReviews(true);
     }, [userId]);
 
     const handleEdit = (review: any) => {
@@ -83,53 +104,59 @@ const ReviewScreen: React.FC = () => {
         setCurrentReview(prev => ({ ...prev, [name]: value }));
     };
 
-    return (
-        <>
-            <ScrollView contentContainerStyle={styles.container}>
-                <Text style={styles.title}>My Ratings & Reviews</Text>
-                {reviews.length === 0 && <Mascot emotion="reading" />}
-                {reviews.map((review: any) => (
-                    <View key={review.ratingId} style={styles.reviewCard}>
-                        <Image source={{ uri: convertHttpToHttps(review.bookImage) }} style={styles.bookImage} />
-                        {editing === review.ratingId ? (
-                            <>
-                                <TextInput
-                                    style={styles.input}
-                                    keyboardType="numeric"
-                                    value={currentReview.rating}
-                                    onChangeText={(value) => handleChange('rating', value)}
-                                    placeholder="Rating (1-5)"
-                                    maxLength={1}
-                                />
-                                <TextInput
-                                    style={[styles.input, styles.textArea]}
-                                    value={currentReview.review}
-                                    onChangeText={(value) => handleChange('review', value)}
-                                    placeholder="Your review"
-                                    multiline
-                                />
-                                <TouchableOpacity onPress={() => handleSave(review.ratingId, review.productId)} style={styles.saveBtn}>
-                                    <Text style={styles.btnText}>Save</Text>
-                                </TouchableOpacity>
-                            </>
-                        ) : (
-                            <>
-                                <Text style={styles.rating}>Rating: {review.rating} / 5</Text>
-                                <Text style={styles.reviewText}>{review.review}</Text>
-                                <View style={styles.btnGroup}>
-                                    <TouchableOpacity onPress={() => handleEdit(review)} style={styles.editBtn}>
-                                        <Text style={styles.btnText}>Edit</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => handleDelete(review.ratingId, review.productId)} style={styles.deleteBtn}>
-                                        <Text style={styles.btnText}>Delete</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </>
-                        )}
+    const renderReview = ({ item }: any) => (
+        <View key={item.ratingId} style={styles.reviewCard}>
+            <Image source={{ uri: convertHttpToHttps(item.bookImage) }} style={styles.bookImage} />
+            {editing === item.ratingId ? (
+                <>
+                    <TextInput
+                        style={styles.input}
+                        keyboardType="numeric"
+                        value={currentReview.rating}
+                        onChangeText={(value) => handleChange('rating', value)}
+                        placeholder="Rating (1-5)"
+                        maxLength={1}
+                    />
+                    <TextInput
+                        style={[styles.input, styles.textArea]}
+                        value={currentReview.review}
+                        onChangeText={(value) => handleChange('review', value)}
+                        placeholder="Your review"
+                        multiline
+                    />
+                    <TouchableOpacity onPress={() => handleSave(item.ratingId, item.productId)} style={styles.saveBtn}>
+                        <Text style={styles.btnText}>Save</Text>
+                    </TouchableOpacity>
+                </>
+            ) : (
+                <>
+                    <Text style={styles.rating}>Rating: {item.rating} / 5</Text>
+                    <Text style={styles.reviewText}>{item.review}</Text>
+                    <View style={styles.btnGroup}>
+                        <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
+                            <Text style={styles.btnText}>Edit</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleDelete(item.ratingId, item.productId)} style={styles.deleteBtn}>
+                            <Text style={styles.btnText}>Delete</Text>
+                        </TouchableOpacity>
                     </View>
-                ))}
-            </ScrollView>
-        </>
+                </>
+            )}
+        </View>
+    );
+
+    return (
+        <FlatList
+            data={reviews}
+            keyExtractor={(item) => item.ratingId.toString()}
+            renderItem={renderReview}
+            contentContainerStyle={styles.container}
+            onEndReached={() => fetchReviews(false)}
+            onEndReachedThreshold={0.5}  // Trigger when 50% of the list is visible
+            ListHeaderComponent={<Text style={styles.title}>My Ratings & Reviews</Text>}
+            ListFooterComponent={loading && <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />}
+            ListEmptyComponent={!loading && <Mascot emotion="reading" />}
+        />
     );
 };
 

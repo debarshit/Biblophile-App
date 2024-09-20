@@ -3,11 +3,10 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
   SafeAreaView,
-  Dimensions
+  Dimensions,
+  ActivityIndicator
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
@@ -38,48 +37,60 @@ const OrderHistoryScreen = ({navigation}: any) => {
   const [showAnimation, setShowAnimation] = useState(false);
 
   const [loading, setLoading] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const [limit] = useState(10);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [hasMoreData, setHasMoreData] = useState(true);
 
-  const buttonPressHandler = () => {
-    setShowAnimation(true);
-    setTimeout(() => {
-      setShowAnimation(false);
-    }, 2000);
+  const fetchOrderHistory = async (isLoadMore = false) => {
+    if (!isLoadMore) {
+      setLoading(true);
+    } else {
+      setIsFetchingMore(true);
+    }
+
+    try {
+      const response = await instance.post(`${requests.fetchOrders}&limit=${limit}&offset=${offset}`, {
+        userId: userDetails[0].userId,
+      });
+
+      const data = response.data;
+      
+      if (data.length > 0) {
+        if (isLoadMore) {
+          setOrderHistoryList(prevList => [...prevList, ...data]);
+        } else {
+          setOrderHistoryList(data);
+        }
+        setOffset(prevOffset => prevOffset + limit);
+      } else {
+        setHasMoreData(false);
+      }
+
+      setLoading(false);
+      setIsFetchingMore(false);
+    } catch (error) {
+      console.error('Error fetching order history:', error);
+      setLoading(false);
+      setIsFetchingMore(false);
+    }
   };
 
   useEffect(() => {
-    async function fetchOrderHistory() {
-        try {
-            const response = await instance.post(requests.fetchOrders, {
-              userId: userDetails[0].userId,
-            });
-            const data = response.data;
-            setOrderHistoryList(data);
-            setLoading(false);
-          } catch (error) {
-            console.error('Error fetching plans:', error);
-          }
-    }
-  
     fetchOrderHistory();
   }, []);
 
   useFocusEffect(
     React.useCallback(() => {
-      async function fetchOrderHistory() {
-        try {
-            const response = await instance.post(requests.fetchOrders, {
-              userId: userDetails[0].userId,
-            });
-            const data = response.data;
-            setOrderHistoryList(data);
-          } catch (error) {
-            console.error('Error fetching plans:', error);
-          }
-    }
-  
-    fetchOrderHistory();  
+      fetchOrderHistory();
     }, [])
-);
+  );
+
+  const handleLoadMore = () => {
+    if (hasMoreData && !isFetchingMore) {
+      fetchOrderHistory(true);
+    }
+  };
 
 if (loading) {
   return (
@@ -87,19 +98,19 @@ if (loading) {
     <SafeAreaView style={styles.container}>
       <View style={styles.shimmerFlex}>
         <ShimmerPlaceholder
-        LinearGradient={LinearGradient}
+          LinearGradient={LinearGradient}
           style={styles.ShimmerPlaceholder}
           shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
           visible={!loading}>
         </ShimmerPlaceholder>
         <ShimmerPlaceholder
-        LinearGradient={LinearGradient}
+          LinearGradient={LinearGradient}
           style={styles.ShimmerPlaceholder}
           shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
           visible={!loading}>
         </ShimmerPlaceholder>
         <ShimmerPlaceholder
-        LinearGradient={LinearGradient}
+          LinearGradient={LinearGradient}
           style={styles.ShimmerPlaceholder}
           shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
           visible={!loading}>
@@ -112,18 +123,20 @@ if (loading) {
     <SafeAreaView style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
 
-      {showAnimation ? (
-        <PopUpAnimation
-          style={styles.LottieAnimation}
-          source={require('../lottie/download.json')}
-        />
-      ) : (
-        <></>
-      )}
-
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.ScrollViewFlex}>
+        contentContainerStyle={styles.ScrollViewFlex}
+        onScroll={({ nativeEvent }) => {
+          const paddingToBottom = 10;
+          if (
+            nativeEvent.layoutMeasurement.height + nativeEvent.contentOffset.y >=
+            nativeEvent.contentSize.height - paddingToBottom
+          ) {
+            handleLoadMore();  // Trigger fetching more data when scrolling to the bottom
+          }
+        }}
+        scrollEventThrottle={400}
+      >
         <View
           style={[styles.ScrollViewInnerView, {marginBottom: tabBarHeight}]}>
           <View style={styles.ItemContainer}>
@@ -141,18 +154,8 @@ if (loading) {
                 ))}
               </View>
             )}
+            {isFetchingMore && <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />}
           </View>
-          {/* {OrderHistoryList.length > 0 ? (
-            <TouchableOpacity
-              style={styles.DownloadButton}
-              onPress={() => {
-                buttonPressHandler();
-              }}>
-              <Text style={styles.ButtonText}>Download</Text>
-            </TouchableOpacity>
-          ) : (
-            <></>
-          )} */}
         </View>
       </ScrollView>
     </SafeAreaView>

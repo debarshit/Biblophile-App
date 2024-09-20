@@ -23,10 +23,13 @@ import {
 import HeaderBar from '../components/HeaderBar';
 import BookshelfCard from '../components/BookshelfCard';
 import Mascot from '../components/Mascot';
+import BookListModal from '../components/BookListModal';
 
 const BookshelfScreen = ({ navigation }) => {
   const [userBooks, setUserBooks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState('');
 
   const userDetails = useStore((state: any) => state.userDetails);
 
@@ -60,9 +63,19 @@ const BookshelfScreen = ({ navigation }) => {
       return null;
     }
 
+    const openModal = (status) => () => {
+      setModalVisible(true);
+      setSelectedStatus(status);
+    };
+
     return (
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>{status}</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{status}</Text>
+          <TouchableOpacity onPress={openModal(status)}>
+            <Text style={styles.showMoreText}>Show More</Text>
+          </TouchableOpacity>
+        </View>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -109,6 +122,11 @@ const BookshelfScreen = ({ navigation }) => {
           </>
         )}
       </ScrollView>
+      <BookListModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        status={selectedStatus}
+      />
     </SafeAreaView>
   );
 };
@@ -141,6 +159,17 @@ const styles = StyleSheet.create({
     color: COLORS.primaryLightGreyHex,
     textAlign: 'center',
     marginTop: SPACING.space_36,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  showMoreText: {
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_16,
+    color: COLORS.primaryLightGreyHex,
+    paddingRight: SPACING.space_20,
   },
 });
 
