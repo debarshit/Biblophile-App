@@ -78,6 +78,11 @@ const DetailsScreen = ({navigation, route}: any) => {
     return url;
   };
 
+  const stripHtmlTags = (html) => {
+    if (!html) return '';
+    return html.replace(/<[^>]+>/g, '');
+  };
+
   const BackHandler = () => {
     if (navigation.canGoBack()) {
       navigation.pop();
@@ -160,13 +165,13 @@ const DetailsScreen = ({navigation, route}: any) => {
             {fullDesc ? (
               <TouchableWithoutFeedback onPress={() => setFullDesc(prev => !prev)}>
                 <Text style={styles.DescriptionText}>
-                  {isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription']}
+                  {stripHtmlTags(isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription'])}
                 </Text>
               </TouchableWithoutFeedback>
             ) : (
               <TouchableWithoutFeedback onPress={() => setFullDesc(prev => !prev)}>
                 <Text numberOfLines={3} style={styles.DescriptionText}>
-                  {isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription']}
+                  {stripHtmlTags(isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription'])}
                 </Text>
               </TouchableWithoutFeedback>
             )}
