@@ -280,7 +280,7 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
         <View style={styles.noteInputSection}>
           <TextInput
             style={styles.noteInput}
-            placeholder="Jot down your thoughts for today in 300 characters..."
+            placeholder="Jot down your thoughts for today in 300 char..."
             placeholderTextColor={COLORS.secondaryLightGreyHex}
             value={note}
             onChangeText={setNote}
