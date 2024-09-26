@@ -13,6 +13,7 @@ const requests = {
     fetchProductReviews:`/actions1.php?action=fetchProductReviews&id=`,
     fetchEmotions:`/actions1.php?action=fetchEmotions`,
     submitReview: `/actions1.php?action=submitReview`,
+    submitNote: `/actions1.php?action=submitNote`,
     submitEmotionScore: `/actions1.php?action=submitEmotionScore`,
     placeOrder: `/actions1.php?action=placeOrder`,
     placeSubscriptionOrder: `/actions1.php?action=placeSubscriptionOrder`,
@@ -49,6 +50,8 @@ const requests = {
     fetchUserReviews: `/userInsights.php?action=fetchUserReviews&userId=`,
     updateUserReview: `/userInsights.php?action=updateUserReview`,
     fetchBookShelf: `/userInsights.php?action=fetchBookShelf`,
+    fetchUserNotes: `/userInsights.php?action=fetchUserNotes&userId=`,
+    updateUserNote: `/userInsights.php?action=updateUserNote`,
 }
 
 export default requests;
