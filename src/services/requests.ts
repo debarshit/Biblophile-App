@@ -50,6 +50,8 @@ const requests = {
     fetchUserReviews: `/userInsights.php?action=fetchUserReviews&userId=`,
     updateUserReview: `/userInsights.php?action=updateUserReview`,
     fetchBookShelf: `/userInsights.php?action=fetchBookShelf`,
+    fetchUserNotes: `/userInsights.php?action=fetchUserNotes&userId=`,
+    updateUserNote: `/userInsights.php?action=updateUserNote`,
 }
 
 export default requests;

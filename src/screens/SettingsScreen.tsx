@@ -147,6 +147,25 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
+                navigation.push('Note');
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <Entypo name="feather" size={20} color="#fff" />
+              </View>
+
+              <Text style={styles.rowLabel}>My Notes</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
                 navigation.push('Subscription');
               }}
               style={styles.row}>
