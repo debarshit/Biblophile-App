@@ -248,6 +248,31 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
       fetchCurrentReads();
     }
   };
+  
+  const handleNoteSubmit = async () => {
+    if (!note) {
+      Alert.alert('Error', 'Please write a note.');
+      return;
+    }
+
+    try {
+      const noteData = {
+        userId: userDetails[0].userId,
+        bookId: selectedBook,
+        note: note,
+      };
+
+      const response = await instance.post(requests.submitNote, noteData);
+      if (response.data.message === 'Note added successfully.') {
+        Alert.alert('Success', 'Note added successfully.');
+      } else {
+          Alert.alert('Error', response.data.message || 'Something went wrong.');
+      }
+    } catch (error) {
+      console.error('Error submitting note:', error);
+      Alert.alert('Error', 'There was an error :( Try again in a while');
+    }
+  };
 
   const renderNotesInput = () => {
     if (showNoteInput) {
@@ -255,7 +280,7 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
         <View style={styles.noteInputSection}>
           <TextInput
             style={styles.noteInput}
-            placeholder="Jot down your thoughts for today..."
+            placeholder="Jot down your thoughts for today in 300 characters..."
             placeholderTextColor={COLORS.secondaryLightGreyHex}
             value={note}
             onChangeText={setNote}
@@ -266,12 +291,12 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
             style={styles.bookDropdown}
             onValueChange={(itemValue) => setSelectedBook(itemValue)}
           >
-            <Picker.Item label="Is it related to a specific book?" value="" enabled={false} />
+            <Picker.Item label="Is it related to a specific book?" value={null} />
             {readingBooks.map((book) => (
               <Picker.Item key={book.BookId} label={book.BookName} value={book.BookId} />
             ))}
           </Picker>
-          <TouchableOpacity onPress={() => {null}}>
+          <TouchableOpacity onPress={handleNoteSubmit}>
             <Entypo name="check" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_24} />
         </TouchableOpacity>
         </View>
@@ -616,7 +641,7 @@ const styles = StyleSheet.create({
   footer: {
     position: 'absolute',
     bottom: 0,
-    width: '100%',
+    width: '105%',
     backgroundColor: COLORS.primaryBlackHex,
     padding: 10,
     flexDirection: 'row',

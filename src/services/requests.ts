@@ -13,6 +13,7 @@ const requests = {
     fetchProductReviews:`/actions1.php?action=fetchProductReviews&id=`,
     fetchEmotions:`/actions1.php?action=fetchEmotions`,
     submitReview: `/actions1.php?action=submitReview`,
+    submitNote: `/actions1.php?action=submitNote`,
     submitEmotionScore: `/actions1.php?action=submitEmotionScore`,
     placeOrder: `/actions1.php?action=placeOrder`,
     placeSubscriptionOrder: `/actions1.php?action=placeSubscriptionOrder`,
