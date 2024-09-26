@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated, SafeAreaView, Share } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated, SafeAreaView, Share, TextInput } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import { AntDesign, Entypo, FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, Feather, FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../services/axios';
 import requests from '../services/requests';
@@ -23,7 +24,12 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   const [reminderTime, setReminderTime] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState('streaks');
   const [showTooltip, setShowTooltip] = useState(false);
-  const [allDaysFilled, setAllDaysFilled] = useState(false);
+
+  //states for the note feature
+  const [showNoteInput, setShowNoteInput] = useState(false);
+  const [note, setNote] = useState("");
+  const [selectedBook, setSelectedBook] = useState("");
+  const [readingBooks, setReadingBooks] = useState([]);
   
   const { action } = route.params || {}; // Ensure params exist
 
@@ -38,6 +44,17 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
       default:
         Alert.alert('Uh oh!', 'Please try again.');
     }
+  };
+
+  const fetchCurrentReads = async () => {
+    try {
+      const response = await instance.post(requests.fetchCurrentReads, {
+        userId: userDetails[0].userId,
+      });
+      setReadingBooks(response.data.currentReads);
+    } catch (error) {
+      console.error('Failed to fetch current reads:', error);
+    } 
   };
 
   const getDayClasses = (dayIndex: number) => {
@@ -225,6 +242,44 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
     setShowTooltip(prev => !prev);
   };
 
+  const toggleNoteInput = () => {
+    setShowNoteInput(prev => !prev);
+    if (!showNoteInput) {
+      fetchCurrentReads();
+    }
+  };
+
+  const renderNotesInput = () => {
+    if (showNoteInput) {
+      return (
+        <View style={styles.noteInputSection}>
+          <TextInput
+            style={styles.noteInput}
+            placeholder="Jot down your thoughts for today..."
+            placeholderTextColor={COLORS.secondaryLightGreyHex}
+            value={note}
+            onChangeText={setNote}
+            numberOfLines={5}
+          />
+          <Picker
+            selectedValue={selectedBook}
+            style={styles.bookDropdown}
+            onValueChange={(itemValue) => setSelectedBook(itemValue)}
+          >
+            <Picker.Item label="Is it related to a specific book?" value="" enabled={false} />
+            {readingBooks.map((book) => (
+              <Picker.Item key={book.BookId} label={book.BookName} value={book.BookId} />
+            ))}
+          </Picker>
+          <TouchableOpacity onPress={() => {null}}>
+            <Entypo name="check" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_24} />
+        </TouchableOpacity>
+        </View>
+      );
+    }
+    return null;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {celebration && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} />}
@@ -304,6 +359,15 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
           <View style={styles.achievements}>
             <Text style={styles.sectionTitle}>Highest Streak:</Text>
             <Text style={styles.maxStreak}>🏅 {maxStreak}-day Streak</Text>
+          </View>
+          <View style={styles.addNoteSection}>
+          <TouchableOpacity style={styles.addNoteButton} onPress={toggleNoteInput}>
+            <Entypo name="feather" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_24} />
+            <Text style={styles.addNoteText}>{!showNoteInput ? "Add a note" : "Cancel"}</Text>
+          </TouchableOpacity>
+
+            {/* Show the input and dropdown if "Add a note" is clicked */}
+            {renderNotesInput()}
           </View>
         </> :
         <PagesReadInput navigation={navigation}/>
@@ -599,6 +663,43 @@ const styles = StyleSheet.create({
   },
   progressText: {
     flexDirection: 'row',
+  },
+  noteInputSection: {
+    marginTop: SPACING.space_8,
+    alignItems: 'center',
+    flexDirection: 'column',
+  },
+  noteInput: {
+    padding: SPACING.space_12,
+    borderWidth: SPACING.space_2,
+    borderRadius: BORDERRADIUS.radius_4,
+    borderColor: COLORS.primaryLightGreyHex,
+    backgroundColor: COLORS.primaryGreyHex,
+    color: COLORS.primaryWhiteHex,
+  },
+  bookDropdown: {
+    marginTop: SPACING.space_8,
+    padding: SPACING.space_10,
+    borderWidth: SPACING.space_2,
+    borderRadius: BORDERRADIUS.radius_4,
+    borderColor: COLORS.primaryLightGreyHex,
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    color: COLORS.primaryWhiteHex,
+    width: 250,
+  },
+  addNoteSection: {
+    alignItems: 'center',
+  },
+  addNoteButton: {
+    backgroundColor: COLORS.primaryBlackRGBA,
+    color: COLORS.primaryWhiteHex,
+    padding: SPACING.space_8,
+    flexDirection: 'row',
+    alignItems: 'center',    
+
+  },
+  addNoteText: {
+    color: COLORS.primaryWhiteHex,
   },
 });
 
