@@ -40,7 +40,8 @@ const StatScreen = () => {
 
   const fetchPagesRead = async () => {
     try {
-      const response = await instance.get(`${requests.fetchPagesRead}${userDetails[0].userId}&timeFrame=${timeFrame}`);
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const response = await instance.get(`${requests.fetchPagesRead}${userDetails[0].userId}&timeFrame=${timeFrame}&timezone=${userTimezone}`);
       if (Array.isArray(response.data)) {
         setPagesRead(response.data);
       } else {

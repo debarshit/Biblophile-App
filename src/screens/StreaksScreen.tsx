@@ -139,8 +139,10 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   useEffect(() => {
     async function fetchReadingStreak() {
       try {
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const response = await instance.post(requests.fetchReadingStreak, {
           userId: userDetails[0].userId,
+          timezone: userTimezone,
         });
         const data = response.data;
         setCurrentStreak(data.currentStreak);
