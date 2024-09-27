@@ -49,7 +49,8 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
         }
       }
 
-      const response = await instance(requests.fetchProductReviews + bookIdToFetch + `&offset=${offset}`);
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const response = await instance(requests.fetchProductReviews + bookIdToFetch + `&offset=${offset}` + `&timezone=${userTimezone}`);
       if (response.data && response.data.length > 0) {
         setReviews(prevReviews => [...prevReviews, ...response.data]);
         setOffset(prevOffset => prevOffset + response.data.length);

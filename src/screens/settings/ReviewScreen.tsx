@@ -29,7 +29,8 @@ const ReviewScreen: React.FC = () => {
 
         setLoading(true);
         try {
-            const response = await instance.get(`${requests.fetchUserReviews}${userId}?offset=${offset}&limit=10`);
+            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const response = await instance.get(`${requests.fetchUserReviews}${userId}?offset=${offset}&limit=10&timezone=${userTimezone}`);
             const newReviews = response.data;
 
             setReviews(initial ? newReviews : [...reviews, ...newReviews]);
