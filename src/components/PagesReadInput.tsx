@@ -28,7 +28,8 @@ const PagesReadInput = ({navigation}: any) => {
 
   const fetchPagesRead = async () => {
     try {
-      const response = await instance.get(`${requests.fetchPagesRead}${userDetails[0].userId}`);
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const response = await instance.get(`${requests.fetchPagesRead}${userDetails[0].userId}&timezone=${userTimezone}`);
       if (Array.isArray(response.data)) {
         const currentDate = new Date().setHours(0, 0, 0, 0);
         const todayPagesRead = response.data.find((item: any) => {

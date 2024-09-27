@@ -22,7 +22,7 @@ const NotesScreen: React.FC = () => {
 
         setLoading(true);
         try {
-            const userTimezone = 'Asia/Kolkata'; // Replace this with actual timezone logic
+            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const response = await instance.get(`${requests.fetchUserNotes}${userId}?offset=${offset}&limit=10&timezone=${userTimezone}`);
             const newNotes = response.data;
 

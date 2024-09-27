@@ -50,7 +50,8 @@ const OrderHistoryScreen = ({navigation}: any) => {
     }
 
     try {
-      const response = await instance.post(`${requests.fetchOrders}&limit=${limit}&offset=${offset}`, {
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const response = await instance.post(`${requests.fetchOrders}&limit=${limit}&offset=${offset}&timezone=${userTimezone}`, {
         userId: userDetails[0].userId,
       });
 

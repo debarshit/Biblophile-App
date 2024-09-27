@@ -25,6 +25,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
   const [userReview, setUserReview] = useState<string>('');
   const [rating, setRating] = useState<number>(0);
   const [offset, setOffset] = useState<number>(0);
+  const [hasMoreReviews, setHasMoreReviews] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const userDetails = useStore((state: any) => state.userDetails);
@@ -49,10 +50,13 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
         }
       }
 
-      const response = await instance(requests.fetchProductReviews + bookIdToFetch + `&offset=${offset}`);
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const response = await instance(requests.fetchProductReviews + bookIdToFetch + `&offset=${offset}` + `&timezone=${userTimezone}`);
       if (response.data && response.data.length > 0) {
         setReviews(prevReviews => [...prevReviews, ...response.data]);
         setOffset(prevOffset => prevOffset + response.data.length);
+      } else {
+        setHasMoreReviews(false); // No more reviews
       }
     } catch (error) {
       console.error('Error fetching reviews:', error);
@@ -110,6 +114,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
         setRating(0);
         setReviews([]);
         setOffset(0);
+        setHasMoreReviews(true);
         fetchReviews(); // Refresh reviews after submitting
       }
     } catch (error) {
@@ -122,7 +127,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
   };
 
   const loadMoreReviews = () => {
-    if (!isLoading) {
+    if (!isLoading && hasMoreReviews) {
       fetchReviews();
     }
   };
