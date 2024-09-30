@@ -6,12 +6,14 @@ import instance from '../services/axios';
 import requests from '../services/requests';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import PageStatus from './PageStatus';
+import SourceReferralModal from './SourceReferralModal';
 
 const PagesReadInput = ({navigation}: any) => {
   const [pagesRead, setPagesRead] = useState<string>('');
   const [currentReads, setCurrentReads] = useState<any[]>([]);
   const [refreshData, setRefreshData] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isModalOpen, setModalOpen] = useState(false);
 
   const userDetails = useStore((state: any) => state.userDetails);
 
@@ -60,6 +62,7 @@ const PagesReadInput = ({navigation}: any) => {
   useEffect(() => {
     fetchCurrentReads();
     fetchPagesRead();
+    fetchSourceReferral();
   }, [refreshData]);
 
   const updatePagesRead = async () => {
@@ -84,8 +87,29 @@ const PagesReadInput = ({navigation}: any) => {
     }
   };
 
+  const fetchSourceReferral = async () => {
+    try {
+      const response = await instance.post(requests.fetchUserData, {
+        userId: userDetails[0].userId,
+      });
+      if (response.data.sourceReferral === null) {
+        handleOpenModal();
+      }
+    } catch (error) {
+      console.error('Failed to fetch current reads:', error);
+    } 
+  };
+
   const toggleTooltip = () => {
     setShowTooltip(prev => !prev);
+  };
+
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
   };
 
   return (
@@ -140,6 +164,10 @@ const PagesReadInput = ({navigation}: any) => {
           Automatically updated from your reading progress. Update manually only if inaccurate.
         </Text>
       </View>
+      <SourceReferralModal 
+        isOpen={isModalOpen} 
+        onRequestClose={handleCloseModal} 
+      />
     </View>
   );
 };
