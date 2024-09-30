@@ -5,8 +5,9 @@ import { FontAwesome as FaIcon, MaterialCommunityIcons as MdIcon } from '@expo/v
 import instance from '../services/axios';
 import requests from '../services/requests'; 
 import {useStore} from '../store/store';
-import { COLORS } from '../theme/theme';
+import { COLORS, FONTSIZE, SPACING } from '../theme/theme';
 import Mascot from '../components/Mascot';
+import { Picker } from '@react-native-picker/picker';
 
 
 const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible, onPress }) => {
@@ -37,6 +38,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const [signupPhone , setSignupPhone] = useState<string>(null);
     const [signupPass , setSignupPass] = useState<string>('');
     const [signupPassCnf, setSignupPassCnf] = useState<string>('');
+    const [source, setSource] = useState(null);
     const [loginMessage, setLoginMessage] = useState<{ text: string; color: string }>({ text: '', color: COLORS.primaryBlackHex });
     const [signupMessage, setSignupMessage] = useState<{ text: string; color: string }>({ text: '', color: COLORS.primaryBlackHex });
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -71,6 +73,10 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
         setSignupPassCnf(text);
     }
 
+    const handleSourceChange = (text: string) => {
+        setSource(text);
+    }
+
     function toggleRegistration() {
         setIsRegistration(!isRegistration);
     }
@@ -102,7 +108,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     };
 
     const handleSignup = () => {
-        if (!signupName || !signupEmail || !signupPhone || !signupPass || !signupPassCnf)
+        if (!signupName || !signupEmail || !signupPhone || !signupPass || !signupPassCnf || !source)
         {
             alert("Please fill all the details!");
             return;
@@ -129,6 +135,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                         phone: signupPhone,
                         password: signupPass,
                         signupPassCnf: signupPassCnf,
+                        source: source,
                       });
                     if (response.data.message === 1)
                     {
@@ -138,6 +145,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                         setSignupPhone("");
                         setSignupPass("");
                         setSignupPassCnf("");
+                        setSource(null);
                     }
                     else
                     {
@@ -377,6 +385,30 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                                 <FaIcon name='lock' style={styles.icon} />
                             </View>
                         </View>
+                        <Text style={styles.promptText}>How did you find us?</Text>
+                        <View style={styles.inputBox}>
+                            <Picker
+                                selectedValue={source}
+                                style={styles.picker}
+                                onValueChange={handleSourceChange}
+                            >
+                                <Picker.Item label="Select an option" value={null} />
+                                <Picker.Item label="Search Engine" value="Search Engine" />
+                                <Picker.Item label="Social Media" value="Social Media" />
+                                <Picker.Item label="Friends/Word of Mouth" value="Word of Mouth" />
+                                <Picker.Item label="Online Ads" value="Online Ads" />
+                                <Picker.Item label="Email Newsletter" value="Email Newsletter" />
+                                <Picker.Item label="Blog or Article" value="Blog or Article" />
+                                <Picker.Item label="App Store" value="App Store" />
+                                <Picker.Item label="Podcast Mention" value="Podcast Mention" />
+                                <Picker.Item label="Influencer Recommendation" value="Influencer Recommendation" />
+                                <Picker.Item label="Events or Conferences" value="Events or Conferences" />
+                                <Picker.Item label="Forums or Online Communities" value="Forums or Online Communities" />
+                                <Picker.Item label="Website Referral" value="Website Referral" />
+                                <Picker.Item label="Print Media" value="Print Media" />
+                                <Picker.Item label="Other" value="Other" />
+                            </Picker>
+                        </View>
                         <TouchableOpacity onPress={handleSignup} style={styles.button} disabled={isLoading}>
                             {isLoading ? (
                                 <ActivityIndicator size='small' color={COLORS.primaryWhiteHex} />
@@ -506,6 +538,19 @@ const styles = StyleSheet.create({
         textDecorationLine: 'underline',
         margin: 10,
     },
+    promptText: {
+        fontSize: FONTSIZE.size_14,
+        marginBottom: SPACING.space_10,
+        textAlign: 'center',
+        color: COLORS.primaryWhiteHex,
+    },
+    picker: {
+        height: 50,
+        width: '100%',
+        marginBottom: 20,
+        color: COLORS.secondaryLightGreyHex,
+        backgroundColor: COLORS.secondaryDarkGreyHex,
+      },
 });
 
 export default SignupLogin;
