@@ -393,18 +393,11 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                                 onValueChange={handleSourceChange}
                             >
                                 <Picker.Item label="Select an option" value={null} />
-                                <Picker.Item label="Search Engine" value="Search Engine" />
                                 <Picker.Item label="Social Media" value="Social Media" />
                                 <Picker.Item label="Friends/Word of Mouth" value="Word of Mouth" />
                                 <Picker.Item label="Online Ads" value="Online Ads" />
-                                <Picker.Item label="Email Newsletter" value="Email Newsletter" />
-                                <Picker.Item label="Blog or Article" value="Blog or Article" />
                                 <Picker.Item label="App Store" value="App Store" />
-                                <Picker.Item label="Podcast Mention" value="Podcast Mention" />
-                                <Picker.Item label="Influencer Recommendation" value="Influencer Recommendation" />
-                                <Picker.Item label="Events or Conferences" value="Events or Conferences" />
-                                <Picker.Item label="Forums or Online Communities" value="Forums or Online Communities" />
-                                <Picker.Item label="Website Referral" value="Website Referral" />
+                                <Picker.Item label="Influencer/Online Communities" value="Forums or Online Communities" />
                                 <Picker.Item label="Print Media" value="Print Media" />
                                 <Picker.Item label="Other" value="Other" />
                             </Picker>
