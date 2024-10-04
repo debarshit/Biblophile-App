@@ -107,6 +107,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDERRADIUS.radius_20,
     marginBottom: SPACING.space_15,
     overflow: 'hidden',
+    alignSelf: 'center',
   },
   CardRatingContainer: {
     flexDirection: 'row',

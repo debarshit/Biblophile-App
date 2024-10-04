@@ -205,6 +205,7 @@ const styles = StyleSheet.create({
     color: COLORS.primaryOrangeHex,
     textDecorationLine: 'underline',
     fontFamily: FONTFAMILY.poppins_semibold,
+    lineHeight: 21,
   },
   socialLinks: {
     flexDirection: 'row',
