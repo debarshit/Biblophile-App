@@ -6,7 +6,7 @@ import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme
 import { useStore } from '../../store/store';
 import Mascot from '../../components/Mascot';
 
-const NotesScreen: React.FC = () => {
+const NotesScreen: React.FC = ({navigation}: any) => {
     const [notes, setNotes] = useState([]);
     const [editing, setEditing] = useState<number | null>(null);
     const [currentNote, setCurrentNote] = useState('');
@@ -115,8 +115,21 @@ const NotesScreen: React.FC = () => {
                     </>
                 ) : (
                     <>
-                        <Text style={styles.noteText}>{item.note}</Text>
-                        <Text style={styles.updatedAtText}>Updated at: {item.updatedAt}</Text>
+                        <View style={styles.noteContent}>
+                            {item.bookPhoto && <TouchableOpacity
+                                onPress={() => {
+                                navigation.push('Details', {
+                                    id: item.bookId,
+                                    type: "Book",
+                                });
+                            }}>
+                                <Image source={{ uri: item.bookPhoto }} style={styles.thumbnail} />
+                            </TouchableOpacity>}
+                            <View style={styles.noteTextContainer}>
+                                <Text style={styles.noteText}>{item.note}</Text>
+                                <Text style={styles.updatedAtText}>Updated at: {item.updatedAt}</Text>
+                            </View>
+                        </View>
                         <View style={styles.btnGroup}>
                             <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
                                 <Text style={styles.btnText}>Edit</Text>
@@ -164,6 +177,19 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.primaryDarkGreyHex,
         borderRadius: BORDERRADIUS.radius_10,
         marginBottom: SPACING.space_16,
+    },
+    noteContent: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+    },
+    thumbnail: {
+        width: 60,
+        height: 60,
+        borderRadius: BORDERRADIUS.radius_4,
+        marginRight: SPACING.space_10,
+    },
+    noteTextContainer: {
+        flex: 1,
     },
     noteText: {
         fontSize: FONTSIZE.size_14,
