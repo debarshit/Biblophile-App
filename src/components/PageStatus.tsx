@@ -102,6 +102,9 @@ const PageStatus: React.FC<PageStatusProps> = ({ id, page, status, startDate, en
           style={styles.picker}
           onValueChange={(itemValue) => setBookStatus(itemValue)}
         >
+          {(status === 'Currently reading' || status === 'Paused') && (
+              <Picker.Item label="Paused" value="Paused" />
+          )}
           <Picker.Item label="Read" value="Read" />
           <Picker.Item label="Currently reading" value="Currently reading" />
           <Picker.Item label="To be read" value="To be read" />
