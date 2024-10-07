@@ -167,6 +167,9 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     style={styles.picker}
                     onValueChange={(itemValue) => setStatus(itemValue)}
                 >
+                    {(status === 'Currently reading' || status === 'Paused') && (
+                        <Picker.Item label="Paused" value="Paused" />
+                    )}
                     <Picker.Item label="Read" value="Read" />
                     <Picker.Item label="Currently reading" value="Currently reading" />
                     <Picker.Item label="To be read" value="To be read" />
