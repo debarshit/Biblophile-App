@@ -117,6 +117,7 @@ const BookshelfScreen = ({ navigation }) => {
           <>
             {renderBooksByStatus('Currently reading')}
             {renderBooksByStatus('Read')}
+            {renderBooksByStatus('Paused')}
             {renderBooksByStatus('To be read')}
             {renderBooksByStatus('Did not finish')}
           </>
