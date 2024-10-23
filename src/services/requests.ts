@@ -57,6 +57,7 @@ const requests = {
     fetchBookShelf: `/userInsights.php?action=fetchBookShelf`,
     fetchUserNotes: `/userInsights.php?action=fetchUserNotes&userId=`,
     updateUserNote: `/userInsights.php?action=updateUserNote`,
+    fetchReadingDurations: `/userInsights.php?action=fetchReadingDurations&userId=`,
 }
 
 export default requests;
