@@ -7,6 +7,7 @@ import requests from '../services/requests';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import PageStatus from './PageStatus';
 import SourceReferralModal from './SourceReferralModal';
+import SessionPrompt from './SessionPrompt';
 
 const PagesReadInput = ({navigation}: any) => {
   const [pagesRead, setPagesRead] = useState<string>('');
@@ -16,6 +17,25 @@ const PagesReadInput = ({navigation}: any) => {
   const [isModalOpen, setModalOpen] = useState(false);
 
   const userDetails = useStore((state: any) => state.userDetails);
+
+  //states for reading sessions
+  const [showSessionPrompt, setShowSessionPrompt] = useState(false);
+  const [sessionData, setSessionData] = useState(null);
+  const [promptMessage, setPromptMessage] = useState("");
+  const [isCompletingSession, setIsCompletingSession] = useState(false);
+
+  const startingTime = useStore((state: any) => state.sessionStartTime);
+  const startingPage = useStore((state: any) => state.sessionStartPage);
+  const setStartPage = useStore(
+    (state: any) => state.setStartPage,
+  );
+  const clearSession = useStore(
+    (state: any) => state.clearSession,
+  );
+
+  const formatTime = (time) => {
+    return new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   const fetchCurrentReads = async () => {
     try {
@@ -28,6 +48,58 @@ const PagesReadInput = ({navigation}: any) => {
     }
   };
 
+  const handleSaveSession = () => {
+    if (sessionData) {
+      const diffInPages = Number(pagesRead) - startingPage;
+      console.log(`Saving session from ${sessionData.startTime} to ${new Date()} with ${diffInPages} pages read.`);
+      //send the data to backend
+
+      clearSession();
+      setSessionData(null);
+    }
+    setShowSessionPrompt(false);
+};
+
+const handleCancelSave = () => {
+  // Logic for canceling the save prompt
+  setShowSessionPrompt(false);
+
+  clearSession();
+  setSessionData(null);
+};
+
+const checkActiveSession = () => {
+  const sessionStartTime = startingTime;
+  if (sessionStartTime) {
+      const sessionMessage = "Do you wish to complete the session?";
+      setPromptMessage(sessionMessage);
+      setIsCompletingSession(true);
+      setShowSessionPrompt(true);
+  }
+};
+
+const handleCompleteSession = () => {
+  const diffInPages = Number(pagesRead)-startingPage;
+  const sessionStartTime = startingTime;
+  const message = `Your reading session was from ${formatTime(sessionStartTime)} to ${formatTime(new Date())}. You've read ${diffInPages} pages. Do you wish to save this session?`;
+  setSessionData({ startTime: new Date(sessionStartTime), endTime: new Date(), pageDiff: diffInPages });
+  setPromptMessage(message);
+  setIsCompletingSession(false);
+};
+
+const handleContinueSession = () => {
+  setShowSessionPrompt(false);
+  // Do nothing, just continue the session
+};
+
+const handleSessionPromptAction = () => {
+  if (isCompletingSession) {
+      handleCompleteSession();
+  } else {
+      handleSaveSession();
+  }
+};
+
   const fetchPagesRead = async () => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -39,10 +111,11 @@ const PagesReadInput = ({navigation}: any) => {
           return itemDate === currentDate;
         });
 
-        if (todayPagesRead) {
-          setPagesRead(todayPagesRead.pagesRead);
-        } else {
-          setPagesRead('');
+        const pages = todayPagesRead ? todayPagesRead.pagesRead : 0;
+          setPagesRead(pages);
+
+        if (startingTime && !startingPage) {
+          setStartPage(pages);
         }
       } else {
         console.error('Pages read data is not an array:', response.data);
@@ -66,14 +139,17 @@ const PagesReadInput = ({navigation}: any) => {
   }, [refreshData]);
 
   const updatePagesRead = async () => {
-    if (pagesRead !== '') {
+    if (pagesRead !== "") {
+      checkActiveSession();
       try {
         const response = await instance.post(requests.updatePagesRead, {
           userId: userDetails[0].userId,
           pageCount: pagesRead,
         });
         if (response.data.message === 'Updated') {
-          Alert.alert('Success', 'Updated');
+          if (!startingTime) {
+            Alert.alert('Success', 'Updated');
+          }
           setRefreshData(prev => !prev);
         } else {
           Alert.alert('Error', response.data.message);
@@ -127,7 +203,16 @@ const PagesReadInput = ({navigation}: any) => {
               }}>
                 <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
               </TouchableOpacity>
-              <PageStatus id={book.BookId} page={book.CurrentPage} startDate={book.StartDate} onUpdate={() => setRefreshData(prev => !prev)} status='Currently reading'/>
+              <PageStatus 
+                id={book.BookId} 
+                page={book.CurrentPage} 
+                startDate={book.StartDate} 
+                onUpdate={() => {
+                  setRefreshData(prev => !prev);
+                  checkActiveSession();
+                }} 
+                status='Currently reading'
+            />
             </View>
           ))}
         </ScrollView>
@@ -164,6 +249,12 @@ const PagesReadInput = ({navigation}: any) => {
           Automatically updated from your reading progress. Update manually only if inaccurate.
         </Text>
       </View>
+      <SessionPrompt
+        visible={showSessionPrompt}
+        message={promptMessage}
+        onConfirm={handleSessionPromptAction}
+        onCancel={isCompletingSession ? handleContinueSession : handleCancelSave}
+      />
       <SourceReferralModal 
         isOpen={isModalOpen} 
         onRequestClose={handleCloseModal} 

@@ -14,6 +14,8 @@ export const useStore = create(
         GenreList: [], 
         CartPrice: 0,
         CartList: [],
+        sessionStartTime: null,
+        sessionStartPage: 0,
         login: async (userData) => {
           await set(state => ({
             userDetails: [...state.userDetails, userData],
@@ -32,6 +34,17 @@ export const useStore = create(
                 state.userDetails[0].userAddress = address;
             })
           );
+        },
+        startSession: () => {
+          const startTime = new Date();
+          set({ sessionStartTime: startTime });
+        },
+        setStartPage: (page) => {
+          set({ sessionStartPage: page });
+        },
+        clearSession: () => {
+          set({ sessionStartTime: null });
+          set({ sessionStartPage: null });
         },
         fetchGenres: async () => {
           try {
