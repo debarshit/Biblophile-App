@@ -25,6 +25,7 @@ import AboutScreen from './src/screens/settings/AboutScreen';
 import ReviewScreen from './src/screens/settings/ReviewScreen';
 import ProfileSummaryScreen from './src/screens/settings/ProfileSummaryScreen';
 import NotesScreen from './src/screens/settings/NotesScreen';
+import DurationTrackScreen from './src/screens/settings/DurationTrackScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -251,6 +252,10 @@ const App = () => {
             <Stack.Screen
             name="Note"
             component={NotesScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
+            <Stack.Screen
+            name="Durations"
+            component={DurationTrackScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
             <Stack.Screen
             name="ProfileSummary"

@@ -14,6 +14,7 @@ const requests = {
     fetchBookId:`${APIURL}?action=fetchBookId`,
     fetchReadingStatus:`${APIURL}?action=fetchReadingStatus`,
     submitReadingStatus: `${APIURL}?action=submitReadingStatus`,
+    submitReadingDuration: `${APIURL}?action=submitReadingDuration`,
     fetchProductReviews:`${APIURL}?action=fetchProductReviews&id=`,
     fetchEmotions:`${APIURL}?action=fetchEmotions`,
     submitReview: `${APIURL}?action=submitReview`,
@@ -56,6 +57,7 @@ const requests = {
     fetchBookShelf: `/userInsights.php?action=fetchBookShelf`,
     fetchUserNotes: `/userInsights.php?action=fetchUserNotes&userId=`,
     updateUserNote: `/userInsights.php?action=updateUserNote`,
+    fetchReadingDurations: `/userInsights.php?action=fetchReadingDurations&userId=`,
 }
 
 export default requests;
