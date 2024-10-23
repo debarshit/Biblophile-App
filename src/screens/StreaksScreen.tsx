@@ -11,6 +11,7 @@ import requests from '../services/requests';
 import { useStore } from '../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import PagesReadInput from '../components/PagesReadInput';
+import SessionPrompt from '../components/SessionPrompt';
 
 const StreaksScreen: React.FC = ({ navigation, route }: any) => {
 
@@ -31,6 +32,20 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   const [selectedBook, setSelectedBook] = useState("");
   const [readingBooks, setReadingBooks] = useState([]);
   
+  //states for reading sessions
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [promptMessage, setPromptMessage] = useState('');
+  const [showTimerTooltip, setShowTimerTooltip] = useState(false);
+  const [timer, setTimer] = useState(0);
+
+  const sessionStartTime = useStore((state: any) => state.sessionStartTime);
+  const startSession = useStore(
+    (state: any) => state.startSession,
+  );
+  const clearSession = useStore(
+    (state: any) => state.clearSession,
+  );
+
   const { action } = route.params || {}; // Ensure params exist
 
   const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
@@ -107,6 +122,10 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   }, [currentStreak, latestUpdateTime]);
 
   const updateReadingStreak = () => {
+    if (!sessionStartTime) {
+      setPromptMessage('Would you like to start a reading session?');
+      setShowPrompt(true);
+    }
     async function updateData() {
       try {
         const response = await instance.post(requests.updateReadingStreak, {
@@ -307,6 +326,46 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
     return null;
   };
 
+  const handleConfirmSessionStart = () => {
+    startSession();
+    setShowPrompt(false);
+  };
+
+  const handleCancelSessionStart = () => {
+    setShowPrompt(false);
+  };
+
+  const handleSaveSession = () => {
+    clearSession();
+    alert("Session saved!");
+    setShowPrompt(false);
+  };
+
+  const handleSessionCheck = () => {
+    if (sessionStartTime) {
+      setActiveTab('pages');
+      setShowPrompt(false);
+    }
+  };
+
+  // Handle session start persistence
+  useEffect(() => {
+    if (sessionStartTime) {
+      const timerInterval = setInterval(() => {
+        const currentTime: any = new Date();
+        const elapsedTime = Math.floor((currentTime - sessionStartTime) / 1000); // Timer in seconds
+        setTimer(elapsedTime);
+      }, 1000);
+  
+      // Cleanup the interval when the component is unmounted or when sessionStartTime changes
+      return () => clearInterval(timerInterval);
+    }
+  }, [sessionStartTime]);
+
+  useEffect(() => {
+    handleSessionCheck();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       {celebration && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} />}
@@ -336,6 +395,29 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
             </View>
           </TouchableOpacity>
         </View>
+        <SessionPrompt
+          visible={showPrompt}
+          onConfirm={sessionStartTime ? handleSaveSession : handleConfirmSessionStart}
+          onCancel={handleCancelSessionStart}
+          message={promptMessage}
+        />
+
+        {/* Timer display when session is running */}
+        {sessionStartTime && (
+          <View style={styles.timer}>
+            <Text style={styles.greeting}>
+              Reading session ongoing for: {Math.floor(timer / 60)} minutes {timer % 60} seconds
+            </Text>
+            <TouchableOpacity onPress={() => setShowTimerTooltip(!showTimerTooltip)} style={{ marginLeft: 8 }}>
+              <FontAwesome name="info-circle" style={styles.infoIcon} />
+              {showTimerTooltip && (
+                <View style={styles.tooltip}>
+                  <Text style={styles.tooltipText}>Updating your pages will stop the current reading session.</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+          )}
         <View style={styles.tabs}>
           <TouchableOpacity
             style={[
@@ -502,6 +584,11 @@ const styles = StyleSheet.create({
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_bold,
   },
+  timer: {
+    alignItems: 'center',
+    marginLeft: '10%',
+    maxWidth: '80%',
+  },
   tabs: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -515,6 +602,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDERRADIUS.radius_8,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: -1,
   },
   activeTab: {
     backgroundColor: COLORS.primaryOrangeHex,
@@ -667,8 +755,8 @@ const styles = StyleSheet.create({
   tooltip: {
     position: 'absolute',
     top: 20,
-    right: 5,
-    backgroundColor: COLORS.secondaryDarkGreyHex,
+    right: -5,
+    backgroundColor: COLORS.primaryDarkGreyHex,
     color: COLORS.primaryWhiteHex,
     padding: SPACING.space_4,
     borderRadius: 4,
