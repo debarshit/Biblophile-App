@@ -51,8 +51,18 @@ const PagesReadInput = ({navigation}: any) => {
   const handleSaveSession = () => {
     if (sessionData) {
       const diffInPages = Number(pagesRead) - startingPage;
-      console.log(`Saving session from ${sessionData.startTime} to ${new Date()} with ${diffInPages} pages read.`);
+      console.log(`Saving session from ${sessionData.startTime} to ${new Date()} with ${diffInPages} pages read.`);   
+      
       //send the data to backend
+      instance.post(requests.submitReadingDuration, sessionData)
+        .then(response => {
+          console.log('Session saved:', response.data);
+          // Handle successful response
+        })
+        .catch(error => {
+          console.error('Error saving session:', error);
+          // Handle error
+      });
 
       clearSession();
       setSessionData(null);
@@ -61,7 +71,6 @@ const PagesReadInput = ({navigation}: any) => {
 };
 
 const handleCancelSave = () => {
-  // Logic for canceling the save prompt
   setShowSessionPrompt(false);
 
   clearSession();
@@ -82,7 +91,7 @@ const handleCompleteSession = () => {
   const diffInPages = Number(pagesRead)-startingPage;
   const sessionStartTime = startingTime;
   const message = `Your reading session was from ${formatTime(sessionStartTime)} to ${formatTime(new Date())}. You've read ${diffInPages} pages. Do you wish to save this session?`;
-  setSessionData({ startTime: new Date(sessionStartTime), endTime: new Date(), pageDiff: diffInPages });
+  setSessionData({ startTime: new Date(sessionStartTime), endTime: new Date(), pageDiff: diffInPages, userId: userDetails[0].userId });
   setPromptMessage(message);
   setIsCompletingSession(false);
 };
