@@ -123,18 +123,15 @@ const StatScreen = () => {
   };
 
   const renderLineChart = (timeDuration) => {
-    if (!Array.isArray(pagesRead)) {
+    if (!Array.isArray(pagesRead) || pagesRead.length === 0) {
       return <Text style={styles.highlightText}>No data available</Text>;
     }
 
-    let labelCount;
-    if (timeDuration === 'last-week') {
-      labelCount = 7; 
-    } else if (timeDuration === 'last-month') {
-      labelCount = 30; 
-    } else {
-      return <Text style={styles.highlightText}>Invalid time frame</Text>;
-    }
+    const labelCount = timeDuration === 'last-week' ? 7 : timeDuration === 'last-month' ? 30 : null;
+
+    if (!labelCount) return <Text style={styles.highlightText}>Invalid time frame</Text>;
+
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     const labels = [];
     const dataPoints = Array(labelCount).fill(0);
@@ -142,11 +139,13 @@ const StatScreen = () => {
     for (let i = labelCount - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      labels.push(date.toISOString().split('T')[0]);
+      labels.push(
+        date.toLocaleDateString("en-CA", { timeZone: userTimezone })  //'en-CA' for YYYY-MM-DD format
+      );
     }
   
     pagesRead.forEach(item => {
-      const itemDate = new Date(item.dateRead).toISOString().split('T')[0];
+      const itemDate = new Date(item.dateRead).toLocaleDateString("en-CA", { timeZone: userTimezone });
       const index = labels.indexOf(itemDate);
       if (index !== -1) {
         dataPoints[index] = item.pagesRead;
