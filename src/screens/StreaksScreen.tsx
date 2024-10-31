@@ -128,9 +128,11 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
     }
     async function updateData() {
       try {
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const response = await instance.post(requests.updateReadingStreak, {
           userId: userDetails[0].userId,
           currentStreak: currentStreak,
+          timezone: userTimezone,
         });
         if (response.data.message) {
           if (response.data.message === "Updated") {
