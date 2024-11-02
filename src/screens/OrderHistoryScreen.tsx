@@ -9,6 +9,7 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import * as Localization from 'expo-localization';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useStore} from '../store/store';
 import {
@@ -50,7 +51,8 @@ const OrderHistoryScreen = ({navigation}: any) => {
     }
 
     try {
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const calendars = Localization.getCalendars();
+      const userTimezone = calendars[0]?.timeZone;
       const response = await instance.post(`${requests.fetchOrders}&limit=${limit}&offset=${offset}&timezone=${userTimezone}`, {
         userId: userDetails[0].userId,
       });

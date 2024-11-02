@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, Alert, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import * as Localization from 'expo-localization';
 import instance from '../../services/axios';
 import requests from '../../services/requests';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme/theme';
@@ -22,7 +23,8 @@ const NotesScreen: React.FC = ({navigation}: any) => {
 
         setLoading(true);
         try {
-            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const calendars = Localization.getCalendars();
+            const userTimezone = calendars[0]?.timeZone;
             const response = await instance.get(`${requests.fetchUserNotes}${userId}?offset=${offset}&limit=10&timezone=${userTimezone}`);
             const newNotes = response.data;
 

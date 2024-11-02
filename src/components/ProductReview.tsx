@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import * as Localization from 'expo-localization';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import { useStore } from '../store/store';
@@ -50,7 +51,8 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
         }
       }
 
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const calendars = Localization.getCalendars();
+      const userTimezone = calendars[0]?.timeZone;
       const response = await instance(requests.fetchProductReviews + bookIdToFetch + `&offset=${offset}` + `&timezone=${userTimezone}`);
       if (response.data && response.data.length > 0) {
         setReviews(prevReviews => [...prevReviews, ...response.data]);

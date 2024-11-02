@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons';
+import * as Localization from 'expo-localization';
 import { useStore } from '../store/store';
 import instance from '../services/axios';
 import requests from '../services/requests';
@@ -111,7 +112,8 @@ const handleSessionPromptAction = () => {
 
   const fetchPagesRead = async () => {
     try {
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const calendars = Localization.getCalendars();
+      const userTimezone = calendars[0]?.timeZone;
       const response = await instance.get(`${requests.fetchPagesRead}${userDetails[0].userId}&timezone=${userTimezone}`);
       if (Array.isArray(response.data)) {
         const currentDate = new Date().setHours(0, 0, 0, 0);
@@ -121,7 +123,7 @@ const handleSessionPromptAction = () => {
         });
 
         const pages = todayPagesRead ? todayPagesRead.pagesRead : 0;
-          setPagesRead(pages);
+        setPagesRead(String(pages));;
 
         if (startingTime && !startingPage) {
           setStartPage(pages);
