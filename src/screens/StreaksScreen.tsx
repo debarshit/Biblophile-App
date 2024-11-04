@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated, SafeAreaView, Share, TextInput } from 'react-native';
-import * as Localization from 'expo-localization';
 import * as Notifications from 'expo-notifications';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -129,8 +128,7 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
     }
     async function updateData() {
       try {
-        const calendars = Localization.getCalendars();
-        const userTimezone = calendars[0]?.timeZone;
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const response = await instance.post(requests.updateReadingStreak, {
           userId: userDetails[0].userId,
           currentStreak: currentStreak,

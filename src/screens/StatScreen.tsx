@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, FlatList, Dimensions, TouchableWithoutFeedback, ScrollView, TextInput } from 'react-native';
-import * as Localization from 'expo-localization';
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Picker } from '@react-native-picker/picker';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../theme/theme';
@@ -41,8 +40,7 @@ const StatScreen = () => {
 
   const fetchPagesRead = async () => {
     try {
-      const calendars = Localization.getCalendars();
-      const userTimezone = calendars[0]?.timeZone;
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const response = await instance.get(`${requests.fetchPagesRead}${userDetails[0].userId}&timeFrame=${timeFrame}&timezone=${userTimezone}`);
       if (Array.isArray(response.data)) {
         setPagesRead(response.data);
