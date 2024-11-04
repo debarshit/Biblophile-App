@@ -45,8 +45,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font",
-      "expo-localization"
+      "expo-font"
     ],
     "extra": {
       "eas": {
