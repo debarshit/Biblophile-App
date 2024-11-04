@@ -50,7 +50,7 @@ const PagesReadInput = ({navigation}: any) => {
 
   const handleSaveSession = () => {
     if (sessionData) {
-      const diffInPages = Number(pagesRead) - startingPage;
+      const diffInPages = Number(pagesRead) - Number(startingPage);
       console.log(`Saving session from ${sessionData.startTime} to ${new Date()} with ${diffInPages} pages read.`);   
       
       //send the data to backend
@@ -88,7 +88,7 @@ const checkActiveSession = () => {
 };
 
 const handleCompleteSession = () => {
-  const diffInPages = Number(pagesRead)-startingPage;
+  const diffInPages = Number(pagesRead)-Number(startingPage);
   const sessionStartTime = startingTime;
   const message = `Your reading session was from ${formatTime(sessionStartTime)} to ${formatTime(new Date())}. You've read ${diffInPages} pages. Do you wish to save this session?`;
   setSessionData({ startTime: new Date(sessionStartTime), endTime: new Date(), pageDiff: diffInPages, userId: userDetails[0].userId });

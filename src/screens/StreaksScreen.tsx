@@ -354,8 +354,8 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   useEffect(() => {
     if (sessionStartTime) {
       const timerInterval = setInterval(() => {
-        const currentTime: any = new Date();
-        const elapsedTime = Math.floor((currentTime - sessionStartTime) / 1000); // Timer in seconds
+        const currentTime = new Date();
+        const elapsedTime = Math.floor((currentTime.getTime() - new Date(sessionStartTime).getTime()) / 1000); // Timer in seconds
         setTimer(elapsedTime);
       }, 1000);
   
