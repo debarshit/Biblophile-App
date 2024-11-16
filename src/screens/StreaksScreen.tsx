@@ -128,9 +128,11 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
     }
     async function updateData() {
       try {
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const response = await instance.post(requests.updateReadingStreak, {
           userId: userDetails[0].userId,
           currentStreak: currentStreak,
+          timezone: userTimezone,
         });
         if (response.data.message) {
           if (response.data.message === "Updated") {
@@ -352,8 +354,8 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   useEffect(() => {
     if (sessionStartTime) {
       const timerInterval = setInterval(() => {
-        const currentTime: any = new Date();
-        const elapsedTime = Math.floor((currentTime - sessionStartTime) / 1000); // Timer in seconds
+        const currentTime = new Date();
+        const elapsedTime = Math.floor((currentTime.getTime() - new Date(sessionStartTime).getTime()) / 1000); // Timer in seconds
         setTimer(elapsedTime);
       }, 1000);
   
