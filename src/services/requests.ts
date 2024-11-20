@@ -1,6 +1,7 @@
 const isDevelopment = __DEV__;
 
 const APIURL = isDevelopment ? '/actions.php' : '/actions1.php';
+const INSIGHTSAPI = isDevelopment ? '/userInsightsDev.php' : '/userInsights.php';
 
 const requests = {
     //request to biblophile actions api
@@ -49,15 +50,15 @@ const requests = {
     paymentSuccessful: `${APIURL}?action=paymentSuccessful&linkId=`,
 
     //request to biblophile user-insights api
-    fetchAverageRatingByUser:`/userInsights.php?action=fetchAverageRatingByUser&userId=`,
-    fetchAverageEmotionsByUser:`/userInsights.php?action=fetchAverageEmotionsByUser&userId=`,
-    fetchAverageDaystoFinish: `/userInsights.php?action=fetchAverageDaystoFinish&userId=`,
-    fetchUserReviews: `/userInsights.php?action=fetchUserReviews&userId=`,
-    updateUserReview: `/userInsights.php?action=updateUserReview`,
-    fetchBookShelf: `/userInsights.php?action=fetchBookShelf`,
-    fetchUserNotes: `/userInsights.php?action=fetchUserNotes&userId=`,
-    updateUserNote: `/userInsights.php?action=updateUserNote`,
-    fetchReadingDurations: `/userInsights.php?action=fetchReadingDurations&userId=`,
+    fetchAverageRatingByUser:`${INSIGHTSAPI}?action=fetchAverageRatingByUser&userId=`,
+    fetchAverageEmotionsByUser:`${INSIGHTSAPI}?action=fetchAverageEmotionsByUser&userId=`,
+    fetchAverageDaystoFinish: `${INSIGHTSAPI}?action=fetchAverageDaystoFinish&userId=`,
+    fetchUserReviews: `${INSIGHTSAPI}?action=fetchUserReviews&userId=`,
+    updateUserReview: `${INSIGHTSAPI}?action=updateUserReview`,
+    fetchBookShelf: `${INSIGHTSAPI}?action=fetchBookShelf`,
+    fetchUserNotes: `${INSIGHTSAPI}?action=fetchUserNotes&userId=`,
+    updateUserNote: `${INSIGHTSAPI}?action=updateUserNote`,
+    fetchReadingDurations: `${INSIGHTSAPI}?action=fetchReadingDurations&userId=`,
 }
 
 export default requests;

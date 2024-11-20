@@ -10,7 +10,7 @@ import SourceReferralModal from './SourceReferralModal';
 import SessionPrompt from './SessionPrompt';
 
 const PagesReadInput = ({navigation}: any) => {
-  const [pagesRead, setPagesRead] = useState<string>('');
+  const [pagesRead, setPagesRead] = useState<string>('0');
   const [currentReads, setCurrentReads] = useState<any[]>([]);
   const [refreshData, setRefreshData] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -88,7 +88,7 @@ const checkActiveSession = () => {
 };
 
 const handleCompleteSession = () => {
-  const diffInPages = Number(pagesRead)-Number(startingPage);
+  const diffInPages = (Number(startingPage) === 0 || startingPage == null) ? pagesRead : Number(pagesRead)-Number(startingPage);
   const sessionStartTime = startingTime;
   const message = `Your reading session was from ${formatTime(sessionStartTime)} to ${formatTime(new Date())}. You've read ${diffInPages} pages. Do you wish to save this session?`;
   setSessionData({ startTime: new Date(sessionStartTime), endTime: new Date(), pageDiff: diffInPages, userId: userDetails[0].userId });
@@ -118,12 +118,12 @@ const handleSessionPromptAction = () => {
         const todayPagesRead = response.data.find((item: any) => {
           const itemDate = new Date(item.dateRead).setHours(0, 0, 0, 0);
           return itemDate === currentDate;
-        });
+        });    
 
         const pages = todayPagesRead ? todayPagesRead.pagesRead : 0;
         setPagesRead(String(pages));;
 
-        if (startingTime && !startingPage) {
+        if (startingTime && (startingPage === null)) {
           setStartPage(pages);
         }
       } else {
@@ -148,7 +148,7 @@ const handleSessionPromptAction = () => {
   }, [refreshData]);
 
   const updatePagesRead = async () => {
-    if (pagesRead !== "") {
+    if (pagesRead !== "" && pagesRead !== "0") {
       checkActiveSession();
       try {
         const response = await instance.post(requests.updatePagesRead, {
