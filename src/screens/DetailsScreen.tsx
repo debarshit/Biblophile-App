@@ -247,9 +247,9 @@ const DetailsScreen = ({navigation, route}: any) => {
                 <TouchableOpacity onPress={() => setActiveTab('reviews')} style={[styles.TabButton, activeTab === 'reviews' && styles.TabButtonActive]}>
                   <Text style={[styles.TabLabel, activeTab === 'reviews' && styles.TabLabelActive]}>Reviews</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setActiveTab('emotions')} style={[styles.TabButton, activeTab === 'emotions' && styles.TabButtonActive]}>
+                {/* <TouchableOpacity onPress={() => setActiveTab('emotions')} style={[styles.TabButton, activeTab === 'emotions' && styles.TabButtonActive]}>
                   <Text style={[styles.TabLabel, activeTab === 'emotions' && styles.TabLabelActive]}>Emotions</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </>
             )}
           </View>

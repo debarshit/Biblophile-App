@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import BouncyCheckbox from "react-native-bouncy-checkbox";
 import instance from '../services/axios';
 import requests from '../services/requests';
 import { useStore } from '../store/store';
@@ -24,6 +25,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
   const [reviews, setReviews] = useState<Review[]>([]);
   const [userReview, setUserReview] = useState<string>('');
   const [rating, setRating] = useState<number>(0);
+  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
   const [offset, setOffset] = useState<number>(0);
   const [hasMoreReviews, setHasMoreReviews] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -106,12 +108,14 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
         productId: bookId,
         rating: rating,
         review: userReview,
+        emotions: selectedEmotions,
       };
 
       const response = await instance.post(requests.submitReview, reviewData);
       if (response.data.message === 'Updated') {
         setUserReview('');
         setRating(0);
+        setSelectedEmotions([]);
         setReviews([]);
         setOffset(0);
         setHasMoreReviews(true);
@@ -130,6 +134,20 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
     if (!isLoading && hasMoreReviews) {
       fetchReviews();
     }
+  };
+
+  const emotionsList = [
+    'Joy', 'Sadness', 'Fear', 'Anger', 'Surprise', 'Anticipation', 'Nostalgia', 'Empathy'
+  ];
+
+  const toggleEmotionSelection = (emotion: string) => {
+    setSelectedEmotions(prevEmotions => {
+      if (prevEmotions.includes(emotion)) {
+        return prevEmotions.filter(e => e !== emotion);
+      } else {
+        return [...prevEmotions, emotion];
+      }
+    });
   };
 
   return (
@@ -155,6 +173,23 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
             placeholder="Write your review here..."
             placeholderTextColor="#AAAAAA"
           />
+          <View style={styles.emotionSection}>
+            <Text style={styles.label}>Select Emotions:</Text>
+            <View style={styles.checkboxGrid}>
+              {emotionsList.map((emotion) => (
+                <View key={emotion} style={styles.checkboxContainer}>
+                  <BouncyCheckbox
+                    isChecked={selectedEmotions.includes(emotion)}
+                    onPress={() => toggleEmotionSelection(emotion)}
+                    fillColor="#D17842"
+                    unFillColor="#52555A"
+                    style={styles.checkbox}
+                  />
+                  <Text style={styles.checkboxLabel}>{emotion}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
           <Button title="Submit Review" onPress={handleReviewSubmit} color={COLORS.primaryOrangeHex} />
         </View>
       ) : (
@@ -220,6 +255,34 @@ const styles = StyleSheet.create({
   loginPrompt: {
     color: COLORS.primaryWhiteHex,
     marginBottom: SPACING.space_20,
+  },
+  emotionSection: {
+    marginVertical: SPACING.space_12,
+  },
+  checkboxGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: SPACING.space_10,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.space_10,
+    width: '48%',
+    flexWrap: 'wrap',
+  },
+  checkbox: {
+    marginRight: SPACING.space_8,
+  },
+  checkboxLabel: {
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_10,
+    paddingRight: SPACING.space_10,
+    flexShrink: 1,
+    flexWrap: 'wrap',
+    maxWidth: '80%',
   },
   review: {
     backgroundColor: COLORS.primaryBlackRGBA,
