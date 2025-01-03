@@ -1,6 +1,6 @@
 const isDevelopment = __DEV__;
 
-const APIURL = isDevelopment ? '/actions.php' : '/actions1.php';
+const APIURL = isDevelopment ? '/actions1.php' : '/actions.php';
 const INSIGHTSAPI = isDevelopment ? '/userInsightsDev.php' : '/userInsights.php';
 
 const requests = {
