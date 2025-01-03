@@ -177,6 +177,12 @@ const App = () => {
   }
   // for expo notifications end
 
+  //temporarily clear out all prev notifications start
+  useEffect(() => {
+    Notifications.cancelAllScheduledNotificationsAsync();
+  }, []);
+  //temporarily clear out all prev notifications end
+
   if (!fontsLoaded) {
     return null;
   }

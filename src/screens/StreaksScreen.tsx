@@ -195,24 +195,40 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
   const scheduleNotification = async (date: Date) => {
     const now = new Date();
     const notificationTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), date.getHours(), date.getMinutes(), 0);
-
+  
+    // If the notification time is already in the past for today, set it for the same time tomorrow
     if (notificationTime <= now) {
       notificationTime.setDate(notificationTime.getDate() + 1);
     }
-
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Time to read!",
-        body: "Don't forget to read a few pages today!",
-      },
-      trigger: {
-        hour: notificationTime.getHours(),
-        minute: notificationTime.getMinutes(),
-        repeats: true,
-      },
-    });
-
-    Alert.alert("Reminder Set", `Notification set for ${notificationTime.toLocaleTimeString()}`);
+  
+    try {
+      // First, clear out any existing scheduled notifications
+      const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
+      for (let notification of scheduledNotifications) {
+        await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+      }
+  
+      // Schedule the new notification
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Time to read!",
+          body: "Don't forget to read a few pages today!",
+        },
+        trigger: {
+          hour: notificationTime.getHours(),
+          minute: notificationTime.getMinutes(),
+          repeats: true,
+        },
+      });
+  
+      const formattedTime = notificationTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+      Alert.alert("Reminder Set", `Notification set for ${formattedTime}`);
+  
+    } catch (error) {
+      console.error("Failed to schedule notification:", error);
+      Alert.alert("Error", "Failed to set notification. Please try again.");
+    }
   };
 
   //add functionality to add user to book clubs
@@ -491,10 +507,12 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
           is24Hour={true}
           display="spinner"
           onChange={(event, selectedDate) => {
-            if (selectedDate) {
+            if (event.type === 'set' && selectedDate) {
               setReminderTime(selectedDate);
               setDatePickerVisible(false);
               scheduleNotification(selectedDate);
+            } else {
+              setDatePickerVisible(false);
             }
           }}
         />
