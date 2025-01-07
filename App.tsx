@@ -26,6 +26,7 @@ import ReviewScreen from './src/screens/settings/ReviewScreen';
 import ProfileSummaryScreen from './src/screens/settings/ProfileSummaryScreen';
 import NotesScreen from './src/screens/settings/NotesScreen';
 import DurationTrackScreen from './src/screens/settings/DurationTrackScreen';
+import LibraryScreen from './src/screens/LibraryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -215,14 +216,18 @@ const App = () => {
             name="Tab"
             component={TabNavigator}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Streaks"
             component={StreaksScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Stats"
             component={StatScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
+          <Stack.Screen
+            name="Library"
+            component={LibraryScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
           <Stack.Screen
             name="Details"
             component={DetailsScreen}
@@ -231,43 +236,43 @@ const App = () => {
             name="Payment"
             component={PaymentScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="PaymentGateway"
             component={PaymentGatewayScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Settings"
             component={SettingsScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Resources"
             component={ResourceScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="About"
             component={AboutScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Profile"
             component={ProfileScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Review"
             component={ReviewScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Note"
             component={NotesScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Durations"
             component={DurationTrackScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="ProfileSummary"
             component={ProfileSummaryScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Subscription"
             component={SubscriptionScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
