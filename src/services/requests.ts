@@ -7,6 +7,7 @@ const requests = {
     //request to biblophile actions api
     getBookGenre:`${APIURL}?action=getBookGenre`,
     getBooks:`${APIURL}?action=getBooks&bookGenre=`,
+    getSpotlight: `${APIURL}?action=getSpotlight`,
     fetchProductDetails:`${APIURL}?action=fetchProductDetails&id=`,
     fetchExternalBookDetails:`${APIURL}?action=fetchExternalBookDetails&id=`, 
     fetchAverageRating:`${APIURL}?action=fetchAverageRating&id=`,
@@ -59,6 +60,9 @@ const requests = {
     fetchUserNotes: `${INSIGHTSAPI}?action=fetchUserNotes&userId=`,
     updateUserNote: `${INSIGHTSAPI}?action=updateUserNote`,
     fetchReadingDurations: `${INSIGHTSAPI}?action=fetchReadingDurations&userId=`,
+
+    //request to biblophile util apis
+    fetchBannerData:`apis/utilsActions.php?action=fetchBannerData`,
 }
 
 export default requests;

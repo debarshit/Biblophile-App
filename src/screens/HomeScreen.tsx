@@ -1,7 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -10,10 +9,13 @@ import {
   View,
   Platform,
   ToastAndroid,
+  Keyboard,
+  Animated,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import {FlatList} from 'react-native';
-import {Dimensions} from 'react-native';
+import SpotlightBooks from '../components/SpotlightBooks';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../services/axios';
@@ -27,9 +29,17 @@ import {
   FONTFAMILY,
   FONTSIZE,
   SPACING,
-} from '../theme/theme';    //font poppings is not coming
+} from '../theme/theme';
 import HeaderBar from '../components/HeaderBar';
 import CoffeeCard from '../components/CoffeeCard';
+import Banner from '../components/Banner';
+import Mascot from '../components/Mascot';
+
+interface Spotlight {
+  Id: string;
+  Photo: string;
+  Name: string;
+}
 
 const getGenresFromData = (data: any) => {
   const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
@@ -58,12 +68,13 @@ const HomeScreen = ({navigation}: any) => {
     getGenresFromData(GenreList),  
   );
   const [searchText, setSearchText] = useState('');
+  const [bannerOpacity, setBannerOpacity] = useState(1);
   const [genreIndex, setGenreIndex] = useState({
     index: 0,
     genre: genres[0],
   });
   const [bookList, setBookList] = useState<any>(getBookList(genreIndex.genre));
-  const [bookmarks, setBookmarks] = useState<any>([]);
+  const [spotlights, setSpotlights] = useState<Spotlight[]>([]);
   const [sortedCoffee, setSortedCoffee] = useState<any>(
     getBookList(genreIndex.genre),
   );
@@ -73,6 +84,9 @@ const HomeScreen = ({navigation}: any) => {
 
   const ListRef: any = useRef<FlatList>();
   const tabBarHeight = useBottomTabBarHeight();
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const scrollViewRef = useRef(null);
+  const scrollOffset = useRef(new Animated.Value(0)).current;
 
   // Define a variable to store the timeout ID
   let searchTimeout: any = null;  
@@ -169,6 +183,38 @@ const HomeScreen = ({navigation}: any) => {
   };
 
   useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      (e) => {
+        setKeyboardVisible(true);
+
+        // Scroll the ScrollView up
+        scrollViewRef.current?.scrollTo({
+          y: 50,
+          animated: true,
+        });
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+
+        // Scroll back to the top
+        scrollViewRef.current?.scrollTo({
+          y: 0,
+          animated: true,
+        });
+      });
+      
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     // Fetch genres when component mounts
     fetchGenres();
   }, []);
@@ -194,35 +240,43 @@ const HomeScreen = ({navigation}: any) => {
   }, [genreIndex]);
 
   useEffect(() => {
-    async function getBookmarks() {
+    async function getSpotlights() {
         try {
-            const response = await instance(requests.getBookmarks);
+            const response = await instance(requests.getSpotlight);
             const data = response.data;
-            setBookmarks(data);
+            setSpotlights(data);
             setLoading(false);
           } catch (error) {
-            console.error('Error fetching bookmarks:', error);
+            console.error('Error fetching spotlights:', error);
           }
     }
   
-    getBookmarks();
+    getSpotlights();
   }, []);
+
+  const handleScroll = (event) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const opacity = Math.max(1 - offsetY / 40, 0); // Prevent opacity from going below 0
+    setBannerOpacity(opacity);
+  };
 
   return (
     <SafeAreaView style={styles.ScreenContainer}>
-      <StatusBar backgroundColor={COLORS.primaryBlackHex} />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.ScrollViewFlex}>
-        {/* App Header */}
-        <HeaderBar title="Home Screen"/>
 
-        <Text style={styles.ScreenTitle}>
-          Find the best{'\n'}book for you
-        </Text>
+      <StatusBar backgroundColor={COLORS.primaryBlackHex} />
+      <Banner opacity={keyboardVisible ? 0 : bannerOpacity} />
+
+      <Animated.ScrollView
+        ref={scrollViewRef}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.ScrollViewFlex}
+        onScroll={handleScroll}
+        contentOffset={{ x: 0, y: scrollOffset }}
+        scrollEventThrottle={16}>
+        {/* App Header */}
+        {!keyboardVisible && <HeaderBar title="Home Screen"/>}
 
         {/* Search Input */}
-
         <View style={styles.InputContainerComponent}>
           <TouchableOpacity
             onPress={() => {
@@ -266,237 +320,293 @@ const HomeScreen = ({navigation}: any) => {
           )}
         </View>
 
-        {/* genre Scroller */}
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.genreScrollViewStyle}>
-          {genres.map((data: string, index) => (
-            <View
-              key={index.toString()}
-              style={styles.genreScrollViewContainer}>
-              <TouchableOpacity
-                style={styles.genreScrollViewItem}
-                onPress={() => {
-                  setBooksLoading(true);
-                  ListRef?.current?.scrollToOffset({
-                    animated: true,
-                    offset: 0,
-                  });
-                  setGenreIndex({index: index, genre: genres[index]});
-                  setSortedCoffee(bookList);
-                }}>
-                <Text
-                  style={[
-                    styles.genreText,
-                    genreIndex.index == index
-                      ? {color: COLORS.primaryOrangeHex}
-                      : {},
-                  ]}>
-                  {data}
-                </Text>
-                {genreIndex.index == index ? (
-                  <View style={styles.Activegenre} />
-                ) : (
-                  <></>
-                )}
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-
-        {/* Books Flatlist */}
-        {booksLoading ? (
-        // Render shimmer effect while loading
-        <View style={styles.shimmerFlex}>
-          <ShimmerPlaceholder
-          LinearGradient={LinearGradient}
-            style={styles.ShimmerPlaceholder}
-            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-            visible={!booksLoading}>
-          </ShimmerPlaceholder>
-          <ShimmerPlaceholder
-          LinearGradient={LinearGradient}
-            style={styles.ShimmerPlaceholder}
-            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-            visible={!setBooksLoading}>
-          </ShimmerPlaceholder>
-          <ShimmerPlaceholder
-          LinearGradient={LinearGradient}
-            style={styles.ShimmerPlaceholder}
-            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-            visible={!booksLoading}>
-          </ShimmerPlaceholder>
-        </View>
-      ) : (
-
-        <FlatList
-          {...sortedCoffee.length === 0 && styles.hidden}
-          ref={ListRef}
-          horizontal
-          ListEmptyComponent={
-            <View style={styles.EmptyListContainer}>
-              <Text style={styles.genreText}>No Books found</Text>
-            </View>
-          }
-          showsHorizontalScrollIndicator={false}
-          data={sortedCoffee}
-          contentContainerStyle={styles.FlatListContainer}
-          keyExtractor={item => item.BookId}
-          renderItem={({item}) => {
-            return (
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.push('Details', {
-                    id: item.BookId,
-                    type: "Book",
-                  });
-                }}>
-                <CoffeeCard
-                  id={item.BookId}
-                  name={item.BookName}
-                  photo={convertHttpToHttps(item.BookPhoto)}
-                  type="Book"
-                  price={item.BookPrice}
-                  averageRating={item.BookAverageRating}
-                  ratingCount={item.BookRatingCount}
-                  buttonPressHandler={CoffeeCardAddToCart}
-                />
-              </TouchableOpacity>
-            );
-          }}
-        />
-)}
-
-      {/* External Books FlatList */}
-      {searchText !== '' &&
-        <>
-        <Text style={styles.CoffeeBeansTitle}>External Books</Text>
-
-        {booksLoading ? (
-          // Render shimmer effect while loading
-          <View style={styles.shimmerFlex}>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!booksLoading}>
-            </ShimmerPlaceholder>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!setBooksLoading}>
-            </ShimmerPlaceholder>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!booksLoading}>
-            </ShimmerPlaceholder>
-          </View>
-        ) : (
-
-          <FlatList
-            ref={ListRef}
-            horizontal
-            ListEmptyComponent={
-              <View style={styles.EmptyListContainer}>
-                <Text style={styles.genreText}>No Books found</Text>
+        {/* Searched Books Flatlist */}
+        {searchText !== '' &&
+          <>
+            {booksLoading ? (
+              // Render shimmer effect while loading
+              <View style={styles.shimmerFlex}>
+                <ShimmerPlaceholder
+                LinearGradient={LinearGradient}
+                  style={styles.ShimmerPlaceholder}
+                  shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+                  visible={!booksLoading}>
+                </ShimmerPlaceholder>
+                <ShimmerPlaceholder
+                LinearGradient={LinearGradient}
+                  style={styles.ShimmerPlaceholder}
+                  shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+                  visible={!setBooksLoading}>
+                </ShimmerPlaceholder>
+                <ShimmerPlaceholder
+                LinearGradient={LinearGradient}
+                  style={styles.ShimmerPlaceholder}
+                  shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+                  visible={!booksLoading}>
+                </ShimmerPlaceholder>
               </View>
-            }
-            showsHorizontalScrollIndicator={false}
-            data={externalBooks}
-            contentContainerStyle={styles.FlatListContainer}
-            keyExtractor={item => item.GoogleBookId}
-            renderItem={({item}) => {
-              return (
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.push('Details', {
-                      id: item.GoogleBookId,
-                      type: "ExternalBook",
-                    });
-                  }}>
-                  <CoffeeCard
-                    id={item.GoogleBookId}
-                    name={item.BookName}
-                    photo={convertHttpToHttps(item.BookPhoto)}
-                    type="ExternalBook"
-                    price={item.BookPrice}
-                    averageRating={item.BookAverageRating}
-                    ratingCount={item.BookRatingCount}
-                    buttonPressHandler={CoffeeCardAddToCart}
-                  />
-                </TouchableOpacity>
-              );
-            }}
-          />
-        )}
-        </>
-      }
+            ) : (
 
-        <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
+              <FlatList
+                {...sortedCoffee.length === 0 && styles.hidden}
+                ref={ListRef}
+                horizontal
+                ListEmptyComponent={
+                  <View style={styles.EmptyListContainer}>
+                    <Text style={styles.genreText}>No Books found</Text>
+                  </View>
+                }
+                showsHorizontalScrollIndicator={false}
+                data={sortedCoffee}
+                contentContainerStyle={styles.FlatListContainer}
+                keyExtractor={item => item.BookId}
+                renderItem={({item}) => {
+                  return (
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.push('Details', {
+                          id: item.BookId,
+                          type: "Book",
+                        });
+                      }}>
+                      <CoffeeCard
+                        id={item.BookId}
+                        name={item.BookName}
+                        photo={convertHttpToHttps(item.BookPhoto)}
+                        type="Book"
+                        price={item.BookPrice}
+                        averageRating={item.BookAverageRating}
+                        ratingCount={item.BookRatingCount}
+                        buttonPressHandler={CoffeeCardAddToCart}
+                      />
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            )}
+          </>
+        }
 
-        {/* Bookmarks Flatlist */}
-        {loading ? (
-        // Render shimmer effect while loading
-          <View style={styles.shimmerFlex}>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!loading}>
-            </ShimmerPlaceholder>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!loading}>
-            </ShimmerPlaceholder>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!loading}>
-            </ShimmerPlaceholder>
-          </View>
-        ) : (
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={bookmarks}
-            contentContainerStyle={[
-              styles.FlatListContainer,
-              {marginBottom: tabBarHeight},
-            ]}
-            keyExtractor={item => item.BookmarkId}
-            renderItem={({item}) => {
-              return (
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.push('Details', {
-                      id: item.BookmarkId,
-                      type: "Bookmark",
-                    });
-                  }}>
-                  <CoffeeCard
-                    id={item.BookmarkId}
-                    name={item.BookmarkTitle}
-                    photo={convertHttpToHttps(item.BookmarkPhoto)}
-                    type="Bookmark"
-                    price={item.BookmarkPrice}
-                    averageRating={null}
-                    ratingCount={null}
-                    buttonPressHandler={CoffeeCardAddToCart}
-                  />
-                </TouchableOpacity>
-              );
-            }}
-          />
-        )}
-      </ScrollView>
+        {/* Searched External Books FlatList */}
+        {searchText !== '' &&
+          <>
+          <Text style={styles.CoffeeBeansTitle}>External Books</Text>
+
+          {booksLoading ? (
+            // Render shimmer effect while loading
+            <View style={styles.shimmerFlex}>
+              <ShimmerPlaceholder
+              LinearGradient={LinearGradient}
+                style={styles.ShimmerPlaceholder}
+                shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+                visible={!booksLoading}>
+              </ShimmerPlaceholder>
+              <ShimmerPlaceholder
+              LinearGradient={LinearGradient}
+                style={styles.ShimmerPlaceholder}
+                shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+                visible={!setBooksLoading}>
+              </ShimmerPlaceholder>
+              <ShimmerPlaceholder
+              LinearGradient={LinearGradient}
+                style={styles.ShimmerPlaceholder}
+                shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+                visible={!booksLoading}>
+              </ShimmerPlaceholder>
+            </View>
+          ) : (
+
+            <FlatList
+              ref={ListRef}
+              horizontal
+              ListEmptyComponent={
+                <View style={styles.EmptyListContainer}>
+                  <Text style={styles.genreText}>No Books found</Text>
+                </View>
+              }
+              showsHorizontalScrollIndicator={false}
+              data={externalBooks}
+              contentContainerStyle={styles.FlatListContainer}
+              keyExtractor={item => item.GoogleBookId}
+              renderItem={({item}) => {
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.push('Details', {
+                        id: item.GoogleBookId,
+                        type: "ExternalBook",
+                      });
+                    }}>
+                    <CoffeeCard
+                      id={item.GoogleBookId}
+                      name={item.BookName}
+                      photo={convertHttpToHttps(item.BookPhoto)}
+                      type="ExternalBook"
+                      price={item.BookPrice}
+                      averageRating={item.BookAverageRating}
+                      ratingCount={item.BookRatingCount}
+                      buttonPressHandler={CoffeeCardAddToCart}
+                    />
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          )}
+          </>
+        }
+        {
+          !keyboardVisible && (
+            <>
+              {/* Spotlight Section */}
+              <Text style={styles.sectionTitle}>In Spotlight</Text>
+              <SpotlightBooks spotlights={spotlights} />
+
+              {/* Genre Section */}
+              <View style={styles.genresContainer}>
+                <Text style={styles.sectionTitle}>What’s on Your Mind?</Text>
+
+                {/* First Row */}
+                <View style={styles.genreRow}>
+                    {genres.slice(0, 3).map((data: string, index) => (
+                      <TouchableOpacity
+                        key={index.toString()}
+                        style={[
+                          styles.genreButton,
+                          genreIndex.index === index && styles.selectedGenreButton,
+                        ]}
+                        onPress={() => {
+                          setBooksLoading(true);
+                          ListRef?.current?.scrollToOffset({
+                            animated: true,
+                            offset: 0,
+                          });
+                          setGenreIndex({index: index, genre: genres[index]});
+                          setSortedCoffee(bookList);
+                        }}>
+                        <Text style={styles.genreButtonText}>{data}</Text>
+                      </TouchableOpacity>
+                    ))}
+                </View>
+
+                {/* Second Row */}
+                <View style={styles.genreRow}>
+                    {genres.slice(3, 6).map((data: string, index) => (
+                      <TouchableOpacity
+                        key={(index + 3).toString()}
+                        style={[
+                          styles.genreButton,
+                          genreIndex.index === index + 3 && styles.selectedGenreButton,
+                        ]}
+                        onPress={() => {
+                          setBooksLoading(true);
+                          ListRef?.current?.scrollToOffset({
+                            animated: true,
+                            offset: 0,
+                          });
+                          setGenreIndex({index: index + 3, genre: genres[index + 3]});
+                          setSortedCoffee(bookList);
+                        }}>
+                        <Text style={styles.genreButtonText}>{data}</Text>
+                      </TouchableOpacity>
+                    ))}
+                </View>
+
+                {/* Third Row */}
+                <View style={styles.genreRow}>
+                    {genres.slice(7, 10).map((data: string, index) => (
+                      <TouchableOpacity
+                        key={(index + 7).toString()}
+                        style={[
+                          styles.genreButton,
+                          genreIndex.index === index + 7 && styles.selectedGenreButton,
+                        ]}
+                        onPress={() => {
+                          setBooksLoading(true);
+                          ListRef?.current?.scrollToOffset({
+                            animated: true,
+                            offset: 0,
+                          });
+                          setGenreIndex({index: index + 7, genre: genres[index + 7]});
+                          setSortedCoffee(bookList);
+                        }}>
+                        <Text style={styles.genreButtonText}>{data}</Text>
+                      </TouchableOpacity>
+                    ))}
+                </View>
+              </View>
+
+              {/* Filtered Books by Genre */}
+              {booksLoading ? (
+                // Render shimmer effect while loading
+                <View style={styles.shimmerFlex}>
+                  <ShimmerPlaceholder
+                  LinearGradient={LinearGradient}
+                    style={styles.ShimmerPlaceholder}
+                    shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+                    visible={!booksLoading}>
+                  </ShimmerPlaceholder>
+                  <ShimmerPlaceholder
+                  LinearGradient={LinearGradient}
+                    style={styles.ShimmerPlaceholder}
+                    shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+                    visible={!setBooksLoading}>
+                  </ShimmerPlaceholder>
+                  <ShimmerPlaceholder
+                  LinearGradient={LinearGradient}
+                    style={styles.ShimmerPlaceholder}
+                    shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+                    visible={!booksLoading}>
+                  </ShimmerPlaceholder>
+                </View>
+              ) : (
+
+                <FlatList
+                  {...sortedCoffee.length === 0 && styles.hidden}
+                  ref={ListRef}
+                  horizontal
+                  ListEmptyComponent={
+                    <View style={styles.EmptyListContainer}>
+                      <Text style={styles.genreText}>No Books found</Text>
+                    </View>
+                  }
+                  showsHorizontalScrollIndicator={false}
+                  data={sortedCoffee}
+                  contentContainerStyle={styles.FlatListContainer}
+                  keyExtractor={item => item.BookId}
+                  renderItem={({item}) => {
+                    return (
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.push('Details', {
+                            id: item.BookId,
+                            type: "Book",
+                          });
+                        }}>
+                        <CoffeeCard
+                          id={item.BookId}
+                          name={item.BookName}
+                          photo={convertHttpToHttps(item.BookPhoto)}
+                          type="Book"
+                          price={item.BookPrice}
+                          averageRating={item.BookAverageRating}
+                          ratingCount={item.BookRatingCount}
+                          buttonPressHandler={CoffeeCardAddToCart}
+                        />
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+              )}
+
+              {/* biblo jan and made with love in India */}
+              <View style={styles.welcomeMascot}>
+                <Mascot emotion="pendingBooks"/>
+                <Text style={styles.welcomeMessage}>From India, with love for readers</Text>
+              </View>
+            </>
+          )
+        }
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 };
@@ -524,13 +634,8 @@ const styles = StyleSheet.create({
   ScrollViewFlex: {
     flexGrow: 1,
   },
-  ScreenTitle: {
-    fontSize: FONTSIZE.size_28,
-    fontFamily: FONTFAMILY.poppins_semibold,
-    color: COLORS.primaryWhiteHex,
-    paddingLeft: SPACING.space_30,
-  },
   InputContainerComponent: {
+    marginTop: 80,
     flexDirection: 'row',
     margin: SPACING.space_30,
     borderRadius: BORDERRADIUS.radius_20,
@@ -547,27 +652,11 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_14,
     color: COLORS.primaryWhiteHex,
   },
-  genreScrollViewStyle: {
-    paddingHorizontal: SPACING.space_20,
-    marginBottom: SPACING.space_20,
-  },
-  genreScrollViewContainer: {
-    paddingHorizontal: SPACING.space_15,
-  },
-  genreScrollViewItem: {
-    alignItems: 'center',
-  },
   genreText: {
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_16,
     color: COLORS.primaryLightGreyHex,
     marginBottom: SPACING.space_4,
-  },
-  Activegenre: {
-    height: SPACING.space_10,
-    width: SPACING.space_10,
-    borderRadius: BORDERRADIUS.radius_10,
-    backgroundColor: COLORS.primaryOrangeHex,
   },
   FlatListContainer: {
     gap: SPACING.space_20,
@@ -586,6 +675,50 @@ const styles = StyleSheet.create({
     marginTop: SPACING.space_20,
     fontFamily: FONTFAMILY.poppins_medium,
     color: COLORS.secondaryLightGreyHex,
+  },
+  sectionTitle: {
+    fontSize: FONTSIZE.size_18,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: 'white',
+    textAlign: 'center',
+    marginVertical: SPACING.space_20,
+  },
+  genresContainer: {
+    marginBottom: SPACING.space_20,
+    paddingHorizontal: SPACING.space_10,
+    alignItems: 'center',
+  },
+  genreRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: SPACING.space_4,
+  },
+  genreButton: {
+    backgroundColor: COLORS.primaryGreyHex,
+    paddingVertical: SPACING.space_10,
+    paddingHorizontal: SPACING.space_20,
+    borderRadius: BORDERRADIUS.radius_10,
+    marginHorizontal: SPACING.space_4,
+  },
+  genreButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_14,
+    textAlign: 'center',
+  },
+  selectedGenreButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+  },
+  welcomeMascot: {
+    opacity: 0.5,
+    marginTop: SPACING.space_32,
+    marginBottom: SPACING.space_36,
+    bottom: 40,
+  },
+  welcomeMessage: {
+    fontSize: FONTSIZE.size_18,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    textAlign: 'center',
+    color: COLORS.primaryWhiteHex,
   },
 });
 
