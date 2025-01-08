@@ -67,7 +67,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({navigation, route}: any, {title}) 
         size={FONTSIZE.size_16}
       /> */}
       <Image
-          source={{uri: "https://i.postimg.cc/MTkWjTSx/Biblophile-logo-white.png"}}
+          source={{uri: "https://ik.imagekit.io/umjnzfgqh/biblophile/common_assets/logos/Biblophile%20logo%20-%20white.png"}}
           style={styles.Image}
         />
       <Text style={styles.HeaderText}>{title}</Text>
