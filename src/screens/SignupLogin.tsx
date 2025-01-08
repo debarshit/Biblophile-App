@@ -179,6 +179,8 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                     {
 
                         const newUser = {
+                            accessToken: response.data.accessToken,
+                            refreshToken: response.data.refreshToken,
                             userId: response.data.userId,
                             userEmail: response.data.email,
                             userAddress: response.data.address,

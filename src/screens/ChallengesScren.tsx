@@ -1,49 +1,108 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { COLORS } from '../theme/theme';
+import React, { useEffect, useRef, useState } from "react";
+import { BackHandler } from "react-native";
+import { WebView } from "react-native-webview";
+import { useNavigation } from '@react-navigation/native';
+import { useStore } from "../store/store";
 
-const { height } = Dimensions.get('window');
+const MyWebView = ({ navigation }: any) => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const logout = useStore((state: any) => state.logout);
+  const userDetails = useStore((state: any) => state.userDetails);
 
-const SocialScreen = () => {
-  return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Coming Soon</Text>
+  const accessToken = userDetails[0]?.accessToken;
+  const refreshToken = userDetails[0]?.refreshToken;
 
-        <Text style={styles.description}>
-          Launched in website. Soon to be launched in app.
-        </Text>
-      </View>
-    </View>
-  );
+  navigation = useNavigation();
+  const webViewRef = useRef(null);
+
+  useEffect(() => {
+    if (accessToken && refreshToken) {
+      setIsLoggedIn(true);
+    } else {
+      const logoutAndNavigate = async () => {
+        try {
+          await logout();
+          navigation.navigate("SignupLogin");
+        } catch (error) {
+          console.error("Logout failed:", error);
+        }
+      };
+
+      logoutAndNavigate();
+    }
+  }, [accessToken, refreshToken, logout]);
+
+  useEffect(() => {
+    const backAction = () => {
+      if (canGoBack) {
+        webViewRef.current.goBack();
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => {
+      backHandler.remove();
+    };
+  }, [canGoBack]);
+
+  const handleNavigationStateChange = (navState: any) => {
+    setCanGoBack(navState.canGoBack);
+  };
+
+  if (!isLoggedIn) {
+    return null;
+  }
+
+  const injectedJS = `
+  (function() {
+    // Hide nav and footer
+    const nav = document.querySelector('nav');
+    const footer = document.querySelector('footer');
+    if (nav) nav.style.display = 'none';
+    if (footer) footer.style.display = 'none';
+    
+    // Add margin to body
+    const body = document.querySelector('body');
+    if (body) body.style.marginBottom = '100px';
+    
+    // Override fetch to include headers
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options = {}) {
+      if (url.toString().startsWith('https://biblophile.com')) {
+        options.headers = {
+          ...options.headers,
+          'Authorization': 'Bearer ${accessToken}',
+          'x-refresh-token': '${refreshToken}'
+        };
+      }
+      return originalFetch(url, options);
+    };
+  })();
+`;
+
+return (
+  <WebView
+    ref={webViewRef}
+    source={{
+      uri: "https://biblophile.com/challenges",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "x-refresh-token": refreshToken,
+      },
+    }}
+    originWhitelist={["*"]}
+    onNavigationStateChange={handleNavigationStateChange}
+    injectedJavaScript={injectedJS}
+  />
+);
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.primaryDarkGreyHex,
-    height: height,
-  },
-  content: {
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    maxWidth: 600,
-    width: '100%',
-  },
-  title: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 20,
-  },
-  description: {
-    fontSize: 18,
-    color: '#B0B0B0',
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-});
-
-export default SocialScreen;
+export default MyWebView;
