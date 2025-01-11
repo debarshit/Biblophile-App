@@ -4,7 +4,7 @@ import { WebView } from "react-native-webview";
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from "../store/store";
 
-const MyWebView = ({ navigation }: any) => {
+const ChallengeScreen = ({ navigation }: any) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [canGoBack, setCanGoBack] = useState(false);
   const logout = useStore((state: any) => state.logout);
@@ -105,4 +105,4 @@ return (
 );
 };
 
-export default MyWebView;
+export default ChallengeScreen;

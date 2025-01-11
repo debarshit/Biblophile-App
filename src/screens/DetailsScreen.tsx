@@ -21,7 +21,7 @@ import requests from '../services/requests';
 import ImageBackgroundInfo from '../components/ImageBackgroundInfo';
 import PaymentFooter from '../components/PaymentFooter';
 import ProductReview from '../components/ProductReview';
-import BookEmotions from '../components/BookEmotions';
+import ReadTogetherLinks from '../components/ReadTogetherLinks';
 
 const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
@@ -205,11 +205,11 @@ const DetailsScreen = ({navigation, route}: any) => {
             <ProductReview id={id} isGoogleBook={isGoogleBook} product={product} />
           </View>
         );
-      case 'emotions':
+      case 'read-together':
         return (
           <View style={styles.TabContent}>
-            <Text style={styles.InfoTitle}>Emotions</Text>
-            <BookEmotions id={id} isGoogleBook={isGoogleBook} product={product} />
+            <Text style={styles.InfoTitle}>Read Together</Text>
+            <ReadTogetherLinks id={id} isGoogleBook={isGoogleBook} product={product} />
           </View>
         );
       default:
@@ -247,9 +247,9 @@ const DetailsScreen = ({navigation, route}: any) => {
                 <TouchableOpacity onPress={() => setActiveTab('reviews')} style={[styles.TabButton, activeTab === 'reviews' && styles.TabButtonActive]}>
                   <Text style={[styles.TabLabel, activeTab === 'reviews' && styles.TabLabelActive]}>Reviews</Text>
                 </TouchableOpacity>
-                {/* <TouchableOpacity onPress={() => setActiveTab('emotions')} style={[styles.TabButton, activeTab === 'emotions' && styles.TabButtonActive]}>
-                  <Text style={[styles.TabLabel, activeTab === 'emotions' && styles.TabLabelActive]}>Emotions</Text>
-                </TouchableOpacity> */}
+                <TouchableOpacity onPress={() => setActiveTab('read-together')} style={[styles.TabButton, activeTab === 'read-together' && styles.TabButtonActive]}>
+                  <Text style={[styles.TabLabel, activeTab === 'read-together' && styles.TabLabelActive]}>Read Together</Text>
+                </TouchableOpacity>
               </>
             )}
           </View>

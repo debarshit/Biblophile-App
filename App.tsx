@@ -27,6 +27,7 @@ import ProfileSummaryScreen from './src/screens/settings/ProfileSummaryScreen';
 import NotesScreen from './src/screens/settings/NotesScreen';
 import DurationTrackScreen from './src/screens/settings/DurationTrackScreen';
 import LibraryScreen from './src/screens/LibraryScreen';
+import SocialScreen from './src/screens/SocialScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -276,6 +277,10 @@ const App = () => {
             name="Subscription"
             component={SubscriptionScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
+            <Stack.Screen
+            name="Social"
+            component={SocialScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
         </Stack.Navigator>
         <Toast />
       </NavigationContainer>
