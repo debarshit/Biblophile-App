@@ -55,7 +55,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   const handleSharePress = async () => {
     try {
       const result = await Share.share({
-        message: `Checkout this book at https://biblophile.com/product/?type=${type}&id=${id}`,
+        message: `Checkout this book at https://biblophile.com/books/${type}/${id}/${name}`,
       });
       if (result.action === Share.sharedAction && result.activityType) {
         // Shared with activity type
