@@ -102,17 +102,24 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
           return;
         }
       }
-
+      const emotionsData = emotionsList.map((emotion) => {
+        const isChecked = selectedEmotions.includes(emotion.emotion);
+        return { 
+          emotionId: emotion.emotionId, 
+          isChecked 
+        };
+      });
       const reviewData = {
         userId: userId,
         productId: bookId,
         rating: rating,
         review: userReview,
-        emotions: selectedEmotions,
+        emotions: emotionsData,
       };
 
       const response = await instance.post(requests.submitReview, reviewData);
-      if (response.data.message === 'Updated') {
+      if (response.data.message === 'Feedback submitted successfully') {
+        // Alert.alert('Thanks!', 'Review added succesfully.');
         setUserReview('');
         setRating(0);
         setSelectedEmotions([]);
@@ -137,8 +144,15 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
   };
 
   const emotionsList = [
-    'Joy', 'Sadness', 'Fear', 'Anger', 'Surprise', 'Anticipation', 'Nostalgia', 'Empathy'
-  ];
+    { emotionId: 1, emotion: "Joy" },
+    { emotionId: 2, emotion: "Sadness" },
+    { emotionId: 3, emotion: "Fear" },
+    { emotionId: 4, emotion: "Anger" },
+    { emotionId: 5, emotion: "Surprise" },
+    { emotionId: 6, emotion: "Anticipation" },
+    { emotionId: 7, emotion: "Nostalgia" },
+    { emotionId: 8, emotion: "Empathy" },
+];
 
   const toggleEmotionSelection = (emotion: string) => {
     setSelectedEmotions(prevEmotions => {
@@ -177,15 +191,15 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
             <Text style={styles.label}>Select Emotions:</Text>
             <View style={styles.checkboxGrid}>
               {emotionsList.map((emotion) => (
-                <View key={emotion} style={styles.checkboxContainer}>
+                <View key={emotion.emotionId} style={styles.checkboxContainer}>
                   <BouncyCheckbox
-                    isChecked={selectedEmotions.includes(emotion)}
-                    onPress={() => toggleEmotionSelection(emotion)}
+                    isChecked={selectedEmotions.includes(emotion.emotion)}
+                    onPress={() => toggleEmotionSelection(emotion.emotion)}
                     fillColor="#D17842"
                     unFillColor="#52555A"
                     style={styles.checkbox}
                   />
-                  <Text style={styles.checkboxLabel}>{emotion}</Text>
+                  <Text style={styles.checkboxLabel}>{emotion.emotion}</Text>
                 </View>
               ))}
             </View>
