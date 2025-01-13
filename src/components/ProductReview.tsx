@@ -119,7 +119,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
 
       const response = await instance.post(requests.submitReview, reviewData);
       if (response.data.message === 'Feedback submitted successfully') {
-        // Alert.alert('Thanks!', 'Review added succesfully.');
+        Alert.alert('Thanks!', 'Review added succesfully.');
         setUserReview('');
         setRating(0);
         setSelectedEmotions([]);

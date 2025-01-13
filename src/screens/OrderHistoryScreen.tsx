@@ -9,7 +9,6 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useStore} from '../store/store';
 import {
   BORDERRADIUS,
@@ -33,7 +32,6 @@ const OrderHistoryScreen = ({navigation}: any) => {
   const [OrderHistoryList, setOrderHistoryList] = useState([]);
   const userDetails = useStore((state: any) => state.userDetails);
 
-  const tabBarHeight = useBottomTabBarHeight();
   const [showAnimation, setShowAnimation] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -139,7 +137,7 @@ if (loading) {
         scrollEventThrottle={400}
       >
         <View
-          style={[styles.ScrollViewInnerView, {marginBottom: tabBarHeight}]}>
+          style={[styles.ScrollViewInnerView]}>
           <View style={styles.ItemContainer}>
             <HeaderBar title="Order History" />
 

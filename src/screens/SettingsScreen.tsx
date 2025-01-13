@@ -90,6 +90,49 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
+                navigation.push('History');
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <MaterialIcons name="history" size={20} color="#fff" />
+              </View>
+
+              <Text style={styles.rowLabel}>My Order History</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                navigation.push('Subscription');
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <FontAwesome color="#fff" name="rupee" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Manage Subscription</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>My Reading Activity</Text>
+
+            <TouchableOpacity
+              onPress={() => {
                 navigation.push('ProfileSummary');
               }}
               style={styles.row}>
@@ -174,25 +217,6 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
               </View>
 
               <Text style={styles.rowLabel}>Reading Sessions</Text>
-
-              <View style={styles.rowSpacer} />
-
-              <Feather
-                color="#C6C6C6"
-                name="chevron-right"
-                size={20} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                navigation.push('Subscription');
-              }}
-              style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
-                <FontAwesome color="#fff" name="rupee" size={20} />
-              </View>
-
-              <Text style={styles.rowLabel}>Manage Subscription</Text>
 
               <View style={styles.rowSpacer} />
 

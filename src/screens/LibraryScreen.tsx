@@ -30,6 +30,7 @@ import {
 } from '../theme/theme';    //font poppings is not coming
 import HeaderBar from '../components/HeaderBar';
 import CoffeeCard from '../components/CoffeeCard';
+import FloatingIcon from '../components/FloatingIcon';
 
 const getGenresFromData = (data: any) => {
   const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
@@ -52,6 +53,7 @@ const LibraryScreen = ({navigation}: any) => {
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const fetchGenres = useStore((state: any) => state.fetchGenres);  //this function should run on mount
   const GenreList = useStore((state: any) => state.GenreList);
+  const CartList = useStore((state: any) => state.CartList);
 
   //useState variables
   const [genres, setGenres] = useState(
@@ -497,6 +499,7 @@ const LibraryScreen = ({navigation}: any) => {
           />
         )}
       </ScrollView>
+      {CartList.length > 0 && <FloatingIcon />}
     </SafeAreaView>
   );
 };

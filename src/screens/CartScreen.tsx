@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useStore} from '../store/store';
 import {COLORS, SPACING} from '../theme/theme';
 import HeaderBar from '../components/HeaderBar';
@@ -27,7 +26,6 @@ const CartScreen = ({navigation, route}: any) => {
     (state: any) => state.decrementCartItemQuantity,
   );
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
-  const tabBarHeight = useBottomTabBarHeight();
 
   const buttonPressHandler = () => {
     if (CartList.length != 0) {
@@ -90,7 +88,7 @@ const CartScreen = ({navigation, route}: any) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.ScrollViewFlex}>
         <View
-          style={[styles.ScrollViewInnerView, {marginBottom: tabBarHeight}]}>
+          style={[styles.ScrollViewInnerView]}>
           <View style={styles.ItemContainer}>
             <HeaderBar title="Cart" />
 

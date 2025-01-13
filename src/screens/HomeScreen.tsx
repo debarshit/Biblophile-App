@@ -34,6 +34,7 @@ import HeaderBar from '../components/HeaderBar';
 import CoffeeCard from '../components/CoffeeCard';
 import Banner from '../components/Banner';
 import Mascot from '../components/Mascot';
+import FloatingIcon from '../components/FloatingIcon';
 
 interface Spotlight {
   Id: string;
@@ -62,6 +63,7 @@ const HomeScreen = ({navigation}: any) => {
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const fetchGenres = useStore((state: any) => state.fetchGenres);  //this function should run on mount
   const GenreList = useStore((state: any) => state.GenreList);
+  const CartList = useStore((state: any) => state.CartList);
 
   //useState variables
   const [genres, setGenres] = useState(
@@ -607,6 +609,7 @@ const HomeScreen = ({navigation}: any) => {
           )
         }
       </Animated.ScrollView>
+      {CartList.length > 0 && <FloatingIcon />}
     </SafeAreaView>
   );
 };

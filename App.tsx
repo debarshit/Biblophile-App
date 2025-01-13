@@ -28,6 +28,8 @@ import NotesScreen from './src/screens/settings/NotesScreen';
 import DurationTrackScreen from './src/screens/settings/DurationTrackScreen';
 import LibraryScreen from './src/screens/LibraryScreen';
 import SocialScreen from './src/screens/SocialScreen';
+import CartScreen from './src/screens/CartScreen';
+import OrderHistoryScreen from './src/screens/OrderHistoryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -281,6 +283,14 @@ const App = () => {
             name="Social"
             component={SocialScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="Cart"
+            component={CartScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
+            <Stack.Screen
+            name="History"
+            component={OrderHistoryScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
         </Stack.Navigator>
         <Toast />
       </NavigationContainer>

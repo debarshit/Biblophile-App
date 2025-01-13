@@ -6,10 +6,7 @@ import { BlurView } from 'expo-blur';
 import {COLORS} from '../theme/theme';
 import HomeScreen from '../screens/HomeScreen';
 import BookshelfScreen from '../screens/BookshelfScreen';
-import CartScreen from '../screens/CartScreen';
-import OrderHistoryScreen from '../screens/OrderHistoryScreen';
 import LibraryScreen from '../screens/LibraryScreen';
-import StreaksScreen from '../screens/StreaksScreen';
 import SocialScreen from '../screens/SocialScreen';
 import ChallengesScreen from '../screens/ChallengesScren';
 
@@ -51,105 +48,62 @@ const TabNavigator = () => {
             />
           ),
         }}></Tab.Screen>
-      {activeTab === 'Bookshelf' || activeTab === 'Challenge' || activeTab === 'Streaks' ? <Tab.Screen
-        name="Streaks"
-        component={StreaksScreen}
-        options={{
-          tabBarIcon: ({focused, color, size}) => (
-            <Entypo
-              name="bar-graph"
-              size={25}
-              color={
-                focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
-              }
-            />
-          ),
-        }}></Tab.Screen> :
-        <Tab.Screen
-        name="Shop"
-        component={LibraryScreen}
-        options={{
-          tabBarIcon: ({focused, color, size}) => (
-            <Entypo
-              name="shop"
-              size={25}
-              color={
-                focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
-              }
-            />
-          ),
-        }}></Tab.Screen>
-        }
-      {activeTab === 'Shop' || activeTab === 'Cart' || activeTab === 'History' ? <Tab.Screen
-        name="Cart"
-        component={CartScreen}
-        options={{
-          tabBarIcon: ({focused, color, size}) => (
-            <MaterialIcons
-              name="shopping-cart"
-              size={25}
-              color={
-                focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
-              }
-            />
-          ),
-        }}></Tab.Screen>
-      : activeTab === 'Bookshelf' || activeTab === 'Streaks' || activeTab === 'Challenges' ?
       <Tab.Screen
-        name="Challenges"
-        component={ChallengesScreen}
-        options={{
-          tabBarIcon: ({focused, color, size}) => (
-            <Entypo
-              name="medal"
-              size={25}
-              color={
-                focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
-              }
-            />
-          ),
-        }}></Tab.Screen> :
+          name="Shop"
+          component={LibraryScreen}
+          options={{
+            tabBarIcon: ({focused, color, size}) => (
+              <Entypo
+                name="shop"
+                size={25}
+                color={
+                  focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
+                }
+              />
+            ),
+          }}></Tab.Screen>
         <Tab.Screen
-        name="Social"
-        component={SocialScreen}
-        options={{
-          tabBarIcon: ({focused, color, size}) => (
-            <FontAwesome
-              name="group"
-              size={25}
-              color={
-                focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
-              }
-            />
-          ),
-        }}></Tab.Screen>}
-      {activeTab === 'Shop' || activeTab === 'Cart' || activeTab === 'History' ? <Tab.Screen
-        name="History"
-        component={OrderHistoryScreen}
-        options={{
-          tabBarIcon: ({focused, color, size}) => (
-            <MaterialIcons
-              name="history"
-              size={30}
-              color={
-                focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
-              }
-            />
-          ),
-        }}></Tab.Screen> : <Tab.Screen
-        name="Bookshelf"
-        component={BookshelfScreen}
-        options={{
-          tabBarIcon: ({focused, color, size}) => (
-            <FontAwesome5
-              name="book-reader"
-              size={30}
-              color={
-                focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
-              }
-            />
-          ),
-        }}></Tab.Screen>}
+          name="Challenges"
+          component={ChallengesScreen}
+          options={{
+            tabBarIcon: ({focused, color, size}) => (
+              <Entypo
+                name="medal"
+                size={25}
+                color={
+                  focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
+                }
+              />
+            ),
+          }}></Tab.Screen>
+        <Tab.Screen
+          name="Social"
+          component={SocialScreen}
+          options={{
+            tabBarIcon: ({focused, color, size}) => (
+              <FontAwesome
+                name="group"
+                size={25}
+                color={
+                  focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
+                }
+              />
+            ),
+          }}></Tab.Screen>
+        <Tab.Screen
+          name="Bookshelf"
+          component={BookshelfScreen}
+          options={{
+            tabBarIcon: ({focused, color, size}) => (
+              <FontAwesome5
+                name="book-reader"
+                size={30}
+                color={
+                  focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
+                }
+              />
+            ),
+          }}></Tab.Screen>
     </Tab.Navigator>
   );
 };
