@@ -13,6 +13,7 @@ const requests = {
     fetchAverageRating:`${APIURL}?action=fetchAverageRating&id=`,
     fetchAverageEmotions:`${APIURL}?action=fetchAverageEmotions&id=`,
     addBook: `${APIURL}?action=addBook`,
+    submitBookRequest: `${APIURL}?action=submitBookRequest`,
     fetchBookId:`${APIURL}?action=fetchBookId`,
     fetchReadingStatus:`${APIURL}?action=fetchReadingStatus`,
     submitReadingStatus: `${APIURL}?action=submitReadingStatus`,
