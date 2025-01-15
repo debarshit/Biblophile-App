@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { FontAwesome as FaIcon, MaterialCommunityIcons as MdIcon } from '@expo/vector-icons';
 import instance from '../services/axios';
@@ -178,6 +178,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                     if (response.data.message === 1)
                     {
 
+                        const expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
                         const newUser = {
                             accessToken: response.data.accessToken,
                             refreshToken: response.data.refreshToken,
@@ -188,16 +189,16 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                             userName: response.data.name,
                             deposit: response.data.deposit,
                             profilePic: response.data.profilePic,
+                            notificationToken: expoPushToken,
                           };
                           
                         login(newUser);
-
-                        const expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
             
                         try {
-                            const updateResponse = await instance.post(requests.updateNotificationToken, {
+                            const updateResponse = await instance.post(requests.registerNotificationToken, {
                             userId: response.data.userId,
                             token: expoPushToken,
+                            device: Platform.OS,
                             });
                             if (updateResponse.data.message !== 1) {
                                 console.log('Failed to update notification token');
@@ -247,7 +248,6 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
       };
 
       useEffect(() => {
-        
       
       }, [mascotEmotion])
       

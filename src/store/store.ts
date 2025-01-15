@@ -49,7 +49,29 @@ export const useStore = create<StoreState>()(
           }));
           set({ isAuthenticated: true, user: userData['userId'] });
         },
-        logout: () => {
+        logout: async () => {
+          const { userDetails } = get();
+          const user = userDetails[0];
+          const refreshToken = user?.refreshToken;
+          const notificationToken = user?.notificationToken;
+
+          if (refreshToken && notificationToken) {
+            try {
+                const response = await instance.post(requests.userLogout, {
+                    refreshToken,
+                    notificationToken,
+                });
+    
+                if (response.data.message === "Logged out successfully.") {
+                    console.log('Logged out from backend successfully');
+                } else {
+                    console.error('Failed to log out from backend');
+                }
+            } catch (error) {
+                console.error('Error during backend logout:', error);
+            }
+          }
+
           set({ 
             isAuthenticated: false, 
             user: null, 
