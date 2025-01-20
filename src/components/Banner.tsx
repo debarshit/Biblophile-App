@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Image, StyleSheet } from "react-native";
+import { Image, StyleSheet, TouchableOpacity } from "react-native";
 import requests from "../services/requests";
 import instance from "../services/axios";
 import { COLORS } from "../theme/theme";
 import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
 
 interface BannerItem {
   smallImage: string;
@@ -16,10 +17,12 @@ interface BannerProps {
   opacity: number;
 }
 
-const Banner: React.FC<BannerProps> = ({ opacity }) => {
+const Banner: React.FC<BannerProps> = ({ opacity }, navigation: any) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [bannerItems, setBannerItems] = useState<BannerItem[]>([]);
 
+  navigation = useNavigation();
+  
   useEffect(() => {
     const fetchBannerData = async () => {
       try {
@@ -44,12 +47,18 @@ const Banner: React.FC<BannerProps> = ({ opacity }) => {
     return null;
   }
 
-  const { smallImage } = currentBanner;
+  const { smallImage, link } = currentBanner;
 
   const imageSource = smallImage;
 
+  const handleBannerClick = () => {
+    if (link?.url) {
+      navigation.navigate("CommonWebView", { url: link.url });
+    }
+  };
+
   return (
-    <View style={styles.bannerContainer}>
+    <TouchableOpacity style={styles.bannerContainer} onPress={handleBannerClick}>
       <Image
         source={{ uri: imageSource }}
         style={[styles.bannerImage, { opacity }]}
@@ -59,14 +68,15 @@ const Banner: React.FC<BannerProps> = ({ opacity }) => {
         colors={[COLORS.primaryBlackRGBA, COLORS.primaryBlackHex]}
         style={styles.bannerFadeBottom}
       />
-    </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   bannerContainer: {
     width: '100%',
-    height: '25%',
+    // height: '25%', when banner outside scrollview in bg
+    height: 200,
     position: 'absolute',
   },
   bannerImage: {

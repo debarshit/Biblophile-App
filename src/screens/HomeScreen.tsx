@@ -266,7 +266,7 @@ const HomeScreen = ({navigation}: any) => {
     <SafeAreaView style={styles.ScreenContainer}>
 
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
-      <Banner opacity={keyboardVisible ? 0 : bannerOpacity} />
+      {/* <Banner opacity={keyboardVisible ? 0 : bannerOpacity} /> */}
 
       <Animated.ScrollView
         ref={scrollViewRef}
@@ -277,6 +277,8 @@ const HomeScreen = ({navigation}: any) => {
         scrollEventThrottle={16}>
         {/* App Header */}
         {!keyboardVisible && <HeaderBar title="Home Screen"/>}
+
+        <Banner opacity={keyboardVisible ? 0 : bannerOpacity} />
 
         {/* Search Input */}
         <View style={styles.InputContainerComponent}>

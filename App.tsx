@@ -30,6 +30,7 @@ import LibraryScreen from './src/screens/LibraryScreen';
 import SocialScreen from './src/screens/SocialScreen';
 import CartScreen from './src/screens/CartScreen';
 import OrderHistoryScreen from './src/screens/OrderHistoryScreen';
+import CommonWebViewScreen from './src/screens/CommonWebViewScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -291,6 +292,10 @@ const App = () => {
             name="History"
             component={OrderHistoryScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
+            <Stack.Screen
+            name="CommonWebView"
+            component={CommonWebViewScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
         </Stack.Navigator>
         <Toast />
       </NavigationContainer>
