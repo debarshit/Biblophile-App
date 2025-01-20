@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
 import axios from "../services/axios";
 import requests from "../services/requests";
 import { useNavigation } from '@react-navigation/native';
@@ -62,6 +62,10 @@ const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, prod
     }
   };
 
+  const handleLearnMorePress = () => {
+    Linking.openURL("https://biblophile.freshdesk.com/support/solutions/articles/1060000111956");
+  };
+
   if (isLoading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
@@ -80,6 +84,14 @@ const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, prod
             Create a Readalong
             </Text>
         </TouchableOpacity>
+        <View style={styles.learnMoreContainer}>
+            <Text style={styles.learnMoreText}>
+                Not sure which option to choose? 
+                <TouchableOpacity onPress={handleLearnMorePress}>
+                    <Text style={styles.learnMoreLink}> Learn more about Buddy Reads vs Readalongs</Text>
+                </TouchableOpacity>
+            </Text>
+        </View>
     </View>
   );
 };
@@ -101,6 +113,19 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_16,
     color: COLORS.primaryWhiteHex,
   },
+  learnMoreContainer: {
+    marginTop: SPACING.space_16,
+  },
+  learnMoreText: {
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryLightGreyHex,
+    textAlign: 'center',
+  },
+  learnMoreLink: {
+    color: COLORS.secondaryLightGreyHex,
+    textDecorationLine: 'underline',
+  }
 });
 
 export default ReadTogetherLinks;
