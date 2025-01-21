@@ -295,14 +295,14 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
-                openWebView('https://forms.gle/abqJbuW5UxducZst7')
+                openWebView('https://biblophile.freshdesk.com/support/solutions')
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
                 <FontAwesome color="#fff" name="book" size={20} />
               </View>
 
-              <Text style={styles.rowLabel}>Request a book</Text>
+              <Text style={styles.rowLabel}>Solution articles</Text>
 
               <View style={styles.rowSpacer} />
 
@@ -314,33 +314,14 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
-                openWebView('https://forms.gle/JMbjx6iEn4HVZvvS6')
-              }}
-              style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
-                <MaterialIcons color="#fff" name="sell" size={20} />
-              </View>
-
-              <Text style={styles.rowLabel}>Wish to sell/rent books?</Text>
-
-              <View style={styles.rowSpacer} />
-
-              <Feather
-                color="#C6C6C6"
-                name="chevron-right"
-                size={20} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                openWebView('https://forms.gle/1RgWuAXJamudCRmB7')
+                openWebView('https://biblophile.freshdesk.com/support/home')
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
                 <MaterialIcons color="#fff" name="feedback" size={20} />
               </View>
 
-              <Text style={styles.rowLabel}>Report an Issue</Text>
+              <Text style={styles.rowLabel}>Report an Issue/Feedback</Text>
 
               <View style={styles.rowSpacer} />
 
