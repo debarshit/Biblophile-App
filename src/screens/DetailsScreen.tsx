@@ -113,7 +113,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                   ISBN: product['volumeInfo']['industryIdentifiers'].find(id => id.type === 'ISBN_13')?.identifier || '',
                   Title: product['volumeInfo']['title'] || '',
                   Pages: product['volumeInfo']['pageCount'] || '',
-                  Price: product['saleInfo']['listPrice']['amount'] || 0,
+                  Price: actualPrice || 0,
                   Description: product['volumeInfo']['description'] || '',
                   Authors: JSON.stringify(product['volumeInfo']['authors'] || []),
                   Genres: JSON.stringify(product['volumeInfo']['categories'] || []),
@@ -176,7 +176,7 @@ const DetailsScreen = ({navigation, route}: any) => {
               }
           }
       } catch (error) {
-          console.error('Error submitting equest:', error);
+          console.error('Error submitting request:', error);
           Alert.alert("Uh oh! Please try again");
       }
   } else {

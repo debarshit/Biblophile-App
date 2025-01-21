@@ -252,7 +252,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
-                openWebView('https://biblophile.com/hangman')
+                openWebView('https://biblophile.com/hangman/index.php')
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
