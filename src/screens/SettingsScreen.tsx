@@ -90,6 +90,49 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
+                navigation.push('History');
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <MaterialIcons name="history" size={20} color="#fff" />
+              </View>
+
+              <Text style={styles.rowLabel}>My Order History</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                navigation.push('Subscription');
+              }}
+              style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
+                <FontAwesome color="#fff" name="rupee" size={20} />
+              </View>
+
+              <Text style={styles.rowLabel}>Manage Subscription</Text>
+
+              <View style={styles.rowSpacer} />
+
+              <Feather
+                color="#C6C6C6"
+                name="chevron-right"
+                size={20} />
+            </TouchableOpacity>
+
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>My Reading Activity</Text>
+
+            <TouchableOpacity
+              onPress={() => {
                 navigation.push('ProfileSummary');
               }}
               style={styles.row}>
@@ -183,25 +226,6 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
                 size={20} />
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => {
-                navigation.push('Subscription');
-              }}
-              style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
-                <FontAwesome color="#fff" name="rupee" size={20} />
-              </View>
-
-              <Text style={styles.rowLabel}>Manage Subscription</Text>
-
-              <View style={styles.rowSpacer} />
-
-              <Feather
-                color="#C6C6C6"
-                name="chevron-right"
-                size={20} />
-            </TouchableOpacity>
-
           </View>
 
           <View style={styles.section}>
@@ -228,7 +252,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
-                openWebView('https://biblophile.com/hangman')
+                openWebView('https://biblophile.com/hangman/index.php')
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
@@ -271,14 +295,14 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
-                openWebView('https://forms.gle/abqJbuW5UxducZst7')
+                openWebView('https://biblophile.freshdesk.com/support/solutions')
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
                 <FontAwesome color="#fff" name="book" size={20} />
               </View>
 
-              <Text style={styles.rowLabel}>Request a book</Text>
+              <Text style={styles.rowLabel}>Solution articles</Text>
 
               <View style={styles.rowSpacer} />
 
@@ -290,33 +314,14 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
-                openWebView('https://forms.gle/JMbjx6iEn4HVZvvS6')
-              }}
-              style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
-                <MaterialIcons color="#fff" name="sell" size={20} />
-              </View>
-
-              <Text style={styles.rowLabel}>Wish to sell/rent books?</Text>
-
-              <View style={styles.rowSpacer} />
-
-              <Feather
-                color="#C6C6C6"
-                name="chevron-right"
-                size={20} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                openWebView('https://forms.gle/1RgWuAXJamudCRmB7')
+                openWebView('https://biblophile.freshdesk.com/support/home')
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
                 <MaterialIcons color="#fff" name="feedback" size={20} />
               </View>
 
-              <Text style={styles.rowLabel}>Report an Issue</Text>
+              <Text style={styles.rowLabel}>Report an Issue/Feedback</Text>
 
               <View style={styles.rowSpacer} />
 

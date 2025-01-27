@@ -1,17 +1,19 @@
 const isDevelopment = __DEV__;
 
-const APIURL = isDevelopment ? '/actions.php' : '/actions1.php';
+const APIURL = isDevelopment ? '/actions1.php' : '/actions.php';
 const INSIGHTSAPI = isDevelopment ? '/userInsightsDev.php' : '/userInsights.php';
 
 const requests = {
     //request to biblophile actions api
     getBookGenre:`${APIURL}?action=getBookGenre`,
     getBooks:`${APIURL}?action=getBooks&bookGenre=`,
+    getSpotlight: `${APIURL}?action=getSpotlight`,
     fetchProductDetails:`${APIURL}?action=fetchProductDetails&id=`,
     fetchExternalBookDetails:`${APIURL}?action=fetchExternalBookDetails&id=`, 
     fetchAverageRating:`${APIURL}?action=fetchAverageRating&id=`,
     fetchAverageEmotions:`${APIURL}?action=fetchAverageEmotions&id=`,
     addBook: `${APIURL}?action=addBook`,
+    submitBookRequest: `${APIURL}?action=submitBookRequest`,
     fetchBookId:`${APIURL}?action=fetchBookId`,
     fetchReadingStatus:`${APIURL}?action=fetchReadingStatus`,
     submitReadingStatus: `${APIURL}?action=submitReadingStatus`,
@@ -24,6 +26,7 @@ const requests = {
     placeOrder: `${APIURL}?action=placeOrder`,
     placeSubscriptionOrder: `${APIURL}?action=placeSubscriptionOrder`,
     userLogin: `${APIURL}?action=userLogin`,
+    userLogout: `${APIURL}?action=logout`,
     userSignup: `${APIURL}?action=userSignup`,
     forgotPassword: `${APIURL}?action=forgotPassword`,
     fetchUserData: `${APIURL}?action=fetchUserData`,
@@ -40,7 +43,7 @@ const requests = {
     updateReadingStreak: `${APIURL}?action=updateReadingStreak&userId=`,
     updatePagesRead: `${APIURL}?action=updatePagesRead`,
     fetchReadingTips: `${APIURL}?action=fetchReadingTips`,
-    updateNotificationToken: `${APIURL}?action=updateNotificationToken`,
+    registerNotificationToken: `${APIURL}?action=registerNotificationToken`,
     fetchReadingStreakLeaderboard: `${APIURL}?action=fetchReadingStreakLeaderboard&userId=`,
     fetchPagesRead: `${APIURL}?action=fetchPagesRead&userId=`,
     fetchCurrentReads: `${APIURL}?action=fetchCurrentReads`,
@@ -59,6 +62,9 @@ const requests = {
     fetchUserNotes: `${INSIGHTSAPI}?action=fetchUserNotes&userId=`,
     updateUserNote: `${INSIGHTSAPI}?action=updateUserNote`,
     fetchReadingDurations: `${INSIGHTSAPI}?action=fetchReadingDurations&userId=`,
+
+    //request to biblophile util apis
+    fetchBannerData:`apis/utilsActions.php?action=fetchBannerData`,
 }
 
 export default requests;

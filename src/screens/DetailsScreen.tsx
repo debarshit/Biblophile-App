@@ -7,6 +7,9 @@ import {
   View,
   TouchableWithoutFeedback,
   TouchableOpacity,
+  Alert,
+  ToastAndroid,
+  Platform,
 } from 'react-native';
 import {useStore} from '../store/store';
 import {
@@ -21,12 +24,14 @@ import requests from '../services/requests';
 import ImageBackgroundInfo from '../components/ImageBackgroundInfo';
 import PaymentFooter from '../components/PaymentFooter';
 import ProductReview from '../components/ProductReview';
-import BookEmotions from '../components/BookEmotions';
+import ReadTogetherLinks from '../components/ReadTogetherLinks';
+import Toast from 'react-native-toast-message';
 
 const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const userDetails = useStore((state: any) => state.userDetails);
+  const { selectedCity }  = useStore();
 
   const [id, setId] = useState(route.params.id);
   const [type, setType] = useState(route.params.type);
@@ -38,14 +43,16 @@ const DetailsScreen = ({navigation, route}: any) => {
 
   const getPrices = () => {
     if (type === 'Book') {
-      return [
-        { size: 'Buy', price: product['ProductPrice'], currency: '₹' },
-        {
-          size: 'Rent',
-          price: subscription === true ? 0 : Math.max(25, Math.min(35, Math.floor(product['ProductPrice'] * 0.1))),
-          currency: '₹',
-        },
-      ];
+      if (product['ProductPrice']) {
+        return [
+          { size: 'Buy', price: product['ProductPrice'], currency: '₹' },
+          {
+            size: 'Rent',
+            price: subscription === true ? 0 : product['ProductRentPrice'],
+            currency: '₹',
+          },
+        ];
+      }
     } else if (type === 'Bookmark') {
       return [
         { size: 'QR', price: Math.ceil(product['ProductPrice']), currency: '₹' },
@@ -89,6 +96,92 @@ const DetailsScreen = ({navigation, route}: any) => {
     } else {
       navigation.navigate('Tab');
     }
+  };
+
+  interface BookRequest {
+    userId: any;
+    bookId: any;
+}
+
+  const submitBookRequest = async () => {
+    if (userDetails) {
+      try {
+          let bookId = id;
+
+          if (isGoogleBook) {
+              const bookData = {
+                  ISBN: product['volumeInfo']['industryIdentifiers'].find(id => id.type === 'ISBN_13')?.identifier || '',
+                  Title: product['volumeInfo']['title'] || '',
+                  Pages: product['volumeInfo']['pageCount'] || '',
+                  Price: actualPrice || 0,
+                  Description: product['volumeInfo']['description'] || '',
+                  Authors: JSON.stringify(product['volumeInfo']['authors'] || []),
+                  Genres: JSON.stringify(product['volumeInfo']['categories'] || []),
+                  Image: product['volumeInfo']['imageLinks']['thumbnail'] || ''
+              };
+
+              const bookResponse = await instance.post(requests.addBook, bookData);
+
+              if (bookResponse.data.message === "Book added/updated successfully") {
+                  bookId = bookResponse.data.bookId;
+              } else {
+                  Alert.alert("Failed to add/update book");
+                  return;
+              }
+          }
+
+          const requestData: BookRequest = {
+              userId: userDetails[0].userId,
+              bookId: bookId,
+          };
+
+          const response = await instance.post(requests.submitBookRequest, requestData);
+
+          if (response.data.message === "Updated") {
+              if (Platform.OS == 'android') {
+                  ToastAndroid.showWithGravity(
+                    `Updated successfully!`,
+                    ToastAndroid.SHORT,
+                    ToastAndroid.CENTER,
+                  );
+                }
+                else {
+                  Toast.show({
+                    type: 'info', 
+                    text1: `Updated successfully!`,
+                    visibilityTime: 2000, 
+                    autoHide: true, 
+                    position: 'bottom',
+                    bottomOffset: 100, 
+                  });
+                }
+          } else {
+            Alert.alert(response.data.message);
+              if (Platform.OS == 'android') {
+                  ToastAndroid.showWithGravity(
+                    `Updated successfully!`,
+                    ToastAndroid.SHORT,
+                    ToastAndroid.CENTER,
+                  );
+                }
+                else {
+                  Toast.show({
+                    type: 'info', 
+                    text1: `Updated successfully!`,
+                    visibilityTime: 2000, 
+                    autoHide: true, 
+                    position: 'bottom',
+                    bottomOffset: 100, 
+                  });
+              }
+          }
+      } catch (error) {
+          console.error('Error submitting request:', error);
+          Alert.alert("Uh oh! Please try again");
+      }
+  } else {
+      Alert.alert("Login to update reading status");
+  }
   };
   
 
@@ -137,14 +230,14 @@ const DetailsScreen = ({navigation, route}: any) => {
             response = await instance(`${requests.fetchExternalBookDetails}${id}`);
             setIsGoogleBook(true);
         } else {
-            response = await instance(`${requests.fetchProductDetails}${id}&type=${type}`);
+            response = await instance(`${requests.fetchProductDetails}${id}&type=${type}&userCity=${selectedCity}`);
             setIsGoogleBook(false);
         }
 
         const data = response.data;
         setProduct(data);
         console.log(product);
-        setActualPrice(data.ProductPrice || data.saleInfo?.listPrice?.amount || 0);
+        setActualPrice(data.ProductPrice || data.saleInfo?.listPrice?.amount);
         const updatedPrices = getPrices();
         setPrices(updatedPrices);
         setPrice(updatedPrices[0] || { size: '', price: 0, currency: '₹' });
@@ -154,7 +247,7 @@ const DetailsScreen = ({navigation, route}: any) => {
     }
 
     fetchProductDetails();
-  }, [actualPrice]);
+  }, [actualPrice, selectedCity]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -175,13 +268,13 @@ const DetailsScreen = ({navigation, route}: any) => {
                 </Text>
               </TouchableWithoutFeedback>
             )}
-            {(type !== "ExternalBook" && product['ProductAvailability'] === '1') && (
               <>
                 <Text style={styles.InfoTitle}>Options</Text>
+                {product['ProductAvailability'] === '1' ?
                 <View style={styles.SizeOuterContainer}>
-                  {prices.map((data: any) => (
-                    <TouchableOpacity
-                      key={data.size}
+                  {prices.map((data: any, index) => (
+                    data.price && <TouchableOpacity
+                      key={index}
                       onPress={() => setPrice(data)}
                       style={[
                         styles.SizeBox,
@@ -193,9 +286,21 @@ const DetailsScreen = ({navigation, route}: any) => {
                       </Text>
                     </TouchableOpacity>
                   ))}
-                </View>
+                </View> : 
+                <View>
+                  <TouchableOpacity
+                    onPress={() => submitBookRequest()}
+                    style={[
+                      styles.SizeBox,
+                      { borderColor: COLORS.primaryOrangeHex },
+                    ]}
+                  >
+                    <Text style={[styles.SizeText, { fontSize: FONTSIZE.size_14, color: COLORS.primaryOrangeHex }]}>
+                      Request book
+                    </Text>
+                  </TouchableOpacity>
+                </View>}
               </>
-            )}
           </View>
         );
       case 'reviews':
@@ -205,11 +310,11 @@ const DetailsScreen = ({navigation, route}: any) => {
             <ProductReview id={id} isGoogleBook={isGoogleBook} product={product} />
           </View>
         );
-      case 'emotions':
+      case 'read-together':
         return (
           <View style={styles.TabContent}>
-            <Text style={styles.InfoTitle}>Emotions</Text>
-            <BookEmotions id={id} isGoogleBook={isGoogleBook} product={product} />
+            <Text style={styles.InfoTitle}>Read Together</Text>
+            <ReadTogetherLinks id={id} isGoogleBook={isGoogleBook} product={product} />
           </View>
         );
       default:
@@ -247,8 +352,8 @@ const DetailsScreen = ({navigation, route}: any) => {
                 <TouchableOpacity onPress={() => setActiveTab('reviews')} style={[styles.TabButton, activeTab === 'reviews' && styles.TabButtonActive]}>
                   <Text style={[styles.TabLabel, activeTab === 'reviews' && styles.TabLabelActive]}>Reviews</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setActiveTab('emotions')} style={[styles.TabButton, activeTab === 'emotions' && styles.TabButtonActive]}>
-                  <Text style={[styles.TabLabel, activeTab === 'emotions' && styles.TabLabelActive]}>Emotions</Text>
+                <TouchableOpacity onPress={() => setActiveTab('read-together')} style={[styles.TabButton, activeTab === 'read-together' && styles.TabButtonActive]}>
+                  <Text style={[styles.TabLabel, activeTab === 'read-together' && styles.TabLabelActive]}>Read Together</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -289,6 +394,7 @@ const styles = StyleSheet.create({
     display: "none" ,
   },
   TabContent: {
+    flexGrow: 1,
     padding: SPACING.space_20,
   },
   InfoTitle: {

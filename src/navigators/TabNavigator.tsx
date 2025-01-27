@@ -1,17 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialIcons, FontAwesome5, FontAwesome, Entypo } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import {COLORS} from '../theme/theme';
 import HomeScreen from '../screens/HomeScreen';
 import BookshelfScreen from '../screens/BookshelfScreen';
-import CartScreen from '../screens/CartScreen';
-import OrderHistoryScreen from '../screens/OrderHistoryScreen';
+import LibraryScreen from '../screens/LibraryScreen';
+import SocialScreen from '../screens/SocialScreen';
+import ChallengesScreen from '../screens/ChallengesScren';
 
 const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
+  const [activeTab, setActiveTab] = useState('Home');
   return (
     <Tab.Navigator
       screenOptions={{
@@ -25,6 +27,12 @@ const TabNavigator = () => {
             style={styles.BlurViewStyles}
           />
         ),
+      }}
+      screenListeners={{
+        tabPress: (e) => {
+          const tabName = e.target?.split('-')[0];
+          setActiveTab(tabName);
+        },
       }}>
       <Tab.Screen
         name="Home"
@@ -41,47 +49,61 @@ const TabNavigator = () => {
           ),
         }}></Tab.Screen>
       <Tab.Screen
-        name="Cart"
-        component={CartScreen}
-        options={{
-          tabBarIcon: ({focused, color, size}) => (
-            <MaterialIcons
-              name="shopping-cart"
-              size={25}
-              color={
-                focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
-              }
-            />
-          ),
-        }}></Tab.Screen>
-      <Tab.Screen
-        name="Bookshelf"
-        component={BookshelfScreen}
-        options={{
-          tabBarIcon: ({focused, color, size}) => (
-            <MaterialCommunityIcons
-              name="bookshelf"
-              size={25}
-              color={
-                focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
-              }
-            />
-          ),
-        }}></Tab.Screen>
-      <Tab.Screen
-        name="History"
-        component={OrderHistoryScreen}
-        options={{
-          tabBarIcon: ({focused, color, size}) => (
-            <MaterialIcons
-              name="history"
-              size={30}
-              color={
-                focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
-              }
-            />
-          ),
-        }}></Tab.Screen>
+          name="Shop"
+          component={LibraryScreen}
+          options={{
+            tabBarIcon: ({focused, color, size}) => (
+              <Entypo
+                name="shop"
+                size={25}
+                color={
+                  focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
+                }
+              />
+            ),
+          }}></Tab.Screen>
+        <Tab.Screen
+          name="Challenges"
+          component={ChallengesScreen}
+          options={{
+            tabBarIcon: ({focused, color, size}) => (
+              <Entypo
+                name="medal"
+                size={25}
+                color={
+                  focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
+                }
+              />
+            ),
+          }}></Tab.Screen>
+        <Tab.Screen
+          name="Social"
+          component={SocialScreen}
+          options={{
+            tabBarIcon: ({focused, color, size}) => (
+              <FontAwesome
+                name="group"
+                size={25}
+                color={
+                  focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
+                }
+              />
+            ),
+          }}></Tab.Screen>
+        <Tab.Screen
+          name="Bookshelf"
+          component={BookshelfScreen}
+          options={{
+            tabBarIcon: ({focused, color, size}) => (
+              <FontAwesome5
+                name="book-reader"
+                size={30}
+                color={
+                  focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
+                }
+              />
+            ),
+          }}></Tab.Screen>
     </Tab.Navigator>
   );
 };
@@ -90,7 +112,7 @@ const styles = StyleSheet.create({
   tabBarStyle: {
     height: 80,
     position: 'absolute',
-    backgroundColor: COLORS.primaryBlackRGBA,
+    backgroundColor: COLORS.primaryBlackHex,
     borderTopWidth: 0,
     elevation: 0,
     borderTopColor: 'transparent',

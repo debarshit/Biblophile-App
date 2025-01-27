@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     },
     statusDropdown: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignSelf: 'center',
         marginBottom: SPACING.space_16,
         fontFamily: FONTFAMILY.poppins_regular,
         color: COLORS.primaryWhiteHex,
@@ -245,17 +245,17 @@ const styles = StyleSheet.create({
     //     color: COLORS.primaryWhiteHex,
     // },
     picker: {
-        width: 150,
+        width: '70%',
         padding: SPACING.space_8,
         borderColor: COLORS.secondaryLightGreyHex,
-        borderRadius: BORDERRADIUS.radius_8,
+        borderRadius: BORDERRADIUS.radius_10,
         fontFamily: FONTFAMILY.poppins_regular,
         color: COLORS.primaryWhiteHex,
         backgroundColor: COLORS.primaryGreyHex,
     },
     pageNumberInput: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignSelf: 'center',
         marginBottom: SPACING.space_16,
     },
     input: {

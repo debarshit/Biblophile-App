@@ -365,13 +365,14 @@ const StatScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.ScrollViewFlex}>
       <View style={styles.container}>
-        <Text style={styles.title}>Reading Streak Leaderboard</Text>
+        <Text style={styles.labelText}>We have temporarily hidden leaderboard. We are moving things around.</Text>
+        {/* <Text style={styles.title}>Reading Streak Leaderboard</Text>
         <FlatList
           data={leaderboard}
           renderItem={renderItem}
           keyExtractor={(item) => item.Rank.toString()}
           contentContainerStyle={styles.listContainer}
-        />
+        /> */}
         <View style={styles.statusDropdown}>
           <Text style={styles.label}>Time frame: </Text>
           <Picker

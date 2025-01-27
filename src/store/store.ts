@@ -5,7 +5,33 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import instance from '../services/axios';
 import requests from '../services/requests';
 
-export const useStore = create(
+interface StoreState {
+  user: string | null;
+  isAuthenticated: boolean;
+  userDetails: any[];
+  GenreList: any[];
+  CartPrice: number;
+  CartList: any[];
+  sessionStartTime: Date | null;
+  sessionStartPage: number | null;
+  selectedCity: string | null;
+  login: (userData: any) => Promise<void>;
+  logout: () => void;
+  updateProfile: (name: string, email: string, phone: string, address: string) => void;
+  startSession: () => void;
+  setStartPage: (page: number) => void;
+  clearSession: () => void;
+  fetchGenres: () => Promise<void>;
+  addToCart: (cartItem: any) => void;
+  calculateCartPrice: () => void;
+  incrementCartItemQuantity: (id: string, size: string) => void;
+  decrementCartItemQuantity: (id: string, size: string) => void;
+  clearCart: () => void;
+  setSelectedCity: (city: string) => void;
+  getSelectedCity: () => string | null;
+}
+
+export const useStore = create<StoreState>()(
     persist(
       (set, get) => ({
         user: null,
@@ -16,14 +42,47 @@ export const useStore = create(
         CartList: [],
         sessionStartTime: null,
         sessionStartPage: 0,
+        selectedCity: null,
         login: async (userData) => {
           await set(state => ({
             userDetails: [...state.userDetails, userData],
           }));
           set({ isAuthenticated: true, user: userData['userId'] });
         },
-        logout: (userData) => {
-          set({ isAuthenticated: false, user: null, userDetails: [] })
+        logout: async () => {
+          const { userDetails } = get();
+          const user = userDetails[0];
+          const refreshToken = user?.refreshToken;
+          const notificationToken = user?.notificationToken;
+
+          if (refreshToken && notificationToken) {
+            try {
+                const response = await instance.post(requests.userLogout, {
+                    refreshToken,
+                    notificationToken,
+                });
+    
+                if (response.data.message === "Logged out successfully.") {
+                    console.log('Logged out from backend successfully');
+                } else {
+                    console.error('Failed to log out from backend');
+                }
+            } catch (error) {
+                console.error('Error during backend logout:', error);
+            }
+          }
+
+          set({ 
+            isAuthenticated: false, 
+            user: null, 
+            userDetails: [],
+            GenreList: [],
+            CartPrice: 0,
+            CartList: [],
+            sessionStartTime: null,
+            sessionStartPage: null,
+            selectedCity: null
+          })
         },
         updateProfile: (name, email, phone, address) => {
           set(
@@ -104,10 +163,10 @@ export const useStore = create(
                     parseFloat(state.CartList[i].prices[j].price) *
                       state.CartList[i].prices[j].quantity;
                 }
-                state.CartList[i].ItemPrice = tempprice.toFixed(2).toString();
+                state.CartList[i].ItemPrice = tempprice.toFixed(2);
                 totalprice = totalprice + tempprice;
               }
-              state.CartPrice = totalprice.toFixed(2).toString();
+              state.CartPrice = totalprice.toFixed(2);
             }),
           ),
           incrementCartItemQuantity: (id: string, size: string) =>
@@ -158,6 +217,10 @@ export const useStore = create(
               state.CartList = [];
             }),
           ),
+          setSelectedCity: (city: string) => {
+            set({ selectedCity: city });
+          },
+          getSelectedCity: () => get().selectedCity,
       }),
       {
         name: 'coffee-app',
