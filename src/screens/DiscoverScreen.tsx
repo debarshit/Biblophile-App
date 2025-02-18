@@ -32,8 +32,6 @@ import {
 } from '../theme/theme';
 import HeaderBar from '../components/HeaderBar';
 import CoffeeCard from '../components/CoffeeCard';
-import Banner from '../components/Banner';
-import Mascot from '../components/Mascot';
 import FloatingIcon from '../components/FloatingIcon';
 
 interface Spotlight {
@@ -70,7 +68,6 @@ const HomeScreen = ({navigation}: any) => {
     getGenresFromData(GenreList),  
   );
   const [searchText, setSearchText] = useState('');
-  const [bannerOpacity, setBannerOpacity] = useState(1);
   const [genreIndex, setGenreIndex] = useState({
     index: 0,
     genre: genres[0],
@@ -256,23 +253,15 @@ const HomeScreen = ({navigation}: any) => {
     getSpotlights();
   }, []);
 
-  const handleScroll = (event) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const opacity = Math.max(1 - offsetY / 40, 0); // Prevent opacity from going below 0
-    setBannerOpacity(opacity);
-  };
-
   return (
     <SafeAreaView style={styles.ScreenContainer}>
 
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
-      <Banner opacity={keyboardVisible ? 0 : bannerOpacity} />
 
       <Animated.ScrollView
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.ScrollViewFlex}
-        onScroll={handleScroll}
         contentOffset={{ x: 0, y: scrollOffset }}
         scrollEventThrottle={16}>
         {/* App Header */}
@@ -459,12 +448,8 @@ const HomeScreen = ({navigation}: any) => {
         {
           !keyboardVisible && (
             <>
-              {/* Spotlight Section */}
-              <Text style={styles.sectionTitle}>In Spotlight</Text>
-              <SpotlightBooks spotlights={spotlights} />
-
-              {/* Genre Section */}
-              <View style={styles.genresContainer}>
+            {/* Genre Section */}
+            <View style={styles.genresContainer}>
                 <Text style={styles.sectionTitle}>What’s on Your Mind?</Text>
 
                 {/* First Row */}
@@ -599,12 +584,11 @@ const HomeScreen = ({navigation}: any) => {
                   }}
                 />
               )}
+              {/* Spotlight Section */}
+              <Text style={styles.sectionTitle}>In Spotlight</Text>
+              <SpotlightBooks spotlights={spotlights} />
 
-              {/* biblo jan and made with love in India */}
-              <View style={styles.welcomeMascot}>
-                <Mascot emotion="pendingBooks"/>
-                <Text style={styles.welcomeMessage}>From India, with love for readers</Text>
-              </View>
+              {/* load infinite genres and books */}
             </>
           )
         }

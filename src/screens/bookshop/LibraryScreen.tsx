@@ -16,21 +16,21 @@ import {FlatList} from 'react-native';
 import {Dimensions} from 'react-native';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
-import instance from '../services/axios';
-import requests from '../services/requests';
+import instance from '../../services/axios';
+import requests from '../../services/requests';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import { AntDesign, Feather } from '@expo/vector-icons';
-import {useStore} from '../store/store';
+import {useStore} from '../../store/store';
 import {
   BORDERRADIUS,
   COLORS,
   FONTFAMILY,
   FONTSIZE,
   SPACING,
-} from '../theme/theme';    //font poppings is not coming
-import HeaderBar from '../components/HeaderBar';
-import CoffeeCard from '../components/CoffeeCard';
-import FloatingIcon from '../components/FloatingIcon';
+} from '../../theme/theme';    //font poppings is not coming
+import HeaderBar from '../../components/HeaderBar';
+import CoffeeCard from '../../components/CoffeeCard';
+import FloatingIcon from '../../components/FloatingIcon';
 
 const getGenresFromData = (data: any) => {
   const genres = ['All', ...new Set(data.map((item: any) => item.genre))];

@@ -6,12 +6,12 @@ import { Picker } from '@react-native-picker/picker';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { AntDesign, Entypo, Feather, FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import instance from '../services/axios';
-import requests from '../services/requests';
-import { useStore } from '../store/store';
-import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
-import PagesReadInput from '../components/PagesReadInput';
-import SessionPrompt from '../components/SessionPrompt';
+import instance from '../../services/axios';
+import requests from '../../services/requests';
+import { useStore } from '../../store/store';
+import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../theme/theme';
+import PagesReadInput from '../../components/PagesReadInput';
+import SessionPrompt from '../../components/SessionPrompt';
 
 const StreaksScreen: React.FC = ({ navigation, route }: any) => {
 

@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, FlatList, Dimensions, TouchableWithoutFeedback, ScrollView, TextInput } from 'react-native';
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Picker } from '@react-native-picker/picker';
-import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../theme/theme';
-import { useStore } from '../store/store';
-import instance from '../services/axios';
-import requests from '../services/requests';
+import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme/theme';
+import { useStore } from '../../store/store';
+import instance from '../../services/axios';
+import requests from '../../services/requests';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
