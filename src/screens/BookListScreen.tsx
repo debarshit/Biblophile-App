@@ -16,7 +16,7 @@ interface Book {
 }
 
 const BookListScreen = ({ route, navigation }) => {
-    const { status, userId } = route.params;
+    const { status, userData } = route.params;
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -36,7 +36,7 @@ const BookListScreen = ({ route, navigation }) => {
         setLoading(true);
         try {
           const response = await instance.post(requests.fetchBookShelf, {
-            userId: userId,
+            userId: userData.userId,
             status,
             limit: 10,
             offset: page * 10,
@@ -86,6 +86,7 @@ const BookListScreen = ({ route, navigation }) => {
                   <View style={styles.cardContainer}>
                       <BookshelfCard
                           id={item.BookId}
+                          isPageOwner={userData.isPageOwner}
                           photo={convertHttpToHttps(item.BookPhoto)} 
                           status={item.Status}
                           startDate={item.StartDate}

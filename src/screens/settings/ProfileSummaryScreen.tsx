@@ -167,7 +167,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
       case 'bookshelf':
         return (
           <View style={styles.TabContent}>
-            <BookshelfComponent userId={userData.userId} />
+            <BookshelfComponent userData={userData} />
           </View>
         );
       case 'reviews':

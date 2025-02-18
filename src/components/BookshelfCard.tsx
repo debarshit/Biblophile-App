@@ -21,6 +21,7 @@ const CARD_WIDTH = Dimensions.get('window').width * 0.32;
 
 interface BookshelfCardProps {
   id: string;
+  isPageOwner: boolean;
   photo: string;
   status: string;
   startDate?: string;
@@ -32,6 +33,7 @@ interface BookshelfCardProps {
 
 const BookshelfCard: React.FC<BookshelfCardProps> = ({
   id,
+  isPageOwner=true,
   photo,
   status,
   startDate,
@@ -61,14 +63,14 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
         </ImageBackground>
       </TouchableOpacity>
       <View style={styles.CardFooter}>
-      <PageStatus
+      {isPageOwner && <PageStatus
           id={id}
           page={currentPage || 0}
           startDate={startDate}
           endDate={endDate}
           status={status}
           onUpdate={onUpdate}
-        />
+        />}
       </View>
     </LinearGradient>
   );

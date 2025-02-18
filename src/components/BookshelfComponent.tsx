@@ -20,9 +20,12 @@ import Mascot from './Mascot';
 import { useNavigation } from '@react-navigation/native';
 
 interface BookshelfScreenProps {
-  userId: string;
+  userData:{
+    userId: string;
+    isPageOwner: boolean;
+  };
 }
-const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userId }) => {
+const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
   const [userBooks, setUserBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation:any = useNavigation();
@@ -30,7 +33,7 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userId }) => {
   const fetchUserBooks = async () => {
     try {
       const response = await instance.post(requests.fetchUserBooks, {
-        userId: userId,
+        userId: userData.userId,
       });
       setUserBooks(response.data.userBooks);
     } catch (error) {
@@ -65,7 +68,7 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userId }) => {
           onPress={() => {
             navigation.navigate('BookListScreen', {
               status: status,
-              userId: userId,
+              userData: userData,
             });
           }}
           style={styles.card}
