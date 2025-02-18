@@ -1,7 +1,10 @@
 const isDevelopment = __DEV__;
 
-const APIURL = isDevelopment ? '/actions1.php' : '/actions.php';
-const INSIGHTSAPI = isDevelopment ? '/userInsightsDev.php' : '/userInsights.php';
+const APIURL = isDevelopment ? 'apis/dev/actions.php' : 'apis/prod/actions.php';
+const INSIGHTSAPI = isDevelopment ? 'apis/dev/userInsights.php' : 'apis/prod/userInsights.php';
+const UTILS_ACTIONS_API_URL = isDevelopment ? 'apis/dev/utilsActions.php' : 'apis/prod/utilsActions.php';
+const SOCIAL_API_URL = isDevelopment ? 'apis/dev/social/social-api.php' : 'apis/prod/social/social-api.php';
+const CHALLENGES_API_URL = isDevelopment ? 'apis/dev/challenges/challenges-api.php' : 'apis/prod/challenges/challenges-api.php';
 
 const requests = {
     //request to biblophile actions api
@@ -30,6 +33,7 @@ const requests = {
     userSignup: `${APIURL}?action=userSignup`,
     forgotPassword: `${APIURL}?action=forgotPassword`,
     fetchUserData: `${APIURL}?action=fetchUserData`,
+    fetchUserDataFromUsername: `${APIURL}?action=fetchUserDataFromUsername`,
     fetchOrders: `${APIURL}?action=fetchOrders`,
     updateUserData: `${APIURL}?action=updateUserData`,
     updateAppUserData: `${APIURL}?action=updateAppUserData`,
@@ -64,7 +68,15 @@ const requests = {
     fetchReadingDurations: `${INSIGHTSAPI}?action=fetchReadingDurations&userId=`,
 
     //request to biblophile util apis
-    fetchBannerData:`apis/utilsActions.php?action=fetchBannerData`,
+    fetchBannerData:`${UTILS_ACTIONS_API_URL}?action=fetchBannerData`,
+
+    //request to biblophile social apis
+    fetchUserRelations:`${SOCIAL_API_URL}?action=fetchUserRelations`,
+    fetchFriendRequests:`${SOCIAL_API_URL}?action=fetchFriendRequests`,
+    toggleFollow:`${SOCIAL_API_URL}?action=toggleFollow`,
+    toggleFriend:`${SOCIAL_API_URL}?action=toggleFriend`,
+    confirmRejectFriend:`${SOCIAL_API_URL}?action=confirmRejectFriend`,
+    fetchPrivacyStatus:`${SOCIAL_API_URL}?action=fetchPrivacyStatus`,
 }
 
 export default requests;

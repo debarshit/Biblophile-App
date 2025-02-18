@@ -5,15 +5,19 @@ import { MaterialIcons, FontAwesome5, FontAwesome, Entypo } from '@expo/vector-i
 import { BlurView } from 'expo-blur';
 import {COLORS} from '../theme/theme';
 import HomeScreen from '../screens/HomeScreen';
-import BookshelfScreen from '../screens/BookshelfScreen';
 import LibraryScreen from '../screens/LibraryScreen';
 import SocialScreen from '../screens/SocialScreen';
 import ChallengesScreen from '../screens/ChallengesScren';
+import ProfileSummaryScreen from '../screens/settings/ProfileSummaryScreen';
+import { useStore } from '../store/store';
 
 const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
   const [activeTab, setActiveTab] = useState('Home');
+  const userDetails = useStore((state: any) => state.userDetails);
+  const username = userDetails[0].userUniqueUserName;
+    
   return (
     <Tab.Navigator
       screenOptions={{
@@ -92,7 +96,8 @@ const TabNavigator = () => {
           }}></Tab.Screen>
         <Tab.Screen
           name="Bookshelf"
-          component={BookshelfScreen}
+          component={ProfileSummaryScreen}
+          initialParams={{ username: username }}
           options={{
             tabBarIcon: ({focused, color, size}) => (
               <FontAwesome5

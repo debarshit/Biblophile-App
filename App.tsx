@@ -22,7 +22,7 @@ import PaymentGatewayScreen from './src/screens/PaymentGatewayScreen';
 import StreaksScreen from './src/screens/StreaksScreen';
 import StatScreen from './src/screens/StatScreen';
 import AboutScreen from './src/screens/settings/AboutScreen';
-import ReviewScreen from './src/screens/settings/ReviewScreen';
+import ReviewScreen from './src/components/UserReviews';
 import ProfileSummaryScreen from './src/screens/settings/ProfileSummaryScreen';
 import NotesScreen from './src/screens/settings/NotesScreen';
 import DurationTrackScreen from './src/screens/settings/DurationTrackScreen';
@@ -31,6 +31,7 @@ import SocialScreen from './src/screens/SocialScreen';
 import CartScreen from './src/screens/CartScreen';
 import OrderHistoryScreen from './src/screens/OrderHistoryScreen';
 import CommonWebViewScreen from './src/screens/CommonWebViewScreen';
+import BookListScreen from './src/screens/BookListScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -295,6 +296,10 @@ const App = () => {
             <Stack.Screen
             name="CommonWebView"
             component={CommonWebViewScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="BookListScreen"
+            component={BookListScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
         </Stack.Navigator>
         <Toast />
