@@ -20,7 +20,6 @@ import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../../services/axios';
 import requests from '../../services/requests';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import { AntDesign, Feather } from '@expo/vector-icons';
 import {useStore} from '../../store/store';
 import {
@@ -71,8 +70,6 @@ const LibraryScreen = ({navigation}: any) => {
     getBookList(genreIndex.genre),
   );
   const [booksLoading, setBooksLoading] = useState(true);
-
-  const tabBarHeight = useBottomTabBarHeight();
 
   const ListRef: any = useRef<FlatList>();
 
@@ -358,7 +355,7 @@ const LibraryScreen = ({navigation}: any) => {
         <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
 
         {/* Checkout Bookmarks shop */}
-        <View style={[styles.merchShopSection, { marginBottom: tabBarHeight }]}>
+        <View style={styles.merchShopSection}>
           <TouchableOpacity onPress={openShopLink} style={styles.bannerContainer}>
             <Image
               source={{ uri: 'https://ik.imagekit.io/umjnzfgqh/shop/common_assets/banners/banner-large.png' }}

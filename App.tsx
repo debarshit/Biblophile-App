@@ -239,6 +239,10 @@ const App = () => {
             name="Discover"
             component={DiscoverScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="Shop"
+            component={LibraryScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
           <Stack.Screen
             name="Details"
             component={DetailsScreen}
