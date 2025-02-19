@@ -13,11 +13,7 @@ interface BannerItem {
   link?: { text: string; url: string };
 }
 
-interface BannerProps {
-  opacity: number;
-}
-
-const Banner: React.FC<BannerProps> = ({ opacity }, navigation: any) => {
+const Banner: React.FC = ( navigation: any) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [bannerItems, setBannerItems] = useState<BannerItem[]>([]);
 
@@ -61,7 +57,7 @@ const Banner: React.FC<BannerProps> = ({ opacity }, navigation: any) => {
     <TouchableOpacity style={styles.bannerContainer} onPress={handleBannerClick}>
       <Image
         source={{ uri: imageSource }}
-        style={[styles.bannerImage, { opacity }]}
+        style={styles.bannerImage}
         resizeMode="cover"
       />
       <LinearGradient
