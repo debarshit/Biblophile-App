@@ -10,6 +10,8 @@ import {
   View,
   Platform,
   ToastAndroid,
+  Image,
+  Linking,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {FlatList} from 'react-native';
@@ -27,7 +29,7 @@ import {
   FONTFAMILY,
   FONTSIZE,
   SPACING,
-} from '../../theme/theme';    //font poppings is not coming
+} from '../../theme/theme';
 import HeaderBar from '../../components/HeaderBar';
 import CoffeeCard from '../../components/CoffeeCard';
 import FloatingIcon from '../../components/FloatingIcon';
@@ -65,16 +67,14 @@ const LibraryScreen = ({navigation}: any) => {
     genre: genres[0],
   });
   const [bookList, setBookList] = useState<any>(getBookList(genreIndex.genre));
-  const [bookmarks, setBookmarks] = useState<any>([]);
   const [sortedCoffee, setSortedCoffee] = useState<any>(
     getBookList(genreIndex.genre),
   );
-  const [externalBooks, setExternalBooks] = useState<any>([]);
-  const [loading, setLoading] = useState(true);
   const [booksLoading, setBooksLoading] = useState(true);
 
-  const ListRef: any = useRef<FlatList>();
   const tabBarHeight = useBottomTabBarHeight();
+
+  const ListRef: any = useRef<FlatList>();
 
   // Define a variable to store the timeout ID
   let searchTimeout: any = null;  
@@ -91,11 +91,6 @@ const LibraryScreen = ({navigation}: any) => {
           const response = await instance(requests.searchBooks + search);
           const data = response.data;
           setSortedCoffee(data);
-
-          const externalBooksResponse = await instance.get(requests.searchExternalBooks + search);
-          const externalData = externalBooksResponse.data;
-          setExternalBooks(externalData);
-
           setBooksLoading(false);
         } catch (error) {
           console.error('Error fetching books:', error);
@@ -111,7 +106,6 @@ const LibraryScreen = ({navigation}: any) => {
     });
     setGenreIndex({index: 0, genre: genres[0]});
     setSortedCoffee(bookList);
-    setExternalBooks([]);
     setSearchText('');
   };
 
@@ -170,6 +164,12 @@ const LibraryScreen = ({navigation}: any) => {
     return url;
   };
 
+  const openShopLink = () => {
+    Linking.openURL('https://shop.biblophile.com/shop/1/Bookmarks').catch((err) =>
+      console.error('An error occurred while opening the URL', err)
+    );
+  };
+
   useEffect(() => {
     // Fetch genres when component mounts
     fetchGenres();
@@ -194,21 +194,6 @@ const LibraryScreen = ({navigation}: any) => {
   
     fetchBookList();
   }, [genreIndex]);
-
-  useEffect(() => {
-    async function getBookmarks() {
-        try {
-            const response = await instance(requests.getBookmarks);
-            const data = response.data;
-            setBookmarks(data);
-            setLoading(false);
-          } catch (error) {
-            console.error('Error fetching bookmarks:', error);
-          }
-    }
-  
-    getBookmarks();
-  }, []);
 
   return (
     <SafeAreaView style={styles.ScreenContainer}>
@@ -269,7 +254,6 @@ const LibraryScreen = ({navigation}: any) => {
         </View>
 
         {/* genre Scroller */}
-
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -311,73 +295,6 @@ const LibraryScreen = ({navigation}: any) => {
         {/* Books Flatlist */}
         {booksLoading ? (
         // Render shimmer effect while loading
-        <View style={styles.shimmerFlex}>
-          <ShimmerPlaceholder
-          LinearGradient={LinearGradient}
-            style={styles.ShimmerPlaceholder}
-            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-            visible={!booksLoading}>
-          </ShimmerPlaceholder>
-          <ShimmerPlaceholder
-          LinearGradient={LinearGradient}
-            style={styles.ShimmerPlaceholder}
-            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-            visible={!setBooksLoading}>
-          </ShimmerPlaceholder>
-          <ShimmerPlaceholder
-          LinearGradient={LinearGradient}
-            style={styles.ShimmerPlaceholder}
-            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-            visible={!booksLoading}>
-          </ShimmerPlaceholder>
-        </View>
-      ) : (
-
-        <FlatList
-          {...sortedCoffee.length === 0 && styles.hidden}
-          ref={ListRef}
-          horizontal
-          ListEmptyComponent={
-            <View style={styles.EmptyListContainer}>
-              <Text style={styles.genreText}>No Books found</Text>
-            </View>
-          }
-          showsHorizontalScrollIndicator={false}
-          data={sortedCoffee}
-          contentContainerStyle={styles.FlatListContainer}
-          keyExtractor={item => item.BookId}
-          renderItem={({item}) => {
-            return (
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.push('Details', {
-                    id: item.BookId,
-                    type: "Book",
-                  });
-                }}>
-                <CoffeeCard
-                  id={item.BookId}
-                  name={item.BookName}
-                  photo={convertHttpToHttps(item.BookPhoto)}
-                  type="Book"
-                  price={item.BookPrice}
-                  averageRating={item.BookAverageRating}
-                  ratingCount={item.BookRatingCount}
-                  buttonPressHandler={CoffeeCardAddToCart}
-                />
-              </TouchableOpacity>
-            );
-          }}
-        />
-)}
-
-      {/* External Books FlatList */}
-      {searchText !== '' &&
-        <>
-        <Text style={styles.CoffeeBeansTitle}>External Books</Text>
-
-        {booksLoading ? (
-          // Render shimmer effect while loading
           <View style={styles.shimmerFlex}>
             <ShimmerPlaceholder
             LinearGradient={LinearGradient}
@@ -401,6 +318,7 @@ const LibraryScreen = ({navigation}: any) => {
         ) : (
 
           <FlatList
+            {...sortedCoffee.length === 0 && styles.hidden}
             ref={ListRef}
             horizontal
             ListEmptyComponent={
@@ -409,23 +327,23 @@ const LibraryScreen = ({navigation}: any) => {
               </View>
             }
             showsHorizontalScrollIndicator={false}
-            data={externalBooks}
+            data={sortedCoffee}
             contentContainerStyle={styles.FlatListContainer}
-            keyExtractor={item => item.GoogleBookId}
+            keyExtractor={item => item.BookId}
             renderItem={({item}) => {
               return (
                 <TouchableOpacity
                   onPress={() => {
                     navigation.push('Details', {
-                      id: item.GoogleBookId,
-                      type: "ExternalBook",
+                      id: item.BookId,
+                      type: "Book",
                     });
                   }}>
                   <CoffeeCard
-                    id={item.GoogleBookId}
+                    id={item.BookId}
                     name={item.BookName}
                     photo={convertHttpToHttps(item.BookPhoto)}
-                    type="ExternalBook"
+                    type="Book"
                     price={item.BookPrice}
                     averageRating={item.BookAverageRating}
                     ratingCount={item.BookRatingCount}
@@ -436,68 +354,24 @@ const LibraryScreen = ({navigation}: any) => {
             }}
           />
         )}
-        </>
-      }
 
         <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
 
-        {/* Bookmarks Flatlist */}
-        {loading ? (
-        // Render shimmer effect while loading
-          <View style={styles.shimmerFlex}>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!loading}>
-            </ShimmerPlaceholder>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!loading}>
-            </ShimmerPlaceholder>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!loading}>
-            </ShimmerPlaceholder>
-          </View>
-        ) : (
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={bookmarks}
-            contentContainerStyle={[
-              styles.FlatListContainer,
-              {marginBottom: tabBarHeight},
-            ]}
-            keyExtractor={item => item.BookmarkId}
-            renderItem={({item}) => {
-              return (
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.push('Details', {
-                      id: item.BookmarkId,
-                      type: "Bookmark",
-                    });
-                  }}>
-                  <CoffeeCard
-                    id={item.BookmarkId}
-                    name={item.BookmarkTitle}
-                    photo={convertHttpToHttps(item.BookmarkPhoto)}
-                    type="Bookmark"
-                    price={item.BookmarkPrice}
-                    averageRating={null}
-                    ratingCount={null}
-                    buttonPressHandler={CoffeeCardAddToCart}
-                  />
-                </TouchableOpacity>
-              );
-            }}
-          />
-        )}
+        {/* Checkout Bookmarks shop */}
+        <View style={[styles.merchShopSection, { marginBottom: tabBarHeight+SPACING.space_2 }]}>
+          <TouchableOpacity onPress={openShopLink} style={styles.bannerContainer}>
+            <Image
+              source={{ uri: 'https://ik.imagekit.io/umjnzfgqh/shop/common_assets/banners/banner-large.png' }}
+              style={styles.bannerImage}
+            />
+            <Text style={styles.merchShopTitle}>Check Out Our Smart bookmarks!</Text>
+            <Text style={styles.merchShopDescription}>Browse our latest bookmarks, only for book lovers like you.</Text>
+            <View style={styles.buttonContainer}>
+              <Text style={styles.shopButton}>Visit Our Shop</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
       </ScrollView>
       {CartList.length > 0 && <FloatingIcon />}
     </SafeAreaView>
@@ -552,7 +426,6 @@ const styles = StyleSheet.create({
   },
   genreScrollViewStyle: {
     paddingHorizontal: SPACING.space_20,
-    marginBottom: SPACING.space_20,
   },
   genreScrollViewContainer: {
     paddingHorizontal: SPACING.space_15,
@@ -589,6 +462,51 @@ const styles = StyleSheet.create({
     marginTop: SPACING.space_20,
     fontFamily: FONTFAMILY.poppins_medium,
     color: COLORS.secondaryLightGreyHex,
+  },
+  merchShopSection: {
+    marginVertical: SPACING.space_24,
+    marginHorizontal: SPACING.space_4,
+    padding: SPACING.space_4,
+  },
+  bannerContainer: {
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    padding: SPACING.space_8,
+    borderRadius: BORDERRADIUS.radius_15,
+    shadowColor: COLORS.primaryBlackHex,
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  bannerImage: {
+    width: '100%',
+    aspectRatio: 4.5,
+    borderRadius: BORDERRADIUS.radius_15,
+    marginBottom: SPACING.space_4,
+  },
+  merchShopTitle: {
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_2,
+  },
+  merchShopDescription: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    marginBottom: SPACING.space_4,
+  },
+  buttonContainer: {
+    alignItems: 'center',
+  },
+  shopButton: {
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    color: COLORS.primaryWhiteHex,
+    paddingVertical: SPACING.space_2,
+    paddingHorizontal: SPACING.space_8,
+    borderRadius: BORDERRADIUS.radius_10,
+    textAlign: 'center',
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_medium,
   },
 });
 
