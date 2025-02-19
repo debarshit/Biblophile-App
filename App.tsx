@@ -34,6 +34,7 @@ import CommonWebViewScreen from './src/screens/CommonWebViewScreen';
 import BookListScreen from './src/screens/BookListScreen';
 import DiscoverScreen from './src/screens/DiscoverScreen';
 import GenreScreen from './src/screens/GenreScreen';
+import NotificationsScreen from './src/screens/NotificationsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -315,6 +316,10 @@ const App = () => {
             name="GenreScreen"
             component={GenreScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="Notifications"
+            component={NotificationsScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
         </Stack.Navigator>
         <Toast />
       </NavigationContainer>
