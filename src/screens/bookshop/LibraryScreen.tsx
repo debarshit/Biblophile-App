@@ -358,7 +358,7 @@ const LibraryScreen = ({navigation}: any) => {
         <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
 
         {/* Checkout Bookmarks shop */}
-        <View style={[styles.merchShopSection, { marginBottom: tabBarHeight+SPACING.space_2 }]}>
+        <View style={[styles.merchShopSection, { marginBottom: tabBarHeight }]}>
           <TouchableOpacity onPress={openShopLink} style={styles.bannerContainer}>
             <Image
               source={{ uri: 'https://ik.imagekit.io/umjnzfgqh/shop/common_assets/banners/banner-large.png' }}

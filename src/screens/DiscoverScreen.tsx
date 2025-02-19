@@ -314,6 +314,7 @@ const HomeScreen = ({navigation}: any) => {
         {/* Searched Books Flatlist */}
         {searchText !== '' &&
           <>
+            <Text style={styles.CoffeeBeansTitle}>Available for Buying</Text>
             {booksLoading ? (
               // Render shimmer effect while loading
               <View style={styles.shimmerFlex}>
@@ -381,7 +382,7 @@ const HomeScreen = ({navigation}: any) => {
         {/* Searched External Books FlatList */}
         {searchText !== '' &&
           <>
-          <Text style={styles.CoffeeBeansTitle}>External Books</Text>
+          <Text style={styles.CoffeeBeansTitle}>More Books</Text>
 
           {booksLoading ? (
             // Render shimmer effect while loading
@@ -622,7 +623,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   InputContainerComponent: {
-    marginTop: 80,
     flexDirection: 'row',
     margin: SPACING.space_30,
     borderRadius: BORDERRADIUS.radius_20,
