@@ -12,6 +12,7 @@ import { useStore } from '../../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../theme/theme';
 import PagesReadInput from '../../components/PagesReadInput';
 import SessionPrompt from '../../components/SessionPrompt';
+import { setupNotifications, updateTimerNotification, dismissTimerNotification } from '../../utils/notificationUtils';
 
 const StreaksScreen: React.FC = ({ navigation, route }: any) => {
 
@@ -365,21 +366,39 @@ const StreaksScreen: React.FC = ({ navigation, route }: any) => {
       setShowPrompt(false);
     }
   };
+  
 
   // Handle session start persistence
   useEffect(() => {
+    let timerInterval;
+    
     if (sessionStartTime) {
-      const timerInterval = setInterval(() => {
+      timerInterval = setInterval(() => {
         const currentTime = new Date();
         const elapsedTime = Math.floor((currentTime.getTime() - new Date(sessionStartTime).getTime()) / 1000); // Timer in seconds
         setTimer(elapsedTime);
+        
+        // Update the notification every second
+        const minutes = Math.floor(elapsedTime / 60);
+        const seconds = elapsedTime % 60;
+        updateTimerNotification(minutes, seconds);
       }, 1000);
-  
-      // Cleanup the interval when the component is unmounted or when sessionStartTime changes
-      return () => clearInterval(timerInterval);
+    } else {
+      // Session ended, clear the interval and dismiss notification
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        dismissTimerNotification();
+      }
     }
+    
+    return () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        dismissTimerNotification();
+      }
+    };
   }, [sessionStartTime]);
-
+  
   useEffect(() => {
     handleSessionCheck();
   }, []);
