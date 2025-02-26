@@ -66,6 +66,9 @@ const requests = {
     fetchUserNotes: `${INSIGHTSAPI}?action=fetchUserNotes&userId=`,
     updateUserNote: `${INSIGHTSAPI}?action=updateUserNote`,
     fetchReadingDurations: `${INSIGHTSAPI}?action=fetchReadingDurations&userId=`,
+    fetchUserGoals: `${INSIGHTSAPI}?action=fetchUserGoals&userId=`,
+    fetchCurrentProgress: `${INSIGHTSAPI}?action=fetchCurrentProgress&userId=`,
+    submitGoal: `${INSIGHTSAPI}?action=submitGoal&userId=`,
 
     //request to biblophile util apis
     fetchBannerData:`${UTILS_ACTIONS_API_URL}?action=fetchBannerData`,

@@ -274,7 +274,6 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     marginVertical: SPACING.space_20,
-    marginTop: 100,
   },
   bookshopSection: {
     backgroundColor: COLORS.primaryDarkGreyHex,

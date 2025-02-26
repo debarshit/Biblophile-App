@@ -6,6 +6,7 @@ import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme
 import { useStore } from '../../store/store';
 import instance from '../../services/axios';
 import requests from '../../services/requests';
+import ReadingGoals from '../../components/ReadingGoals';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -365,7 +366,8 @@ const StatScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.ScrollViewFlex}>
       <View style={styles.container}>
-        <Text style={styles.labelText}>We have temporarily hidden leaderboard. We are moving things around.</Text>
+        <ReadingGoals />
+        {/* <Text style={styles.labelText}>We have temporarily hidden leaderboard. We are moving things around.</Text> */}
         {/* <Text style={styles.title}>Reading Streak Leaderboard</Text>
         <FlatList
           data={leaderboard}
@@ -485,63 +487,63 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.space_16,
     fontFamily: FONTFAMILY.poppins_regular,
     color: COLORS.primaryWhiteHex,
-},
-label: {
+  },
+  label: {
+      marginRight: SPACING.space_8,
+      color: COLORS.primaryWhiteHex,
+      fontFamily: FONTFAMILY.poppins_medium,
+      fontSize: FONTSIZE.size_20,
+      marginBottom: SPACING.space_12,
+  },
+  picker: {
+      width: '50%',
+      padding: SPACING.space_8,
+      borderColor: COLORS.secondaryLightGreyHex,
+      borderRadius: BORDERRADIUS.radius_8,
+      fontFamily: FONTFAMILY.poppins_regular,
+      color: COLORS.primaryWhiteHex,
+      backgroundColor: COLORS.primaryGreyHex,
+  },
+  labelsContainer: {
+    marginTop: SPACING.space_16,
+    paddingHorizontal: SPACING.space_16,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.space_8,
+  },
+  colorBox: {
+    width: 20,
+    height: 20,
+    borderRadius: BORDERRADIUS.radius_4,
     marginRight: SPACING.space_8,
+  },
+  labelText: {
     color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_20,
-    marginBottom: SPACING.space_12,
-},
-picker: {
-    width: '50%',
-    padding: SPACING.space_8,
-    borderColor: COLORS.secondaryLightGreyHex,
-    borderRadius: BORDERRADIUS.radius_8,
     fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_16,
+  },
+  input: {
+    height: 40,
+    borderColor: COLORS.secondaryLightGreyHex,
+    borderWidth: 1,
+    borderRadius: BORDERRADIUS.radius_8,
+    paddingHorizontal: SPACING.space_8,
     color: COLORS.primaryWhiteHex,
     backgroundColor: COLORS.primaryGreyHex,
-},
-labelsContainer: {
-  marginTop: SPACING.space_16,
-  paddingHorizontal: SPACING.space_16,
-},
-labelRow: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: SPACING.space_8,
-},
-colorBox: {
-  width: 20,
-  height: 20,
-  borderRadius: BORDERRADIUS.radius_4,
-  marginRight: SPACING.space_8,
-},
-labelText: {
-  color: COLORS.primaryWhiteHex,
-  fontFamily: FONTFAMILY.poppins_regular,
-  fontSize: FONTSIZE.size_16,
-},
-input: {
-  height: 40,
-  borderColor: COLORS.secondaryLightGreyHex,
-  borderWidth: 1,
-  borderRadius: BORDERRADIUS.radius_8,
-  paddingHorizontal: SPACING.space_8,
-  color: COLORS.primaryWhiteHex,
-  backgroundColor: COLORS.primaryGreyHex,
-  marginBottom: SPACING.space_8,
-},
-saveButton: {
-  color: COLORS.primaryOrangeHex,
-  fontSize: FONTSIZE.size_16,
-  fontFamily: FONTFAMILY.poppins_bold,
-  textAlign: 'center',
-},
-editButton: {
-  color: COLORS.primaryOrangeHex,
-  fontSize: FONTSIZE.size_16,
-  fontFamily: FONTFAMILY.poppins_bold,
-  textAlign: 'center',
-},
+    marginBottom: SPACING.space_8,
+  },
+  saveButton: {
+    color: COLORS.primaryOrangeHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_bold,
+    textAlign: 'center',
+  },
+  editButton: {
+    color: COLORS.primaryOrangeHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_bold,
+    textAlign: 'center',
+  },
 });
