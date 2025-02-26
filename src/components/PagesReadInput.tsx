@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import * as Notifications from 'expo-notifications';
+import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons';
 import { useStore } from '../store/store';
 import instance from '../services/axios';
@@ -196,6 +197,23 @@ const handleSessionPromptAction = () => {
   const handleCloseModal = () => {
     setModalOpen(false);
   };
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      if (response.notification.request.content.data.type === 'timer' && 
+          response.actionIdentifier === 'stop') {
+        clearSession();
+        setSessionData(null);
+      } else {
+        const url = response.notification.request.content.data.urlScheme;
+        if (url) {
+          Linking.openURL(url);
+        }
+      }
+    });
+  
+    return () => subscription.remove();
+  }, []);
 
   return (
     <View style={styles.pagesReadContainer}>

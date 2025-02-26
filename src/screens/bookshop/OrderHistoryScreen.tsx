@@ -9,22 +9,22 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import {useStore} from '../store/store';
+import {useStore} from '../../store/store';
 import {
   BORDERRADIUS,
   COLORS,
   FONTFAMILY,
   FONTSIZE,
   SPACING,
-} from '../theme/theme';
+} from '../../theme/theme';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
-import instance from '../services/axios';
-import requests from '../services/requests';
-import HeaderBar from '../components/HeaderBar';
-import EmptyListAnimation from '../components/EmptyListAnimation';
-import PopUpAnimation from '../components/PopUpAnimation';
-import OrderHistoryCard from '../components/OrderHistoryCard';
+import instance from '../../services/axios';
+import requests from '../../services/requests';
+import HeaderBar from '../../components/HeaderBar';
+import EmptyListAnimation from '../../components/EmptyListAnimation';
+import PopUpAnimation from '../../components/PopUpAnimation';
+import OrderHistoryCard from '../../components/OrderHistoryCard';
 
 const { width } = Dimensions.get("window");
 

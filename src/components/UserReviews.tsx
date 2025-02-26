@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, Alert, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import instance from '../../services/axios';
-import requests from '../../services/requests';
-import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme/theme';
-import { useStore } from '../../store/store';
-import Mascot from '../../components/Mascot';
+import instance from '../services/axios';
+import requests from '../services/requests';
+import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../theme/theme';
+import { useStore } from '../store/store';
+import Mascot from './Mascot';
 
-const ReviewScreen: React.FC = () => {
+interface ReviewScreenProps {
+    userData: {
+        userId: string;
+        isPageOwner: boolean;
+    };
+}
+
+const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
     const [reviews, setReviews] = useState([]);
     const [editing, setEditing] = useState<number | null>(null);
     const [currentReview, setCurrentReview] = useState({ rating: '', review: '' });
@@ -15,7 +22,8 @@ const ReviewScreen: React.FC = () => {
     const [hasMore, setHasMore] = useState(true);
 
     const userDetails = useStore((state: any) => state.userDetails);
-    const userId = userDetails[0].userId;
+    const accessToken = userDetails[0].accessToken;
+
 
     const convertHttpToHttps = (url) => {
         if (url && url.startsWith('http://')) {
@@ -30,7 +38,7 @@ const ReviewScreen: React.FC = () => {
         setLoading(true);
         try {
             const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const response = await instance.get(`${requests.fetchUserReviews}${userId}?offset=${offset}&limit=10&timezone=${userTimezone}`);
+            const response = await instance.get(`${requests.fetchUserReviews}${userData.userId}?offset=${offset}&limit=10&timezone=${userTimezone}`);
             const newReviews = response.data;
 
             setReviews(initial ? newReviews : [...reviews, ...newReviews]);
@@ -49,7 +57,7 @@ const ReviewScreen: React.FC = () => {
 
     useEffect(() => {
         fetchReviews(true);
-    }, [userId]);
+    }, [userData.userId]);
 
     const handleEdit = (review: any) => {
         setEditing(review.ratingId);
@@ -68,9 +76,13 @@ const ReviewScreen: React.FC = () => {
                 {
                     text: "OK", onPress: () => {
                         instance.post(requests.updateUserReview, {
-                            userId,
+                            userId: userData.userId,
                             productId,
                             actionType: 'delete'
+                        },{
+                            headers: {
+                                Authorization: `Bearer ${accessToken}`
+                            }
                         })
                             .then(response => {
                                 setReviews(reviews.filter(review => review.ratingId !== ratingId));
@@ -85,11 +97,15 @@ const ReviewScreen: React.FC = () => {
 
     const handleSave = (ratingId: number, productId: number) => {
         instance.post(requests.updateUserReview, {
-            userId,
+            userId: userData.userId,
             productId,
             rating: currentReview.rating,
             review: currentReview.review,
             actionType: 'update'
+        }, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
         })
             .then(response => {
                 setReviews(reviews.map(review =>
@@ -133,14 +149,14 @@ const ReviewScreen: React.FC = () => {
                 <>
                     <Text style={styles.rating}>Rating: {item.rating} / 5</Text>
                     <Text style={styles.reviewText}>{item.review}</Text>
-                    <View style={styles.btnGroup}>
+                    {userData.isPageOwner && <View style={styles.btnGroup}>
                         <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
                             <Text style={styles.btnText}>Edit</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => handleDelete(item.ratingId, item.productId)} style={styles.deleteBtn}>
                             <Text style={styles.btnText}>Delete</Text>
                         </TouchableOpacity>
-                    </View>
+                    </View>}
                 </>
             )}
         </View>
@@ -154,7 +170,6 @@ const ReviewScreen: React.FC = () => {
             contentContainerStyle={styles.container}
             onEndReached={() => fetchReviews(false)}
             onEndReachedThreshold={0.5}  // Trigger when 50% of the list is visible
-            ListHeaderComponent={<Text style={styles.title}>My Ratings & Reviews</Text>}
             ListFooterComponent={loading && <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />}
             ListEmptyComponent={!loading && <Mascot emotion="reading" />}
         />
@@ -246,4 +261,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default ReviewScreen;
+export default UserReviews;

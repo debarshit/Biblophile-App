@@ -154,6 +154,8 @@ const PaymentScreen = ({navigation, route}: any) => {
 
             const link_id = response.data.link_id;
 
+            let timeoutReached = false;
+
             const pollPaymentStatus = setInterval(async () => {
               try {
                 const statusResponse = await instance.post(
@@ -164,7 +166,7 @@ const PaymentScreen = ({navigation, route}: any) => {
                     amount: route.params.amount,
                   },
                 );
-                if (statusResponse.data.status === 'success') {
+                if (statusResponse.data.status === 'success. You can close this window.') {
                   clearInterval(pollPaymentStatus);
                   if (action) {
                     navigation.navigate('History');
@@ -183,6 +185,14 @@ const PaymentScreen = ({navigation, route}: any) => {
                 );
               }
             }, 5000);
+
+            // Stop polling after 5 minutes (300000ms)
+          setTimeout(() => {
+            timeoutReached = true;
+            clearInterval(pollPaymentStatus);
+            alert('Payment status check timed out. Please try again later.');
+          }, 300000);
+
           } else {
             alert('Network error! Please try again.');
           }

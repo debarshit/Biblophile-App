@@ -19,18 +19,22 @@ import ProfileScreen from './src/screens/settings/ProfileScreen';
 import SubscriptionScreen from './src/screens/settings/SubscriptionScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import PaymentGatewayScreen from './src/screens/PaymentGatewayScreen';
-import StreaksScreen from './src/screens/StreaksScreen';
-import StatScreen from './src/screens/StatScreen';
+import StreaksScreen from './src/screens/readingInsights/StreaksScreen';
+import StatScreen from './src/screens/readingInsights/StatScreen';
 import AboutScreen from './src/screens/settings/AboutScreen';
-import ReviewScreen from './src/screens/settings/ReviewScreen';
+import ReviewScreen from './src/components/UserReviews';
 import ProfileSummaryScreen from './src/screens/settings/ProfileSummaryScreen';
 import NotesScreen from './src/screens/settings/NotesScreen';
 import DurationTrackScreen from './src/screens/settings/DurationTrackScreen';
-import LibraryScreen from './src/screens/LibraryScreen';
+import LibraryScreen from './src/screens/bookshop/LibraryScreen';
 import SocialScreen from './src/screens/SocialScreen';
-import CartScreen from './src/screens/CartScreen';
-import OrderHistoryScreen from './src/screens/OrderHistoryScreen';
+import CartScreen from './src/screens/bookshop/CartScreen';
+import OrderHistoryScreen from './src/screens/bookshop/OrderHistoryScreen';
 import CommonWebViewScreen from './src/screens/CommonWebViewScreen';
+import BookListScreen from './src/screens/BookListScreen';
+import DiscoverScreen from './src/screens/DiscoverScreen';
+import GenreScreen from './src/screens/GenreScreen';
+import NotificationsScreen from './src/screens/NotificationsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -232,6 +236,14 @@ const App = () => {
             name="Library"
             component={LibraryScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="Discover"
+            component={DiscoverScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="Shop"
+            component={LibraryScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
           <Stack.Screen
             name="Details"
             component={DetailsScreen}
@@ -296,6 +308,18 @@ const App = () => {
             name="CommonWebView"
             component={CommonWebViewScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="BookListScreen"
+            component={BookListScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="GenreScreen"
+            component={GenreScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="Notifications"
+            component={NotificationsScreen}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
         </Stack.Navigator>
         <Toast />
       </NavigationContainer>

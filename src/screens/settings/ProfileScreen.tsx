@@ -10,6 +10,7 @@ const ProfileScreen = ({navigation, route}: any) => {
     const updateProfile = useStore((state: any) => state.updateProfile);
 
     const [name, setName] = useState<string>(userDetails[0].userName);
+    const [userName, setUserName] = useState<string>(userDetails[0].userUniqueUserName);
     const [email, setEmail] = useState<string>(userDetails[0].userEmail);
     const [phone, setPhone] = useState<string>(userDetails[0].userPhone);
     const [address, setAddress] = useState<string>(userDetails[0].userAddress);
@@ -22,7 +23,7 @@ const ProfileScreen = ({navigation, route}: any) => {
     
 
     const handleSave = () => {
-        if (!name || !email || !phone || !password || !passwordCnf || !address)
+        if (!name || !userName || !email || !phone || !password || !passwordCnf || !address)
         {
             setUpdateMessage({ text: "Please fill all the details", color: COLORS.primaryRedHex });
         }
@@ -35,6 +36,7 @@ const ProfileScreen = ({navigation, route}: any) => {
                     const response = await instance.post(requests.updateAppUserData, {
                         userId: userDetails[0].userId,
                         name: name,
+                        userName: userName,
                         email: email,
                         phone: phone,
                         address: address,
@@ -91,13 +93,27 @@ const ProfileScreen = ({navigation, route}: any) => {
                     <View style={[styles.inputWrapper, focusedInput === 'name' && styles.highlightedInput]}>
                         <TextInput
                             style={styles.input}
-                            placeholder='Name'
+                            placeholder='Full Name'
                             placeholderTextColor={COLORS.secondaryLightGreyHex}
                             autoCapitalize='none'
                             keyboardType='default'
                             onFocus={() => handleFocus('name')}
                             value={name} 
                             onChangeText={(text) => setName(text)}
+                        />
+                    </View>
+                </View>
+                <View style={styles.inputBox}>
+                    <View style={[styles.inputWrapper, focusedInput === 'userName' && styles.highlightedInput]}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder='Unique Username'
+                            placeholderTextColor={COLORS.secondaryLightGreyHex}
+                            autoCapitalize='none'
+                            keyboardType='default'
+                            onFocus={() => handleFocus('userName')}
+                            value={userName} 
+                            onChangeText={(text) => setUserName(text)}
                         />
                     </View>
                 </View>

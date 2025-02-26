@@ -34,6 +34,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const [loginEmail , setLoginEmail] = useState<string>('');
     const [loginPass , setLoginPass] = useState<string>('');
     const [signupName , setSignupName] = useState<string>('');
+    const [signupUserName, setSignupUserName] = useState<string>('');
     const [signupEmail, setSignupEmail] = useState<string>('');
     const [signupPhone , setSignupPhone] = useState<string>(null);
     const [signupPass , setSignupPass] = useState<string>('');
@@ -55,6 +56,10 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     
     const handleSignupName = (text: string) => {
         setSignupName(text);
+    }
+
+    const handleSignupUserName = (text: string) => {
+        setSignupUserName(text);
     }
     
     const handleSignupEmail = (text: string) => {
@@ -108,7 +113,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     };
 
     const handleSignup = () => {
-        if (!signupName || !signupEmail || !signupPhone || !signupPass || !signupPassCnf || !source)
+        if (!signupName || !signupUserName || !signupEmail || !signupPhone || !signupPass || !signupPassCnf || !source)
         {
             alert("Please fill all the details!");
             return;
@@ -131,6 +136,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                 try {
                     const response = await instance.post(requests.userSignup, {
                         name: signupName,
+                        userName: signupUserName,
                         email: signupEmail,
                         phone: signupPhone,
                         password: signupPass,
@@ -141,6 +147,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                     {
                         setSignupMessage({ text: "Signup successful! You can login now.", color: COLORS.primaryOrangeHex });
                         setSignupName("");
+                        setSignupUserName("");
                         setSignupEmail("");
                         setSignupPhone("");
                         setSignupPass("");
@@ -186,7 +193,8 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                             userEmail: response.data.email,
                             userAddress: response.data.address,
                             userPhone: response.data.phone,
-                            userName: response.data.name,
+                            userName: response.data.fullName,
+                            userUniqueUserName: response.data.name,
                             deposit: response.data.deposit,
                             profilePic: response.data.profilePic,
                             notificationToken: expoPushToken,
@@ -311,16 +319,31 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                         <Text style={styles.title}>Sign up</Text>
                         <Text style={[styles.successMessage, { color: signupMessage.color }]}>{signupMessage.text}</Text>
                         <View style={styles.inputBox}>
-                            <View style={[styles.inputWrapper, focusedInput === 'signupUsername' && styles.highlightedInput]}>
+                            <View style={[styles.inputWrapper, focusedInput === 'signupName' && styles.highlightedInput]}>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder='Username'
+                                    placeholder='Full Name'
                                     placeholderTextColor={COLORS.secondaryLightGreyHex}
                                     autoCapitalize='none'
                                     keyboardType='default'
-                                    onFocus={() => handleFocus('signupUsername')}
+                                    onFocus={() => handleFocus('signupName')}
                                     value={signupName} 
                                     onChangeText={(text) => handleSignupName(text)}
+                                />
+                                <FaIcon name='user' style={styles.icon} />
+                            </View>
+                        </View>
+                        <View style={styles.inputBox}>
+                            <View style={[styles.inputWrapper, focusedInput === 'signupUserName' && styles.highlightedInput]}>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Unique Username'
+                                    placeholderTextColor={COLORS.secondaryLightGreyHex}
+                                    autoCapitalize='none'
+                                    keyboardType='default'
+                                    onFocus={() => handleFocus('signupUserName')}
+                                    value={signupUserName} 
+                                    onChangeText={(text) => handleSignupUserName(text)}
                                 />
                                 <FaIcon name='user' style={styles.icon} />
                             </View>

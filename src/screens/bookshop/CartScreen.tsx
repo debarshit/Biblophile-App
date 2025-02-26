@@ -9,12 +9,12 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import {useStore} from '../store/store';
-import {COLORS, SPACING} from '../theme/theme';
-import HeaderBar from '../components/HeaderBar';
-import EmptyListAnimation from '../components/EmptyListAnimation';
-import PaymentFooter from '../components/PaymentFooter';
-import CartItem from '../components/CartItem';
+import {useStore} from '../../store/store';
+import {COLORS, SPACING} from '../../theme/theme';
+import HeaderBar from '../../components/HeaderBar';
+import EmptyListAnimation from '../../components/EmptyListAnimation';
+import PaymentFooter from '../../components/PaymentFooter';
+import CartItem from '../../components/CartItem';
 
 const CartScreen = ({navigation, route}: any) => {
   const CartList = useStore((state: any) => state.CartList);

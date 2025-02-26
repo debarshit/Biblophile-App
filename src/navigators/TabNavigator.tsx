@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, Image} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import { MaterialIcons, FontAwesome5, FontAwesome, Entypo } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import {COLORS} from '../theme/theme';
 import HomeScreen from '../screens/HomeScreen';
-import BookshelfScreen from '../screens/BookshelfScreen';
-import LibraryScreen from '../screens/LibraryScreen';
+import LibraryScreen from '../screens/bookshop/LibraryScreen';
 import SocialScreen from '../screens/SocialScreen';
 import ChallengesScreen from '../screens/ChallengesScren';
+import ProfileSummaryScreen from '../screens/settings/ProfileSummaryScreen';
+import { useStore } from '../store/store';
+import DiscoverScreen from '../screens/DiscoverScreen';
 
 const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
   const [activeTab, setActiveTab] = useState('Home');
+  const userDetails = useStore((state: any) => state.userDetails);
+  const username = userDetails[0].userUniqueUserName;
+  const profilePic = userDetails[0].profilePic;
+    
   return (
     <Tab.Navigator
       screenOptions={{
@@ -48,7 +54,21 @@ const TabNavigator = () => {
             />
           ),
         }}></Tab.Screen>
-      <Tab.Screen
+        <Tab.Screen
+        name="Discover"
+        component={DiscoverScreen}
+        options={{
+          tabBarIcon: ({focused, color, size}) => (
+            <MaterialIcons
+              name="travel-explore"
+              size={25}
+              color={
+                focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
+              }
+            />
+          ),
+        }}></Tab.Screen>
+      {/* <Tab.Screen
           name="Shop"
           component={LibraryScreen}
           options={{
@@ -61,7 +81,7 @@ const TabNavigator = () => {
                 }
               />
             ),
-          }}></Tab.Screen>
+          }}></Tab.Screen> */}
         <Tab.Screen
           name="Challenges"
           component={ChallengesScreen}
@@ -90,20 +110,21 @@ const TabNavigator = () => {
               />
             ),
           }}></Tab.Screen>
-        <Tab.Screen
-          name="Bookshelf"
-          component={BookshelfScreen}
-          options={{
-            tabBarIcon: ({focused, color, size}) => (
-              <FontAwesome5
-                name="book-reader"
-                size={30}
-                color={
-                  focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex
-                }
-              />
-            ),
-          }}></Tab.Screen>
+          <Tab.Screen
+        name="Bookshelf"
+        component={ProfileSummaryScreen}
+        initialParams={{ username: username }}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <Image
+              source={{ uri: profilePic }}
+              style={[
+                styles.profilePic,
+                { borderColor: focused ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex },
+              ]}
+            />
+          ),
+        }}></Tab.Screen>
     </Tab.Navigator>
   );
 };
@@ -123,6 +144,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+  },
+  profilePic: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 2,
   },
 });
 
