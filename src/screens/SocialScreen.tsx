@@ -88,7 +88,7 @@ const SocialScreen = ({navigation, route}: any) => {
   })();
 `;
 
-const defaultUrl = "https://biblophile.com/social/buddy-reads";
+const defaultUrl = "https://biblophile.com/social";
 const webViewUrl = route.params ? route.params.uri : defaultUrl;
 
 return (

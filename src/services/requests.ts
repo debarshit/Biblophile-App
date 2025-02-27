@@ -50,6 +50,7 @@ const requests = {
     registerNotificationToken: `${APIURL}?action=registerNotificationToken`,
     fetchReadingStreakLeaderboard: `${APIURL}?action=fetchReadingStreakLeaderboard&userId=`,
     fetchPagesRead: `${APIURL}?action=fetchPagesRead&userId=`,
+    fetchReadingDurationGraph: `${APIURL}?action=fetchReadingDurationGraph&userId=`,
     fetchCurrentReads: `${APIURL}?action=fetchCurrentReads`,
     fetchUserBooks: `${APIURL}?action=fetchUserBooks`,
     updateBookDates: `${APIURL}?action=updateBookDates`,

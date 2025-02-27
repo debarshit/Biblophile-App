@@ -11,10 +11,11 @@ import ReadingGoals from '../../components/ReadingGoals';
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [pagesRead, setPagesRead] = useState([]);
+  const [readingDurations, setReadingDurations] = useState([]);
   const [userAverageEmotions, setUserAverageEmotions] = useState([]);
   const [readingStatusData, setReadingStatusData] = useState([]);
   const [timeFrame, setTimeFrame] = useState('last-week');
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, value: '', date: '' });
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, value: '', date: '', chart: '' });
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editPageCount, setEditPageCount] = useState('');
@@ -47,6 +48,20 @@ const StatScreen = () => {
         setPagesRead(response.data);
       } else {
         console.error('Pages read data is not an array:', response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch pages read:', error);
+    }
+  };
+
+  const fetchReadingDurations = async () => {
+    try {
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const response = await instance.get(`${requests.fetchReadingDurationGraph}${userDetails[0].userId}&timeFrame=${timeFrame}&timezone=${userTimezone}`);
+      if (Array.isArray(response.data)) {
+        setReadingDurations(response.data);
+      } else {
+        console.error('Reading durations data is not an array:', response.data);
       }
     } catch (error) {
       console.error('Failed to fetch pages read:', error);
@@ -105,6 +120,7 @@ const StatScreen = () => {
     setReadingStatusData([]);
     fetchLeaderboard();
     fetchPagesRead();
+    fetchReadingDurations();
     fetchAverageEmotionsByUser();
     fetchUserBooks();
     setLoading(false);
@@ -123,7 +139,7 @@ const StatScreen = () => {
     );
   };
 
-  const renderLineChart = (timeDuration) => {
+  const renderPagesLineChart = (timeDuration) => {
     if (!Array.isArray(pagesRead) || pagesRead.length === 0) {
       return <Text style={styles.highlightText}>No data available</Text>;
     }
@@ -215,11 +231,12 @@ const StatScreen = () => {
               visible: true,
               value: `${dataPoints[index]} pages`,
               date: date,
+              chart: 'pages',
             });
             setIsEditing(false);
           }}
         />
-        {tooltipPos.visible && (
+        {tooltipPos.visible && tooltipPos.chart === 'pages' && (
           <View style={[styles.tooltip, { top: tooltipPos.y - 30, left: tooltipPos.x - 25 }]}>
           {isEditing ? (
             <View>
@@ -244,6 +261,110 @@ const StatScreen = () => {
               )}
             </View>
           )}
+        </View>
+        )}
+      </View>
+    );
+  };
+
+  const renderDurationLineChart = (timeDuration) => {
+    if (!Array.isArray(pagesRead) || pagesRead.length === 0) {
+      return <Text style={styles.highlightText}>No data available</Text>;
+    }
+
+    const labelCount = timeDuration === 'last-week' ? 7 : timeDuration === 'last-month' ? 30 : null;
+
+    if (!labelCount) return <Text style={styles.highlightText}>Invalid time frame</Text>;
+
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    const labels = [];
+    const dataPointsDurations = Array(labelCount).fill(0);
+  
+    for (let i = labelCount - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      labels.push(
+        date.toLocaleDateString("en-CA", { timeZone: userTimezone })  //'en-CA' for YYYY-MM-DD format
+      );
+    }
+  
+    readingDurations.forEach(item => {
+      const itemDate = new Date(item.dateRead).toLocaleDateString("en-CA", { timeZone: userTimezone });
+      const index = labels.indexOf(itemDate);
+      if (index !== -1) {
+        dataPointsDurations[index] = item.duration / 60; // Convert seconds to minutes
+      }
+    });
+  
+    // Adjust labels to show only first, middle, and last
+    const adjustedLabels = labels.map((label, index) => {
+      if (index === 0 || index === Math.floor(labels.length / 2) || index === labels.length - 1) {
+        return label;
+      }
+      return '';
+    });
+  
+    return (
+      <View>
+        <LineChart
+          data={{
+            labels: adjustedLabels,
+            datasets: [
+              {
+                data: dataPointsDurations,
+              },
+            ],
+          }}
+          width={Dimensions.get('window').width - SPACING.space_16 * 2}
+          height={220}
+          yAxisLabel=""
+          yAxisSuffix=" mins"
+          withVerticalLines={false}
+          withHorizontalLines={false}
+          withInnerLines={false}
+          chartConfig={{
+            backgroundColor: COLORS.primaryDarkGreyHex,
+            backgroundGradientFrom: COLORS.primaryDarkGreyHex,
+            backgroundGradientTo: COLORS.primaryDarkGreyHex,
+            decimalPlaces: 0,
+            color: (opacity = 1) => "#42D1D1",
+            labelColor: (opacity = 1) => COLORS.primaryWhiteHex,
+            style: {
+              borderRadius: BORDERRADIUS.radius_8,
+            },
+            propsForDots: {
+              r: "4",
+              strokeWidth: "2",
+              stroke: COLORS.primaryBlackHex,
+            },
+          }}
+          bezier
+          style={{
+            marginVertical: SPACING.space_16,
+            borderRadius: BORDERRADIUS.radius_8,
+          }}
+          onDataPointClick={(data) => {
+            const { x, y, index } = data;
+            const date = labels[index];
+            setSelectedDate(date);
+            setTooltipPos({
+              x,
+              y,
+              visible: true,
+              value: `${dataPointsDurations[index]} mins`,
+              date: date,
+              chart: 'duration',
+            });
+            setIsEditing(false);
+          }}
+        />
+        {tooltipPos.visible && tooltipPos.chart === 'duration' && (
+          <View style={[styles.tooltip, { top: tooltipPos.y - 30, left: tooltipPos.x - 25 }]}>
+            <View>
+              <Text style={styles.tooltipText}>{tooltipPos.value}</Text>
+              <Text style={styles.tooltipText}>{tooltipPos.date}</Text>
+            </View>
         </View>
         )}
       </View>
@@ -389,8 +510,10 @@ const StatScreen = () => {
           </View>
         <Text style={styles.title}>Pages Read in Last {timeFrame === 'last-week' ? '7 Days' : '30 Days'}</Text>
         <TouchableWithoutFeedback onPress={() => setTooltipPos({ ...tooltipPos, visible: false })}>
-          {renderLineChart(timeFrame)}
+          {renderPagesLineChart(timeFrame)}
         </TouchableWithoutFeedback>
+        <Text style={styles.title}>Mins Read in Last {timeFrame === 'last-week' ? '7 Days' : '30 Days'}</Text>
+        {renderDurationLineChart(timeFrame)}
         <Text style={styles.title}>Prefer books which evoke</Text>
         {renderPieChart()}
         <Text style={styles.title}>Reading Progress</Text>
