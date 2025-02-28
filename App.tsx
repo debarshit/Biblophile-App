@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import { Alert, Platform } from 'react-native';
 import * as Updates from 'expo-updates';
+import Constants from 'expo-constants';
 import * as SplashScreen from 'expo-splash-screen';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -88,7 +89,8 @@ Notifications.setNotificationHandler({
 
 const App = () => {
   const isAuthenticated = useStore((state: any) => state.isAuthenticated);
- const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState(Constants.manifest2?.extra?.expoClient?.version);
 
   useEffect(() => {
     async function loadFontsAsync() {
@@ -129,6 +131,40 @@ const App = () => {
   //check for OTA updates end
 
   //check for appstores update and implement accordingly start
+  const checkForAppUpdate = async () => {
+    try {
+      // Fetch the latest version from own server
+      const response = await fetch('https://biblophile.com/apis/prod/appInfo/appVersion.php');
+      const data = await response.json();
+      const latestVersion = data.latestVersion;
+
+      // Compare the latest version with the current app version
+      if (latestVersion !== currentVersion) {
+        Alert.alert(
+          'Update Available',
+          'A new version of the app is available. Please update to the latest version.',
+          [
+            { text: 'Update', onPress: openStore },
+            { text: 'Cancel', style: 'cancel' },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error checking for update:', error);
+    }
+  };
+
+  const openStore = () => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('itms-apps://itunes.apple.com/app/idYOUR_APP_ID');
+    } else {
+      Linking.openURL('https://play.google.com/store/apps/details?id=com.debar_shit.BiblophileApp');
+    }
+  };
+
+  useEffect(() => {
+    checkForAppUpdate();
+  }, [currentVersion]);
   //check for appstores update and implement accordingly end
 
   // for expo notifications start
