@@ -3,11 +3,11 @@ import { FlatList, TouchableOpacity, Image, View, StyleSheet } from 'react-nativ
 import { useNavigation } from '@react-navigation/native';
 import { SPACING } from '../theme/theme';
 
-const SpotlightBooks = ({ spotlights }, {navigation}: any) => {
+const SpotlightBooks = ({ spotlights }) => {
   const flatListRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const listLength = spotlights.length;
-  navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   const convertHttpToHttps = (url) => {
     if (url && url.startsWith('http://')) {
