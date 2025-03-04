@@ -12,6 +12,7 @@
       "android",
       "web"
     ],
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",

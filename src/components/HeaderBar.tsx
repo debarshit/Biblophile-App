@@ -5,16 +5,15 @@ import {COLORS, FONTFAMILY, FONTSIZE, SPACING} from '../theme/theme';
 import { useStore } from '../store/store';
 import instance from '../services/axios';
 import requests from '../services/requests';
-import GradientBGIcon from './GradientBGIcon';
 import ProfilePic from './ProfilePic';
 
 interface HeaderBarProps {
   title?: string;
 }
 
-const HeaderBar: React.FC<HeaderBarProps> = ({navigation, route}: any, {title}) => {
+const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
 
-  navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   const [streak, setStreak] = useState(null);
 
