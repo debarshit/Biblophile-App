@@ -11,9 +11,9 @@ interface ReadTogetherProps {
     product: any;
 }
 
-const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, product }, { navigation }: any) => {
+const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, product }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  navigation = useNavigation();
+  const navigation = useNavigation();
 
   const fetchBookId = async (): Promise<string | null> => {
     setIsLoading(true);

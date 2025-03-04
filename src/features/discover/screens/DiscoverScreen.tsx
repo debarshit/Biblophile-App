@@ -265,7 +265,7 @@ const HomeScreen = ({navigation}: any) => {
         contentOffset={{ x: 0, y: scrollOffset }}
         scrollEventThrottle={16}>
         {/* App Header */}
-        {!keyboardVisible && <HeaderBar title="Home Screen"/>}
+        {!keyboardVisible && <HeaderBar title=""/>}
 
         {/* Search Input */}
         <View style={styles.InputContainerComponent}>
