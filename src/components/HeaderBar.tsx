@@ -5,7 +5,7 @@ import {COLORS, FONTFAMILY, FONTSIZE, SPACING} from '../theme/theme';
 import { useStore } from '../store/store';
 import instance from '../services/axios';
 import requests from '../services/requests';
-import ProfilePic from './ProfilePic';
+import GradientBGIcon from './GradientBGIcon';
 
 interface HeaderBarProps {
   title?: string;
@@ -60,11 +60,6 @@ const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
 
   return (
     <View style={styles.HeaderContainer}>
-      {/* <GradientBGIcon
-        name="menufold"
-        color={COLORS.primaryLightGreyHex}
-        size={FONTSIZE.size_16}
-      /> */}
       <Image
           source={{uri: "https://ik.imagekit.io/umjnzfgqh/biblophile/common_assets/logos/Biblophile%20logo%20-%20white.png"}}
           style={styles.Image}
@@ -77,7 +72,13 @@ const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
       >
         <Text style={styles.StreakText}>{streak !== null && `Active Streak: ${streak} days`}</Text>
       </TouchableOpacity>
-      <ProfilePic />
+      <TouchableOpacity onPress={()=>navigation.navigate("Notifications")} style={styles.notifIcon}>
+        <GradientBGIcon
+          name="notification"
+          color={COLORS.primaryLightGreyHex}
+          size={FONTSIZE.size_16}
+        />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -103,6 +104,9 @@ const styles = StyleSheet.create({
   Image: {
     height: SPACING.space_36,
     width: SPACING.space_36,
+  },
+  notifIcon: {
+    marginBottom: SPACING.space_18,
   },
 });
 

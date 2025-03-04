@@ -6,6 +6,7 @@ import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../th
 import { useStore } from '../../../store/store';
 import BookshelfComponent from '../components/BookshelfComponent';
 import UserReviews from '../../reading/components/UserReviews';
+import GradientBGIcon from '../../../components/GradientBGIcon';
 
 const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const [userData, setUserData] = useState(null);
@@ -191,6 +192,15 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
 
   return (
     <ScrollView style={styles.container}>
+      {isPageOwner && (
+        <TouchableOpacity onPress={()=>navigation.navigate("Settings")} style={styles.settingsIcon}>
+          <GradientBGIcon
+            name="menufold"
+            color={COLORS.primaryLightGreyHex}
+            size={FONTSIZE.size_16}
+          />
+        </TouchableOpacity>
+      )}
       <Text style={styles.sectionTitle}>{username}'s Reading Journal</Text>
       {!isPageOwner && (
         <View style={styles.buttonsSection}>
@@ -253,6 +263,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.primaryBlackHex,
+  },
+  settingsIcon: {
+    position: 'absolute',
+    top: -15,
+    right: 0,
+    zIndex: 1,
   },
   booksSection: {
     marginBottom: SPACING.space_20,
