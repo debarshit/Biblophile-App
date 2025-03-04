@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     marginRight: SPACING.space_8,
   },
   picker: {
-    height: 40,
+    height: 60,
     width: 200,
     borderColor: COLORS.secondaryLightGreyHex,
     borderRadius: BORDERRADIUS.radius_8,
@@ -211,8 +211,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_16,
+    fontSize: FONTSIZE.size_14,
     width: 100,
+    paddingTop: SPACING.space_2,
     textAlign: 'center',
   },
   dateInput: {

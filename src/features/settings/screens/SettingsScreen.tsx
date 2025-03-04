@@ -18,6 +18,7 @@ import  { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
 const SettingsScreen = ({navigation, route}: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
   const logout = useStore((state: any) => state.logout); 
+  const username = userDetails[0].userUniqueUserName;
 
   const openWebView = (url: string) => {
     navigation.push('Resources', {
@@ -133,7 +134,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             <TouchableOpacity
               onPress={() => {
-                navigation.push('ProfileSummary');
+                navigation.push('ProfileSummary', { username: username });
               }}
               style={styles.row}>
               <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
@@ -160,25 +161,6 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
               </View>
 
               <Text style={styles.rowLabel}>My Stats</Text>
-
-              <View style={styles.rowSpacer} />
-
-              <Feather
-                color="#C6C6C6"
-                name="chevron-right"
-                size={20} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                navigation.push('Review');
-              }}
-              style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: COLORS.primaryOrangeHex }]}>
-                <MaterialIcons name="rate-review" size={20} color="#fff" />
-              </View>
-
-              <Text style={styles.rowLabel}>My Reviews</Text>
 
               <View style={styles.rowSpacer} />
 

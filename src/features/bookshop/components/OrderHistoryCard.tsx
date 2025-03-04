@@ -15,6 +15,7 @@ interface OrderHistoryCardProps {
 const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
   order,
 }) => {
+  console.log(order);
   return (
     <View style={styles.CardContainer}>
       <View style={styles.CardHeader}>

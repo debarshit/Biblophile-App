@@ -199,7 +199,7 @@ const LibraryScreen = ({navigation}: any) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.ScrollViewFlex}>
         {/* App Header */}
-        <HeaderBar title="Home Screen"/>
+        <HeaderBar title=""/>
 
         <Text style={styles.ScreenTitle}>
           Find the best{'\n'}book for you

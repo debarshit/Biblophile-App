@@ -139,7 +139,7 @@ if (loading) {
         <View
           style={[styles.ScrollViewInnerView]}>
           <View style={styles.ItemContainer}>
-            <HeaderBar title="Order History" />
+            <HeaderBar title="" />
 
             {OrderHistoryList.length == 0 ? (
               <EmptyListAnimation title={'No Order History'} />
