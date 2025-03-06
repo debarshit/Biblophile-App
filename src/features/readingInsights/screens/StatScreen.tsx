@@ -378,13 +378,13 @@ const StatScreen = () => {
   
     const formattedEmotions = userAverageEmotions.map(emotion => ({
       ...emotion,
-      AvgScore: parseFloat(emotion.AvgScore)
+      EmotionCount: parseFloat(emotion.EmotionCount)
     }));
 
 
     const chartData = formattedEmotions.map((item, index) => ({
       name: item.Emotion,
-      population: item.AvgScore,
+      population: item.EmotionCount,
       color: PIECOLORS[index % PIECOLORS.length],
       legendFontColor: COLORS.primaryWhiteHex,
       legendFontSize: 15,
