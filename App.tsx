@@ -8,6 +8,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import * as Linking from 'expo-linking';
 import Toast from 'react-native-toast-message';
 import * as Notifications from 'expo-notifications';
+import { initialize } from '@microsoft/react-native-clarity';
 import * as Font from 'expo-font';
 import {useStore} from './src/store/store';
 import TabNavigator from './src/navigators/TabNavigator';
@@ -110,6 +111,11 @@ const App = () => {
   useEffect(() => {
     const url = Linking.createURL('streak/');
     console.log(url); //delete this once streak screen is completed
+  }, []);
+
+  // Initialize Microsoft Clarity for analytics
+  useEffect(() => {
+    initialize("qysqkgnhfy");
   }, []);
 
   //check for OTA updates start
