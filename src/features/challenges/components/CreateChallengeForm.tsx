@@ -1,11 +1,3 @@
-/*
-Validations
-1. title, start date, type is required
-2. description is optional
-3. start date should be before end date
-4. start date and end date can't be in past and same 
-*/
-
 import React, { useState } from 'react';
 import {
     StyleSheet,
@@ -46,35 +38,85 @@ const CreateChallengeForm = ({ modalVisible, setModalVisible, fetchChallenges })
     const accessToken = userDetails[0]?.accessToken;
 
     const handleCreateChallenge = () => {
-        const challengeData = {
-            challengeTitle,
-            challengeDescription,
-            challengeType,
-            startDate: startDate ? startDate.toISOString() : null,
-            endDate: endDate ? endDate.toISOString() : null,
-        };
+      const now = new Date();
 
-        instance.post(requests.createChallenge, challengeData, {
-            headers: {
-            Authorization: `Bearer ${accessToken}`,
-            },
-        })
-        .then((response) => {
-            Toast.show({
-            type: 'success',
-            text1: 'Success',
-            text2: 'Challenge created successfully!',
-            });
-            setModalVisible(false); // Close the modal
-            fetchChallenges(); // Refresh challenges
-        })
-        .catch((error) => {
-            Toast.show({
+      // Validation: Required fields
+      if (!challengeTitle.trim()) {
+        Toast.show({
             type: 'error',
-            text1: 'Error',
-            text2: 'Failed to create challenge. Please try again.',
-            });
+            text1: 'Validation Error',
+            text2: 'Challenge title is required.',
         });
+        return;
+      }
+
+      if (!challengeType) {
+        Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Challenge type is required.',
+        });
+        return;
+      }
+
+      if (!startDate || !endDate) {
+        Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Both start and end dates are required.',
+        });
+        return;
+      }
+
+      // Validation: Dates cannot be in the past
+      if (startDate < now || endDate < now) {
+        Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Dates cannot be in the past.',
+        });
+        return;
+      }
+
+      // Validation: Start date must be before end date
+      if (startDate >= endDate) {
+          Toast.show({
+              type: 'error',
+              text1: 'Validation Error',
+              text2: 'Start date must be before end date.',
+          });
+          return;
+      }
+
+      const challengeData = {
+          challengeTitle,
+          challengeDescription,
+          challengeType,
+          startDate: startDate ? startDate.toISOString() : null,
+          endDate: endDate ? endDate.toISOString() : null,
+      };
+
+      instance.post(requests.createChallenge, challengeData, {
+          headers: {
+          Authorization: `Bearer ${accessToken}`,
+          },
+      })
+      .then((response) => {
+          Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: 'Challenge created successfully!',
+          });
+          setModalVisible(false); // Close the modal
+          fetchChallenges(); // Refresh challenges
+      })
+      .catch((error) => {
+          Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Failed to create challenge. Please try again.',
+          });
+      });
     };
 
     const handleDatePress = (mode: 'start' | 'end') => {

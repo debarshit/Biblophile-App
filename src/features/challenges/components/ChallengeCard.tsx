@@ -51,40 +51,40 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge=null }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.primaryDarkGreyHex, // primaryDarkGreyHex
-    borderRadius: 10, // radius_10
-    padding: 16, // space_4
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_16,
     flexDirection: "column",
     alignItems: "flex-start",
     width: "100%",
-    maxWidth: 300, // max-w-xs equivalent
-    marginHorizontal: "auto", // mx-auto equivalent
-    elevation: 5, // shadow equivalent
+    maxWidth: 300,
+    marginHorizontal: "auto",
+    elevation: 5,
     transform: [{ scale: 1 }],
   },
   title: {
-    fontSize: 20, // size_20
-    fontFamily: FONTFAMILY.poppins_bold, // poppins_bold
-    color: COLORS.primaryWhiteHex, // primaryWhiteHex
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
   },
   date: {
-    marginTop: 8, // space_2
-    fontSize: 14, // size_14
-    color: COLORS.secondaryLightGreyHex, // secondaryLightGreyHex
+    marginTop: SPACING.space_8,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.secondaryLightGreyHex,
   },
   host: {
-    marginTop: 8, // space_2
-    fontSize: 14, // size_14
-    color: COLORS.secondaryLightGreyHex, // secondaryLightGreyHex
+    marginTop: SPACING.space_8,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.secondaryLightGreyHex,
   },
   hostName: {
-    color: COLORS.primaryOrangeHex, // primaryOrangeHex
+    color: COLORS.primaryOrangeHex,
   },
   viewLink: {
-    marginTop: 16, // space_4
-    fontSize: 16, // size_16
-    fontFamily: FONTFAMILY.poppins_semibold, // poppins_semibold
-    color: COLORS.primaryOrangeHex, // primaryOrangeHex
+    marginTop: SPACING.space_4,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryOrangeHex,
     textDecorationLine: "underline",
   },
 });
