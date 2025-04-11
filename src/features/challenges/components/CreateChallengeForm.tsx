@@ -337,15 +337,15 @@ const styles = StyleSheet.create({
     maxWidth: '80%',
   },
   dateInput: {
-    padding: 10,
-    marginBottom: 10,
+    padding: SPACING.space_10,
+    marginBottom: SPACING.space_10,
     backgroundColor: COLORS.primaryGreyHex,
     borderWidth: 2,
     borderColor: COLORS.primaryLightGreyHex,
-    borderRadius: 10,
+    borderRadius: BORDERRADIUS.radius_10,
   },
   dateText: {
-    fontSize: 16,
+    fontSize: FONTSIZE.size_16,
     color: COLORS.primaryWhiteHex,
   },
   modalActions: {

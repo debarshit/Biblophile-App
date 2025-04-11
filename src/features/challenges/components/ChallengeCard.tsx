@@ -29,10 +29,10 @@ interface ChallengeCardProps {
 
 const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge=null }) => {
   const { ChallengeId, ChallengeTitle, EndDate, StartDate, Host } = challenge;
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   const handlePress = () => {
-    // navigation.navigate("ChallengeDetail", { ChallengeId, ChallengeTitle });
+    navigation.navigate("ChallengeDetails", { ChallengeId, ChallengeTitle });
   };
 
   return (
