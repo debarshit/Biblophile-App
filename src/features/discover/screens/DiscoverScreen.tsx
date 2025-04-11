@@ -55,7 +55,7 @@ const getBookList = async (genre: any) => {
   }
 };
 
-const HomeScreen = ({navigation}: any) => {
+const DiscoverScreen = ({navigation}: any) => {
   //useStore variables
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
@@ -709,4 +709,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+export default DiscoverScreen;
