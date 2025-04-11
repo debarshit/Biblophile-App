@@ -175,7 +175,7 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     <Picker.Item label="Currently reading" value="Currently reading" color={COLORS.primaryWhiteHex} />
                     <Picker.Item label="To be read" value="To be read" color={COLORS.primaryWhiteHex} />
                     <Picker.Item label="Did not finish" value="Did not finish" color={COLORS.primaryWhiteHex} />
-                    <Picker.Item label="Remove" value="Remove" />
+                    <Picker.Item label="Remove" value="Remove" color={COLORS.primaryWhiteHex} />
                 </Picker>
             </View>
             {status === 'Currently reading' && (

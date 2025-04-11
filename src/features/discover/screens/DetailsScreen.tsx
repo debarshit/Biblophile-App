@@ -26,6 +26,7 @@ import PaymentFooter from '../../payment/components/PaymentFooter';
 import ProductReview from '../components/ProductReview';
 import ReadTogetherLinks from '../components/ReadTogetherLinks';
 import Toast from 'react-native-toast-message';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
@@ -323,7 +324,7 @@ const DetailsScreen = ({navigation, route}: any) => {
   };
 
   return (
-    <View style={styles.ScreenContainer}>
+    <SafeAreaView style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -374,7 +375,7 @@ const DetailsScreen = ({navigation, route}: any) => {
           }}
         />}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
