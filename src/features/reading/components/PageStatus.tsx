@@ -101,14 +101,15 @@ const PageStatus: React.FC<PageStatusProps> = ({ id, page, status, startDate, en
           selectedValue={bookStatus}
           style={styles.picker}
           onValueChange={(itemValue) => setBookStatus(itemValue)}
+          itemStyle={{height:50}}
         >
           {(status === 'Currently reading' || status === 'Paused') && (
               <Picker.Item label="Paused" value="Paused" />
           )}
-          <Picker.Item label="Read" value="Read" />
-          <Picker.Item label="Currently reading" value="Currently reading" />
-          <Picker.Item label="To be read" value="To be read" />
-          <Picker.Item label="Did not finish" value="Did not finish" />
+          <Picker.Item label="Read" value="Read" color={COLORS.primaryWhiteHex} />
+          <Picker.Item label="Currently reading" value="Currently reading" color={COLORS.primaryWhiteHex} />
+          <Picker.Item label="To be read" value="To be read" color={COLORS.primaryWhiteHex} />
+          <Picker.Item label="Did not finish" value="Did not finish" color={COLORS.primaryWhiteHex} />
           <Picker.Item label="Remove" value="Remove" />
         </Picker>
       </View>
@@ -194,8 +195,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.secondaryLightGreyHex,
     borderRadius: BORDERRADIUS.radius_8,
     fontFamily: FONTFAMILY.poppins_regular,
-    color: COLORS.primaryWhiteHex,
-    backgroundColor: COLORS.primaryGreyHex,
   },
   pageNumberInput: {
     flexDirection: 'row',

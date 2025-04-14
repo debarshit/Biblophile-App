@@ -15,7 +15,7 @@ import {
   Dimensions,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import SpotlightBooks from '../components/SpotlightBooks';
+import Spotlights from '../components/Spotlights';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../../../services/axios';
@@ -55,7 +55,7 @@ const getBookList = async (genre: any) => {
   }
 };
 
-const HomeScreen = ({navigation}: any) => {
+const DiscoverScreen = ({navigation}: any) => {
   //useStore variables
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
@@ -587,7 +587,7 @@ const HomeScreen = ({navigation}: any) => {
               )}
               {/* Spotlight Section */}
               <Text style={styles.sectionTitle}>In Spotlight</Text>
-              <SpotlightBooks spotlights={spotlights} />
+              <Spotlights spotlights={spotlights} />
 
               {/* load infinite genres and books */}
             </>
@@ -709,4 +709,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+export default DiscoverScreen;

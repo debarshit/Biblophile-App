@@ -166,15 +166,16 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     selectedValue={status}
                     style={styles.picker}
                     onValueChange={(itemValue) => setStatus(itemValue)}
+                    itemStyle={{height:50}}
                 >
                     {(status === 'Currently reading' || status === 'Paused') && (
                         <Picker.Item label="Paused" value="Paused" />
                     )}
-                    <Picker.Item label="Read" value="Read" />
-                    <Picker.Item label="Currently reading" value="Currently reading" />
-                    <Picker.Item label="To be read" value="To be read" />
-                    <Picker.Item label="Did not finish" value="Did not finish" />
-                    <Picker.Item label="Remove" value="Remove" />
+                    <Picker.Item label="Read" value="Read" color={COLORS.primaryWhiteHex} />
+                    <Picker.Item label="Currently reading" value="Currently reading" color={COLORS.primaryWhiteHex} />
+                    <Picker.Item label="To be read" value="To be read" color={COLORS.primaryWhiteHex} />
+                    <Picker.Item label="Did not finish" value="Did not finish" color={COLORS.primaryWhiteHex} />
+                    <Picker.Item label="Remove" value="Remove" color={COLORS.primaryWhiteHex} />
                 </Picker>
             </View>
             {status === 'Currently reading' && (
@@ -250,8 +251,6 @@ const styles = StyleSheet.create({
         borderColor: COLORS.secondaryLightGreyHex,
         borderRadius: BORDERRADIUS.radius_10,
         fontFamily: FONTFAMILY.poppins_regular,
-        color: COLORS.primaryWhiteHex,
-        backgroundColor: COLORS.primaryGreyHex,
     },
     pageNumberInput: {
         flexDirection: 'row',

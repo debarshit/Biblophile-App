@@ -81,6 +81,19 @@ const requests = {
     toggleFriend:`${SOCIAL_API_URL}?action=toggleFriend`,
     confirmRejectFriend:`${SOCIAL_API_URL}?action=confirmRejectFriend`,
     fetchPrivacyStatus:`${SOCIAL_API_URL}?action=fetchPrivacyStatus`,
+
+    //request to biblophile social apis
+    createChallenge:`${CHALLENGES_API_URL}?action=createChallenge`,
+    JoinLeaveChallenge:`${CHALLENGES_API_URL}?action=JoinLeaveChallenge`,
+    fetchChallenges:`${CHALLENGES_API_URL}?action=fetchChallenges`,
+    fetchChallengeDetails:`${CHALLENGES_API_URL}?action=fetchChallengeDetails`,
+    checkChallengeHost:`${CHALLENGES_API_URL}?action=checkChallengeHost`,
+    checkChallengeMembership:`${CHALLENGES_API_URL}?action=checkChallengeMembership`,
+    updateChallengeDescription:`${CHALLENGES_API_URL}?action=updateChallengeDescription`,
+    fetchChallengePrompts:`${CHALLENGES_API_URL}?action=fetchChallengePrompts`,
+    createOrUpdateChallengePrompts:`${CHALLENGES_API_URL}?action=createOrUpdateChallengePrompts`,
+    fetchPromptDetails:`${CHALLENGES_API_URL}?action=fetchPromptDetails`,
+    updatePromptProgress:`${CHALLENGES_API_URL}?action=updatePromptProgress`,
 }
 
 export default requests;

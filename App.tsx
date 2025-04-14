@@ -8,6 +8,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import * as Linking from 'expo-linking';
 import Toast from 'react-native-toast-message';
 import * as Notifications from 'expo-notifications';
+import { initialize } from '@microsoft/react-native-clarity';
 import * as Font from 'expo-font';
 import {useStore} from './src/store/store';
 import TabNavigator from './src/navigators/TabNavigator';
@@ -36,6 +37,7 @@ import BookListScreen from './src/features/reading/screens/BookListScreen';
 import DiscoverScreen from './src/features/discover/screens/DiscoverScreen';
 import GenreScreen from './src/features/discover/screens/GenreScreen';
 import NotificationsScreen from './src/features/settings/screens/NotificationsScreen';
+import ChallengeDetailsScreen from './src/features/challenges/screens/ChallengeDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -111,6 +113,11 @@ const App = () => {
     const url = Linking.createURL('streak/');
     console.log(url); //delete this once streak screen is completed
   }, []);
+
+  // Initialize Microsoft Clarity for analytics
+  // useEffect(() => {
+  //   initialize("qysqkgnhfy");
+  // }, []);
 
   //check for OTA updates start
   useEffect(() => {
@@ -328,34 +335,38 @@ const App = () => {
             name="Subscription"
             component={SubscriptionScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Social"
             component={SocialScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Cart"
             component={CartScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="History"
             component={OrderHistoryScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="CommonWebView"
             component={CommonWebViewScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="BookListScreen"
             component={BookListScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="GenreScreen"
             component={GenreScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
+          <Stack.Screen
             name="Notifications"
             component={NotificationsScreen}
             options={{animation: 'slide_from_right'}}></Stack.Screen>
+          <Stack.Screen
+            name="ChallengeDetails"
+            component={ChallengeDetailsScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
         </Stack.Navigator>
         <Toast />
       </NavigationContainer>

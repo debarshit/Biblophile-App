@@ -15,7 +15,7 @@ import {
   Linking,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import SpotlightBooks from '../components/SpotlightBooks';
+import Spotlights from '../components/Spotlights';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import {useStore} from '../../../store/store';
@@ -165,7 +165,7 @@ const HomeScreen = ({navigation}: any) => {
  
         {/* Spotlight Section */}
         <Text style={styles.spotlightTitle}>In Spotlight</Text>
-        <SpotlightBooks spotlights={spotlights} />
+        <Spotlights spotlights={spotlights} />
 
         {/* Checkout bookshop */}
         <View style={styles.bookshopSection}>

@@ -7,7 +7,7 @@ import {COLORS} from '../theme/theme';
 import HomeScreen from '../features/discover/screens/HomeScreen';
 import LibraryScreen from '../features/bookshop/screens/LibraryScreen';
 import SocialScreen from '../features/social/screens/SocialScreen';
-import ChallengesScreen from '../features/challenges/screens/ChallengesScren';
+import ChallengesScreen from '../features/challenges/screens/ChallengesScreen';
 import ProfileSummaryScreen from '../features/profile/screens/ProfileSummaryScreen';
 import { useStore } from '../store/store';
 import DiscoverScreen from '../features/discover/screens/DiscoverScreen';
