@@ -3,10 +3,10 @@ import { FlatList, TouchableOpacity, Image, View, StyleSheet } from 'react-nativ
 import { useNavigation } from '@react-navigation/native';
 import { SPACING } from '../../../theme/theme';
 
-const SpotlightBooks = ({ spotlights }) => {
+const Highlights = ({ highlights }) => {
   const flatListRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const listLength = spotlights.length;
+  const listLength = highlights.length;
   const navigation = useNavigation<any>();
 
   const convertHttpToHttps = (url) => {
@@ -35,10 +35,10 @@ const SpotlightBooks = ({ spotlights }) => {
 
   return (
     <View style={styles.carouselContainer}>
-      {spotlights.length > 0 ? (
+      {highlights.length > 0 ? (
         <FlatList
           ref={flatListRef}
-          data={spotlights}
+          data={highlights}
           horizontal
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.carouselItem}>
@@ -87,4 +87,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SpotlightBooks;
+export default Highlights;

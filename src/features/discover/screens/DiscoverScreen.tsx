@@ -15,7 +15,7 @@ import {
   Dimensions,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import SpotlightBooks from '../components/SpotlightBooks';
+import Spotlights from '../components/Spotlights';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../../../services/axios';
@@ -587,7 +587,7 @@ const DiscoverScreen = ({navigation}: any) => {
               )}
               {/* Spotlight Section */}
               <Text style={styles.sectionTitle}>In Spotlight</Text>
-              <SpotlightBooks spotlights={spotlights} />
+              <Spotlights spotlights={spotlights} />
 
               {/* load infinite genres and books */}
             </>
