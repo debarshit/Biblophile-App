@@ -82,7 +82,44 @@ const requests = {
     confirmRejectFriend:`${SOCIAL_API_URL}?action=confirmRejectFriend`,
     fetchPrivacyStatus:`${SOCIAL_API_URL}?action=fetchPrivacyStatus`,
 
-    //request to biblophile social apis
+    fetchBuddyReads:`${SOCIAL_API_URL}?action=fetchBuddyReads`,
+    createBuddyRead:`${SOCIAL_API_URL}?action=createBuddyRead`,
+    fetchBuddyReadDetails:`${SOCIAL_API_URL}?action=fetchBuddyReadDetails`,
+    submitComment:`${SOCIAL_API_URL}?action=submitComment`,
+    fetchComments:`${SOCIAL_API_URL}?action=fetchComments`,
+    fetchReplies:`${SOCIAL_API_URL}?action=fetchReplies`,
+    deleteComment:`${SOCIAL_API_URL}?action=deleteComment`,
+    toggleLike:`${SOCIAL_API_URL}?action=toggleLike`,
+    JoinLeaveBuddyReads:`${SOCIAL_API_URL}?action=JoinLeaveBuddyReads`,
+    updateBuddyReadDescription:`${SOCIAL_API_URL}?action=updateBuddyReadDescription`,
+
+    createReadalong:`${SOCIAL_API_URL}?action=createReadalong`,
+    fetchReadalongs:`${SOCIAL_API_URL}?action=fetchReadalongs`,
+    fetchReadalongDetails:`${SOCIAL_API_URL}?action=fetchReadalongDetails`,
+    checkReadalongMembership:`${SOCIAL_API_URL}?action=checkReadalongMembership`,
+    updateReadalongDescription:`${SOCIAL_API_URL}?action=updateReadalongDescription`,
+    JoinLeaveReadalongs:`${SOCIAL_API_URL}?action=JoinLeaveReadalongs`,
+    fetchReadalongComments:`${SOCIAL_API_URL}?action=fetchReadalongComments`,
+    submitReadalongComment:`${SOCIAL_API_URL}?action=submitReadalongComment`,
+    toggleReadalongLike:`${SOCIAL_API_URL}?action=toggleReadalongLike`,
+    deleteReadalongComment:`${SOCIAL_API_URL}?action=deleteReadalongComment`,
+    createOrUpdateReadalongCheckpoints:`${SOCIAL_API_URL}?action=createOrUpdateReadalongCheckpoints`,
+    fetchreadalongCheckpoints:`${SOCIAL_API_URL}?action=fetchreadalongCheckpoints`,
+    
+    fetchBookClubs:`${SOCIAL_API_URL}?action=fetchBookClubs`,
+    createBookClub:`${SOCIAL_API_URL}?action=createBookClub`,
+    fetchBookClubDetails:`${SOCIAL_API_URL}?action=fetchBookClubDetails`,
+    checkBookClubMembership:`${SOCIAL_API_URL}?action=checkBookClubMembership`,
+    updateBookClubDescription:`${SOCIAL_API_URL}?action=updateBookClubDescription`,
+    JoinLeaveBookClub:`${SOCIAL_API_URL}?action=JoinLeaveBookClub`,
+    fetchBookClubMeetings:`${SOCIAL_API_URL}?action=fetchBookClubMeetings`,
+    updateBookClubCode:`${SOCIAL_API_URL}?action=updateBookClubCode`,
+    updateBookClubAbout:`${SOCIAL_API_URL}?action=updateBookClubAbout`,
+    createOrUpdateBookClubMeetings:`${SOCIAL_API_URL}?action=createOrUpdateBookClubMeetings`,
+
+    fetchSimilarUsers:`${SOCIAL_API_URL}?action=fetchSimilarUsers`,
+
+    //request to biblophile challenges apis
     createChallenge:`${CHALLENGES_API_URL}?action=createChallenge`,
     JoinLeaveChallenge:`${CHALLENGES_API_URL}?action=JoinLeaveChallenge`,
     fetchChallenges:`${CHALLENGES_API_URL}?action=fetchChallenges`,
@@ -94,6 +131,7 @@ const requests = {
     createOrUpdateChallengePrompts:`${CHALLENGES_API_URL}?action=createOrUpdateChallengePrompts`,
     fetchPromptDetails:`${CHALLENGES_API_URL}?action=fetchPromptDetails`,
     updatePromptProgress:`${CHALLENGES_API_URL}?action=updatePromptProgress`,
+
 }
 
 export default requests;

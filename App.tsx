@@ -38,6 +38,8 @@ import DiscoverScreen from './src/features/discover/screens/DiscoverScreen';
 import GenreScreen from './src/features/discover/screens/GenreScreen';
 import NotificationsScreen from './src/features/settings/screens/NotificationsScreen';
 import ChallengeDetailsScreen from './src/features/challenges/screens/ChallengeDetailsScreen';
+import BuddyReadsDetails from './src/features/social/screens/BuddyReadsDetails';
+import BuddyReadsCreate from './src/features/social/screens/BuddyReadsCreate';
 
 const Stack = createNativeStackNavigator();
 
@@ -366,6 +368,14 @@ const App = () => {
           <Stack.Screen
             name="ChallengeDetails"
             component={ChallengeDetailsScreen}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+          <Stack.Screen
+            name="BuddyReadsDetails"
+            component={BuddyReadsDetails}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+          <Stack.Screen
+            name="BuddyReadsCreate"
+            component={BuddyReadsCreate}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
         </Stack.Navigator>
         <Toast />

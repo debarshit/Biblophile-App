@@ -13,7 +13,7 @@ interface ReadTogetherProps {
 
 const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, product }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   const fetchBookId = async (): Promise<string | null> => {
     setIsLoading(true);
@@ -51,12 +51,12 @@ const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, prod
     }
   };
 
-  const handleButtonClick = async (path: string) => {
+  const handleButtonClick = async (screen: 'BuddyReadsCreate' | 'ReadAlongCreate') => {
     const currentBookId = await fetchBookId();
 
     // Check if bookId is available before navigating
     if (currentBookId) {
-      navigation.navigate('Social', { uri: `${path}?bookId=${currentBookId}` });
+      navigation.navigate(screen, { bookId: currentBookId });
     } else {
       console.error("Book ID is not available yet.");
     }
@@ -67,19 +67,19 @@ const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, prod
   };
 
   if (isLoading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />;
   }
 
   return (
     <View style={styles.container}>
         <TouchableOpacity
-            onPress={() => handleButtonClick("https://biblophile.com/social/buddy-reads/create")}>
+            onPress={() => handleButtonClick('BuddyReadsCreate')}>
             <Text style={styles.button}>
             Create a Buddy Read
             </Text>
         </TouchableOpacity>
         <TouchableOpacity
-            onPress={() => handleButtonClick("https://biblophile.com/social/readalong/create")}>
+            onPress={() => handleButtonClick('ReadAlongCreate')}>
             <Text style={styles.button}>
             Create a Readalong
             </Text>
