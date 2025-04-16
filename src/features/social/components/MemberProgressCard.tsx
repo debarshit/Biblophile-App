@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.secondaryDarkGreyHex,
     padding: SPACING.space_12,
     borderRadius: BORDERRADIUS.radius_8,
-    width: '48%', // Adjust as needed for your layout
+    width: '48%',
   },
   name: {
     fontFamily: FONTFAMILY.poppins_semibold,
@@ -97,12 +97,12 @@ const styles = StyleSheet.create({
     borderRadius: BORDERRADIUS.radius_4,
   },
   progressText: {
-    color: COLORS.primaryLightGreyHex,
+    color: COLORS.secondaryLightGreyHex,
     fontSize: FONTSIZE.size_10,
     fontFamily: FONTFAMILY.poppins_regular,
   },
   statusText: {
-    color: COLORS.secondaryLightGreyHex,
+    color: COLORS.primaryLightGreyHex,
     fontSize: FONTSIZE.size_10,
     fontFamily: FONTFAMILY.poppins_regular,
     marginTop: SPACING.space_4,
