@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { View, TouchableOpacity, ActivityIndicator, Text, StyleSheet, Alert } from "react-native";
 import { SPACING, COLORS, BORDERRADIUS, FONTFAMILY, FONTSIZE } from "../../../theme/theme";
 import { CommentInputForm } from "./CommentInputForm";
-import { Dropdown } from "./Dropdown";
+import { CommentSortDropdown } from "./CommentSortDropdown";
 import requests from "../../../services/requests";
 import instance from "../../../services/axios";
 
@@ -444,7 +444,7 @@ interface BuddyReadCommentsSectionProps {
       <View style={styles.commentsSection}>
         <View style={styles.commentsHeader}>
           <Text style={styles.commentsTitle}>Comments</Text>
-          <Dropdown
+          <CommentSortDropdown
             label={<FontAwesome name="sort-down" size={20} color={COLORS.primaryWhiteHex} />}
             items={[
               { label: 'Date Ascending', value: 'created_at_asc' },
