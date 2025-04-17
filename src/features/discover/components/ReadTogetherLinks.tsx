@@ -51,7 +51,7 @@ const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, prod
     }
   };
 
-  const handleButtonClick = async (screen: 'BuddyReadsCreate' | 'ReadAlongCreate') => {
+  const handleButtonClick = async (screen: 'BuddyReadsCreate' | 'ReadAlongsCreate') => {
     const currentBookId = await fetchBookId();
 
     // Check if bookId is available before navigating
@@ -79,7 +79,7 @@ const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, prod
             </Text>
         </TouchableOpacity>
         <TouchableOpacity
-            onPress={() => handleButtonClick('ReadAlongCreate')}>
+            onPress={() => handleButtonClick('ReadAlongsCreate')}>
             <Text style={styles.button}>
             Create a Readalong
             </Text>

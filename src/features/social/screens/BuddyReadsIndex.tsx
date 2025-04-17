@@ -3,7 +3,6 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   FlatList,
   Animated,
@@ -14,13 +13,11 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import {
-  BORDERRADIUS,
   COLORS,
   FONTFAMILY,
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
-import HeaderBar from '../../../components/HeaderBar';
 import BuddyReadCard from '../components/BuddyReadCard';
 import { useNavigation } from '@react-navigation/native';
 
