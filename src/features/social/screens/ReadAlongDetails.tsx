@@ -17,6 +17,8 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ReadalongCheckpoints from '../components/ReadalongCheckpoints';
+import { useNavigation } from '@react-navigation/native';
 
 // Define the Readalong interface
 interface Member {
@@ -65,6 +67,8 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
+
+  const navigation = useNavigation<any>();
 
   const fetchReadalongDetails = useCallback(async () => {
     setLoadingInitialData(true);
@@ -305,13 +309,16 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
           )}
         </View>
 
-        {/* {isHost && (
-          // option to navigate create/update checkpoint
-        )} */}
+        {isHost && (
+          <TouchableOpacity onPress={() => navigation.navigate('CreateReadalongCheckpoint', { readalong: readalong, currentUser: currentUser, isHost: isHost })}>
+            <Text>Create a new checkpoint</Text>
+          </TouchableOpacity>
+        )}
 
-        {/* {isMember && (
+        {isMember && (
           //checkpoints, checkpoint deets, create/update checkpoint
-        )} */}
+          <ReadalongCheckpoints readalong={readalong} currentUser={currentUser} isMember={isMember} isHost={isHost}/>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

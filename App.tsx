@@ -42,6 +42,7 @@ import BuddyReadsDetails from './src/features/social/screens/BuddyReadsDetails';
 import BuddyReadsCreate from './src/features/social/screens/BuddyReadsCreate';
 import ReadAlongsCreate from './src/features/social/screens/ReadAlongsCreate';
 import ReadAlongDetails from './src/features/social/screens/ReadAlongDetails';
+import CreateReadalongCheckpoint from './src/features/social/screens/CreateReadalongCheckpoint';
 
 const Stack = createNativeStackNavigator();
 
@@ -387,6 +388,10 @@ const App = () => {
             name="ReadalongDetails"
             component={ReadAlongDetails}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="CreateReadalongCheckpoint"
+            component={CreateReadalongCheckpoint}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
         </Stack.Navigator>
         <Toast />
       </NavigationContainer>
