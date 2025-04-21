@@ -18,7 +18,7 @@ import {
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
-import ReadAlongCard from '../components/ReadalongCard';
+import ReadAlongCard from '../components/ReadAlongCard';
 import { useNavigation } from '@react-navigation/native';
 
 const ReadAlongsIndex = () => {
