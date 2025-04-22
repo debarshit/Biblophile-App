@@ -316,7 +316,6 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
         )}
 
         {isMember && (
-          //checkpoints, checkpoint deets, create/update checkpoint
           <ReadalongCheckpoints readalong={readalong} currentUser={currentUser} isMember={isMember} isHost={isHost}/>
         )}
       </ScrollView>
