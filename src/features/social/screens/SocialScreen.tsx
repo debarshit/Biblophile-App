@@ -1,111 +1,69 @@
-import React, { useEffect, useRef, useState } from "react";
-import { BackHandler } from "react-native";
-import { WebView } from "react-native-webview";
-import { useNavigation } from '@react-navigation/native';
-import { useStore } from "../../../store/store";
+import { StyleSheet, Text } from 'react-native';
+import React from 'react';
+import Swiper from "react-native-screens-swiper";
+import NewsFeed from './NewsFeed';
+import buddyReadsIndex from './BuddyReadsIndex';
+import ReadAlongsIndex from './ReadAlongsIndex';
+import BookClubsIndex from './BookClubsIndex';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { BORDERRADIUS, COLORS } from '../../../theme/theme';
+import HeaderBar from '../../../components/HeaderBar';
 
-const SocialScreen = ({navigation, route}: any) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [canGoBack, setCanGoBack] = useState(false);
-  const logout = useStore((state: any) => state.logout);
-  const userDetails = useStore((state: any) => state.userDetails);
+const SocialScreen = () => {
+  const data = [
+    {
+        tabLabel: 'News Feed',
+        component: NewsFeed,
+    },
+    {
+        tabLabel: 'buddy Reads',
+        component: buddyReadsIndex,
+        props: {}, // (optional) additional props
+    },
+    {
+        tabLabel: 'Read Alongs',
+        component: ReadAlongsIndex,
+        props: {}, // (optional) additional props
+    },
+    {
+      tabLabel: 'BookClubs',
+      component: BookClubsIndex,
+      props: {}, // (optional) additional props
+  },
+  ];
 
-  const accessToken = userDetails[0]?.accessToken;
-  const refreshToken = userDetails[0]?.refreshToken;
+  return (
+    <SafeAreaView style={styles.ScreenContainer} >
+      {/* App Header */}
+      <HeaderBar title="" />
 
-  navigation = useNavigation();
-  const webViewRef = useRef(null);
-
-  useEffect(() => {
-    if (accessToken && refreshToken) {
-      setIsLoggedIn(true);
-    } else {
-      const logoutAndNavigate = async () => {
-        try {
-          await logout();
-          navigation.navigate("SignupLogin");
-        } catch (error) {
-          console.error("Logout failed:", error);
-        }
-      };
-
-      logoutAndNavigate();
-    }
-  }, [accessToken, refreshToken, logout]);
-
-  useEffect(() => {
-    const backAction = () => {
-      if (canGoBack) {
-        webViewRef.current.goBack();
-        return true;
-      } else {
-        return false;
-      }
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
-
-    return () => {
-      backHandler.remove();
-    };
-  }, [canGoBack]);
-
-  const handleNavigationStateChange = (navState: any) => {
-    setCanGoBack(navState.canGoBack);
-  };
-
-  if (!isLoggedIn) {
-    return null;
-  }
-
-  const injectedJS = `
-  (function() {
-    // Hide nav and footer
-    const nav = document.querySelector('nav');
-    const footer = document.querySelector('footer');
-    if (nav) nav.style.display = 'none';
-    if (footer) footer.style.display = 'none';
-    
-    // Add margin to body
-    const body = document.querySelector('body');
-    if (body) body.style.marginBottom = '100px';
-    
-    // Override fetch to include headers
-    const originalFetch = window.fetch;
-    window.fetch = function(url, options = {}) {
-      if (url.toString().startsWith('https://biblophile.com')) {
-        options.headers = {
-          ...options.headers,
-          'Authorization': 'Bearer ${accessToken}',
-          'x-refresh-token': '${refreshToken}'
-        };
-      }
-      return originalFetch(url, options);
-    };
-  })();
-`;
-
-const defaultUrl = "https://biblophile.com/social";
-const webViewUrl = route.params ? route.params.uri : defaultUrl;
-
-return (
-  <WebView
-    ref={webViewRef}
-    source={{
-      uri: webViewUrl,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "x-refresh-token": refreshToken,
-      },
-    }}
-    originWhitelist={["*"]}
-    onNavigationStateChange={handleNavigationStateChange}
-    injectedJavaScript={injectedJS}
-  />
-);
+      {/* Swipable Screens */}
+      <Swiper
+        data={data}
+        style={styles}
+      />
+    </SafeAreaView>
+  )
 };
 
 export default SocialScreen;
+
+const styles = StyleSheet.create({
+  pillButton: {
+    backgroundColor: COLORS.primaryGreyHex,
+    borderRadius: BORDERRADIUS.radius_10,
+  },
+  pillActive: {
+      backgroundColor: COLORS.primaryOrangeHex,
+  },
+  pillLabel: {
+      color: COLORS.secondaryLightGreyHex,
+  },
+  activeLabel: {
+      color: COLORS.primaryWhiteHex,
+  },
+  ScreenContainer: {
+    flex: 1,
+    backgroundColor: COLORS.primaryBlackHex,
+  },
+});

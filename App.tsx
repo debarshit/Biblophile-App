@@ -38,6 +38,11 @@ import DiscoverScreen from './src/features/discover/screens/DiscoverScreen';
 import GenreScreen from './src/features/discover/screens/GenreScreen';
 import NotificationsScreen from './src/features/settings/screens/NotificationsScreen';
 import ChallengeDetailsScreen from './src/features/challenges/screens/ChallengeDetailsScreen';
+import BuddyReadsDetails from './src/features/social/screens/BuddyReadsDetails';
+import BuddyReadsCreate from './src/features/social/screens/BuddyReadsCreate';
+import ReadAlongsCreate from './src/features/social/screens/ReadAlongsCreate';
+import ReadAlongDetails from './src/features/social/screens/ReadAlongDetails';
+import CreateReadalongCheckpoint from './src/features/social/screens/CreateReadalongCheckpoint';
 
 const Stack = createNativeStackNavigator();
 
@@ -367,6 +372,26 @@ const App = () => {
             name="ChallengeDetails"
             component={ChallengeDetailsScreen}
             options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+          <Stack.Screen
+            name="BuddyReadsDetails"
+            component={BuddyReadsDetails}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+          <Stack.Screen
+            name="BuddyReadsCreate"
+            component={BuddyReadsCreate}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="ReadAlongsCreate"
+            component={ReadAlongsCreate}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="ReadalongDetails"
+            component={ReadAlongDetails}
+            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+            <Stack.Screen
+            name="CreateReadalongCheckpoint"
+            component={CreateReadalongCheckpoint}
+            options={{animation: 'slide_from_right'}}></Stack.Screen>
         </Stack.Navigator>
         <Toast />
       </NavigationContainer>
