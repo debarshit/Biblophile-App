@@ -4,6 +4,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
+import { CommentInputForm } from './CommentInputForm';
 
 // Types
 interface Member {
@@ -247,58 +248,6 @@ const CommentItem = memo(({
     );
 });
 
-// CommentForm Component
-const CommentForm = memo(({ 
-    onSubmit, 
-    isLoading 
-}: { 
-    onSubmit: (text: string, pageNumber: number) => void, 
-    isLoading: boolean 
-}) => {
-    const [commentText, setCommentText] = useState('');
-    const [pageNumber, setPageNumber] = useState(1);
-    
-    const isValid = commentText.trim() !== '' && pageNumber > 0;
-    
-    const handleSubmit = () => {
-        if (isValid) {
-            onSubmit(commentText, pageNumber);
-            setCommentText('');
-            setPageNumber(1);
-        }
-    };
-    
-    return (
-        <View style={styles.commentInputContainer}>
-            <TextInput
-                style={styles.commentTextInput}
-                placeholder="Write a comment..."
-                placeholderTextColor={COLORS.secondaryLightGreyHex}
-                value={commentText}
-                onChangeText={setCommentText}
-                multiline={true}
-            />
-            
-            <TextInput
-                style={styles.commentPageInput}
-                placeholder="Page"
-                placeholderTextColor={COLORS.secondaryLightGreyHex}
-                keyboardType="numeric"
-                value={pageNumber === 0 ? '' : pageNumber.toString()}
-                onChangeText={(text) => setPageNumber(parseInt(text) || 0)}
-            />
-            
-            <Pressable
-                style={[styles.postButton, !isValid && styles.disabledButton]}
-                onPress={handleSubmit}
-                disabled={isLoading || !isValid}
-            >
-                <Text style={styles.postButtonText}>Post</Text>
-            </Pressable>
-        </View>
-    );
-});
-
 // Main Component
 const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
     readalong,
@@ -409,7 +358,7 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
 
             const data = response.data;
 
-            if (data.status === "success" && data.comment) {
+            if (data.status === "success") {
                 // Replace temp comment with actual comment from API
                 deleteComment(tempId);
                 addComment(data.comment);
@@ -504,9 +453,11 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
                         contentContainerStyle={styles.flatListContent}
                     />
 
-                    <CommentForm 
-                        onSubmit={handleCommentSubmit}
+                    <CommentInputForm 
+                        onSubmit={(text, pageNumber) => handleCommentSubmit(text, pageNumber)}
                         isLoading={pagination.loading}
+                        showPageInput={true}
+                        initialPageNumber={currentUser.currentPage}
                     />
                 </>
             ) : (
@@ -613,7 +564,7 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.space_8,
     },
     blurredText: {
-        color: 'transparent',
+        // color: 'transparent',
         textShadowColor: 'rgba(0, 0, 0, 0.5)',
         textShadowOffset: {width: 1, height: 1},
         textShadowRadius: 5,
@@ -631,54 +582,6 @@ const styles = StyleSheet.create({
         marginLeft: SPACING.space_4,
         fontSize: FONTSIZE.size_12,
         color: COLORS.secondaryLightGreyHex,
-    },
-    commentInputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingTop: SPACING.space_10,
-        borderTopWidth: 1,
-        borderTopColor: COLORS.secondaryGreyHex,
-        marginTop: 'auto',
-    },
-    commentTextInput: {
-        flex: 1,
-        backgroundColor: COLORS.primaryGreyHex,
-        borderRadius: BORDERRADIUS.radius_20,
-        paddingVertical: SPACING.space_8,
-        paddingHorizontal: SPACING.space_15,
-        marginRight: SPACING.space_8,
-        fontSize: FONTSIZE.size_14,
-        color: COLORS.primaryWhiteHex,
-        minHeight: 40,
-        maxHeight: 120,
-    },
-    commentPageInput: {
-        width: 50,
-        backgroundColor: COLORS.primaryGreyHex,
-        borderRadius: BORDERRADIUS.radius_20,
-        paddingVertical: SPACING.space_8,
-        paddingHorizontal: SPACING.space_4,
-        marginRight: SPACING.space_8,
-        fontSize: FONTSIZE.size_14,
-        color: COLORS.primaryWhiteHex,
-        textAlign: 'center',
-    },
-    postButton: {
-        backgroundColor: COLORS.primaryOrangeHex,
-        borderRadius: BORDERRADIUS.radius_20,
-        paddingVertical: SPACING.space_10,
-        paddingHorizontal: SPACING.space_15,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    disabledButton: {
-        backgroundColor: COLORS.primaryGreyHex,
-        opacity: 0.7,
-    },
-    postButtonText: {
-        color: COLORS.primaryWhiteHex,
-        fontSize: FONTSIZE.size_14,
-        fontWeight: 'bold',
     },
     loadingFooter: {
         paddingVertical: SPACING.space_20,

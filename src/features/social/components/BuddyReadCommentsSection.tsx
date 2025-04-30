@@ -226,7 +226,6 @@ interface BuddyReadCommentsSectionProps {
     };
 
     const handleDeleteComment = async (commentId: number) => {
-      Alert.alert('Error', 'Failed to delete comment.');
       if (!accessToken || !currentUser.userId) return;
       try {
         const response = await instance.post(
@@ -238,6 +237,7 @@ interface BuddyReadCommentsSectionProps {
             },
           }
         );
+        console.log(response.data);
   
         if (response.data.status === 'success') {
           Alert.alert('Success', 'Comment deleted successfully.');
@@ -253,25 +253,30 @@ interface BuddyReadCommentsSectionProps {
       }
     };
 
-    const handleCommentSubmit = async (parentCommentId?: number | null) => {
+    const handleCommentSubmit = async (commentText: string, pageNumber?: number, parentCommentId?: number | null) => {
       if (!accessToken || !buddyReadId || !currentUser.userId) return;
-      const commentText = parentCommentId ? newReply : newComment;
+
+      if (!commentText.trim()) {
+        console.log('Comment text is empty');
+        return;
+      }
+
+      const actualPageNumber = pageNumber || currentUser.currentPage;
   
       try {
         const params = new URLSearchParams({
           comment_text: commentText,
           buddy_read_id: String(buddyReadId),
-          page_number: String(currentUser.currentPage),
+          page_number: String(actualPageNumber),
           user_id: currentUser.userId,
         });
   
-        if (parentCommentId !== null) {
+        if (parentCommentId !== null && parentCommentId !== undefined) {
           params.append('parent_comment_id', String(parentCommentId));
         }
   
         const response = await instance.post(requests.submitComment, params, {
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
             Authorization: `Bearer ${accessToken}`,
           },
         });
@@ -386,7 +391,7 @@ interface BuddyReadCommentsSectionProps {
     const renderComments = (currentComments: Comment[], depth: number = 0, maxDepth: number = 3): JSX.Element[] => {
         return currentComments?.map((comment) => (
           <View key={comment.comment_id} style={[styles.commentContainer, { marginLeft: depth * SPACING.space_16 }]}>
-            {(isHost || comment.user_id === currentUser.userId) && (
+            {(isHost || comment.user_id == currentUser.userId) && (
               <TouchableOpacity onPress={() => handleEllipsisClick(comment.comment_id)} style={styles.ellipsisButton}>
                 <Text style={styles.ellipsis}>...</Text>
               </TouchableOpacity>
@@ -420,8 +425,10 @@ interface BuddyReadCommentsSectionProps {
               <CommentInputForm
                 value={newReply}
                 onChangeText={setNewReply}
-                onSubmit={() => handleCommentSubmit(comment.comment_id)}
+                onSubmit={(text, page) => handleCommentSubmit(text, page, comment.comment_id)}
                 placeholder="Write your reply..."
+                showPageInput={true}
+                initialPageNumber={currentUser.currentPage}
               />
             )}
             {depth < maxDepth && Array.isArray(comment.replies) && comment.replies.length > 0 && (
@@ -467,8 +474,10 @@ interface BuddyReadCommentsSectionProps {
         <CommentInputForm
           value={newComment}
           onChangeText={setNewComment}
-          onSubmit={() => handleCommentSubmit(null)}
+          onSubmit={(text, page) => handleCommentSubmit(text, page, null)}
           placeholder="Write a comment..."
+          showPageInput={true}
+          initialPageNumber={currentUser.currentPage}
         />
         {loadingComments && <ActivityIndicator style={styles.loadMoreIndicator} color={COLORS.primaryOrangeHex} />}
         {hasMoreCommentsState && (

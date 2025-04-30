@@ -42,7 +42,6 @@ const ReadAlongsIndex = () => {
         },
       });
       setMyReadalongs(myReadalongsResponse.data);
-      console.log(myReadalongsResponse.data);
 
       // Fetch "Active Readalongs"
       const activeReadalongsResponse = await instance.get(requests.fetchReadalongs);
