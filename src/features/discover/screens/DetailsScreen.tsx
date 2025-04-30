@@ -27,12 +27,13 @@ import ProductReview from '../components/ProductReview';
 import ReadTogetherLinks from '../components/ReadTogetherLinks';
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCity } from '../../../contexts/CityContext';
 
 const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const userDetails = useStore((state: any) => state.userDetails);
-  const { selectedCity }  = useStore();
+  const { selectedCity } = useCity();
 
   const [id, setId] = useState(route.params.id);
   const [type, setType] = useState(route.params.type);
