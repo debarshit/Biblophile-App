@@ -50,7 +50,7 @@ const DetailsScreen = ({navigation, route}: any) => {
           { size: 'Buy', price: product['ProductPrice'], currency: '₹' },
           {
             size: 'Rent',
-            price: subscription === true ? 0 : product['ProductRentPrice'],
+            price: subscription === true ? '0' : product['ProductRentPrice'],
             currency: '₹',
           },
         ];
