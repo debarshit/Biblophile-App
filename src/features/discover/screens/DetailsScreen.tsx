@@ -23,6 +23,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCity } from '../../../contexts/CityContext';
 import DescriptionTab from '../components/DescriptionTab';
 import TabNavigator from '../components/TabNavigator';
+import BuyOptionsModal from '../../bookshop/components/BuyOptionsModal';
 
 const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
@@ -35,8 +36,9 @@ const DetailsScreen = ({navigation, route}: any) => {
   const [isGoogleBook, setIsGoogleBook] = useState(false); 
 
   const [subscription, setSubscription] = useState(false);
-  const [product, setProduct] = useState([]);
+  const [product, setProduct] = useState<any>({});
   const [activeTab, setActiveTab] = useState('description');
+  const [buyModalVisible, setBuyModalVisible] = useState(false);
 
   const getPrices = () => {
     if (type === 'Book' && product['ProductPrice']) {
@@ -90,6 +92,28 @@ const DetailsScreen = ({navigation, route}: any) => {
     } else {
       navigation.navigate('Tab');
     }
+  };
+
+  const handleBuyOptions = () => {
+    setBuyModalVisible(true);
+  };
+
+  const handleBuyOptionSelect = (option) => {
+    if (option === "direct") {
+      // Set the price to Buy price and add to cart
+      const buyPrice = prices.find(item => item.size === "Buy");
+      if (buyPrice) {
+        setPrice(buyPrice);
+        addToCarthandler({
+          id: id,
+          name: product['ProductName'],
+          photo: convertHttpToHttps(product['ProductPhoto']),
+          type: type,
+          price: buyPrice,
+        });
+      }
+    }
+    // Amazon option is handled within the modal itself
   };
 
   const addToCarthandler = ({
@@ -218,20 +242,34 @@ const DetailsScreen = ({navigation, route}: any) => {
         <TabNavigator activeTab={activeTab} setActiveTab={setActiveTab} type={type} />
           {renderContent()}
         </View>
-        {price && (type !== "ExternalBook" && product['ProductAvailability'] === '1') && <PaymentFooter
-          price={price}
-          buttonTitle="Add to Cart"
-          buttonPressHandler={() => {
-            addToCarthandler({
-              id: id,
-              name: product['ProductName'],
-              photo: convertHttpToHttps(product['ProductPhoto']),
-              type: type,
-              price: price,
-            });
-          }}
-        />}
+        {price && (
+          <PaymentFooter
+            price={price}
+            buttonTitle={price.size === "Buy" ? "Buy Now" : "Add to Cart"}
+            buttonPressHandler={() => {
+              if (price.size === "Buy") {
+                handleBuyOptions();
+              } else {
+                addToCarthandler({
+                  id: id,
+                  name: product['ProductName'],
+                  photo: convertHttpToHttps(product['ProductPhoto']),
+                  type: type,
+                  price: price,
+                });
+              }
+            }}
+          />
+        )}
       </ScrollView>
+      <BuyOptionsModal
+        isVisible={buyModalVisible}
+        onClose={() => setBuyModalVisible(false)}
+        onOptionSelect={handleBuyOptionSelect}
+        bookPrice={isGoogleBook ? product.saleInfo?.listPrice?.amount : product['ProductPrice']}
+        showDirectOption={!isGoogleBook && product['ProductAvailability'] === '1'}
+        bookTitle={isGoogleBook ? product['volumeInfo']?.title : product['ProductName']}
+      />
     </SafeAreaView>
   );
 };

@@ -4,8 +4,11 @@ import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../th
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import Toast from 'react-native-toast-message';
+import { useCity } from '../../../contexts/CityContext';
 
 const RequestBookButton = ({ id, isGoogleBook, product, userDetails, actualPrice }) => {
+  const { selectedCity } = useCity();
+  
   const submitBookRequest = async () => {
     if (userDetails) {
       try {
@@ -67,21 +70,25 @@ const RequestBookButton = ({ id, isGoogleBook, product, userDetails, actualPrice
     }
   };
 
-  return (
-    <View>
-      <TouchableOpacity
-        onPress={submitBookRequest}
-        style={[
-          styles.SizeBox,
-          { borderColor: COLORS.primaryOrangeHex },
-        ]}
-      >
-        <Text style={[styles.SizeText, { fontSize: FONTSIZE.size_14, color: COLORS.primaryOrangeHex }]}>
-          Request book
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
+  if (selectedCity == 'Bengaluru') {
+    return (
+      <View>
+        <TouchableOpacity
+          onPress={submitBookRequest}
+          style={[
+            styles.SizeBox,
+            { borderColor: COLORS.primaryOrangeHex },
+          ]}
+        >
+          <Text style={[styles.SizeText, { fontSize: FONTSIZE.size_14, color: COLORS.primaryOrangeHex }]}>
+            Request To Rent
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  } else {
+    return;
+  }
 };
 
 const styles = StyleSheet.create({
