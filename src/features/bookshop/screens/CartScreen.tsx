@@ -1,13 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   ScrollView,
   StatusBar,
   StyleSheet,
-  Text,
   View,
   SafeAreaView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import {useStore} from '../../../store/store';
 import {COLORS, SPACING} from '../../../theme/theme';
@@ -29,18 +27,11 @@ const CartScreen = ({navigation, route}: any) => {
 
   const buttonPressHandler = () => {
     if (CartList.length != 0) {
-      Alert.alert("Delivery Fees", "1. Buying Books: Orders <  ₹120 incur ₹50 delivery fee; otherwise, delivery is free.\n2. Renting Books: Orders < ₹120 incur ₹90 for delivery and pickup; otherwise, both are free.",
-        [
-          {
-              text: "Cancel",
-              style: "cancel"
-          },
-          {
-              text: "OK",
-              onPress: () => navigation.push('Payment', { amount: calculateFinalPrice(), cart: CartList })
-          }
-        ]
-      )
+      // Navigate directly to Payment with the calculated final price
+      navigation.push('Payment', { 
+        amount: calculateFinalPrice(), 
+        cart: CartList 
+      });
     }
   };
 
@@ -54,20 +45,9 @@ const CartScreen = ({navigation, route}: any) => {
     calculateCartPrice();
   };
 
-  const getPrice = (item) => {
-    const { type, prices, actualPrice } = item;
-    const priceInfo = prices[0];
-  
-    if (type === "Book") {
-      return priceInfo.size === "Buy" ? priceInfo.price : actualPrice;
-    } else {
-      return priceInfo.size === "QR" ? priceInfo.price : priceInfo.price / 1.3;
-    }
-  };
-
   const calculateFinalPrice = () => {
     let additionalCost = 0;
-    const numericCartPrice = parseFloat(CartPrice); // Ensure CartPrice is a number
+    const numericCartPrice = parseFloat(CartPrice);
   
     if (numericCartPrice < 120) {
       CartList.forEach((item: any) => {
