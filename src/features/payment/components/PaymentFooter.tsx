@@ -129,7 +129,7 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
         </View>
         <TouchableOpacity
           style={styles.payButton}
-          onPress={() => buttonPressHandler()}>
+          onPress={() => buttonPressHandler(totalPrice)}>
           <Text style={styles.buttonText}>{buttonTitle}</Text>
         </TouchableOpacity>
       </View>

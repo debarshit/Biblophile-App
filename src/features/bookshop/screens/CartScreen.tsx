@@ -25,11 +25,11 @@ const CartScreen = ({navigation, route}: any) => {
   );
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
 
-  const buttonPressHandler = () => {
+  const buttonPressHandler = (finalPrice: string) => {
     if (CartList.length != 0) {
       // Navigate directly to Payment with the calculated final price
       navigation.push('Payment', { 
-        amount: calculateFinalPrice(), 
+        amount: finalPrice, 
         cart: CartList 
       });
     }
@@ -43,21 +43,6 @@ const CartScreen = ({navigation, route}: any) => {
   const decrementCartItemQuantityHandler = (id: string, size: string) => {
     decrementCartItemQuantity(id, size);
     calculateCartPrice();
-  };
-
-  const calculateFinalPrice = () => {
-    let additionalCost = 0;
-    const numericCartPrice = parseFloat(CartPrice);
-  
-    if (numericCartPrice < 120) {
-      CartList.forEach((item: any) => {
-        if (item.type === "Book") {
-          const priceInfo = item.prices[0];
-          additionalCost += priceInfo.size === "Buy" ? 50 : 90;
-        }
-      });
-    }
-    return (numericCartPrice + additionalCost).toFixed(2);
   };
 
   return (
