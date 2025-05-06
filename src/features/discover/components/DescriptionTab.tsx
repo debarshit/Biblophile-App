@@ -18,6 +18,8 @@ const DescriptionTab = ({
   userDetails,
   stripHtmlTags
 }) => {
+  const hasRentOption = prices.some(p => p.size === 'Rent');
+
   return (
     <View style={styles.TabContent}>
       <Text style={styles.InfoTitle}>Description</Text>
@@ -36,22 +38,19 @@ const DescriptionTab = ({
       )}
       <>
         <Text style={styles.InfoTitle}>Options</Text>
-        {product['ProductAvailability'] === '1' ? (
           <ProductOptions 
             prices={prices} 
             selectedPrice={price} 
             onSelectPrice={setPrice} 
             type={type} 
           />
-        ) : (
-          <RequestBookButton 
+          {!hasRentOption && <RequestBookButton 
             id={id} 
             isGoogleBook={isGoogleBook} 
             product={product}
             userDetails={userDetails}
             actualPrice={actualPrice}
-          />
-        )}
+          />}
       </>
     </View>
   );

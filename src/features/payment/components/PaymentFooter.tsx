@@ -116,7 +116,7 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
         <View style={styles.priceContainer}>
           <Text style={styles.priceTitle}>{price.size === 'Buy' && buttonTitle !== 'Pay' ? 'From' : 'Total'}</Text>
           <Text style={styles.priceText}>
-            ₹ <Text style={styles.price}>{totalPrice}</Text>
+            ₹ <Text style={styles.price}>{totalPrice === 'NaN' ? '' : buttonTitle === 'Pay' ? totalPrice : price.price}</Text>
           </Text>
         </View>
         <TouchableOpacity

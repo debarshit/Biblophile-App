@@ -6,7 +6,6 @@ const ProductOptions = ({ prices, selectedPrice, onSelectPrice, type }) => {
   return (
     <View style={styles.SizeOuterContainer}>
       {prices.map((data, index) => (
-        data.price && (
           <TouchableOpacity
             key={index}
             onPress={() => onSelectPrice(data)}
@@ -33,7 +32,6 @@ const ProductOptions = ({ prices, selectedPrice, onSelectPrice, type }) => {
               {data.size}
             </Text>
           </TouchableOpacity>
-        )
       ))}
     </View>
   );

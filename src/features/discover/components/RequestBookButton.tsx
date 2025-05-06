@@ -46,14 +46,14 @@ const RequestBookButton = ({ id, isGoogleBook, product, userDetails, actualPrice
         if (response.data.message === "Updated" || response.data.message) {
           if (Platform.OS === 'android') {
             ToastAndroid.showWithGravity(
-              `Updated successfully!`,
+              `Request Updated successfully!`,
               ToastAndroid.SHORT,
               ToastAndroid.CENTER,
             );
           } else {
             Toast.show({
               type: 'info', 
-              text1: `Updated successfully!`,
+              text1: `Request Updated successfully!`,
               visibilityTime: 2000, 
               autoHide: true, 
               position: 'bottom',
@@ -75,10 +75,7 @@ const RequestBookButton = ({ id, isGoogleBook, product, userDetails, actualPrice
       <View>
         <TouchableOpacity
           onPress={submitBookRequest}
-          style={[
-            styles.SizeBox,
-            { borderColor: COLORS.primaryOrangeHex },
-          ]}
+          style={styles.SizeBox}
         >
           <Text style={[styles.SizeText, { fontSize: FONTSIZE.size_14, color: COLORS.primaryOrangeHex }]}>
             Request To Rent

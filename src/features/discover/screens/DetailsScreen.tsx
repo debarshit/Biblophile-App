@@ -41,15 +41,17 @@ const DetailsScreen = ({navigation, route}: any) => {
   const [buyModalVisible, setBuyModalVisible] = useState(false);
 
   const getPrices = () => {
-    if (type === 'Book' && product['ProductPrice']) {
+    if (type === 'Book' || type === 'ExternalBook' ) {
       const prices = [
-        { size: 'Buy', price: product['ProductPrice'], currency: '₹' }
+        { size: 'Buy', price: product['ProductPrice'] || null, currency: '₹' }
       ];
   
-      if (selectedCity === 'Bengaluru') {
+      if (type === 'Book' && selectedCity == 'Bengaluru') {
+        const rentPrice = product['ProductRentPrice'] || (product['ProductPrice'] * 0.10);
+        const adjustedRentPrice = Math.max(25, Math.min(35, rentPrice));
         prices.push({
           size: 'Rent',
-          price: subscription === true ? '0' : product['ProductRentPrice'],
+          price: subscription === true ? '0' : adjustedRentPrice,
           currency: '₹',
         });
       }
