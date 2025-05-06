@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 
 interface PriceProps {
   price: string;
+  size: string;
   currency: string;
 }
 
@@ -113,7 +114,7 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
       
       <View style={styles.priceFooter}>
         <View style={styles.priceContainer}>
-          <Text style={styles.priceTitle}>Total</Text>
+          <Text style={styles.priceTitle}>{price.size === 'Buy' && buttonTitle !== 'Pay' ? 'From' : 'Total'}</Text>
           <Text style={styles.priceText}>
             ₹ <Text style={styles.price}>{totalPrice}</Text>
           </Text>
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_24,
+    fontSize: FONTSIZE.size_20,
     color: COLORS.primaryOrangeHex,
   },
   price: {

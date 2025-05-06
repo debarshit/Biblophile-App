@@ -245,7 +245,7 @@ const DetailsScreen = ({navigation, route}: any) => {
         {price && (
           <PaymentFooter
             price={price}
-            buttonTitle={price.size === "Buy" ? "Buy Now" : "Add to Cart"}
+            buttonTitle={price.size === "Buy" ? "See options" : "Add to Cart"}
             buttonPressHandler={() => {
               if (price.size === "Buy") {
                 handleBuyOptions();
