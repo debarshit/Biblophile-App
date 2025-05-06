@@ -190,7 +190,7 @@ const PaymentScreen = ({navigation, route}: any) => {
           setTimeout(() => {
             timeoutReached = true;
             clearInterval(pollPaymentStatus);
-            alert('Payment status check timed out. Please try again later.');
+            // alert('Payment status check timed out. Please try again later.');
           }, 300000);
 
           } else {

@@ -15,7 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 
 interface PriceProps {
   price: string;
-  size: string;
+  size?: string;
   currency: string;
 }
 
@@ -73,9 +73,16 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
     
     return deliveryFee.toFixed(2);
   };
+
+  // Calculate the security deposit if needed
+  const calculateSecurityDeposit = () => {
+    const currentDeposit = userDetails[0].deposit || 0;
+    return currentDeposit < 300 ? (300 - currentDeposit).toFixed(2) : "0.00";
+  };
   
   const deliveryFee = calculateDeliveryFee();
-  const totalPrice = (parseFloat(price.price) + parseFloat(deliveryFee)).toFixed(2);
+  const securityDeposit = calculateSecurityDeposit();
+  const totalPrice = (parseFloat(price.price) + parseFloat(deliveryFee) + parseFloat(securityDeposit)).toFixed(2);
 
   const navigateToSubscription = () => {
     navigation.navigate('Subscription');
@@ -96,6 +103,7 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
           <PriceBreakdownTable 
             subtotal={price.price}
             deliveryFee={deliveryFee}
+            securityDeposit={securityDeposit}
             totalPrice={totalPrice}
           />
         )}

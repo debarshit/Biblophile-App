@@ -10,12 +10,14 @@ import {
 interface PriceBreakdownProps {
   subtotal: string;
   deliveryFee: string;
+  securityDeposit: string;
   totalPrice: string;
 }
 
 const PriceBreakdownTable: React.FC<PriceBreakdownProps> = ({
   subtotal,
   deliveryFee,
+  securityDeposit,
   totalPrice,
 }) => {
   const isDeliveryFree = parseFloat(deliveryFee) === 0;
@@ -40,6 +42,11 @@ const PriceBreakdownTable: React.FC<PriceBreakdownProps> = ({
         ]}>
           {isDeliveryFree ? "₹ 0.00" : `₹ ${deliveryFee}`}
         </Text>
+      </View>
+
+      <View style={styles.breakdownRow}>
+        <Text style={styles.breakdownLabel}>Security Deposit</Text>
+        <Text style={styles.breakdownValue}>₹ {securityDeposit}</Text>
       </View>
       
       <View style={styles.divider} />
