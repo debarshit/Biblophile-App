@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { FlatList, TouchableOpacity, Image, View, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { SPACING } from '../../../theme/theme';
+import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 
 const Spotlights = ({ spotlights }) => {
   const flatListRef = useRef(null);
@@ -61,17 +61,15 @@ const Spotlights = ({ spotlights }) => {
                 />
                 <View style={styles.bookInfo}>
                   <Text style={styles.bookTitle} numberOfLines={2}>
-                    {item.Title || "A Very Long Book Name"}
+                    {item.Name || "A Very Long Book Name"}
                   </Text>
                   <Text style={styles.bookAuthor} numberOfLines={1}>
-                    {item.Author || "Author name"}
+                    {item.Authors || "Author name"}
                   </Text>
                   <Text style={styles.bookGenre} numberOfLines={1}>
-                    {item.Genre || "Book Genre"}
+                    {item.Genres || "Book Genre"}
                   </Text>
-                  <TouchableOpacity style={styles.knowMoreButton}>
-                    <Text style={styles.knowMoreText}>Know more</Text>
-                  </TouchableOpacity>
+                  <Text style={styles.knowMoreText}>Know more</Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -144,12 +142,10 @@ const styles = StyleSheet.create({
     opacity: 0.8,
     marginBottom: 8,
   },
-  knowMoreButton: {
-    alignSelf: 'flex-start',
-  },
   knowMoreText: {
-    color: '#ccc',
-    fontSize: 12,
+    alignSelf: 'flex-start',
+    color: COLORS.primaryOrangeHex,
+    fontSize: FONTSIZE.size_14,
   },
   carouselContent: {
     paddingVertical: SPACING.space_10,
