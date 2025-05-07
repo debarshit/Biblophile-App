@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -9,15 +9,21 @@ import {
   Platform,
   ToastAndroid,
   Animated,
-  FlatList,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { Feather } from '@expo/vector-icons';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+
+// Components
 import Spotlights from '../components/Spotlights';
+import HeaderBar from '../../../components/HeaderBar';
+import FloatingIcon from '../../bookshop/components/FloatingIcon';
+import GenrePicker from '../components/GenrePicker';
+
+// Services and utilities
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
-import { Feather } from '@expo/vector-icons';
-import {useStore} from '../../../store/store';
+import { useStore } from '../../../store/store';
 import {
   BORDERRADIUS,
   COLORS,
@@ -25,226 +31,139 @@ import {
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
-import HeaderBar from '../../../components/HeaderBar';
-import FloatingIcon from '../../bookshop/components/FloatingIcon';
-import GenrePicker from '../components/GenrePicker';
 
-interface Spotlight {
-  Id: string;
-  Photo: string;
-  Name: string;
-}
+const DiscoverScreen = ({ navigation }) => {
+  // Global state from store
+  const { addToCart, calculateCartPrice, fetchGenres, GenreList, CartList } = useStore((state) => ({
+    addToCart: state.addToCart,
+    calculateCartPrice: state.calculateCartPrice,
+    fetchGenres: state.fetchGenres,
+    GenreList: state.GenreList,
+    CartList: state.CartList,
+  }));
 
-const getGenresFromData = (data: any) => {
-  const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
-  return genres;
-};
-
-const getBookList = async (genre: any) => {
-  try {
-    const response = await instance(requests.getBooks+genre);
-    const data = response.data;
-    return data;
-  } catch (error) {
-    console.error('Error fetching genres:', error);
-  }
-};
-
-const DiscoverScreen = ({navigation}: any) => {
-  //useStore variables
-  const addToCart = useStore((state: any) => state.addToCart);
-  const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
-  const fetchGenres = useStore((state: any) => state.fetchGenres);  //this function should run on mount
-  const GenreList = useStore((state: any) => state.GenreList);
-  const CartList = useStore((state: any) => state.CartList);
-
-  //useState variables
-  const [genres, setGenres] = useState(
-    getGenresFromData(GenreList),  
-  );
-  const [genreIndex, setGenreIndex] = useState({
-    index: 0,
-    genre: genres[0],
-  });
-  const [bookList, setBookList] = useState<any>(getBookList(genreIndex.genre));
-  const [spotlights, setSpotlights] = useState<Spotlight[]>([]);
-  const [sortedCoffee, setSortedCoffee] = useState<any>(
-    getBookList(genreIndex.genre),
-  );
+  // Local state
+  const [spotlights, setSpotlights] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const ListRef: any = useRef<FlatList>();
   const tabBarHeight = useBottomTabBarHeight();
 
-  const CoffeeCardAddToCart = ({
-    id,
-    name,
-    genre,
-    photo,
-    poster,
-    type,
-    prices,
-    actualPrice,
-    averageRating,
-    ratingCount,
-    description,
-    author,                    
-  }: any) => {
-    addToCart({
-      id,
-      name,
-      genre,
-      photo,
-      poster,
-      type,
-      prices,
-      actualPrice,
-      averageRating,
-      ratingCount,
-      description,
-      author, 
-    });
+  // Add to cart handler
+  const handleAddToCart = (bookData) => {
+    addToCart(bookData);
     calculateCartPrice();
-    if (Platform.OS == 'android') {
+    
+    const message = `${bookData.name} is Added to Cart`;
+    
+    if (Platform.OS === 'android') {
       ToastAndroid.showWithGravity(
-        `${name} is Added to Cart`,
+        message,
         ToastAndroid.SHORT,
         ToastAndroid.CENTER,
       );
-    }
-    else {
+    } else {
       Toast.show({
-        type: 'info', // You can set type as 'success', 'error', 'info', or 'none'
-        text1: `${name} is Added to Cart`, // Main message
-        visibilityTime: 2000, // Duration in milliseconds
-        autoHide: true, // Auto hide the toast after visibilityTime
-        position: 'bottom', // Set position to bottom
-        bottomOffset: 100, // Adjust the offset as needed
+        type: 'info',
+        text1: message,
+        visibilityTime: 2000,
+        autoHide: true,
+        position: 'bottom',
+        bottomOffset: 100,
       });
     }
   };
 
+  // Fetch genres and spotlights on component mount
   useEffect(() => {
-    // Fetch genres when component mounts
     fetchGenres();
-  }, []);
-
-  useEffect(() => {
-    // Update genres state when GenreList changes
-    setGenres(['All', ...GenreList.map((genre: any) => genre.genre)]);
-  }, [GenreList]);
-
-  useEffect(() => {
-    async function fetchBookList() {
+    
+    const getSpotlights = async () => {
       try {
-        const data = await getBookList(genreIndex.genre);
-        setBookList(data);
-        setSortedCoffee(data);
+        const response = await instance(requests.getSpotlight);
+        setSpotlights(response.data);
+        setLoading(false);
       } catch (error) {
-        console.error('Error fetching book list:', error);
+        console.error('Error fetching spotlights:', error);
+        setLoading(false);
       }
-    }
-  
-    fetchBookList();
-  }, [genreIndex]);
-
-  useEffect(() => {
-    async function getSpotlights() {
-        try {
-            const response = await instance(requests.getSpotlight);
-            const data = response.data;
-            setSpotlights(data);
-            setLoading(false);
-          } catch (error) {
-            console.error('Error fetching spotlights:', error);
-          }
-    }
-  
+    };
+    
     getSpotlights();
   }, []);
 
   return (
-    <SafeAreaView style={styles.ScreenContainer}>
-
+    <SafeAreaView style={styles.screenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
 
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.ScrollViewFlex}
+        contentContainerStyle={styles.scrollViewFlex}
         scrollEventThrottle={16}
       >
         {/* App Header */}
-        <HeaderBar title=""/>
+        <HeaderBar title="" />
 
         {/* Search Input */}
         <TouchableOpacity
-            onPress={() => {
-              navigation.navigate('SearchScreen', {
-                CoffeeCardAddToCart: CoffeeCardAddToCart,
-              })
-            }}>
-        <View style={styles.InputContainerComponent}>
+          onPress={() => {
+            navigation.navigate('SearchScreen', {
+              CoffeeCardAddToCart: handleAddToCart,
+            });
+          }}
+        >
+          <View style={styles.inputContainerComponent}>
             <Feather
-              style={styles.InputIcon}
+              style={styles.inputIcon}
               name="search"
               size={FONTSIZE.size_18}
               color={COLORS.primaryLightGreyHex}
             />
-          <TextInput
-            editable={false}
-            placeholder="Find Your Book..."
-            placeholderTextColor={COLORS.primaryLightGreyHex}
-            style={styles.TextInputContainer}
-          />
-        </View>
+            <TextInput
+              editable={false}
+              placeholder="Find Your Book..."
+              placeholderTextColor={COLORS.primaryLightGreyHex}
+              style={styles.textInputContainer}
+            />
+          </View>
         </TouchableOpacity>
 
         {/* Genre Section */}
-        <GenrePicker genres={genres} CoffeeCardAddToCart={CoffeeCardAddToCart}/>
+        <GenrePicker 
+          genres={GenreList.length > 0 ? ['All', ...new Set(GenreList.map(item => item.genre))] : ['All']} 
+          CoffeeCardAddToCart={handleAddToCart} 
+        />
+        
         {/* Spotlight Section */}
         <Spotlights spotlights={spotlights} />
-
       </Animated.ScrollView>
+      
       {CartList.length > 0 && <FloatingIcon />}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  ScreenContainer: {
+  screenContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
   },
-  ScrollViewFlex: {
+  scrollViewFlex: {
     flexGrow: 1,
   },
-  InputContainerComponent: {
+  inputContainerComponent: {
     flexDirection: 'row',
     margin: SPACING.space_30,
     borderRadius: BORDERRADIUS.radius_20,
     backgroundColor: COLORS.primaryDarkGreyHex,
     alignItems: 'center',
   },
-  InputIcon: {
+  inputIcon: {
     marginHorizontal: SPACING.space_20,
   },
-  TextInputContainer: {
+  textInputContainer: {
     flex: 1,
     height: SPACING.space_20 * 3,
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_14,
-    color: COLORS.primaryWhiteHex,
-  },
-  welcomeMascot: {
-    opacity: 0.5,
-    marginTop: SPACING.space_32,
-    marginBottom: SPACING.space_36,
-    bottom: 40,
-  },
-  welcomeMessage: {
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_semibold,
-    textAlign: 'center',
     color: COLORS.primaryWhiteHex,
   },
 });

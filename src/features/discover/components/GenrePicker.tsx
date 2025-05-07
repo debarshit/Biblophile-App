@@ -1,258 +1,252 @@
-import { Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
-import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
-import CoffeeCard from '../../../components/CoffeeCard';
-import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
-import instance from '../../../services/axios';
-import requests from '../../../services/requests';
+import React, { useEffect, useRef, useState, memo } from 'react';
+import { 
+  Dimensions, 
+  FlatList, 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View 
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 
-const getBookList = async (genre: any) => {
-    try {
-      const response = await instance(requests.getBooks+genre);
-      const data = response.data;
-      return data;
-    } catch (error) {
-      console.error('Error fetching genres:', error);
-    }
+// Components
+import CoffeeCard from '../../../components/CoffeeCard';
+
+// Services and utilities
+import instance from '../../../services/axios';
+import requests from '../../../services/requests';
+import { 
+  BORDERRADIUS, 
+  COLORS, 
+  FONTFAMILY, 
+  FONTSIZE, 
+  SPACING 
+} from '../../../theme/theme';
+
+const MAX_GENRES_PER_ROW = 3;
+
+// Function to get books by genre
+const getBookList = async (genre) => {
+  try {
+    const response = await instance(requests.getBooks + genre);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching books by genre:', error);
+    return [];
+  }
 };
 
-const GenrePicker = ({ genres, CoffeeCardAddToCart }) => {
-    const [genreIndex, setGenreIndex] = useState({
-        index: 0,
-        genre: genres[0],
-    });
-    const [bookList, setBookList] = useState<any>(getBookList(genreIndex.genre));
-    const [booksLoading, setBooksLoading] = useState(true);
+const GenrePicker = ({ genres = ['All'], CoffeeCardAddToCart }) => {
+  const [genreIndex, setGenreIndex] = useState({
+    index: 0,
+    genre: genres[0],
+  });
+  const [bookList, setBookList] = useState([]);
+  const [booksLoading, setBooksLoading] = useState(true);
 
-    const navigation = useNavigation<any>();
-    const ListRef: any = useRef<FlatList>();
+  const navigation = useNavigation<any>();
+  const listRef = useRef(null);
 
-    const convertHttpToHttps = (url) => {
-        if (url && url.startsWith('http://')) {
-          return url.replace('http://', 'https://');
-        }
-        return url;
+  // Convert HTTP URLs to HTTPS for security
+  const convertToHttps = (url) => {
+    return url && url.startsWith('http://') ? url.replace('http://', 'https://') : url;
+  };
+
+  // Fetch books when genre changes
+  useEffect(() => {
+    const fetchBookList = async () => {
+      setBooksLoading(true);
+      try {
+        const data = await getBookList(genreIndex.genre);
+        setBookList(data || []);
+      } catch (error) {
+        console.error('Error fetching book list:', error);
+      } finally {
+        setBooksLoading(false);
+      }
     };
 
-    useEffect(() => {
-        async function fetchBookList() {
-        try {
-            const data = await getBookList(genreIndex.genre);
-            setBookList(data);
-            setBooksLoading(false);
-        } catch (error) {
-            console.error('Error fetching book list:', error);
-        }
-        }
+    fetchBookList();
+  }, [genreIndex]);
+
+  // Render genre buttons in rows
+  const renderGenreRows = () => {
+    const rows = [];
     
-        fetchBookList();
-    }, [genreIndex]);
+    for (let i = 0; i < genres.length; i += MAX_GENRES_PER_ROW) {
+      const rowGenres = genres.slice(i, i + MAX_GENRES_PER_ROW);
+      
+      rows.push(
+        <View key={`row-${i}`} style={styles.genreRow}>
+          {rowGenres.map((genre, index) => {
+            const actualIndex = i + index;
+            return (
+              <TouchableOpacity
+                key={`genre-${actualIndex}`}
+                style={[
+                  styles.genreButton,
+                  genreIndex.index === actualIndex && styles.selectedGenreButton,
+                ]}
+                onPress={() => handleGenrePress(actualIndex, genre)}
+              >
+                <Text style={styles.genreButtonText}>{genre}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      );
+    }
+    
+    return rows;
+  };
 
-    return (
-        <>
-            {/* Genre Section */}
-            <View style={styles.genresContainer}>
-                <Text style={styles.sectionTitle}>What’s on Your Mind?</Text>
+  // Handle genre button press
+  const handleGenrePress = (index, genre) => {
+    setBooksLoading(true);
+    if (listRef.current) {
+      listRef.current.scrollToOffset({
+        animated: true,
+        offset: 0,
+      });
+    }
+    setGenreIndex({ index, genre });
+  };
 
-                {/* First Row */}
-                <View style={styles.genreRow}>
-                    {genres.slice(0, 3).map((data: string, index) => (
-                        <TouchableOpacity
-                        key={index.toString()}
-                        style={[
-                            styles.genreButton,
-                            genreIndex.index === index && styles.selectedGenreButton,
-                        ]}
-                        onPress={() => {
-                            setBooksLoading(true);
-                            ListRef?.current?.scrollToOffset({
-                            animated: true,
-                            offset: 0,
-                            });
-                            setGenreIndex({index: index, genre: genres[index]});
-                        }}>
-                        <Text style={styles.genreButtonText}>{data}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
+  // Navigate to book details
+  const navigateToDetails = (id) => {
+    navigation.navigate('Details', {
+      id,
+      type: "Book",
+    });
+  };
 
-                {/* Second Row */}
-                <View style={styles.genreRow}>
-                    {genres.slice(3, 6).map((data: string, index) => (
-                        <TouchableOpacity
-                        key={(index + 3).toString()}
-                        style={[
-                            styles.genreButton,
-                            genreIndex.index === index + 3 && styles.selectedGenreButton,
-                        ]}
-                        onPress={() => {
-                            setBooksLoading(true);
-                            ListRef?.current?.scrollToOffset({
-                            animated: true,
-                            offset: 0,
-                            });
-                            setGenreIndex({index: index + 3, genre: genres[index + 3]});
-                        }}>
-                        <Text style={styles.genreButtonText}>{data}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
+  // Render book item
+  const renderBookItem = ({ item }) => (
+    <TouchableOpacity onPress={() => navigateToDetails(item.BookId)}>
+      <CoffeeCard
+        id={item.BookId}
+        name={item.BookName}
+        photo={convertToHttps(item.BookPhoto)}
+        type="Book"
+        price={item.BookPrice}
+        averageRating={item.BookAverageRating}
+        ratingCount={item.BookRatingCount}
+        buttonPressHandler={CoffeeCardAddToCart}
+      />
+    </TouchableOpacity>
+  );
 
-                {/* Third Row */}
-                <View style={styles.genreRow}>
-                    {genres.slice(7, 10).map((data: string, index) => (
-                        <TouchableOpacity
-                        key={(index + 7).toString()}
-                        style={[
-                            styles.genreButton,
-                            genreIndex.index === index + 7 && styles.selectedGenreButton,
-                        ]}
-                        onPress={() => {
-                            setBooksLoading(true);
-                            ListRef?.current?.scrollToOffset({
-                            animated: true,
-                            offset: 0,
-                            });
-                            setGenreIndex({index: index + 7, genre: genres[index + 7]});
-                        }}>
-                        <Text style={styles.genreButtonText}>{data}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
+  return (
+    <>
+      {/* Genre Section */}
+      <View style={styles.genresContainer}>
+        <Text style={styles.sectionTitle}>What's on Your Mind?</Text>
+        {renderGenreRows()}
+      </View>
+
+      {/* Book List Section */}
+      {booksLoading ? (
+        // Shimmer loading effect
+        <View style={styles.shimmerFlex}>
+          {[1, 2, 3].map((key) => (
+            <ShimmerPlaceholder
+              key={`shimmer-${key}`}
+              LinearGradient={LinearGradient}
+              style={styles.shimmerPlaceholder}
+              shimmerColors={[
+                COLORS.primaryDarkGreyHex, 
+                COLORS.primaryBlackHex, 
+                COLORS.primaryDarkGreyHex
+              ]}
+              visible={false}
+            />
+          ))}
+        </View>
+      ) : (
+        <FlatList
+          ref={listRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={bookList}
+          keyExtractor={item => item.BookId || `book-${Math.random()}`}
+          renderItem={renderBookItem}
+          contentContainerStyle={styles.flatListContainer}
+          ListEmptyComponent={
+            <View style={styles.emptyListContainer}>
+              <Text style={styles.emptyText}>No Books Found</Text>
             </View>
-
-            {/* Filtered Books by Genre */}
-            {booksLoading ? (
-                // Render shimmer effect while loading
-                <View style={styles.shimmerFlex}>
-                    <ShimmerPlaceholder
-                    LinearGradient={LinearGradient}
-                    style={styles.ShimmerPlaceholder}
-                    shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                    visible={!booksLoading}>
-                    </ShimmerPlaceholder>
-                    <ShimmerPlaceholder
-                    LinearGradient={LinearGradient}
-                    style={styles.ShimmerPlaceholder}
-                    shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                    visible={!setBooksLoading}>
-                    </ShimmerPlaceholder>
-                    <ShimmerPlaceholder
-                    LinearGradient={LinearGradient}
-                    style={styles.ShimmerPlaceholder}
-                    shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                    visible={!booksLoading}>
-                    </ShimmerPlaceholder>
-                </View>
-            ) : (
-                <FlatList
-                    {...bookList.length === 0 && styles.hidden}
-                    ref={ListRef}
-                    horizontal
-                    ListEmptyComponent={
-                    <View style={styles.EmptyListContainer}>
-                        <Text style={styles.genreText}>No Books found</Text>
-                    </View>
-                    }
-                    showsHorizontalScrollIndicator={false}
-                    data={bookList}
-                    contentContainerStyle={styles.FlatListContainer}
-                    keyExtractor={item => item.BookId}
-                    renderItem={({item}) => {
-                    return (
-                        <TouchableOpacity
-                        onPress={() => {
-                            navigation.push('Details', {
-                            id: item.BookId,
-                            type: "Book",
-                            });
-                        }}>
-                        <CoffeeCard
-                            id={item.BookId}
-                            name={item.BookName}
-                            photo={convertHttpToHttps(item.BookPhoto)}
-                            type="Book"
-                            price={item.BookPrice}
-                            averageRating={item.BookAverageRating}
-                            ratingCount={item.BookRatingCount}
-                            buttonPressHandler={CoffeeCardAddToCart}
-                        />
-                        </TouchableOpacity>
-                    );
-                    }}
-                />
-                )}
-        </>
-    )
+          }
+        />
+      )}
+    </>
+  );
 };
 
-export default GenrePicker;
-
 const styles = StyleSheet.create({
-    sectionTitle: {
-        fontSize: FONTSIZE.size_18,
-        fontFamily: FONTFAMILY.poppins_bold,
-        color: 'white',
-        textAlign: 'center',
-        marginVertical: SPACING.space_20,
-    },
-        genresContainer: {
-        marginBottom: SPACING.space_20,
-        paddingHorizontal: SPACING.space_10,
-        alignItems: 'center',
-    },
-    genreRow: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginVertical: SPACING.space_4,
-    },
-    genreButton: {
-        backgroundColor: COLORS.primaryGreyHex,
-        paddingVertical: SPACING.space_10,
-        paddingHorizontal: SPACING.space_20,
-        borderRadius: BORDERRADIUS.radius_10,
-        marginHorizontal: SPACING.space_4,
-    },
-    genreButtonText: {
-        color: COLORS.primaryWhiteHex,
-        fontSize: FONTSIZE.size_14,
-        textAlign: 'center',
-    },
-    selectedGenreButton: {
-        backgroundColor: COLORS.primaryOrangeHex,
-    },
-    ShimmerPlaceholder: {
-        width: 150, 
-        height: 200, 
-        borderRadius: 10,
-        marginHorizontal: 10, 
-        marginTop: 10,
-        marginBottom: 40,
-        marginLeft: 20, 
-    },
-    shimmerFlex: {
-        flexDirection: 'row',
-    },
-    FlatListContainer: {
-        gap: SPACING.space_20,
-        paddingVertical: SPACING.space_20,
-        paddingHorizontal: SPACING.space_30,
-    },
-    hidden: {
-        display: 'none',
-    },
-    EmptyListContainer: {
-        width: Dimensions.get('window').width - SPACING.space_30 * 2,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: SPACING.space_36 * 3.6,
-    },
-    genreText: {
-        fontFamily: FONTFAMILY.poppins_semibold,
-        fontSize: FONTSIZE.size_16,
-        color: COLORS.primaryLightGreyHex,
-        marginBottom: SPACING.space_4,
-    },
+  sectionTitle: {
+    fontSize: FONTSIZE.size_18,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: 'white',
+    textAlign: 'center',
+    marginVertical: SPACING.space_20,
+  },
+  genresContainer: {
+    marginBottom: SPACING.space_20,
+    paddingHorizontal: SPACING.space_10,
+    alignItems: 'center',
+  },
+  genreRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: SPACING.space_4,
+  },
+  genreButton: {
+    backgroundColor: COLORS.primaryGreyHex,
+    paddingVertical: SPACING.space_10,
+    paddingHorizontal: SPACING.space_20,
+    borderRadius: BORDERRADIUS.radius_10,
+    marginHorizontal: SPACING.space_4,
+  },
+  genreButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_14,
+    textAlign: 'center',
+  },
+  selectedGenreButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+  },
+  shimmerPlaceholder: {
+    width: 150, 
+    height: 200, 
+    borderRadius: 10,
+    marginHorizontal: 10, 
+    marginTop: 10,
+    marginBottom: 40,
+    marginLeft: 20, 
+  },
+  shimmerFlex: {
+    flexDirection: 'row',
+  },
+  flatListContainer: {
+    gap: SPACING.space_20,
+    paddingVertical: SPACING.space_20,
+    paddingHorizontal: SPACING.space_30,
+  },
+  emptyListContainer: {
+    width: Dimensions.get('window').width - SPACING.space_30 * 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.space_36 * 3.6,
+  },
+  emptyText: {
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_16,
+    color: COLORS.primaryLightGreyHex,
+    marginBottom: SPACING.space_4,
+  },
 });
+
+// Use memo to prevent unnecessary re-renders
+export default memo(GenrePicker);
