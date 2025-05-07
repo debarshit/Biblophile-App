@@ -126,14 +126,22 @@ const DiscoverScreen = ({ navigation }) => {
           </View>
         </TouchableOpacity>
 
+        {/* Book giveaway */}
+
+        {/* Spotlight Section */}
+        <Spotlights spotlights={spotlights} />
+
+        {/* Seasonal reccos */}
+
         {/* Genre Section */}
         <GenrePicker 
           genres={GenreList.length > 0 ? ['All', ...new Set(GenreList.map(item => item.genre))] : ['All']} 
           CoffeeCardAddToCart={handleAddToCart} 
         />
-        
-        {/* Spotlight Section */}
-        <Spotlights spotlights={spotlights} />
+
+        {/* New releases */}
+
+        {/* Indian voices */}
       </Animated.ScrollView>
       
       {CartList.length > 0 && <FloatingIcon />}
