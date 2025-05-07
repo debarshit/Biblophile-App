@@ -44,6 +44,7 @@ import ReadAlongsCreate from './src/features/social/screens/ReadAlongsCreate';
 import ReadAlongDetails from './src/features/social/screens/ReadAlongDetails';
 import CreateReadalongCheckpoint from './src/features/social/screens/CreateReadalongCheckpoint';
 import { CityProvider } from './src/contexts/CityContext';
+import SearchScreen from './src/features/discover/screens/SearchScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -289,6 +290,10 @@ const App = () => {
               <Stack.Screen
               name="Discover"
               component={DiscoverScreen}
+              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+              <Stack.Screen
+              name="SearchScreen"
+              component={SearchScreen}
               options={{animation: 'slide_from_bottom'}}></Stack.Screen>
               <Stack.Screen
               name="Shop"

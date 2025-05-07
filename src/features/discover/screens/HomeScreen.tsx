@@ -164,7 +164,6 @@ const HomeScreen = ({navigation}: any) => {
         <Banner />
  
         {/* Spotlight Section */}
-        <Text style={styles.spotlightTitle}>In Spotlight</Text>
         <Spotlights spotlights={spotlights} />
 
         {/* Checkout bookshop */}
@@ -267,13 +266,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: SPACING.space_36 * 3.6,
-  },
-  spotlightTitle: {
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_bold,
-    color: 'white',
-    textAlign: 'center',
-    marginVertical: SPACING.space_20,
   },
   bookshopSection: {
     backgroundColor: COLORS.primaryDarkGreyHex,
