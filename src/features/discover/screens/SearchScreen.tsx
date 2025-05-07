@@ -27,6 +27,7 @@ import {
   FONTSIZE, 
   SPACING 
 } from '../../../theme/theme';
+import { useCity } from '../../../contexts/CityContext';
 
 // Debounce search for better performance
 const useDebounce = (callback, delay) => {
@@ -57,6 +58,8 @@ const SearchScreen = ({ route }) => {
   const navigation = useNavigation<any>();
   const localBooksListRef = useRef(null);
   const externalBooksListRef = useRef(null);
+
+  const { selectedCity } = useCity();
 
   // Convert HTTP URLs to HTTPS for security
   const convertToHttps = (url) => {
@@ -211,37 +214,41 @@ const SearchScreen = ({ route }) => {
       {/* Search Results */}
       {searchText ? (
         <>
-          {/* Local Books */}
-          <Text style={styles.sectionTitle}>Available for Buying</Text>
-          
-          {booksLoading ? renderShimmer() : (
-            <FlatList
-              ref={localBooksListRef}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              data={books}
-              keyExtractor={item => `local-${item.BookId}`}
-              renderItem={renderBookItem('local')}
-              contentContainerStyle={styles.flatListContainer}
-              ListEmptyComponent={renderEmptyList}
-            />
-          )}
+          {selectedCity === 'Bengaluru' && <>
+            {/* Local Books */}
+            <Text style={styles.sectionTitle}>Available for Renting</Text>
+              
+            {booksLoading ? renderShimmer() : (
+              <FlatList
+                ref={localBooksListRef}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={books}
+                keyExtractor={item => `local-${item.BookId}`}
+                renderItem={renderBookItem('local')}
+                contentContainerStyle={styles.flatListContainer}
+                ListEmptyComponent={renderEmptyList}
+              />
+            )}
+          </>}
 
-          {/* External Books */}
-          <Text style={styles.sectionTitle}>More Books</Text>
-          
-          {booksLoading ? renderShimmer() : (
-            <FlatList
-              ref={externalBooksListRef}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              data={externalBooks}
-              keyExtractor={item => `external-${item.GoogleBookId}`}
-              renderItem={renderBookItem('external')}
-              contentContainerStyle={styles.flatListContainer}
-              ListEmptyComponent={renderEmptyList}
-            />
-          )}
+          <>
+            {/* External Books */}
+            <Text style={styles.sectionTitle}>Search Results</Text>
+            
+            {booksLoading ? renderShimmer() : (
+              <FlatList
+                ref={externalBooksListRef}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={externalBooks}
+                keyExtractor={item => `external-${item.GoogleBookId}`}
+                renderItem={renderBookItem('external')}
+                contentContainerStyle={styles.flatListContainer}
+                ListEmptyComponent={renderEmptyList}
+              />
+            )}
+          </>
         </>
       ) : null}
     </View>
