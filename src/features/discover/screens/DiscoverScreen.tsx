@@ -31,6 +31,10 @@ import {
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
+import SeasonalRecommendations from '../components/SeasonalRecommendations';
+import BookGiveaway from '../components/BookGiveaway';
+import HotRecommendations from '../components/HotRecommendations';
+import CulturalRecommendations from '../components/CulturalRecommendations';
 
 const DiscoverScreen = ({ navigation }) => {
   // Global state from store
@@ -96,7 +100,10 @@ const DiscoverScreen = ({ navigation }) => {
 
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollViewFlex}
+        contentContainerStyle={[
+          styles.scrollViewFlex,
+          { paddingBottom: tabBarHeight }
+        ]}
         scrollEventThrottle={16}
       >
         {/* App Header */}
@@ -127,11 +134,13 @@ const DiscoverScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         {/* Book giveaway */}
+        <BookGiveaway />
 
         {/* Spotlight Section */}
         <Spotlights spotlights={spotlights} />
 
         {/* Seasonal reccos */}
+        <SeasonalRecommendations />
 
         {/* Genre Section */}
         <GenrePicker 
@@ -139,9 +148,12 @@ const DiscoverScreen = ({ navigation }) => {
           CoffeeCardAddToCart={handleAddToCart} 
         />
 
-        {/* New releases */}
-
         {/* Indian voices */}
+        <CulturalRecommendations />
+
+        {/* New releases/Trending/Must reads */}
+        <HotRecommendations />
+
       </Animated.ScrollView>
       
       {CartList.length > 0 && <FloatingIcon />}
