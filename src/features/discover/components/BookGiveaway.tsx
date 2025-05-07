@@ -27,7 +27,7 @@ const BookGiveaway = () => {
   useEffect(() => {
     const fetchGiveawayBook = async () => {
       try {
-        const response = await instance.get('/apis/dev/actions.php?action=fetchGiveawayBooks');
+        const response = await instance.get(requests.fetchGiveawayBooks);
   
         if (response.data) {
           setGiveawayBook(response.data);
