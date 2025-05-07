@@ -31,6 +31,7 @@ import CoffeeCard from '../../../components/CoffeeCard';
 import Banner from '../components/Banner';
 import Mascot from '../../../components/Mascot';
 import FloatingIcon from '../../bookshop/components/FloatingIcon';
+import { useCity } from '../../../contexts/CityContext';
 
 interface Spotlight {
   Id: string;
@@ -52,9 +53,10 @@ const HomeScreen = ({navigation}: any) => {
   const [booksLoading, setBooksLoading] = useState(true);
 
   const ListRef: any = useRef<FlatList>();
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const scrollViewRef = useRef(null);
   const scrollOffset = useRef(new Animated.Value(0)).current;
+
+  const { selectedCity } = useCity();
 
   const CoffeeCardAddToCart = ({
     id,
@@ -166,8 +168,8 @@ const HomeScreen = ({navigation}: any) => {
         {/* Spotlight Section */}
         <Spotlights spotlights={spotlights} />
 
-        {/* Checkout bookshop */}
-        <View style={styles.bookshopSection}>
+        {/* Checkout bookshop only for Bengaluru users */}
+        {selectedCity === 'Bengaluru' && <View style={styles.bookshopSection}>
           <View style={styles.headerContainer}>
             <Text style={styles.bookshopText}>Bookshop</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Shop')}>
@@ -210,7 +212,7 @@ const HomeScreen = ({navigation}: any) => {
               );
             }}
           />
-        </View>
+        </View>}
 
         {/* Checkout merch shop */}
         <View style={styles.merchShopSection}>
