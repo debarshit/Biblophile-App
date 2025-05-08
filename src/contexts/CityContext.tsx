@@ -6,12 +6,15 @@ type CityContextType = {
   setSelectedCity: (city: string) => void;
   isCityModalOpen: boolean;
   setIsCityModalOpen: (isOpen: boolean) => void;
+  latitude: number | null;
+  longitude: number | null;
+  setCoordinates: (lat: number, lng: number) => void;
 };
 
 const CityContext = createContext<CityContextType | undefined>(undefined);
 
 export const CityProvider = ({ children }: { children: ReactNode }) => {
-  const { selectedCity, setSelectedCity } = useStore();
+  const { selectedCity, setSelectedCity, latitude, longitude, setCoordinates } = useStore();
   const [isCityModalOpen, setIsCityModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -22,6 +25,7 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
           const ipApiResponse = await fetch('https://freeipapi.com/api/json/');
           const ipData = await ipApiResponse.json();
           setSelectedCity(ipData.cityName);
+          setCoordinates(ipData.latitude, ipData.longitude);
           console.log('user city', ipData.cityName);
         } catch (error) {
           console.error("Error fetching user city:", error);
@@ -34,7 +38,7 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <CityContext.Provider value={{ selectedCity, setSelectedCity, isCityModalOpen, setIsCityModalOpen }}>
+    <CityContext.Provider value={{ selectedCity, setSelectedCity, isCityModalOpen, setIsCityModalOpen, latitude, longitude, setCoordinates }}>
       {children}
     </CityContext.Provider>
   );

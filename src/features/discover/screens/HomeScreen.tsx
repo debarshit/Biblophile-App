@@ -33,6 +33,7 @@ import Mascot from '../../../components/Mascot';
 import FloatingIcon from '../../bookshop/components/FloatingIcon';
 import { useCity } from '../../../contexts/CityContext';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import SeasonalRecommendations from '../components/SeasonalRecommendations';
 
 interface Spotlight {
   Id: string;
@@ -47,7 +48,6 @@ const HomeScreen = ({navigation}: any) => {
   const CartList = useStore((state: any) => state.CartList);
 
   //useState variables
-  const [bannerOpacity, setBannerOpacity] = useState(1);
   const [bookList, setBookList] = useState<any>([]);
   const [spotlights, setSpotlights] = useState<Spotlight[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +57,7 @@ const HomeScreen = ({navigation}: any) => {
   const scrollViewRef = useRef(null);
   const scrollOffset = useRef(new Animated.Value(0)).current;
 
-  const { selectedCity } = useCity();
+  const { selectedCity, latitude, longitude } = useCity();
 
   const CoffeeCardAddToCart = ({
     id,
@@ -97,12 +97,12 @@ const HomeScreen = ({navigation}: any) => {
     }
     else {
       Toast.show({
-        type: 'info', // You can set type as 'success', 'error', 'info', or 'none'
-        text1: `${name} is Added to Cart`, // Main message
-        visibilityTime: 2000, // Duration in milliseconds
-        autoHide: true, // Auto hide the toast after visibilityTime
-        position: 'bottom', // Set position to bottom
-        bottomOffset: 100, // Adjust the offset as needed
+        type: 'info',
+        text1: `${name} is Added to Cart`,
+        visibilityTime: 2000,
+        autoHide: true,
+        position: 'bottom',
+        bottomOffset: 100,
       });
     }
   };
@@ -207,6 +207,8 @@ const HomeScreen = ({navigation}: any) => {
             }}
           />
         </View>}
+
+        <SeasonalRecommendations latitude={latitude} longitude={longitude} />
 
         {/* Checkout merch shop */}
         <View style={styles.merchShopSection}>

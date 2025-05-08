@@ -22,7 +22,15 @@ import requests from '../../../services/requests';
 import { useNavigation } from '@react-navigation/native';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
-const SeasonalRecommendations = () => {
+interface SeasonalRecommendationsProps {
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+const SeasonalRecommendations: React.FC<SeasonalRecommendationsProps> = ({
+  latitude,
+  longitude,
+}) => {
   const [seasonalBooks, setSeasonalBooks] = useState([]);
   const [currentSeason, setCurrentSeason] = useState('');
   const [loading, setLoading] = useState(true);
@@ -32,7 +40,11 @@ const SeasonalRecommendations = () => {
   useEffect(() => {
     const fetchSeasonalBooks = async () => {
       try {
-        const response = await instance.get(requests.fetchSeasonalRecommendations);
+        const url = latitude && longitude
+        ? `${requests.fetchSeasonalRecommendations}?lat=${latitude}&lng=${longitude}`
+        : requests.fetchSeasonalRecommendations;
+
+        const response = await instance.get(url);
 
         if (response.data.items && response.data.items.length > 0) {
             setSeasonalBooks(response.data.items);
