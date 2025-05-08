@@ -41,7 +41,7 @@ const SeasonalRecommendations: React.FC<SeasonalRecommendationsProps> = ({
     const fetchSeasonalBooks = async () => {
       try {
         const url = latitude && longitude
-        ? `${requests.fetchSeasonalRecommendations}?lat=${latitude}&lng=${longitude}`
+        ? `${requests.fetchSeasonalRecommendations}&lat=${latitude}&lng=${longitude}`
         : requests.fetchSeasonalRecommendations;
 
         const response = await instance.get(url);

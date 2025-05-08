@@ -24,6 +24,7 @@ import {
   FONTSIZE, 
   SPACING 
 } from '../../../theme/theme';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 const MAX_GENRES_PER_ROW = 3;
 
@@ -123,7 +124,7 @@ const GenrePicker = ({ genres = ['All'], CoffeeCardAddToCart }) => {
       <CoffeeCard
         id={item.BookId}
         name={item.BookName}
-        photo={convertToHttps(item.BookPhoto)}
+        photo={convertHttpToHttps(item.BookPhoto)}
         type="Book"
         price={item.BookPrice}
         averageRating={item.BookAverageRating}
@@ -245,7 +246,3 @@ const styles = StyleSheet.create({
 
 // Use memo to prevent unnecessary re-renders
 export default memo(GenrePicker);
-
-function convertToHttps(BookPhoto: any): string {
-  throw new Error('Function not implemented.');
-}

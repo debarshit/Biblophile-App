@@ -18,23 +18,22 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
   const [isCityModalOpen, setIsCityModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    // Only fetch city if it's not already set
-    const fetchCity = async () => {
-      if (!selectedCity) {
-        try {
-          const ipApiResponse = await fetch('https://freeipapi.com/api/json/');
-          const ipData = await ipApiResponse.json();
-          setSelectedCity(ipData.cityName);
-          setCoordinates(ipData.latitude, ipData.longitude);
-          console.log('user city', ipData.cityName);
-        } catch (error) {
-          console.error("Error fetching user city:", error);
-          setSelectedCity("Other");
+    const fetchCityAndCoords = async () => {
+      try {
+        const ipApiResponse = await fetch('https://ipwho.is/');
+        const ipData = await ipApiResponse.json();
+
+        if (!selectedCity || selectedCity === 'Other') {
+          setSelectedCity(ipData.city);
         }
+
+        setCoordinates(ipData.latitude, ipData.longitude);
+      } catch (error) {
+        console.error("Error fetching user city:", error);
       }
     };
-    
-    fetchCity();
+  
+    fetchCityAndCoords();
   }, []);
 
   return (
