@@ -49,11 +49,6 @@ const GenrePicker = ({ genres = ['All'], CoffeeCardAddToCart }) => {
   const navigation = useNavigation<any>();
   const listRef = useRef(null);
 
-  // Convert HTTP URLs to HTTPS for security
-  const convertToHttps = (url) => {
-    return url && url.startsWith('http://') ? url.replace('http://', 'https://') : url;
-  };
-
   // Fetch books when genre changes
   useEffect(() => {
     const fetchBookList = async () => {
@@ -250,3 +245,7 @@ const styles = StyleSheet.create({
 
 // Use memo to prevent unnecessary re-renders
 export default memo(GenrePicker);
+
+function convertToHttps(BookPhoto: any): string {
+  throw new Error('Function not implemented.');
+}

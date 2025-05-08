@@ -32,6 +32,7 @@ import Banner from '../components/Banner';
 import Mascot from '../../../components/Mascot';
 import FloatingIcon from '../../bookshop/components/FloatingIcon';
 import { useCity } from '../../../contexts/CityContext';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 interface Spotlight {
   Id: string;
@@ -104,13 +105,6 @@ const HomeScreen = ({navigation}: any) => {
         bottomOffset: 100, // Adjust the offset as needed
       });
     }
-  };
-
-  const convertHttpToHttps = (url) => {
-    if (url && url.startsWith('http://')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
   };
 
   const openShopLink = () => {

@@ -2,19 +2,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import { FlatList, TouchableOpacity, Image, View, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 const Spotlights = ({ spotlights }) => {
   const flatListRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const listLength = spotlights.length;
   const navigation = useNavigation<any>();
-
-  const convertHttpToHttps = (url) => {
-    if (url && url.startsWith('http://')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
-  };
 
   // Auto-scroll the list
   useEffect(() => {
