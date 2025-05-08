@@ -19,11 +19,15 @@ import {
 } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
+import { useNavigation } from '@react-navigation/native';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 const SeasonalRecommendations = () => {
   const [seasonalBooks, setSeasonalBooks] = useState([]);
   const [currentSeason, setCurrentSeason] = useState('');
   const [loading, setLoading] = useState(true);
+
+  const navigation = useNavigation<any>();
 
   useEffect(() => {
     const fetchSeasonalBooks = async () => {
@@ -47,11 +51,19 @@ const SeasonalRecommendations = () => {
   }, []);
 
   const renderBookItem = ({ item }) => (
-    <TouchableOpacity style={styles.bookContainer}>
+    <TouchableOpacity
+      onPress={() => {
+        navigation.push('Details', {
+          id: item.id,
+          type: 'ExternalBook',
+        });
+      }}
+      key={item.id}
+      style={styles.bookContainer}>
       <View style={styles.bookImageContainer}>
         {item.imagelink_square ? (
           <Image
-            source={{ uri: item.imagelink_square }}
+            source={{ uri: convertHttpToHttps(item.imagelink_square) }}
             style={styles.bookImage}
             resizeMode="cover"
           />
@@ -67,9 +79,9 @@ const SeasonalRecommendations = () => {
       </View>
       <Text numberOfLines={1} style={styles.titleText}>{item.name}</Text>
       <Text numberOfLines={1} style={styles.authorText}>{item.author}</Text>
-      <View style={styles.priceContainer}>
+      {/* <View style={styles.priceContainer}>
         <Text style={styles.priceText}>${parseFloat(item.price).toFixed(2)}</Text>
-      </View>
+      </View> */}
     </TouchableOpacity>
   );
 

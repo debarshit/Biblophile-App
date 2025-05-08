@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
-import axios from 'axios';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -22,6 +21,8 @@ import {
 } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.8;
@@ -29,6 +30,8 @@ const ITEM_WIDTH = width * 0.8;
 const CulturalRecommendations = () => {
   const [indianBooks, setIndianBooks] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const navigation = useNavigation<any>();
 
   useEffect(() => {
     const fetchIndianBooks = async () => {
@@ -55,7 +58,16 @@ const CulturalRecommendations = () => {
   };
 
   const renderBookItem = ({ item, index }) => (
-    <TouchableOpacity style={[styles.bookContainer, index === 0 && { marginLeft: SPACING.space_30 }]}>
+    <TouchableOpacity
+      onPress={() => {
+        navigation.push('Details', {
+          id: item.id,
+          type: 'ExternalBook',
+        });
+      }}
+      key={item.id}
+      style={[styles.bookContainer, index === 0 && { marginLeft: SPACING.space_30 }]}
+    >
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -66,7 +78,7 @@ const CulturalRecommendations = () => {
           <View style={styles.bookImageContainer}>
             {item.imagelink_square ? (
               <Image
-                source={{ uri: item.imagelink_square }}
+                source={{ uri: convertHttpToHttps(item.imagelink_square) }}
                 style={styles.bookImage}
                 resizeMode="cover"
               />
@@ -84,7 +96,7 @@ const CulturalRecommendations = () => {
             </Text>
             <View style={styles.bottomContainer}>
               <View style={styles.priceContainer}>
-                <Text style={styles.priceText}>${parseFloat(item.price).toFixed(2)}</Text>
+                {/* <Text style={styles.priceText}>${parseFloat(item.price).toFixed(2)}</Text> */}
                 <View style={styles.ratingContainer}>
                   <Feather name="star" size={12} color={COLORS.primaryOrangeHex} />
                   <Text style={styles.ratingText}>{item.rating}</Text>
