@@ -2,19 +2,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import { FlatList, TouchableOpacity, Image, View, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 const Spotlights = ({ spotlights }) => {
   const flatListRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const listLength = spotlights.length;
   const navigation = useNavigation<any>();
-
-  const convertHttpToHttps = (url) => {
-    if (url && url.startsWith('http://')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
-  };
 
   // Auto-scroll the list
   useEffect(() => {
@@ -38,64 +32,74 @@ const Spotlights = ({ spotlights }) => {
   }, [currentIndex]);
 
   return (
-    <View style={styles.carouselContainer}>
-      {spotlights.length > 0 ? (
-        <FlatList
-          ref={flatListRef}
-          data={spotlights}
-          horizontal
-          renderItem={({ item }) => (
-            <TouchableOpacity 
-              style={styles.carouselItem}
-              onPress={() => {
-                navigation.navigate('Details', {
-                  id: item.Id,
-                  type: "Book",
-                });
-              }}
-            >
-              <View style={styles.bookCard}>
-                <Image 
-                  source={{ uri: convertHttpToHttps(item.Photo) }} 
-                  style={styles.bookCover} 
-                />
-                <View style={styles.bookInfo}>
-                  <Text style={styles.bookTitle} numberOfLines={2}>
-                    {item.Name || "A Very Long Book Name"}
-                  </Text>
-                  <Text style={styles.bookAuthor} numberOfLines={1}>
-                    {item.Authors || "Author name"}
-                  </Text>
-                  <Text style={styles.bookGenre} numberOfLines={1}>
-                    {item.Genres || "Book Genre"}
-                  </Text>
-                  <Text style={styles.knowMoreText}>Know more</Text>
+    <>
+      <Text style={styles.spotlightTitle}>In Spotlight</Text>
+      <View style={styles.carouselContainer}>
+        {spotlights.length > 0 ? (
+          <FlatList
+            ref={flatListRef}
+            data={spotlights}
+            horizontal
+            renderItem={({ item }) => (
+              <TouchableOpacity 
+                style={styles.carouselItem}
+                onPress={() => {
+                  navigation.navigate('Details', {
+                    id: item.Id,
+                    type: "Book",
+                  });
+                }}
+              >
+                <View style={styles.bookCard}>
+                  <Image 
+                    source={{ uri: convertHttpToHttps(item.Photo) }} 
+                    style={styles.bookCover} 
+                  />
+                  <View style={styles.bookInfo}>
+                    <Text style={styles.bookTitle} numberOfLines={2}>
+                      {item.Name || "A Very Long Book Name"}
+                    </Text>
+                    <Text style={styles.bookAuthor} numberOfLines={1}>
+                      {item.Authors || "Author name"}
+                    </Text>
+                    <Text style={styles.bookGenre} numberOfLines={1}>
+                      {item.Genres || "Book Genre"}
+                    </Text>
+                    <Text style={styles.knowMoreText}>Know more</Text>
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          )}
-          keyExtractor={(item, index) => index.toString()}
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={320}
-          decelerationRate="fast"
-          initialScrollIndex={0}
-          contentContainerStyle={styles.carouselContent}
-          onScrollToIndexFailed={info => {
-            const wait = new Promise(resolve => setTimeout(resolve, 500));
-            wait.then(() => {
-              flatListRef.current?.scrollToIndex({ 
-                index: info.index, 
-                animated: true 
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={320}
+            decelerationRate="fast"
+            initialScrollIndex={0}
+            contentContainerStyle={styles.carouselContent}
+            onScrollToIndexFailed={info => {
+              const wait = new Promise(resolve => setTimeout(resolve, 500));
+              wait.then(() => {
+                flatListRef.current?.scrollToIndex({ 
+                  index: info.index, 
+                  animated: true 
+                });
               });
-            });
-          }}
-        />
-      ) : null}
-    </View>
+            }}
+          />
+        ) : null}
+      </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
+  spotlightTitle: {
+    fontSize: FONTSIZE.size_18,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: 'white',
+    textAlign: 'center',
+    marginVertical: SPACING.space_20,
+  },
   carouselContainer: {
     alignItems: 'center',
     justifyContent: 'center',

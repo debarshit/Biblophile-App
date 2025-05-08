@@ -18,7 +18,7 @@ import {
 } from '../theme/theme';
 import BGIcon from './BGIcon';
 
-const CARD_WIDTH = Dimensions.get('window').width * 0.32;
+const CARD_WIDTH = Dimensions.get('window').width * 0.42;
 
 interface CoffeeCardProps {
   id: string;
@@ -41,12 +41,6 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
   price,
   buttonPressHandler,
 }) => {
-   //Array of buy and rent prices
-   const prices: { size: string; price: string; currency: string }[] = [
-    { size: 'Buy', price: price, currency: '₹' },
-    { size: 'Rent', price: price/10, currency: '₹' },
-  ];
-
   return (
     <LinearGradient
       start={{x: 0, y: 0}}
@@ -81,7 +75,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
               name,
               photo,
               type,
-              prices: [{...prices[0], quantity: 1}],
+              prices: [{...price, quantity: 1}],
             });
           }}>
           <BGIcon
@@ -103,7 +97,7 @@ const styles = StyleSheet.create({
   },
   CardImageBG: {
     width: CARD_WIDTH,
-    height: CARD_WIDTH,
+    height: CARD_WIDTH * 1.4,
     borderRadius: BORDERRADIUS.radius_20,
     marginBottom: SPACING.space_15,
     overflow: 'hidden',

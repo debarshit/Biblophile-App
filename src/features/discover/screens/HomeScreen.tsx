@@ -31,6 +31,9 @@ import CoffeeCard from '../../../components/CoffeeCard';
 import Banner from '../components/Banner';
 import Mascot from '../../../components/Mascot';
 import FloatingIcon from '../../bookshop/components/FloatingIcon';
+import { useCity } from '../../../contexts/CityContext';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import SeasonalRecommendations from '../components/SeasonalRecommendations';
 
 interface Spotlight {
   Id: string;
@@ -45,16 +48,16 @@ const HomeScreen = ({navigation}: any) => {
   const CartList = useStore((state: any) => state.CartList);
 
   //useState variables
-  const [bannerOpacity, setBannerOpacity] = useState(1);
   const [bookList, setBookList] = useState<any>([]);
   const [spotlights, setSpotlights] = useState<Spotlight[]>([]);
   const [loading, setLoading] = useState(true);
   const [booksLoading, setBooksLoading] = useState(true);
 
   const ListRef: any = useRef<FlatList>();
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const scrollViewRef = useRef(null);
   const scrollOffset = useRef(new Animated.Value(0)).current;
+
+  const { selectedCity, latitude, longitude } = useCity();
 
   const CoffeeCardAddToCart = ({
     id,
@@ -94,21 +97,14 @@ const HomeScreen = ({navigation}: any) => {
     }
     else {
       Toast.show({
-        type: 'info', // You can set type as 'success', 'error', 'info', or 'none'
-        text1: `${name} is Added to Cart`, // Main message
-        visibilityTime: 2000, // Duration in milliseconds
-        autoHide: true, // Auto hide the toast after visibilityTime
-        position: 'bottom', // Set position to bottom
-        bottomOffset: 100, // Adjust the offset as needed
+        type: 'info',
+        text1: `${name} is Added to Cart`,
+        visibilityTime: 2000,
+        autoHide: true,
+        position: 'bottom',
+        bottomOffset: 100,
       });
     }
-  };
-
-  const convertHttpToHttps = (url) => {
-    if (url && url.startsWith('http://')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
   };
 
   const openShopLink = () => {
@@ -164,11 +160,10 @@ const HomeScreen = ({navigation}: any) => {
         <Banner />
  
         {/* Spotlight Section */}
-        <Text style={styles.spotlightTitle}>In Spotlight</Text>
         <Spotlights spotlights={spotlights} />
 
-        {/* Checkout bookshop */}
-        <View style={styles.bookshopSection}>
+        {/* Checkout bookshop only for Bengaluru users */}
+        {selectedCity === 'Bengaluru' && <View style={styles.bookshopSection}>
           <View style={styles.headerContainer}>
             <Text style={styles.bookshopText}>Bookshop</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Shop')}>
@@ -211,7 +206,9 @@ const HomeScreen = ({navigation}: any) => {
               );
             }}
           />
-        </View>
+        </View>}
+
+        <SeasonalRecommendations latitude={latitude} longitude={longitude} />
 
         {/* Checkout merch shop */}
         <View style={styles.merchShopSection}>
@@ -267,13 +264,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: SPACING.space_36 * 3.6,
-  },
-  spotlightTitle: {
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_bold,
-    color: 'white',
-    textAlign: 'center',
-    marginVertical: SPACING.space_20,
   },
   bookshopSection: {
     backgroundColor: COLORS.primaryDarkGreyHex,
