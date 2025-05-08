@@ -15,6 +15,8 @@ interface StoreState {
   sessionStartTime: Date | null;
   sessionStartPage: number | null;
   selectedCity: string | null;
+  latitude: number | null;
+  longitude: number | null;
   login: (userData: any) => Promise<void>;
   logout: () => void;
   updateProfile: (name: string, email: string, phone: string, address: string) => void;
@@ -29,6 +31,7 @@ interface StoreState {
   clearCart: () => void;
   setSelectedCity: (city: string) => void;
   getSelectedCity: () => string | null;
+  setCoordinates: (lat: number, lng: number) => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -43,6 +46,8 @@ export const useStore = create<StoreState>()(
         sessionStartTime: null,
         sessionStartPage: 0,
         selectedCity: null,
+        latitude: null,
+        longitude: null,
         login: async (userData) => {
           await set(state => ({
             userDetails: [...state.userDetails, userData],
@@ -221,6 +226,9 @@ export const useStore = create<StoreState>()(
             set({ selectedCity: city });
           },
           getSelectedCity: () => get().selectedCity,
+          setCoordinates: (lat: number, lng: number) => {
+            set({ latitude: lat, longitude: lng });
+          },
       }),
       {
         name: 'coffee-app',

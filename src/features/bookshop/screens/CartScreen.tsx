@@ -1,13 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   ScrollView,
   StatusBar,
   StyleSheet,
-  Text,
   View,
   SafeAreaView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import {useStore} from '../../../store/store';
 import {COLORS, SPACING} from '../../../theme/theme';
@@ -27,20 +25,13 @@ const CartScreen = ({navigation, route}: any) => {
   );
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
 
-  const buttonPressHandler = () => {
+  const buttonPressHandler = (finalPrice: string) => {
     if (CartList.length != 0) {
-      Alert.alert("Delivery Fees", "1. Buying Books: Orders <  ₹120 incur ₹50 delivery fee; otherwise, delivery is free.\n2. Renting Books: Orders < ₹120 incur ₹90 for delivery and pickup; otherwise, both are free.",
-        [
-          {
-              text: "Cancel",
-              style: "cancel"
-          },
-          {
-              text: "OK",
-              onPress: () => navigation.push('Payment', { amount: calculateFinalPrice(), cart: CartList })
-          }
-        ]
-      )
+      // Navigate directly to Payment with the calculated final price
+      navigation.push('Payment', { 
+        amount: finalPrice, 
+        cart: CartList 
+      });
     }
   };
 
@@ -52,32 +43,6 @@ const CartScreen = ({navigation, route}: any) => {
   const decrementCartItemQuantityHandler = (id: string, size: string) => {
     decrementCartItemQuantity(id, size);
     calculateCartPrice();
-  };
-
-  const getPrice = (item) => {
-    const { type, prices, actualPrice } = item;
-    const priceInfo = prices[0];
-  
-    if (type === "Book") {
-      return priceInfo.size === "Buy" ? priceInfo.price : actualPrice;
-    } else {
-      return priceInfo.size === "QR" ? priceInfo.price : priceInfo.price / 1.3;
-    }
-  };
-
-  const calculateFinalPrice = () => {
-    let additionalCost = 0;
-    const numericCartPrice = parseFloat(CartPrice); // Ensure CartPrice is a number
-  
-    if (numericCartPrice < 120) {
-      CartList.forEach((item: any) => {
-        if (item.type === "Book") {
-          const priceInfo = item.prices[0];
-          additionalCost += priceInfo.size === "Buy" ? 50 : 90;
-        }
-      });
-    }
-    return (numericCartPrice + additionalCost).toFixed(2);
   };
 
   return (

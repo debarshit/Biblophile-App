@@ -1,28 +1,29 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   StatusBar,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
   Platform,
   ToastAndroid,
-  Keyboard,
   Animated,
-  FlatList,
-  Dimensions,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { Feather } from '@expo/vector-icons';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+
+// Components
 import Spotlights from '../components/Spotlights';
-import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
-import { LinearGradient } from 'expo-linear-gradient';
+import HeaderBar from '../../../components/HeaderBar';
+import FloatingIcon from '../../bookshop/components/FloatingIcon';
+import GenrePicker from '../components/GenrePicker';
+
+// Services and utilities
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
-import { AntDesign, Feather } from '@expo/vector-icons';
-import {useStore} from '../../../store/store';
+import { useStore } from '../../../store/store';
 import {
   BORDERRADIUS,
   COLORS,
@@ -30,681 +31,159 @@ import {
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
-import HeaderBar from '../../../components/HeaderBar';
-import CoffeeCard from '../../../components/CoffeeCard';
-import FloatingIcon from '../../bookshop/components/FloatingIcon';
+import SeasonalRecommendations from '../components/SeasonalRecommendations';
+import BookGiveaway from '../components/BookGiveaway';
+import HotRecommendations from '../components/HotRecommendations';
+import CulturalRecommendations from '../components/CulturalRecommendations';
 
-interface Spotlight {
-  Id: string;
-  Photo: string;
-  Name: string;
-}
+const DiscoverScreen = ({ navigation }) => {
+  // Global state from store
+  const { addToCart, calculateCartPrice, fetchGenres, GenreList, CartList } = useStore((state) => ({
+    addToCart: state.addToCart,
+    calculateCartPrice: state.calculateCartPrice,
+    fetchGenres: state.fetchGenres,
+    GenreList: state.GenreList,
+    CartList: state.CartList,
+  }));
 
-const getGenresFromData = (data: any) => {
-  const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
-  return genres;
-};
-
-const getBookList = async (genre: any) => {
-  try {
-    const response = await instance(requests.getBooks+genre);
-    const data = response.data;
-    return data;
-  } catch (error) {
-    console.error('Error fetching genres:', error);
-  }
-};
-
-const DiscoverScreen = ({navigation}: any) => {
-  //useStore variables
-  const addToCart = useStore((state: any) => state.addToCart);
-  const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
-  const fetchGenres = useStore((state: any) => state.fetchGenres);  //this function should run on mount
-  const GenreList = useStore((state: any) => state.GenreList);
-  const CartList = useStore((state: any) => state.CartList);
-
-  //useState variables
-  const [genres, setGenres] = useState(
-    getGenresFromData(GenreList),  
-  );
-  const [searchText, setSearchText] = useState('');
-  const [genreIndex, setGenreIndex] = useState({
-    index: 0,
-    genre: genres[0],
-  });
-  const [bookList, setBookList] = useState<any>(getBookList(genreIndex.genre));
-  const [spotlights, setSpotlights] = useState<Spotlight[]>([]);
-  const [sortedCoffee, setSortedCoffee] = useState<any>(
-    getBookList(genreIndex.genre),
-  );
-  const [externalBooks, setExternalBooks] = useState<any>([]);
+  // Local state
+  const [spotlights, setSpotlights] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [booksLoading, setBooksLoading] = useState(true);
-
-  const ListRef: any = useRef<FlatList>();
   const tabBarHeight = useBottomTabBarHeight();
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const scrollViewRef = useRef(null);
-  const scrollOffset = useRef(new Animated.Value(0)).current;
 
-  // Define a variable to store the timeout ID
-  let searchTimeout: any = null;  
-
-  const searchCoffee = (search: string) => { 
-    // Clear the previous timeout
-    clearTimeout(searchTimeout);
-    
-    // Create a new timeout
-    searchTimeout = setTimeout(async () => {
-      if (search !== '') {
-        setBooksLoading(true);
-        try {
-          const response = await instance(requests.searchBooks + search);
-          const data = response.data;
-          setSortedCoffee(data);
-
-          const externalBooksResponse = await instance.get(requests.searchExternalBooks + search);
-          const externalData = externalBooksResponse.data;
-          setExternalBooks(externalData);
-
-          setBooksLoading(false);
-        } catch (error) {
-          console.error('Error fetching books:', error);
-        }
-      }
-    }, 500); // Waiting time in milliseconds
-  };
-
-  const resetSearchCoffee = () => {
-    ListRef?.current?.scrollToOffset({
-      animated: true,
-      offset: 0,
-    });
-    setGenreIndex({index: 0, genre: genres[0]});
-    setSortedCoffee(bookList);
-    setExternalBooks([]);
-    setSearchText('');
-  };
-
-  const CoffeeCardAddToCart = ({
-    id,
-    name,
-    genre,
-    photo,
-    poster,
-    type,
-    prices,
-    actualPrice,
-    averageRating,
-    ratingCount,
-    description,
-    author,                    
-  }: any) => {
-    addToCart({
-      id,
-      name,
-      genre,
-      photo,
-      poster,
-      type,
-      prices,
-      actualPrice,
-      averageRating,
-      ratingCount,
-      description,
-      author, 
-    });
+  // Add to cart handler
+  const handleAddToCart = (bookData) => {
+    addToCart(bookData);
     calculateCartPrice();
-    if (Platform.OS == 'android') {
+    
+    const message = `${bookData.name} is Added to Cart`;
+    
+    if (Platform.OS === 'android') {
       ToastAndroid.showWithGravity(
-        `${name} is Added to Cart`,
+        message,
         ToastAndroid.SHORT,
         ToastAndroid.CENTER,
       );
-    }
-    else {
+    } else {
       Toast.show({
-        type: 'info', // You can set type as 'success', 'error', 'info', or 'none'
-        text1: `${name} is Added to Cart`, // Main message
-        visibilityTime: 2000, // Duration in milliseconds
-        autoHide: true, // Auto hide the toast after visibilityTime
-        position: 'bottom', // Set position to bottom
-        bottomOffset: 100, // Adjust the offset as needed
+        type: 'info',
+        text1: message,
+        visibilityTime: 2000,
+        autoHide: true,
+        position: 'bottom',
+        bottomOffset: 100,
       });
     }
   };
 
-  const convertHttpToHttps = (url) => {
-    if (url && url.startsWith('http://')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
-  };
-
+  // Fetch genres and spotlights on component mount
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      (e) => {
-        setKeyboardVisible(true);
-
-        // Scroll the ScrollView up
-        scrollViewRef.current?.scrollTo({
-          y: 50,
-          animated: true,
-        });
-      }
-    );
-
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => {
-        setKeyboardVisible(false);
-
-        // Scroll back to the top
-        scrollViewRef.current?.scrollTo({
-          y: 0,
-          animated: true,
-        });
-      });
-      
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    // Fetch genres when component mounts
     fetchGenres();
-  }, []);
-
-  useEffect(() => {
-    // Update genres state when GenreList changes
-    setGenres(['All', ...GenreList.map((genre: any) => genre.genre)]);
-  }, [GenreList]);
-
-  useEffect(() => {
-    async function fetchBookList() {
+    
+    const getSpotlights = async () => {
       try {
-        const data = await getBookList(genreIndex.genre);
-        setBookList(data);
-        setSortedCoffee(data);
-        setBooksLoading(false);
+        const response = await instance(requests.getSpotlight);
+        setSpotlights(response.data);
+        setLoading(false);
       } catch (error) {
-        console.error('Error fetching book list:', error);
+        console.error('Error fetching spotlights:', error);
+        setLoading(false);
       }
-    }
-  
-    fetchBookList();
-  }, [genreIndex]);
-
-  useEffect(() => {
-    async function getSpotlights() {
-        try {
-            const response = await instance(requests.getSpotlight);
-            const data = response.data;
-            setSpotlights(data);
-            setLoading(false);
-          } catch (error) {
-            console.error('Error fetching spotlights:', error);
-          }
-    }
-  
+    };
+    
     getSpotlights();
   }, []);
 
   return (
-    <SafeAreaView style={styles.ScreenContainer}>
-
+    <SafeAreaView style={styles.screenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
 
       <Animated.ScrollView
-        ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.ScrollViewFlex}
-        contentOffset={{ x: 0, y: scrollOffset }}
-        scrollEventThrottle={16}>
+        contentContainerStyle={[
+          styles.scrollViewFlex,
+          { paddingBottom: tabBarHeight }
+        ]}
+        scrollEventThrottle={16}
+      >
         {/* App Header */}
-        {!keyboardVisible && <HeaderBar title=""/>}
+        <HeaderBar title="" />
 
         {/* Search Input */}
-        <View style={styles.InputContainerComponent}>
-          <TouchableOpacity
-            onPress={() => {
-              searchCoffee(searchText);
-            }}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('SearchScreen', {
+              CoffeeCardAddToCart: handleAddToCart,
+            });
+          }}
+        >
+          <View style={styles.inputContainerComponent}>
             <Feather
-              style={styles.InputIcon}
+              style={styles.inputIcon}
               name="search"
               size={FONTSIZE.size_18}
-              color={
-                searchText.length > 0
-                  ? COLORS.primaryOrangeHex
-                  : COLORS.primaryLightGreyHex
-              }
+              color={COLORS.primaryLightGreyHex}
             />
-          </TouchableOpacity>
-          <TextInput
-            placeholder="Find Your Book..."
-            value={searchText}
-            onChangeText={text => {
-              setSearchText(text);
-              searchCoffee(text);
-            }}
-            placeholderTextColor={COLORS.primaryLightGreyHex}
-            style={styles.TextInputContainer}
-          />
-          {searchText.length > 0 ? (
-            <TouchableOpacity
-              onPress={() => {
-                resetSearchCoffee();
-              }}>
-              <AntDesign
-                style={styles.InputIcon}
-                name="close"
-                size={FONTSIZE.size_16}
-                color={COLORS.primaryLightGreyHex}
-              />
-            </TouchableOpacity>
-          ) : (
-            <></>
-          )}
-        </View>
-
-        {/* Searched Books Flatlist */}
-        {searchText !== '' &&
-          <>
-            <Text style={styles.CoffeeBeansTitle}>Available for Buying</Text>
-            {booksLoading ? (
-              // Render shimmer effect while loading
-              <View style={styles.shimmerFlex}>
-                <ShimmerPlaceholder
-                LinearGradient={LinearGradient}
-                  style={styles.ShimmerPlaceholder}
-                  shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                  visible={!booksLoading}>
-                </ShimmerPlaceholder>
-                <ShimmerPlaceholder
-                LinearGradient={LinearGradient}
-                  style={styles.ShimmerPlaceholder}
-                  shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                  visible={!setBooksLoading}>
-                </ShimmerPlaceholder>
-                <ShimmerPlaceholder
-                LinearGradient={LinearGradient}
-                  style={styles.ShimmerPlaceholder}
-                  shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                  visible={!booksLoading}>
-                </ShimmerPlaceholder>
-              </View>
-            ) : (
-
-              <FlatList
-                {...sortedCoffee.length === 0 && styles.hidden}
-                ref={ListRef}
-                horizontal
-                ListEmptyComponent={
-                  <View style={styles.EmptyListContainer}>
-                    <Text style={styles.genreText}>No Books found</Text>
-                  </View>
-                }
-                showsHorizontalScrollIndicator={false}
-                data={sortedCoffee}
-                contentContainerStyle={styles.FlatListContainer}
-                keyExtractor={item => item.BookId}
-                renderItem={({item}) => {
-                  return (
-                    <TouchableOpacity
-                      onPress={() => {
-                        navigation.push('Details', {
-                          id: item.BookId,
-                          type: "Book",
-                        });
-                      }}>
-                      <CoffeeCard
-                        id={item.BookId}
-                        name={item.BookName}
-                        photo={convertHttpToHttps(item.BookPhoto)}
-                        type="Book"
-                        price={item.BookPrice}
-                        averageRating={item.BookAverageRating}
-                        ratingCount={item.BookRatingCount}
-                        buttonPressHandler={CoffeeCardAddToCart}
-                      />
-                    </TouchableOpacity>
-                  );
-                }}
-              />
-            )}
-          </>
-        }
-
-        {/* Searched External Books FlatList */}
-        {searchText !== '' &&
-          <>
-          <Text style={styles.CoffeeBeansTitle}>More Books</Text>
-
-          {booksLoading ? (
-            // Render shimmer effect while loading
-            <View style={styles.shimmerFlex}>
-              <ShimmerPlaceholder
-              LinearGradient={LinearGradient}
-                style={styles.ShimmerPlaceholder}
-                shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                visible={!booksLoading}>
-              </ShimmerPlaceholder>
-              <ShimmerPlaceholder
-              LinearGradient={LinearGradient}
-                style={styles.ShimmerPlaceholder}
-                shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                visible={!setBooksLoading}>
-              </ShimmerPlaceholder>
-              <ShimmerPlaceholder
-              LinearGradient={LinearGradient}
-                style={styles.ShimmerPlaceholder}
-                shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                visible={!booksLoading}>
-              </ShimmerPlaceholder>
-            </View>
-          ) : (
-
-            <FlatList
-              ref={ListRef}
-              horizontal
-              ListEmptyComponent={
-                <View style={styles.EmptyListContainer}>
-                  <Text style={styles.genreText}>No Books found</Text>
-                </View>
-              }
-              showsHorizontalScrollIndicator={false}
-              data={externalBooks}
-              contentContainerStyle={styles.FlatListContainer}
-              keyExtractor={item => item.GoogleBookId}
-              renderItem={({item}) => {
-                return (
-                  <TouchableOpacity
-                    onPress={() => {
-                      navigation.push('Details', {
-                        id: item.GoogleBookId,
-                        type: "ExternalBook",
-                      });
-                    }}>
-                    <CoffeeCard
-                      id={item.GoogleBookId}
-                      name={item.BookName}
-                      photo={convertHttpToHttps(item.BookPhoto)}
-                      type="ExternalBook"
-                      price={item.BookPrice}
-                      averageRating={item.BookAverageRating}
-                      ratingCount={item.BookRatingCount}
-                      buttonPressHandler={CoffeeCardAddToCart}
-                    />
-                  </TouchableOpacity>
-                );
-              }}
+            <TextInput
+              editable={false}
+              placeholder="Find Your Book..."
+              placeholderTextColor={COLORS.primaryLightGreyHex}
+              style={styles.textInputContainer}
             />
-          )}
-          </>
-        }
-        {
-          !keyboardVisible && (
-            <>
-            {/* Genre Section */}
-            <View style={styles.genresContainer}>
-                <Text style={styles.sectionTitle}>What’s on Your Mind?</Text>
+          </View>
+        </TouchableOpacity>
 
-                {/* First Row */}
-                <View style={styles.genreRow}>
-                    {genres.slice(0, 3).map((data: string, index) => (
-                      <TouchableOpacity
-                        key={index.toString()}
-                        style={[
-                          styles.genreButton,
-                          genreIndex.index === index && styles.selectedGenreButton,
-                        ]}
-                        onPress={() => {
-                          setBooksLoading(true);
-                          ListRef?.current?.scrollToOffset({
-                            animated: true,
-                            offset: 0,
-                          });
-                          setGenreIndex({index: index, genre: genres[index]});
-                          setSortedCoffee(bookList);
-                        }}>
-                        <Text style={styles.genreButtonText}>{data}</Text>
-                      </TouchableOpacity>
-                    ))}
-                </View>
+        {/* Book giveaway */}
+        <BookGiveaway />
 
-                {/* Second Row */}
-                <View style={styles.genreRow}>
-                    {genres.slice(3, 6).map((data: string, index) => (
-                      <TouchableOpacity
-                        key={(index + 3).toString()}
-                        style={[
-                          styles.genreButton,
-                          genreIndex.index === index + 3 && styles.selectedGenreButton,
-                        ]}
-                        onPress={() => {
-                          setBooksLoading(true);
-                          ListRef?.current?.scrollToOffset({
-                            animated: true,
-                            offset: 0,
-                          });
-                          setGenreIndex({index: index + 3, genre: genres[index + 3]});
-                          setSortedCoffee(bookList);
-                        }}>
-                        <Text style={styles.genreButtonText}>{data}</Text>
-                      </TouchableOpacity>
-                    ))}
-                </View>
+        {/* Spotlight Section */}
+        <Spotlights spotlights={spotlights} />
 
-                {/* Third Row */}
-                <View style={styles.genreRow}>
-                    {genres.slice(7, 10).map((data: string, index) => (
-                      <TouchableOpacity
-                        key={(index + 7).toString()}
-                        style={[
-                          styles.genreButton,
-                          genreIndex.index === index + 7 && styles.selectedGenreButton,
-                        ]}
-                        onPress={() => {
-                          setBooksLoading(true);
-                          ListRef?.current?.scrollToOffset({
-                            animated: true,
-                            offset: 0,
-                          });
-                          setGenreIndex({index: index + 7, genre: genres[index + 7]});
-                          setSortedCoffee(bookList);
-                        }}>
-                        <Text style={styles.genreButtonText}>{data}</Text>
-                      </TouchableOpacity>
-                    ))}
-                </View>
-              </View>
+        {/* Seasonal reccos */}
+        <SeasonalRecommendations />
 
-              {/* Filtered Books by Genre */}
-              {booksLoading ? (
-                // Render shimmer effect while loading
-                <View style={styles.shimmerFlex}>
-                  <ShimmerPlaceholder
-                  LinearGradient={LinearGradient}
-                    style={styles.ShimmerPlaceholder}
-                    shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                    visible={!booksLoading}>
-                  </ShimmerPlaceholder>
-                  <ShimmerPlaceholder
-                  LinearGradient={LinearGradient}
-                    style={styles.ShimmerPlaceholder}
-                    shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                    visible={!setBooksLoading}>
-                  </ShimmerPlaceholder>
-                  <ShimmerPlaceholder
-                  LinearGradient={LinearGradient}
-                    style={styles.ShimmerPlaceholder}
-                    shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-                    visible={!booksLoading}>
-                  </ShimmerPlaceholder>
-                </View>
-              ) : (
+        {/* Genre Section */}
+        <GenrePicker 
+          genres={GenreList.length > 0 ? ['All', ...new Set(GenreList.map(item => item.genre))] : ['All']} 
+          CoffeeCardAddToCart={handleAddToCart} 
+        />
 
-                <FlatList
-                  {...sortedCoffee.length === 0 && styles.hidden}
-                  ref={ListRef}
-                  horizontal
-                  ListEmptyComponent={
-                    <View style={styles.EmptyListContainer}>
-                      <Text style={styles.genreText}>No Books found</Text>
-                    </View>
-                  }
-                  showsHorizontalScrollIndicator={false}
-                  data={sortedCoffee}
-                  contentContainerStyle={styles.FlatListContainer}
-                  keyExtractor={item => item.BookId}
-                  renderItem={({item}) => {
-                    return (
-                      <TouchableOpacity
-                        onPress={() => {
-                          navigation.push('Details', {
-                            id: item.BookId,
-                            type: "Book",
-                          });
-                        }}>
-                        <CoffeeCard
-                          id={item.BookId}
-                          name={item.BookName}
-                          photo={convertHttpToHttps(item.BookPhoto)}
-                          type="Book"
-                          price={item.BookPrice}
-                          averageRating={item.BookAverageRating}
-                          ratingCount={item.BookRatingCount}
-                          buttonPressHandler={CoffeeCardAddToCart}
-                        />
-                      </TouchableOpacity>
-                    );
-                  }}
-                />
-              )}
-              {/* Spotlight Section */}
-              <Text style={styles.sectionTitle}>In Spotlight</Text>
-              <Spotlights spotlights={spotlights} />
+        {/* Indian voices */}
+        <CulturalRecommendations />
 
-              {/* load infinite genres and books */}
-            </>
-          )
-        }
+        {/* New releases/Trending/Must reads */}
+        <HotRecommendations />
+
       </Animated.ScrollView>
+      
       {CartList.length > 0 && <FloatingIcon />}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  ShimmerPlaceholder: {
-    width: 150, 
-    height: 200, 
-    borderRadius: 10,
-    marginHorizontal: 10, 
-    marginTop: 10,
-    marginBottom: 40,
-    marginLeft: 20, 
-  },
-  shimmerFlex: {
-    flexDirection: 'row',
-  },
-  hidden: {
-    display: 'none',
-  },
-  ScreenContainer: {
+  screenContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
   },
-  ScrollViewFlex: {
+  scrollViewFlex: {
     flexGrow: 1,
   },
-  InputContainerComponent: {
+  inputContainerComponent: {
     flexDirection: 'row',
     margin: SPACING.space_30,
     borderRadius: BORDERRADIUS.radius_20,
     backgroundColor: COLORS.primaryDarkGreyHex,
     alignItems: 'center',
   },
-  InputIcon: {
+  inputIcon: {
     marginHorizontal: SPACING.space_20,
   },
-  TextInputContainer: {
+  textInputContainer: {
     flex: 1,
     height: SPACING.space_20 * 3,
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_14,
-    color: COLORS.primaryWhiteHex,
-  },
-  genreText: {
-    fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_16,
-    color: COLORS.primaryLightGreyHex,
-    marginBottom: SPACING.space_4,
-  },
-  FlatListContainer: {
-    gap: SPACING.space_20,
-    paddingVertical: SPACING.space_20,
-    paddingHorizontal: SPACING.space_30,
-  },
-  EmptyListContainer: {
-    width: Dimensions.get('window').width - SPACING.space_30 * 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.space_36 * 3.6,
-  },
-  CoffeeBeansTitle: {
-    fontSize: FONTSIZE.size_18,
-    marginLeft: SPACING.space_30,
-    marginTop: SPACING.space_20,
-    fontFamily: FONTFAMILY.poppins_medium,
-    color: COLORS.secondaryLightGreyHex,
-  },
-  sectionTitle: {
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_bold,
-    color: 'white',
-    textAlign: 'center',
-    marginVertical: SPACING.space_20,
-  },
-  genresContainer: {
-    marginBottom: SPACING.space_20,
-    paddingHorizontal: SPACING.space_10,
-    alignItems: 'center',
-  },
-  genreRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: SPACING.space_4,
-  },
-  genreButton: {
-    backgroundColor: COLORS.primaryGreyHex,
-    paddingVertical: SPACING.space_10,
-    paddingHorizontal: SPACING.space_20,
-    borderRadius: BORDERRADIUS.radius_10,
-    marginHorizontal: SPACING.space_4,
-  },
-  genreButtonText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_14,
-    textAlign: 'center',
-  },
-  selectedGenreButton: {
-    backgroundColor: COLORS.primaryOrangeHex,
-  },
-  welcomeMascot: {
-    opacity: 0.5,
-    marginTop: SPACING.space_32,
-    marginBottom: SPACING.space_36,
-    bottom: 40,
-  },
-  welcomeMessage: {
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_semibold,
-    textAlign: 'center',
     color: COLORS.primaryWhiteHex,
   },
 });

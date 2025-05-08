@@ -1,216 +1,497 @@
 import React, { useState, useEffect } from 'react';
-import { Dimensions, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { 
+  Dimensions, 
+  FlatList, 
+  SafeAreaView, 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View,
+  ActivityIndicator,
+  ScrollView,
+  Alert
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
-import { COLORS, FONTSIZE, FONTFAMILY, SPACING, BORDERRADIUS } from '../../../theme/theme'; 
+import { COLORS, FONTSIZE, FONTFAMILY, SPACING, BORDERRADIUS } from '../../../theme/theme';
 
 const { width } = Dimensions.get("window");
 
-const SubscriptionScreen = ({navigation}: any) => {
-    const [plans, setPlans] = useState([]);
-    const [activePlan, setActivePlan] = useState([]);
-    const [loading, setLoading] = useState(true);
+const SubscriptionScreen = ({ navigation }) => {
+  const [plans, setPlans] = useState([]);
+  const [activePlan, setActivePlan] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [newSubscription, setNewSubscription] = useState(false);
 
-    const userDetails = useStore((state: any) => state.userDetails);
-    
-    // Render each subscription plan
-    const renderSubscriptionItem = ({ item }) => (
-        <TouchableOpacity
-        onPress={
-            () => navigation.push('Payment', {amount: item.PlanPrice, subscription: item.PlanId})
-        }>
-            <View style={styles.subscriptionItem}>
-                <Text style={styles.title}>{item.PlanName}</Text>
-                <Text style={styles.description}>{item.PlanDescription}</Text>
-                {item.Extras == null ? null : <Text style={styles.extras}>{item.Extras}</Text>}
-                <Text style={styles.price}>₹ {item.PlanPrice}</Text>
-            </View>
-        </TouchableOpacity>
-    );
+  const userDetails = useStore((state) => state.userDetails);
 
-    useEffect(() => {
-      async function fetchActivePlan() {
-          try {
-              const response = await instance(requests.fetchActivePlan+userDetails[0].userId);
-              const data = response.data;
-              setActivePlan(data);
-            } catch (error) {
-              console.error('Error fetching plans:', error);
-            }
-      }
-    
-      fetchActivePlan();
-    }, []);
-
-    useEffect(() => {
-        async function fetchPlanList() {
-            try {
-                const response = await instance(requests.fetchSubscriptionPlans);
-                const data = response.data;
-                setPlans(data);
-                setLoading(false);
-              } catch (error) {
-                console.error('Error fetching plans:', error);
-              }
-        }
+  // Fetch active plan data
+  const fetchActivePlan = async () => {
+    try {
+      const response = await instance(requests.fetchActivePlan + userDetails[0].userId);
+      const data = response.data;
       
-        fetchPlanList();
-      }, []);
-
-      // This useFocusEffect will run each time the screen comes into focus
-    useFocusEffect(
-      React.useCallback(() => {
-        async function fetchActivePlan() {
-          try {
-              const response = await instance(requests.fetchActivePlan+userDetails[0].userId);
-              const data = response.data;
-              setActivePlan(data);
-            } catch (error) {
-              console.error('Error fetching plans:', error);
-            }
+      const hadActivePlan = activePlan.length > 0 && activePlan[0]?.PlanId;
+      const hasActivePlan = data.length > 0 && data[0]?.PlanId;
+      
+      setActivePlan(data);
+      
+      // Show success message if this is a new subscription
+      if (!hadActivePlan && hasActivePlan && newSubscription) {
+        setShowSuccessMessage(true);
+        setNewSubscription(false);
       }
+    } catch (error) {
+      console.error('Error fetching active plan:', error);
+    }
+  };
+
+  // Fetch subscription plans
+  const fetchPlanList = async () => {
+    try {
+      const response = await instance(requests.fetchSubscriptionPlans);
+      const data = response.data;
+      setPlans(data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    }
+  };
+
+  // Initial data loading
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        await Promise.all([
+          fetchActivePlan(),
+          fetchPlanList()
+        ]);
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      }
+    };
     
+    loadInitialData();
+  }, []);
+
+  // Refresh active plan on screen focus
+  useFocusEffect(
+    React.useCallback(() => {
       fetchActivePlan();
-      }, [])
+      return () => {};
+    }, [])
   );
 
-    if (loading) {
-      return (
-        // Render shimmer effect while loading
-        <SafeAreaView style={styles.container}>
-          <View style={styles.shimmerFlex}>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!loading}>
-            </ShimmerPlaceholder>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!loading}>
-            </ShimmerPlaceholder>
-            <ShimmerPlaceholder
-            LinearGradient={LinearGradient}
-              style={styles.ShimmerPlaceholder}
-              shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
-              visible={!loading}>
-            </ShimmerPlaceholder>
-          </View>
-        </SafeAreaView>
-      )
+  // Handle subscription selection and payment
+  const handleSubscription = (planPrice, planId) => {
+    if (processingPayment) return;
+    
+    // Validate user data before proceeding
+    if (!userDetails[0].userName || !userDetails[0].userPhone) {
+      Alert.alert(
+        "Missing Information",
+        "Please ensure your name and phone number are set in your profile before subscribing.",
+        [{ text: "OK" }]
+      );
+      return;
     }
-    else {
-      return (
-        <SafeAreaView style={styles.container}>
-          <View style={styles.depositView}>
-            <Text style={styles.depositLabel}>Security deposit: </Text>
-            <Text style={styles.price}>₹ {userDetails[0].deposit}</Text>
-          </View>
-          {
-            activePlan[0] !== undefined && activePlan[0].PlanId !== null &&
-            <>
-              <Text style={styles.heading}>Active Plan</Text>
-              <View style={styles.subscriptionItem}>
-                <Text style={styles.title}>{activePlan[0].PlanName}</Text>
-                <Text style={styles.description}>{activePlan[0].PlanDescription}</Text>
-                <View style={styles.footer}>
-                    <Text style={styles.price}>₹ {activePlan[0].PlanPrice}</Text>
-                {activePlan[0].EndDate !== null && <Text style={styles.deadline}>Ends on: {activePlan[0].EndDate.split(" ")[0]}</Text>}
-                </View>
-              </View>
-            </>
-          }
-             <Text style={styles.heading}>Subscription Plans</Text>
-            <FlatList
-                data={plans}
-                renderItem={renderSubscriptionItem}
-                keyExtractor={(item) => item.PlanId.toString()}
-            />
-        </SafeAreaView>
-      )
-    }
-}
+    
+    setProcessingPayment(true);
+    
+    // Navigate to payment screen with plan details
+    navigation.push('Payment', {
+      amount: planPrice,
+      subscription: planId,
+      onPaymentSuccess: () => {
+        setNewSubscription(true);
+        fetchActivePlan();
+        setProcessingPayment(false);
+      }
+    });
+  };
 
-export default SubscriptionScreen;
+  // Render subscription plan item
+  const renderSubscriptionItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.subscriptionItem}
+      onPress={() => handleSubscription(item.PlanPrice, item.PlanId)}
+      disabled={processingPayment}
+      activeOpacity={0.7}
+    >
+      <View style={styles.itemContent}>
+        <Text style={styles.title}>{item.PlanName}</Text>
+        <View style={styles.titleUnderline} />
+        <Text style={styles.description}>{item.PlanDescription}</Text>
+        {item.Extras && <Text style={styles.extras}>{item.Extras}</Text>}
+        <Text style={styles.price}>₹ {item.PlanPrice}</Text>
+        <View style={styles.subscribeButton}>
+          <Text style={styles.subscribeButtonText}>Subscribe</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.shimmerContainer}>
+          <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+            style={styles.shimmerPlaceholder}
+            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+            visible={!loading}
+          />
+          <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+            style={styles.shimmerPlaceholder}
+            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+            visible={!loading}
+          />
+          <ShimmerPlaceholder
+            LinearGradient={LinearGradient}
+            style={styles.shimmerPlaceholder}
+            shimmerColors={[COLORS.primaryDarkGreyHex, COLORS.primaryBlackHex, COLORS.primaryDarkGreyHex]}
+            visible={!loading}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Security Deposit */}
+        <View style={styles.depositView}>
+          <Text style={styles.depositLabel}>Security deposit: </Text>
+          <Text style={styles.depositValue}>₹ {userDetails[0].deposit}</Text>
+        </View>
+
+        {/* Success Message */}
+        {showSuccessMessage && (
+          <View style={styles.successMessage}>
+            <Text style={styles.successMessageTitle}>Subscription activated successfully!</Text>
+            <Text style={styles.successMessageText}>You now have full access to our library. Start exploring our collection.</Text>
+            <TouchableOpacity 
+              style={styles.browseButton}
+              onPress={() => navigation.navigate('Library')}
+            >
+              <Text style={styles.browseButtonText}>Browse Books Now</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Active Plan Section */}
+        {activePlan[0] && activePlan[0].PlanId && (
+          <>
+            <Text style={styles.heading}>Active Plan</Text>
+            <View style={styles.activePlanContainer}>
+              <View style={styles.activeFlag}>
+                <Text style={styles.activeFlagText}>ACTIVE</Text>
+              </View>
+              <Text style={styles.title}>{activePlan[0].PlanName}</Text>
+              <View style={styles.titleUnderline} />
+              <Text style={styles.description}>{activePlan[0].PlanDescription}</Text>
+              <View style={styles.footer}>
+                <Text style={styles.price}>₹ {activePlan[0].PlanPrice}</Text>
+                {activePlan[0].EndDate && (
+                  <Text style={styles.deadline}>
+                    Ends on: {activePlan[0].EndDate.split(" ")[0]}
+                  </Text>
+                )}
+              </View>
+              
+              {!showSuccessMessage && (
+                <TouchableOpacity 
+                  style={styles.browseButton}
+                  onPress={() => navigation.navigate('Library')}
+                >
+                  <Text style={styles.browseButtonText}>Browse Our Library</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </>
+        )}
+
+        {/* Subscription Plans Section */}
+        <Text style={styles.heading}>Subscription Plans</Text>
+        
+        {/* Location restriction notice */}
+        <View style={styles.locationNotice}>
+          <Text style={styles.locationNoticeIcon}>ⓘ</Text>
+          <View style={styles.locationNoticeContent}>
+            <Text style={styles.locationNoticeTitle}>Bangalore Only:</Text>
+            <Text style={styles.locationNoticeText}>
+              Our subscription services are currently available exclusively for customers in Bangalore.
+            </Text>
+          </View>
+        </View>
+
+        {/* Processing Payment Indicator */}
+        {processingPayment && (
+          <View style={styles.processingPayment}>
+            <ActivityIndicator color={COLORS.primaryOrangeHex} size="small" />
+            <Text style={styles.processingPaymentText}>Processing payment, please wait...</Text>
+          </View>
+        )}
+
+        {/* Subscription Plans List */}
+        <FlatList
+          data={plans}
+          renderItem={renderSubscriptionItem}
+          keyExtractor={(item) => item.PlanId.toString()}
+          scrollEnabled={false}
+          contentContainerStyle={styles.plansList}
+        />
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: SPACING.space_16, 
-        backgroundColor: COLORS.primaryBlackHex,
-      },
-      ShimmerPlaceholder: {
-        width: width*0.9, 
-        height: 200, 
-        borderRadius: 10,
-        marginHorizontal: 10, 
-        marginTop: 10,
-        marginBottom: 40,
-        marginLeft: 20, 
-      },
-      shimmerFlex: {
-        flexDirection: 'column',
-      },
-      heading: {
-        fontSize: FONTSIZE.size_24,
-        fontFamily: FONTFAMILY.poppins_bold,
-        color: COLORS.primaryWhiteHex,
-        marginBottom: SPACING.space_16, 
-        alignSelf: 'center',
-    },
-    depositView: {
-      flexDirection: 'row',
-    },
-    depositLabel: {
-        fontSize: FONTSIZE.size_16,
-        fontFamily: FONTFAMILY.poppins_medium,
-        color: COLORS.primaryOrangeHex,
-        marginBottom: SPACING.space_12, 
-    },
-      subscriptionItem: {
-        backgroundColor: COLORS.secondaryBlackRGBA, 
-        borderRadius: BORDERRADIUS.radius_10, 
-        padding: SPACING.space_16, 
-        elevation: 3,
-        margin: SPACING.space_10,
-      },
-      title: {
-        fontSize: FONTSIZE.size_18, 
-        fontFamily: FONTFAMILY.poppins_bold,
-        marginBottom: SPACING.space_8,
-        color: COLORS.primaryOrangeHex,
-      },
-      description: {
-        fontSize: FONTSIZE.size_14,
-        fontFamily: FONTFAMILY.poppins_regular, 
-        marginBottom: SPACING.space_12, 
-        color: COLORS.secondaryLightGreyHex, 
-      },
-      extras: {
-        fontSize: FONTSIZE.size_16,
-        fontFamily: FONTFAMILY.poppins_semibold, 
-        marginBottom: SPACING.space_12,
-        color: COLORS.primaryOrangeHex, 
-      },
-      footer: {
-        flexDirection: 'row',
-        display: 'flex',
-        justifyContent: 'space-between',
-      },
-      price: {
-        fontSize: FONTSIZE.size_16, 
-        fontFamily: FONTFAMILY.poppins_semibold, 
-        color: COLORS.primaryWhiteHex, 
-      },
-      deadline: {
-        fontSize: FONTSIZE.size_16, 
-        fontFamily: FONTFAMILY.poppins_semibold, 
-        color: COLORS.primaryRedHex, 
-      },
-})
+  container: {
+    flex: 1,
+    padding: SPACING.space_16,
+    backgroundColor: COLORS.primaryBlackHex,
+  },
+  shimmerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shimmerPlaceholder: {
+    width: width * 0.9,
+    height: 200,
+    borderRadius: BORDERRADIUS.radius_10,
+    marginVertical: SPACING.space_16,
+  },
+  heading: {
+    fontSize: FONTSIZE.size_24,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+    marginTop: SPACING.space_24,
+    marginBottom: SPACING.space_16,
+    textAlign: 'center',
+  },
+  depositView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    padding: SPACING.space_12,
+    borderRadius: BORDERRADIUS.radius_10,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primaryOrangeHex,
+    marginBottom: SPACING.space_24,
+  },
+  depositLabel: {
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_medium,
+    color: COLORS.primaryOrangeHex,
+    marginRight: SPACING.space_8,
+  },
+  depositValue: {
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+  },
+  subscriptionItem: {
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_24,
+    marginBottom: SPACING.space_24,
+    marginHorizontal: SPACING.space_16,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  itemContent: {
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_bold,
+    marginBottom: SPACING.space_12,
+    color: COLORS.primaryOrangeHex,
+    textAlign: 'center',
+  },
+  titleUnderline: {
+    width: 40,
+    height: 2,
+    backgroundColor: COLORS.primaryOrangeHex,
+    opacity: 0.6,
+    marginBottom: SPACING.space_12,
+  },
+  description: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    marginBottom: SPACING.space_16,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
+  },
+  extras: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    marginBottom: SPACING.space_12,
+    color: COLORS.primaryWhiteHex,
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    padding: SPACING.space_8,
+    borderRadius: BORDERRADIUS.radius_8,
+    textAlign: 'center',
+    width: '100%',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginTop: SPACING.space_16,
+    paddingTop: SPACING.space_12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  price: {
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_8,
+  },
+  deadline: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_medium,
+    color: COLORS.primaryRedHex,
+  },
+  activePlanContainer: {
+    backgroundColor: 'rgba(209, 120, 66, 0.15)',
+    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_24,
+    marginBottom: SPACING.space_24,
+    marginHorizontal: SPACING.space_16,
+    borderWidth: 1,
+    borderColor: COLORS.primaryOrangeHex,
+    position: 'relative',
+    alignItems: 'center',
+  },
+  activeFlag: {
+    position: 'absolute',
+    top: SPACING.space_12,
+    right: -SPACING.space_30,
+    backgroundColor: COLORS.primaryOrangeHex,
+    paddingVertical: SPACING.space_4,
+    paddingHorizontal: SPACING.space_24,
+    transform: [{ rotate: '45deg' }],
+    zIndex: 1,
+  },
+  activeFlagText: {
+    color: COLORS.primaryBlackHex,
+    fontFamily: FONTFAMILY.poppins_bold,
+    fontSize: FONTSIZE.size_12,
+  },
+  subscribeButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    borderRadius: BORDERRADIUS.radius_8,
+    paddingVertical: SPACING.space_10,
+    width: '100%',
+    alignItems: 'center',
+    marginTop: SPACING.space_16,
+  },
+  subscribeButtonText: {
+    fontFamily: FONTFAMILY.poppins_bold,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryWhiteHex,
+  },
+  locationNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(209, 120, 66, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(209, 120, 66, 0.3)',
+    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_16,
+    marginBottom: SPACING.space_24,
+  },
+  locationNoticeIcon: {
+    fontSize: FONTSIZE.size_24,
+    color: COLORS.primaryOrangeHex,
+    marginRight: SPACING.space_12,
+  },
+  locationNoticeContent: {
+    flex: 1,
+  },
+  locationNoticeTitle: {
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryOrangeHex,
+    marginBottom: SPACING.space_4,
+  },
+  locationNoticeText: {
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryWhiteHex,
+    lineHeight: 21,
+  },
+  processingPayment: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 165, 0, 0.1)',
+    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_12,
+    marginBottom: SPACING.space_16,
+  },
+  processingPaymentText: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryOrangeHex,
+    marginLeft: SPACING.space_8,
+  },
+  plansList: {
+    paddingBottom: SPACING.space_36,
+  },
+  successMessage: {
+    backgroundColor: 'rgba(0, 200, 83, 0.15)',
+    borderWidth: 1,
+    borderColor: '#00c853',
+    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_16,
+    marginVertical: SPACING.space_20,
+    alignItems: 'center',
+  },
+  successMessageTitle: {
+    color: '#00c853',
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_16,
+    marginBottom: SPACING.space_12,
+  },
+  successMessageText: {
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_14,
+    textAlign: 'center',
+    marginBottom: SPACING.space_8,
+  },
+  browseButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    paddingVertical: SPACING.space_10,
+    paddingHorizontal: SPACING.space_24,
+    borderRadius: BORDERRADIUS.radius_8,
+    marginTop: SPACING.space_8,
+  },
+  browseButtonText: {
+    fontFamily: FONTFAMILY.poppins_bold,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryWhiteHex,
+  },
+});
+
+export default SubscriptionScreen;

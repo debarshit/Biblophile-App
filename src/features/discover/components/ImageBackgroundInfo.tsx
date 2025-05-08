@@ -18,9 +18,13 @@ interface ImageBackgroundInfoProps {
   type: string;
   author: string;
   genre: string;
-  BackHandler?: any;
+  BackHandler?: () => void;
   product: any;
   isGoogleBook: boolean;
+}
+
+interface Emotion {
+  Emotion: string;
 }
 
 const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
@@ -35,125 +39,135 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   product,
   isGoogleBook,
 }) => {
-  const [averageRating, setAverageRating] = useState<number | null>(null);
-  const [ratingsCount, setRatingsCount] = useState<number | null>(null);
-  const [topEmotions, setTopEmotions] = useState<any[]>([]);
+  const [bookData, setBookData] = useState({
+    averageRating: null as number | null,
+    ratingsCount: null as number | null,
+    topEmotions: [] as Emotion[]
+  });
   const [cityModalVisible, setCityModalVisible] = useState(false);
   const { selectedCity } = useStore();
 
+  // Get actual book ID (handling Google Books)
+  const getBookId = async () => {
+    if (type !== 'ExternalBook') return id;
+    
+    const isbn = product.volumeInfo?.industryIdentifiers?.find(
+      (id: any) => id.type === 'ISBN_13'
+    )?.identifier || '';
+    
+    if (!isbn) return id;
+    
+    try {
+      const bookIdResponse = await instance.post(requests.fetchBookId, { ISBN: isbn });
+      return bookIdResponse.data.bookId || id;
+    } catch (error) {
+      console.error('Failed to fetch BookId', error);
+      return id;
+    }
+  };
+
+  // Fetch book data
+  useEffect(() => {
+    const fetchBookData = async () => {
+      try {
+        const bookId = await getBookId();
+        
+        // Fetch ratings
+        const ratingResponse = await instance(`${requests.fetchAverageRating}${bookId}`);
+        
+        // Fetch emotions
+        const emotionsResponse = await instance(`${requests.fetchAverageEmotions}${bookId}`);
+        
+        setBookData({
+          averageRating: ratingResponse.data.averageRating,
+          ratingsCount: ratingResponse.data.totalRatings,
+          topEmotions: emotionsResponse.data.topEmotions || []
+        });
+      } catch (error) {
+        console.error('Error fetching book data:', error);
+      }
+    };
+
+    fetchBookData();
+  }, [id, type, product]);
+
   const handleSharePress = async () => {
     try {
-      const result = await Share.share({
+      await Share.share({
         message: `Checkout this book at https://biblophile.com/books/${type}/${id}/${name}`,
       });
-      if (result.action === Share.sharedAction && result.activityType) {
-        // Shared with activity type
-      } else if (result.action === Share.dismissedAction) {
-        // Dismissed
-      }
     } catch (error) {
       Alert.alert('Error', 'Failed to share.');
     }
   };
 
-  useEffect(() => {
-    async function fetchAverageRating() {
-      try {
-        let bookId = id;
-        if (type === 'ExternalBook') {
-          const isbn =
-            product.volumeInfo?.industryIdentifiers?.find((id) => id.type === 'ISBN_13')?.identifier || '';
-          if (isbn) {
-            const bookIdResponse = await instance.post(requests.fetchBookId, { ISBN: isbn });
-            if (bookIdResponse.data.bookId) {
-              bookId = bookIdResponse.data.bookId;
-            } else {
-              console.log('Failed to fetch BookId');
-              return;
-            }
-          }
-        }
-        const response = await instance(`${requests.fetchAverageRating}${bookId}`);
-        const data = response.data;
-        setAverageRating(data.averageRating);
-        setRatingsCount(data.totalRatings);
-      } catch (error) {
-        console.error('Error fetching items:', error);
-      }
-    }
-
-    fetchAverageRating();
-  }, [product]);
-
-  useEffect(() => {
-    async function fetchTopEmotions() {
-      try {
-        let bookId = id;
-        if (type === 'ExternalBook') {
-          const isbn =
-            product.volumeInfo?.industryIdentifiers?.find((id) => id.type === 'ISBN_13')?.identifier || '';
-          if (isbn) {
-            const bookIdResponse = await instance.post(requests.fetchBookId, { ISBN: isbn });
-            if (bookIdResponse.data.bookId) {
-              bookId = bookIdResponse.data.bookId;
-            } else {
-              console.log('Failed to fetch BookId');
-              return;
-            }
-          }
-        }
-        const response = await instance(`${requests.fetchAverageEmotions}${bookId}`);
-        const data = response.data;
-        setTopEmotions(data.topEmotions);
-      } catch (error) {
-        console.error('Error fetching items:', error);
-      }
-    }
-
-    fetchTopEmotions();
-  }, [product]);
-
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         {EnableBackHandler && (
-          <TouchableOpacity onPress={() => BackHandler()}>
-            <GradientBGIcon name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+          <TouchableOpacity onPress={BackHandler}>
+            <GradientBGIcon 
+              name="left" 
+              color={COLORS.primaryLightGreyHex} 
+              size={FONTSIZE.size_16} 
+            />
           </TouchableOpacity>
         )}
+        
         <TouchableOpacity onPress={() => setCityModalVisible(true)}>
           <View style={styles.location}>
             <FontAwesome5 name="map-marker" size={20} color="#D17842" />
-            <Text style={styles.locationText}>{selectedCity ? selectedCity : 'location'}</Text>
+            <Text style={styles.locationText}>
+              {selectedCity || 'location'}
+            </Text>
           </View>
         </TouchableOpacity>
+        
         <TouchableOpacity onPress={handleSharePress}>
-          <GradientBGIcon name="sharealt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+          <GradientBGIcon 
+            name="sharealt" 
+            color={COLORS.primaryLightGreyHex} 
+            size={FONTSIZE.size_16} 
+          />
         </TouchableOpacity>
       </View>
 
+      {/* Book Info */}
       <View style={styles.bookInfoContainer}>
         <Image source={{ uri: imagelink_portrait }} style={styles.bookCover} />
 
         <View style={styles.textContainer}>
+          {/* Emotions */}
           <ScrollView horizontal style={styles.emotionContainer}>
-            {topEmotions && topEmotions.map((emotion, index) => (
-              <Text key={index} style={styles.emotionText}>{emotion.Emotion}</Text>
+            {bookData.topEmotions.map((emotion, index) => (
+              <Text key={index} style={styles.emotionText}>
+                {emotion.Emotion}
+              </Text>
             ))}
           </ScrollView>
 
+          {/* Genre */}
           <ScrollView horizontal style={styles.genreScrollView}>
             <Text style={styles.genreText}>{genre}</Text>
           </ScrollView>
 
+          {/* Author */}
           <Text style={styles.authorText}>{author}</Text>
 
+          {/* Ratings */}
           <View style={styles.ratingContainer}>
-            {averageRating > 0 ? (
+            {bookData.averageRating ? (
               <>
-                <AntDesign name="star" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_20} />
-                <Text style={styles.ratingText}>{averageRating}</Text>
-                <Text style={styles.ratingCountText}>({Number(ratingsCount).toLocaleString()})</Text>
+                <AntDesign 
+                  name="star" 
+                  color={COLORS.primaryOrangeHex} 
+                  size={FONTSIZE.size_20} 
+                />
+                <Text style={styles.ratingText}>{bookData.averageRating}</Text>
+                <Text style={styles.ratingCountText}>
+                  ({Number(bookData.ratingsCount).toLocaleString()})
+                </Text>
               </>
             ) : (
               <Text style={styles.noRatingsText}>No ratings yet</Text>
@@ -162,12 +176,21 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         </View>
       </View>
 
+      {/* Book Title */}
       <Text style={styles.bookTitle}>{name}</Text>
 
+      {/* Reading Status */}
       <View style={styles.readingStatusContainer}>
-        {type !== 'Bookmark' && <ReadingStatus id={id} isGoogleBook={isGoogleBook} product={product} />}
+        {type !== 'Bookmark' && (
+          <ReadingStatus id={id} isGoogleBook={isGoogleBook} product={product} />
+        )}
       </View>
-      <CityModal visibility={cityModalVisible} onClose={() => setCityModalVisible(false)}/>
+      
+      {/* City Modal */}
+      <CityModal 
+        visibility={cityModalVisible} 
+        onClose={() => setCityModalVisible(false)}
+      />
     </View>
   );
 };
