@@ -126,6 +126,7 @@ const DiscoverScreen = ({ navigation }) => {
             />
             <TextInput
               editable={false}
+              pointerEvents="none"
               placeholder="Find Your Book..."
               placeholderTextColor={COLORS.primaryLightGreyHex}
               style={styles.textInputContainer}
