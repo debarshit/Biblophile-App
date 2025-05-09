@@ -45,6 +45,8 @@ import ReadAlongDetails from './src/features/social/screens/ReadAlongDetails';
 import CreateReadalongCheckpoint from './src/features/social/screens/CreateReadalongCheckpoint';
 import { CityProvider } from './src/contexts/CityContext';
 import SearchScreen from './src/features/discover/screens/SearchScreen';
+import CreateBookClubScreen from './src/features/social/screens/BookClubsCreate';
+import BookClubDetailsScreen from './src/features/social/screens/BookClubDetails';
 
 const Stack = createNativeStackNavigator();
 
@@ -398,6 +400,14 @@ const App = () => {
               <Stack.Screen
               name="CreateReadalongCheckpoint"
               component={CreateReadalongCheckpoint}
+              options={{animation: 'slide_from_right'}}></Stack.Screen>
+              <Stack.Screen
+              name="CreateBookClub"
+              component={CreateBookClubScreen}
+              options={{animation: 'slide_from_right'}}></Stack.Screen>
+              <Stack.Screen
+              name="BookClubDetails"
+              component={BookClubDetailsScreen}
               options={{animation: 'slide_from_right'}}></Stack.Screen>
           </Stack.Navigator>
           <Toast />

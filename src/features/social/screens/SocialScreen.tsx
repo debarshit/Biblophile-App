@@ -1,4 +1,4 @@
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 import React from 'react';
 import Swiper from "react-native-screens-swiper";
 import NewsFeed from './NewsFeed';
@@ -9,7 +9,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BORDERRADIUS, COLORS } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
 
-const SocialScreen = () => {
+const SocialScreen = ({ route }) => {
+  const { initialTab } = route.params || {};
+
   const data = [
     {
         tabLabel: 'News Feed',
@@ -26,11 +28,13 @@ const SocialScreen = () => {
         props: {}, // (optional) additional props
     },
     {
-      tabLabel: 'BookClubs',
+      tabLabel: 'Book Clubs',
       component: BookClubsIndex,
       props: {}, // (optional) additional props
-  },
+    },
   ];
+
+  const initialIndex = data.findIndex(item => item.tabLabel === initialTab);
 
   return (
     <SafeAreaView style={styles.ScreenContainer} >
@@ -41,6 +45,7 @@ const SocialScreen = () => {
       <Swiper
         data={data}
         style={styles}
+        index={initialIndex >= 0 ? initialIndex : 0}
       />
     </SafeAreaView>
   )

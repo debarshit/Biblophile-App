@@ -3,6 +3,8 @@ import {
   Dimensions, 
   FlatList, 
   Keyboard, 
+  SafeAreaView, 
+  ScrollView, 
   StyleSheet, 
   Text, 
   TextInput, 
@@ -28,6 +30,7 @@ import {
   SPACING 
 } from '../../../theme/theme';
 import { useCity } from '../../../contexts/CityContext';
+import SeasonalRecommendations from '../components/SeasonalRecommendations';
 
 // Debounce search for better performance
 const useDebounce = (callback, delay) => {
@@ -178,80 +181,84 @@ const SearchScreen = ({ route }) => {
   );
 
   return (
-    <View style={styles.container}>
-      {/* Search Input */}
-      <View style={styles.inputContainer}>
-        <TouchableOpacity onPress={() => performSearch(searchText)}>
-          <Feather
-            style={styles.inputIcon}
-            name="search"
-            size={FONTSIZE.size_18}
-            color={searchText ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex}
-          />
-        </TouchableOpacity>
-        
-        <TextInput
-          placeholder="Find Your Book..."
-          value={searchText}
-          onChangeText={handleSearchChange}
-          placeholderTextColor={COLORS.primaryLightGreyHex}
-          style={styles.textInput}
-          autoFocus
-        />
-        
-        {searchText ? (
-          <TouchableOpacity onPress={resetSearch}>
-            <AntDesign
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        {/* Search Input */}
+        <View style={styles.inputContainer}>
+          <TouchableOpacity onPress={() => performSearch(searchText)}>
+            <Feather
               style={styles.inputIcon}
-              name="close"
-              size={FONTSIZE.size_16}
-              color={COLORS.primaryLightGreyHex}
+              name="search"
+              size={FONTSIZE.size_18}
+              color={searchText ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex}
             />
           </TouchableOpacity>
-        ) : null}
-      </View>
-
-      {/* Search Results */}
-      {searchText ? (
-        <>
-          {selectedCity === 'Bengaluru' && <>
-            {/* Local Books */}
-            <Text style={styles.sectionTitle}>Available for Renting</Text>
-              
-            {booksLoading ? renderShimmer() : (
-              <FlatList
-                ref={localBooksListRef}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={books}
-                keyExtractor={item => `local-${item.BookId}`}
-                renderItem={renderBookItem('local')}
-                contentContainerStyle={styles.flatListContainer}
-                ListEmptyComponent={renderEmptyList}
+          
+          <TextInput
+            placeholder="Find Your Book..."
+            value={searchText}
+            onChangeText={handleSearchChange}
+            placeholderTextColor={COLORS.primaryLightGreyHex}
+            style={styles.textInput}
+            autoFocus
+          />
+          
+          {searchText ? (
+            <TouchableOpacity onPress={resetSearch}>
+              <AntDesign
+                style={styles.inputIcon}
+                name="close"
+                size={FONTSIZE.size_16}
+                color={COLORS.primaryLightGreyHex}
               />
-            )}
-          </>}
+            </TouchableOpacity>
+          ) : null}
+        </View>
 
+        {/* Search Results */}
+        {searchText ? (
           <>
-            {/* External Books */}
-            <Text style={styles.sectionTitle}>Search Results</Text>
-            
-            {booksLoading ? renderShimmer() : (
-              <FlatList
-                ref={externalBooksListRef}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={externalBooks}
-                keyExtractor={item => `external-${item.GoogleBookId}`}
-                renderItem={renderBookItem('external')}
-                contentContainerStyle={styles.flatListContainer}
-                ListEmptyComponent={renderEmptyList}
-              />
-            )}
+            {selectedCity === 'Bengaluru' && books.length > 0 && <>
+              {/* Local Books */}
+              <Text style={styles.sectionTitle}>Available for Renting</Text>
+                
+              {booksLoading ? renderShimmer() : (
+                <FlatList
+                  ref={localBooksListRef}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={books}
+                  keyExtractor={item => `local-${item.BookId}`}
+                  renderItem={renderBookItem('local')}
+                  contentContainerStyle={styles.flatListContainer}
+                  ListEmptyComponent={renderEmptyList}
+                />
+              )}
+            </>}
+
+            <>
+              {/* External Books */}
+              <Text style={styles.sectionTitle}>Search Results</Text>
+              
+              {booksLoading ? renderShimmer() : (
+                <FlatList
+                  ref={externalBooksListRef}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={externalBooks}
+                  keyExtractor={item => `external-${item.GoogleBookId}`}
+                  renderItem={renderBookItem('external')}
+                  contentContainerStyle={styles.flatListContainer}
+                  ListEmptyComponent={renderEmptyList}
+                />
+              )}
+            </>
           </>
-        </>
-      ) : null}
-    </View>
+        ) : (
+        <SeasonalRecommendations /> 
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
