@@ -14,14 +14,14 @@ const StreakCalendarView = () => {
   const [error, setError] = useState(null);
   const [currentMonth, setCurrentMonth] = useState('');
   
-  // Initialize current month once on component mount
+  // Initialized current month once on component mount
   useEffect(() => {
     const today = new Date();
     const formattedMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
     setCurrentMonth(formattedMonth);
   }, []);
 
-  // Create a memoized fetch function to avoid recreation on each render
+  //memoized fetch function to avoid recreation on each render
   const fetchStreakData = useCallback(async (month) => {
     if (!userId || !month) return;
     
@@ -67,7 +67,6 @@ const StreakCalendarView = () => {
     }
   }, [currentMonth, userId, fetchStreakData]);
 
-  // Handle month change from the calendar
   const handleMonthChange = useCallback((monthData) => {
     const newMonth = `${monthData.year}-${String(monthData.month).padStart(2, '0')}`;
     console.log('Month changed to:', newMonth);
@@ -102,7 +101,6 @@ const StreakCalendarView = () => {
             console.log('Selected day', day.dateString);
           }}
           onMonthChange={handleMonthChange}
-          // Explicitly set initial month to prevent unexpected changes
           current={currentMonth ? `${currentMonth}-01` : undefined}
         />
       )}
