@@ -66,30 +66,16 @@ const HomeScreen = ({navigation}: any) => {
   const CoffeeCardAddToCart = ({
     id,
     name,
-    genre,
     photo,
-    poster,
     type,
-    prices,
-    actualPrice,
-    averageRating,
-    ratingCount,
-    description,
-    author,                    
+    prices,                
   }: any) => {
     addToCart({
       id,
       name,
-      genre,
       photo,
-      poster,
       type,
       prices,
-      actualPrice,
-      averageRating,
-      ratingCount,
-      description,
-      author, 
     });
     calculateCartPrice();
     if (Platform.OS == 'android') {

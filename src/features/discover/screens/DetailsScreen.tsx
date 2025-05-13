@@ -24,6 +24,7 @@ import { useCity } from '../../../contexts/CityContext';
 import DescriptionTab from '../components/DescriptionTab';
 import TabNavigator from '../components/TabNavigator';
 import BuyOptionsModal from '../../bookshop/components/BuyOptionsModal';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
@@ -74,13 +75,6 @@ const DetailsScreen = ({navigation, route}: any) => {
         setId(productId);
         setType(productType);
     }
-  };
-
-  const convertHttpToHttps = (url) => {
-    if (url && url.startsWith('http://')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
   };
 
   const stripHtmlTags = (html) => {
