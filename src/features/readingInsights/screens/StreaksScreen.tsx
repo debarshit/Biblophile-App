@@ -4,13 +4,12 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
-import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { COLORS } from '../../../theme/theme';
 import PagesReadInput from '../components/PagesReadInput';
 import SessionPrompt from '../components/SessionPrompt';
 import { dismissTimerNotification, updateTimerNotification } from '../../../utils/notificationUtils';
 import Header from '../components/Header';
 import TabSelector from '../components/TabSelector';
-import StreakProgress from '../components/StreakProgress';
 import StreakAchievements from '../components/StreakAchievements';
 import NoteSection from '../components/NoteSection';
 import ReminderSection from '../components/ReminderSection';
@@ -18,6 +17,7 @@ import CommunitySection from '../components/CommunitySection';
 import Footer from '../components/Footer';
 import SessionTimer from '../components/SessionTimer';
 import TimePicker from '../components/TimePicker';
+import StreakCalendarView from '../components/StreakCalendarView';
 
 const StreaksScreen = ({ navigation, route }) => {
   const userDetails = useStore((state) => state.userDetails);
@@ -239,10 +239,9 @@ const StreaksScreen = ({ navigation, route }) => {
         
         {activeTab === "streaks" ? (
           <>
-            <StreakProgress 
+            <StreakCalendarView
               currentStreak={currentStreak}
               latestUpdateTime={latestUpdateTime}
-              userDetails={userDetails}
             />
             
             <StreakAchievements maxStreak={maxStreak} />
