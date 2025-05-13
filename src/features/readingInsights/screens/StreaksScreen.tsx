@@ -239,10 +239,7 @@ const StreaksScreen = ({ navigation, route }) => {
         
         {activeTab === "streaks" ? (
           <>
-            <StreakCalendarView
-              currentStreak={currentStreak}
-              latestUpdateTime={latestUpdateTime}
-            />
+            <StreakCalendarView />
             
             <StreakAchievements maxStreak={maxStreak} />
             
