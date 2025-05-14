@@ -418,6 +418,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(209, 120, 66, 0.3)',
     borderRadius: BORDERRADIUS.radius_10,
     padding: SPACING.space_16,
+    marginHorizontal: SPACING.space_2,
     marginBottom: SPACING.space_24,
   },
   locationNoticeIcon: {
@@ -430,13 +431,13 @@ const styles = StyleSheet.create({
   },
   locationNoticeTitle: {
     fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_14,
+    fontSize: FONTSIZE.size_12,
     color: COLORS.primaryOrangeHex,
     marginBottom: SPACING.space_4,
   },
   locationNoticeText: {
     fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_14,
+    fontSize: FONTSIZE.size_12,
     color: COLORS.primaryWhiteHex,
     lineHeight: 21,
   },
