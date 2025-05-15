@@ -81,37 +81,41 @@ const BookClubsIndex = () => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Welcome to Book Clubs</Text>
+    <>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Welcome to Book Clubs</Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleCreateClub}>
-        <Text style={styles.buttonText}>Create Club</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>My Clubs</Text>
+          {myBookClubs.length > 0 ? (
+            myBookClubs.map((club) => <BookClubCard key={club.club_id} bookClub={club} />)
+          ) : (
+            <Text style={styles.placeholderText}>You are not a member of any clubs.</Text>
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Active Book Clubs</Text>
+          {activeBookClubs.length > 0 ? (
+            activeBookClubs.map((club) => <BookClubCard key={club.club_id} bookClub={club} />)
+          ) : (
+            <Text style={styles.placeholderText}>No active book clubs available.</Text>
+          )}
+        </View>
+
+        {!isAuthenticated && (
+          <Text style={[styles.placeholderText, { marginTop: SPACING.space_20 }]}>
+            Please log in to join book clubs.
+          </Text>
+        )}
+      </ScrollView>
+      {/* Button to create challenge */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={handleCreateClub}>
+        <Text style={styles.fabText}>＋</Text>
       </TouchableOpacity>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>My Clubs</Text>
-        {myBookClubs.length > 0 ? (
-          myBookClubs.map((club) => <BookClubCard key={club.club_id} bookClub={club} />)
-        ) : (
-          <Text style={styles.placeholderText}>You are not a member of any clubs.</Text>
-        )}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Active Book Clubs</Text>
-        {activeBookClubs.length > 0 ? (
-          activeBookClubs.map((club) => <BookClubCard key={club.club_id} bookClub={club} />)
-        ) : (
-          <Text style={styles.placeholderText}>No active book clubs available.</Text>
-        )}
-      </View>
-
-      {!isAuthenticated && (
-        <Text style={[styles.placeholderText, { marginTop: SPACING.space_20 }]}>
-          Please log in to join book clubs.
-        </Text>
-      )}
-    </ScrollView>
+    </>
   );
 };
 
@@ -133,17 +137,23 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.space_16,
     textAlign: 'center',
   },
-  button: {
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 100,
     backgroundColor: COLORS.primaryOrangeHex,
-    padding: SPACING.space_12,
-    borderRadius: BORDERRADIUS.radius_10,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.space_24,
+    zIndex: 1,
   },
-  buttonText: {
+  fabText: {
     color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_16,
-    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: 32,
+    fontFamily: FONTFAMILY.poppins_bold,
+    marginBottom: 4,
   },
   section: {
     marginBottom: SPACING.space_24,
