@@ -1,217 +1,324 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Linking, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, StyleSheet, Linking, TouchableOpacity, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { FontAwesome5 } from '@expo/vector-icons';
-import instance from '../../../services/axios';
-import requests from '../../../services/requests';
+import TeamInfoComponent from '../components/TeamInfoComponent';
 
-const AboutScreen: React.FC = ({navigation}: any) => {
-  const [currentReads, setCurrentReads] = useState({});
+const AboutScreen = () => {
 
-  const fetchCurrentReads = async (userId) => {
-    try {
-      const response = await instance.post(requests.fetchCurrentReads, {
-        userId: userId,
-      });
-      const books = response.data.currentReads || []; 
-      return books.length > 0 ? books.map(book => ({ name: book.BookName, id: book.BookId })) : 'nothing';
-    } catch (error) {
-      console.error('Failed to fetch current reads:', error);
-      return 'nothing';
-    } 
-  };
-
-  useEffect(() => {
-    const fetchReadsForTeam = async () => {
-      const debarshiReads = await fetchCurrentReads(1);
-      const rashmiReads = await fetchCurrentReads(7);
-
-      setCurrentReads({
-        Debarshi: debarshiReads,
-        Rashmi: rashmiReads,
-      });
-    };
-
-    fetchReadsForTeam();
-  }, []);
-
-  const renderTeamMember = (name, imageUri, description, reads, likes) => (
-    <View style={styles.teamMember}>
-      <Image style={styles.teamImage} source={{ uri: imageUri }} />
-      <Text style={styles.teamName}>{name}</Text>
-      <Text style={styles.text}>{description}</Text>
-      <Text style={styles.text}>
-        Currently reading{' '}
-         {Array.isArray(reads) ? (
-          reads.map((book, index) => (
-            <React.Fragment key={book.id}>
-              <TouchableOpacity
-                onPress={() => navigation.push('Details', { id: book.id, type: 'Book' })}
-              >
-                <Text style={styles.linkText}>{book.name}</Text>
-              </TouchableOpacity>
-              {index < reads.length - 1 && ', '}
-            </React.Fragment>
-          ))
-        ) : 'nothing'}.
-      </Text>
-      <Text style={styles.text}>{likes}</Text>
+  const renderSectionHeading = (title) => (
+    <View style={styles.sectionHeadingContainer}>
+      <Text style={styles.heading}>{title}</Text>
+      <View style={styles.headingUnderline} />
     </View>
   );
 
+  const renderListItem = (icon, title, text) => (
+    <View style={styles.listItemContainer}>
+      <View style={styles.listBullet}>
+        <FontAwesome5 name={icon} size={12} color={COLORS.primaryOrangeHex} />
+      </View>
+      <View style={styles.listContent}>
+        <Text style={styles.listItemTitle}>{title}</Text>
+        <Text style={styles.listItemText}>{text}</Text>
+      </View>
+    </View>
+  );
+
+  const renderFactItem = (number, text) => (
+    <View style={styles.factItem}>
+      <View style={styles.factNumber}>
+        <Text style={styles.factNumberText}>{number}</Text>
+      </View>
+      <Text style={styles.factText}>{text}</Text>
+    </View>
+  );
+
+  const renderContactItem = (icon, text, onPress) => (
+    <TouchableOpacity style={styles.contactItem} onPress={onPress}>
+      <FontAwesome5 name={icon} size={20} color={COLORS.primaryOrangeHex} />
+      <Text style={styles.contactText}>{text}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderSocialButton = (icon, url) => (
+    <TouchableOpacity 
+      style={styles.socialButton}
+      onPress={() => Linking.openURL(url)}
+    >
+      <FontAwesome5 name={icon} size={22} color={COLORS.primaryWhiteHex} />
+    </TouchableOpacity>
+  );
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.section}>
-        <Text style={styles.heading}>Our Mission</Text>
-        <Text style={styles.text}>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryBlackHex} />
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <View style={styles.banner}>
+          <Text style={styles.bannerTitle}>Biblophile</Text>
+          <Text style={styles.bannerSubtitle}>Your gateway to a world of books</Text>
+        </View>
+
+        <View style={styles.section}>
+          {renderSectionHeading('Our Mission')}
+          <Text style={styles.text}>
             At Biblophile, we are passionate about making reading more accessible and enjoyable for everyone. We believe in the 
             magic of books and strive to bring that magic right to your doorstep. Our mission is simple: to eliminate the hassle of 
-            buying, storing, and managing your book collection. With our services, you can rent, read, and return books 
-            with ease—creating your own personal library at home.
+            buying, storing, and managing your book collection.
+          </Text>
+          <Text style={styles.text}>
             We also offer insightful reading stats and analytics to enhance your reading experience, 
-            helping you discover more about your reading habits and preferences, and help you find your next read. Join us in our 
-            mission to make reading more convenient, fun, and insightful for all.
-        </Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.heading}>Products & Services</Text>
-        <Text style={styles.text}>We offer a range of products and services designed to enhance your reading experience:</Text>
-        <View style={styles.list}>
-          <Text style={styles.listItem}>
-            <Text style={styles.listItemTitle}>Buying and Renting Books:</Text> Convenient options to either add to your collection...
-          </Text>
-          <Text style={styles.listItem}>
-            <Text style={styles.listItemTitle}>Smart Bookmarks for Reading Streaks:</Text> Innovative bookmarks that help you track your reading progress...
-          </Text>
-          <Text style={styles.listItem}>
-            <Text style={styles.listItemTitle}>Reading Stats and Insights:</Text> Beautiful graphical interpretations of your reading habits...
+            helping you discover more about your reading habits and preferences, and help you find your next read.
           </Text>
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.heading}>Meet the Team</Text>
-        <View style={styles.teamGrid}>
-        {renderTeamMember(
-            'Debarshi Das',
-            'https://media.istockphoto.com/id/1097490360/vector/vector-illustration-of-cute-black-cat.jpg?s=612x612&w=0&k=20&c=Ef0qYl79aZJ6NJXJVbJ0onjXVNnSyqrN_TKPjieAIGE=',
-            'Maintains the site, app, and other technical aspects.',
-            currentReads['Debarshi'],
-            'Likes to sleep in free time.'
-          )}
-          {renderTeamMember(
-            'Rashmi Ramesh',
-            'https://img.freepik.com/premium-vector/cute-cartoon-cat-vector-illustration-isolated-white-background_1151-48146.jpg',
-            'Looks after design, social media, and operations.',
-            currentReads['Rashmi'],
-            'Likes to chatter in free time.'
-          )}
+        <View style={styles.section}>
+          {renderSectionHeading('Products & Services')}
+          <Text style={styles.text}>We offer a range of products and services designed to enhance your reading experience:</Text>
+          <View style={styles.list}>
+            {renderListItem('book', 'Buying and Renting Books', 'Convenient options to either add to your collection...')}
+            {renderListItem('bookmark', 'Smart Bookmarks for Reading Streaks', 'Innovative bookmarks that help you track your reading progress...')}
+            {renderListItem('chart-bar', 'Reading Stats and Insights', 'Beautiful graphical interpretations of your reading habits...')}
+          </View>
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.heading}>Our Blog</Text>
-        <TouchableOpacity onPress={() => Linking.openURL('https://biblophile.com/blog/2023/11/13/introducing-biblophile-your-gateway-to-a-world-of-books/')}>
-          <Text style={styles.linkText}>Check out our latest articles and insights on our blog.</Text>
-        </TouchableOpacity>
-      </View>
+        <TeamInfoComponent />
 
-      <View style={styles.section}>
-        <Text style={styles.heading}>Fun Company Facts</Text>
-        <View style={styles.list}>
-          <Text style={styles.listItem}>1. Did you know? The name "Biblophile" came about in a rather unconventional way—during a late-night search for a domain name, a typo led to our unique name. We were so thrilled to snag the domain that we decided to keep the playful misspelling, and it’s become a charming part of our identity!</Text>
-          <Text style={styles.listItem}>2. We’re a dynamic duo here at Biblophile. One of us focuses on coding and the technical wizardry behind our platform, while the other handles design, social media, and operations. Our teamwork ensures a seamless experience for our readers, blending technical expertise with creative flair.</Text>
-          <Text style={styles.listItem}>3. Here’s a quirky touch: we’ve incorporated a “Book Discovery Challenge” into our service, where each month, we feature a surprise book genre or theme to ignite your curiosity and expand your reading horizons. Plus, our smart bookmarks not only track your reading streak but also come with customizable motivational quotes to keep you inspired!</Text>
+        <View style={styles.section}>
+          {renderSectionHeading('Our Blog')}
+          <TouchableOpacity 
+            style={styles.blogButton}
+            onPress={() => Linking.openURL('https://biblophile.com/blog/2023/11/13/introducing-biblophile-your-gateway-to-a-world-of-books/')}
+          >
+            <FontAwesome5 name="rss" size={16} color={COLORS.primaryWhiteHex} style={styles.blogIcon} />
+            <Text style={styles.blogButtonText}>Check out our latest articles</Text>
+          </TouchableOpacity>
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.heading}>Contact Us</Text>
-        <Text style={styles.text}>Email: <Text style={styles.linkText} onPress={() => Linking.openURL('mailto:help@biblophile.com')}>help@biblophile.com</Text></Text>
-        <Text style={styles.text}>Phone: +91 96063 73974</Text>
-        <View style={styles.socialLinks}>
-          <FontAwesome5 name="facebook-f" size={24} color={COLORS.primaryOrangeHex} onPress={() => Linking.openURL('https://www.facebook.com/profile.php?id=61559661155321')} />
-          <FontAwesome5 name="instagram" size={24} color={COLORS.primaryOrangeHex} onPress={() => Linking.openURL('https://www.instagram.com/__biblophile__/')} />
-          <FontAwesome5 name="twitter" size={24} color={COLORS.primaryOrangeHex} onPress={() => Linking.openURL('https://x.com/__biblophile__')} />
+        <View style={styles.section}>
+          {renderSectionHeading('Fun Company Facts')}
+          <View style={styles.factsList}>
+            {renderFactItem(1, 'Did you know? The name "Biblophile" came about in a rather unconventional way—during a late-night search for a domain name, a typo led to our unique name. We were so thrilled to snag the domain that we decided to keep the playful misspelling, and it\'s become a charming part of our identity!')}
+            {renderFactItem(2, 'We\'re a dynamic duo here at Biblophile. One of us focuses on coding and the technical wizardry behind our platform, while the other handles design, social media, and operations. Our teamwork ensures a seamless experience for our readers, blending technical expertise with creative flair.')}
+            {renderFactItem(3, 'Here\'s a quirky touch: we\'ve incorporated a "Book Discovery Challenge" into our service, where each month, we feature a surprise book genre or theme to ignite your curiosity and expand your reading horizons. Plus, our smart bookmarks not only track your reading streak but also come with customizable motivational quotes to keep you inspired!')}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+
+        <View style={styles.section}>
+          {renderSectionHeading('Contact Us')}
+          <View style={styles.contactContainer}>
+            {renderContactItem('envelope', 'help@biblophile.com', () => Linking.openURL('mailto:help@biblophile.com'))}
+            {renderContactItem('phone-alt', '+91 96063 73974', null)}
+          </View>
+          
+          <View style={styles.socialLinks}>
+            {renderSocialButton('facebook-f', 'https://www.facebook.com/profile.php?id=61559661155321')}
+            {renderSocialButton('instagram', 'https://www.instagram.com/__biblophile__/')}
+            {renderSocialButton('twitter', 'https://x.com/__biblophile__')}
+          </View>
+        </View>
+        
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>© 2025 Biblophile. All rights reserved.</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
+    flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
-    padding: SPACING.space_20,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.primaryBlackHex,
+  },
+  contentContainer: {
+    paddingBottom: SPACING.space_30,
+  },
+  banner: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    padding: SPACING.space_24,
+    alignItems: 'center',
+    borderBottomLeftRadius: BORDERRADIUS.radius_25,
+    borderBottomRightRadius: BORDERRADIUS.radius_25,
+    marginBottom: SPACING.space_20,
+    shadowColor: COLORS.primaryOrangeHex,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  bannerTitle: {
+    fontSize: FONTSIZE.size_30,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_4,
+  },
+  bannerSubtitle: {
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.primaryWhiteHex,
+    opacity: 0.9,
   },
   section: {
-    marginBottom: SPACING.space_20,
+    marginHorizontal: SPACING.space_16,
+    marginBottom: SPACING.space_24,
     backgroundColor: COLORS.primaryDarkGreyHex,
-    padding: SPACING.space_16,
-    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_20,
+    borderRadius: BORDERRADIUS.radius_15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sectionHeadingContainer: {
+    marginBottom: SPACING.space_16,
   },
   heading: {
-    fontSize: FONTSIZE.size_24,
+    fontSize: FONTSIZE.size_20,
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_semibold,
-    marginBottom: SPACING.space_10,
+    marginBottom: SPACING.space_8,
+  },
+  headingUnderline: {
+    height: 3,
+    width: 60,
+    backgroundColor: COLORS.primaryOrangeHex,
+    borderRadius: BORDERRADIUS.radius_10,
   },
   text: {
-    fontSize: FONTSIZE.size_16,
+    fontSize: FONTSIZE.size_14,
     color: COLORS.secondaryLightGreyHex,
     fontFamily: FONTFAMILY.poppins_regular,
-    lineHeight: 24,
+    lineHeight: 22,
+    marginBottom: SPACING.space_10,
   },
   list: {
     marginTop: SPACING.space_12,
   },
-  listItem: {
-    fontSize: FONTSIZE.size_14,
-    color: COLORS.secondaryLightGreyHex,
-    fontFamily: FONTFAMILY.poppins_regular,
-    marginBottom: SPACING.space_10,
+  listItemContainer: {
+    flexDirection: 'row',
+    marginBottom: SPACING.space_16,
+  },
+  listBullet: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.primaryGreyHex,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.space_10,
+    marginTop: 2,
+  },
+  listContent: {
+    flex: 1,
   },
   listItemTitle: {
-    fontFamily: FONTFAMILY.poppins_bold,
+    fontFamily: FONTFAMILY.poppins_medium,
     color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_14,
+    marginBottom: 4,
   },
-  teamGrid: {
-    flexDirection: 'column',
+  listItemText: {
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    fontSize: FONTSIZE.size_14,
+    lineHeight: 20,
+  },
+
+
+  blogButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
-  },
-  teamMember: {
-    width: '100%',
-    backgroundColor: COLORS.primaryGreyHex,
+    justifyContent: 'center',
+    paddingVertical: SPACING.space_12,
     borderRadius: BORDERRADIUS.radius_10,
-    padding: SPACING.space_15,
+  },
+  blogIcon: {
+    marginRight: SPACING.space_8,
+  },
+  blogButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+  },
+  factsList: {
+    marginTop: SPACING.space_10,
+  },
+  factItem: {
+    flexDirection: 'row',
+    marginBottom: SPACING.space_16,
+  },
+  factNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.primaryOrangeHex,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.space_15,
+    marginRight: SPACING.space_12,
+    marginTop: 2,
   },
-  teamImage: {
-    width: 200,
-    height: 200,
-    borderRadius: BORDERRADIUS.radius_10,
-    marginBottom: SPACING.space_10,
+  factNumberText: {
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_bold,
+    fontSize: FONTSIZE.size_14,
   },
-  teamName: {
-    fontSize: FONTSIZE.size_18,
-    color: COLORS.primaryOrangeHex,
-    fontFamily: FONTFAMILY.poppins_semibold,
-    marginBottom: SPACING.space_8,
+  factText: {
+    flex: 1,
+    color: COLORS.secondaryLightGreyHex,
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_14,
+    lineHeight: 22,
   },
-  linkText: {
-    color: COLORS.primaryOrangeHex,
-    textDecorationLine: 'underline',
-    fontFamily: FONTFAMILY.poppins_semibold,
-    lineHeight: 21,
+  contactContainer: {
+    marginBottom: SPACING.space_16,
+  },
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.space_16,
+  },
+  contactText: {
+    color: COLORS.secondaryLightGreyHex,
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_14,
+    marginLeft: SPACING.space_12,
   },
   socialLinks: {
     flexDirection: 'row',
-    alignSelf: 'center',
-    gap: SPACING.space_16,
+    justifyContent: 'center',
     marginTop: SPACING.space_10,
+  },
+  socialButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: COLORS.primaryOrangeHex,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: SPACING.space_10,
+    shadowColor: COLORS.primaryOrangeHex,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  footer: {
+    marginTop: SPACING.space_10,
+    paddingVertical: SPACING.space_16,
+    alignItems: 'center',
+  },
+  footerText: {
+    fontSize: FONTSIZE.size_12,
+    color: COLORS.secondaryLightGreyHex,
+    fontFamily: FONTFAMILY.poppins_regular,
   },
 });
 

@@ -48,13 +48,13 @@ const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
           style={styles.Image}
         />
       <Text style={styles.HeaderText}>{title}</Text>
-      <TouchableOpacity
+      {!title && <TouchableOpacity
         onPress={() => {
           navigation.navigate('Streaks');
         }}
       >
         <Text style={styles.StreakText}>{streak !== null && `Active Streak: ${streak} days`}</Text>
-      </TouchableOpacity>
+      </TouchableOpacity>}
       
       <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
         <Ionicons name="notifications" size={24} color={COLORS.primaryWhiteHex} />

@@ -23,7 +23,6 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import HeaderBar from '../../../components/HeaderBar';
 import EmptyListAnimation from '../../../components/EmptyListAnimation';
-import PopUpAnimation from '../../../components/PopUpAnimation';
 import OrderHistoryCard from '../components/OrderHistoryCard';
 
 const { width } = Dimensions.get("window");
@@ -139,7 +138,7 @@ if (loading) {
         <View
           style={[styles.ScrollViewInnerView]}>
           <View style={styles.ItemContainer}>
-            <HeaderBar title="" />
+            <HeaderBar title="Order History" />
 
             {OrderHistoryList.length == 0 ? (
               <EmptyListAnimation title={'No Order History'} />
