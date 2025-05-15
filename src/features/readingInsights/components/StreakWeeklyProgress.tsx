@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 
 const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) => {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -66,24 +66,24 @@ const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) 
 const styles = StyleSheet.create({
   streakInfo: {
     alignItems: 'center',
-    marginVertical: SPACING.space_15,
+    marginVertical: SPACING.space_10,
   },
   streakText: {
     fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_24,
+    fontSize: FONTSIZE.size_20,
     color: COLORS.primaryOrangeHex,
   },
   progressContainer: {
     backgroundColor: COLORS.primaryGreyHex,
-    borderRadius: 15,
-    padding: SPACING.space_15,
-    margin: SPACING.space_15,
+    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_12,
+    margin: SPACING.space_12,
   },
   progressText: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: SPACING.space_10,
+    marginBottom: SPACING.space_8,
   },
   infoText: {
     fontFamily: FONTFAMILY.poppins_medium,
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 20,
-    backgroundColor: COLORS.primaryGreyHex,
+    backgroundColor: COLORS.primaryBlackHex,
     padding: 10,
     borderRadius: 5,
     width: 200,
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   weekContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: SPACING.space_10,
+    marginVertical: SPACING.space_8,
   },
   dayContainer: {
     width: 30,
@@ -123,7 +123,6 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.primaryBlackHex,
   },
   dayText: {
     fontFamily: FONTFAMILY.poppins_medium,
@@ -138,10 +137,11 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_14,
+    fontSize: FONTSIZE.size_12,
     color: COLORS.primaryWhiteHex,
     textAlign: 'center',
-    margin: SPACING.space_15,
+    marginTop: SPACING.space_10,
+    marginBottom: SPACING.space_4,
   },
 });
 
