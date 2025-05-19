@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TextInput, TouchableOpacity, Alert, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Image, TextInput, TouchableOpacity, Alert, FlatList, StyleSheet, ActivityIndicator, SafeAreaView } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -56,21 +56,27 @@ const DurationTrackScreen: React.FC = ({navigation}: any) => {
     }
 
     return (
-        <FlatList
-            data={durations}
-            keyExtractor={(item) => item.readingDurationId.toString()}
-            renderItem={renderDurations}
-            contentContainerStyle={styles.container}
-            onEndReached={() => fetchDurations(false)}
-            onEndReachedThreshold={0.5}  // Trigger when 50% of the list is visible
-            ListHeaderComponent={<Text style={styles.title}>My Reading Sessions</Text>}
-            ListFooterComponent={loading && <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />}
-            ListEmptyComponent={!loading && <Mascot emotion="reading" />}
-        />
+        <SafeAreaView style={styles.safeArea}>
+            <FlatList
+                data={durations}
+                keyExtractor={(item) => item.readingDurationId.toString()}
+                renderItem={renderDurations}
+                contentContainerStyle={styles.container}
+                onEndReached={() => fetchDurations(false)}
+                onEndReachedThreshold={0.5}  // Trigger when 50% of the list is visible
+                ListHeaderComponent={<Text style={styles.title}>My Reading Sessions</Text>}
+                ListFooterComponent={loading && <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />}
+                ListEmptyComponent={!loading && <Mascot emotion="reading" />}
+            />
+        </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: COLORS.primaryBlackHex,
+    },
     container: {
         padding: SPACING.space_20,
         backgroundColor: COLORS.primaryBlackHex,

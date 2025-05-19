@@ -48,6 +48,7 @@ const requests = {
     fetchActivePlan: `${APIURL}?action=fetchActivePlan&userId=`,
     getBookmarks: `${APIURL}?action=getBookmarks`,
     fetchReadingStreak: `${APIURL}?action=fetchReadingStreak&userId=`,
+    fetchReadingStreakLogs: `${APIURL}?action=fetchReadingStreakLogs`,
     updateReadingStreak: `${APIURL}?action=updateReadingStreak&userId=`,
     updatePagesRead: `${APIURL}?action=updatePagesRead`,
     fetchReadingTips: `${APIURL}?action=fetchReadingTips`,

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, Dimensions, TouchableWithoutFeedback, ScrollView, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableWithoutFeedback, 
+         ScrollView, TextInput, TouchableOpacity, 
+         SafeAreaView} from 'react-native';
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Picker } from '@react-native-picker/picker';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -7,6 +9,7 @@ import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import ReadingGoals from '../components/ReadingGoals';
+import { Ionicons } from '@expo/vector-icons';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -20,13 +23,15 @@ const StatScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editPageCount, setEditPageCount] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+  const [activeStat, setActiveStat] = useState('page-stats');
 
-  const userDetails = useStore((state: any) => state.userDetails);
+  const userDetails = useStore((state) => state.userDetails);
 
   const screenWidth = Dimensions.get('window').width;
 
-  const PIECOLORS = ['#D17842', '#CD4349', '#3DCDA5', '#F9C74F', '#577590'];
+  const PIECOLORS = ['#FF7E5F', '#42D1D1', '#FFBC42', '#9C4DD4', '#45B69C'];
 
+  // Fetch functions remain the same...
   const fetchLeaderboard = async () => {
     try {
       const response = await instance.get(requests.fetchReadingStreakLeaderboard + userDetails[0].userId);
@@ -139,6 +144,7 @@ const StatScreen = () => {
     );
   };
 
+  // Rest of rendering functions...
   const renderPagesLineChart = (timeDuration) => {
     if (!Array.isArray(pagesRead) || pagesRead.length === 0) {
       return <Text style={styles.highlightText}>No data available</Text>;
@@ -391,7 +397,7 @@ const StatScreen = () => {
     }));
 
     return (
-      <View style={{ marginVertical: SPACING.space_16, borderRadius: BORDERRADIUS.radius_8, backgroundColor: COLORS.primaryDarkGreyHex, }}>
+      <View style={styles.chartCard}>
         <PieChart
             data={chartData}
             width={screenWidth - SPACING.space_16 * 2}
@@ -446,7 +452,7 @@ const StatScreen = () => {
     }));
 
     return (
-      <View style={{ marginVertical: SPACING.space_16, borderRadius: BORDERRADIUS.radius_8, backgroundColor: COLORS.primaryDarkGreyHex, }}>
+      <View style={styles.chartCard}>
         <PieChart
             data={chartData}
             width={screenWidth - SPACING.space_16 * 2}
@@ -474,6 +480,46 @@ const StatScreen = () => {
     );
   };
 
+  // const navigateToMonthlyWrap = () => {
+  //   // Navigation logic would go here
+  //   console.log("Navigate to monthly wrap");
+  // };
+
+  // New tab navigation component
+  const renderStatsTabs = () => {
+    return (
+      <View style={styles.tabContainer}>
+        <TouchableOpacity 
+          style={[styles.tabButton, activeStat === 'page-stats' ? styles.activeTab : null]}
+          onPress={() => setActiveStat('page-stats')}>
+          <Ionicons name="book-outline" size={24} color={activeStat === 'page-stats' ? COLORS.primaryOrangeHex : COLORS.primaryWhiteHex} />
+          <Text style={[styles.tabText, activeStat === 'page-stats' ? styles.activeTabText : null]}>Page Stats</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tabButton, activeStat === 'time-stats' ? styles.activeTab : null]}
+          onPress={() => setActiveStat('time-stats')}>
+          <Ionicons name="time-outline" size={24} color={activeStat === 'time-stats' ? COLORS.primaryOrangeHex : COLORS.primaryWhiteHex} />
+          <Text style={[styles.tabText, activeStat === 'time-stats' ? styles.activeTabText : null]}>Time Stats</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tabButton, activeStat === 'emotion-stats' ? styles.activeTab : null]}
+          onPress={() => setActiveStat('emotion-stats')}>
+          <Ionicons name="heart-outline" size={24} color={activeStat === 'emotion-stats' ? COLORS.primaryOrangeHex : COLORS.primaryWhiteHex} />
+          <Text style={[styles.tabText, activeStat === 'emotion-stats' ? styles.activeTabText : null]}>Emotions</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tabButton, activeStat === 'progress-stats' ? styles.activeTab : null]}
+          onPress={() => setActiveStat('progress-stats')}>
+          <Ionicons name="stats-chart-outline" size={24} color={activeStat === 'progress-stats' ? COLORS.primaryOrangeHex : COLORS.primaryWhiteHex} />
+          <Text style={[styles.tabText, activeStat === 'progress-stats' ? styles.activeTabText : null]}>Progress</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -483,12 +529,21 @@ const StatScreen = () => {
   }
 
   return (
-    <ScrollView
+    <SafeAreaView style={styles.container}>
+      <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.ScrollViewFlex}>
-      <View style={styles.container}>
         <ReadingGoals />
-        {/* <Text style={styles.labelText}>We have temporarily hidden leaderboard. We are moving things around.</Text> */}
+        
+        {/* Monthly Wrap Link */}
+        {/* <TouchableOpacity 
+          style={styles.wrapButton}
+          onPress={navigateToMonthlyWrap}>
+          <Ionicons name="calendar-outline" size={24} color={COLORS.primaryWhiteHex} />
+          <Text style={styles.wrapButtonText}>View Monthly Reading Wrap</Text>
+          <Ionicons name="chevron-forward" size={24} color={COLORS.primaryWhiteHex} />
+        </TouchableOpacity> */}
+
         {/* <Text style={styles.title}>Reading Streak Leaderboard</Text>
         <FlatList
           data={leaderboard}
@@ -496,30 +551,59 @@ const StatScreen = () => {
           keyExtractor={(item) => item.Rank.toString()}
           contentContainerStyle={styles.listContainer}
         /> */}
+        
+        {/* Time Frame Picker */}
         <View style={styles.statusDropdown}>
           <Text style={styles.label}>Time frame: </Text>
-          <Picker
-              selectedValue={timeFrame}
-              style={styles.picker}
-              onValueChange={(itemValue) => setTimeFrame(itemValue)}
-          >
-              <Picker.Item label="Last week" value="last-week" />
-              <Picker.Item label="Last month" value="last-month" />
-
-          </Picker>
+          <View style={styles.pickerContainer}>
+            <Picker
+                selectedValue={timeFrame}
+                style={styles.picker}
+                onValueChange={(itemValue) => setTimeFrame(itemValue)}
+                dropdownIconColor={COLORS.primaryWhiteHex}
+                itemStyle={{height:50}}
+            >
+                <Picker.Item label="Last week" value="last-week" color={COLORS.primaryWhiteHex} />
+                <Picker.Item label="Last month" value="last-month" color={COLORS.primaryWhiteHex} />
+            </Picker>
           </View>
-        <Text style={styles.title}>Pages Read in Last {timeFrame === 'last-week' ? '7 Days' : '30 Days'}</Text>
-        <TouchableWithoutFeedback onPress={() => setTooltipPos({ ...tooltipPos, visible: false })}>
-          {renderPagesLineChart(timeFrame)}
-        </TouchableWithoutFeedback>
-        <Text style={styles.title}>Mins Read in Last {timeFrame === 'last-week' ? '7 Days' : '30 Days'}</Text>
-        {renderDurationLineChart(timeFrame)}
-        <Text style={styles.title}>Prefer books which evoke</Text>
-        {renderPieChart()}
-        <Text style={styles.title}>Reading Progress</Text>
-        {renderReadingStatusChart()}
-      </View>
-    </ScrollView>
+        </View>
+
+        {/* Tab Navigation */}
+        {renderStatsTabs()}
+        
+        {/* Content based on selected tab */}
+        {activeStat === 'page-stats' && (
+          <View style={styles.statContainer}>
+            <Text style={styles.title}>Pages Read in Last {timeFrame === 'last-week' ? '7 Days' : '30 Days'}</Text>
+            <TouchableWithoutFeedback onPress={() => setTooltipPos({ ...tooltipPos, visible: false })}>
+              {renderPagesLineChart(timeFrame)}
+            </TouchableWithoutFeedback>
+          </View>
+        )}
+        
+        {activeStat === 'time-stats' && (
+          <View style={styles.statContainer}>
+            <Text style={styles.title}>Minutes Read in Last {timeFrame === 'last-week' ? '7 Days' : '30 Days'}</Text>
+            {renderDurationLineChart(timeFrame)}
+          </View>
+        )}
+        
+        {activeStat === 'emotion-stats' && (
+          <View style={styles.statContainer}>
+            <Text style={styles.title}>Reading Emotions</Text>
+            {renderPieChart()}
+          </View>
+        )}
+        
+        {activeStat === 'progress-stats' && (
+          <View style={styles.statContainer}>
+            <Text style={styles.title}>Reading Progress</Text>
+            {renderReadingStatusChart()}
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -593,6 +677,14 @@ const styles = StyleSheet.create({
     padding: SPACING.space_8,
     borderRadius: BORDERRADIUS.radius_8,
     zIndex: 1000,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   tooltipText: {
     color: COLORS.primaryWhiteHex,
@@ -603,29 +695,30 @@ const styles = StyleSheet.create({
     color: COLORS.primaryOrangeHex,
     fontFamily: FONTFAMILY.poppins_bold,
     fontSize: FONTSIZE.size_18,
+    textAlign: 'center',
+    padding: SPACING.space_20,
   },
   statusDropdown: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.space_16,
-    fontFamily: FONTFAMILY.poppins_regular,
-    color: COLORS.primaryWhiteHex,
+    justifyContent: 'center',
+    marginVertical: SPACING.space_12,
   },
   label: {
-      marginRight: SPACING.space_8,
-      color: COLORS.primaryWhiteHex,
-      fontFamily: FONTFAMILY.poppins_medium,
-      fontSize: FONTSIZE.size_20,
-      marginBottom: SPACING.space_12,
+    marginRight: SPACING.space_8,
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_16,
+  },
+  pickerContainer: {
+    borderRadius: BORDERRADIUS.radius_8,
+    overflow: 'hidden',
+    width: 150,
   },
   picker: {
-      width: '50%',
-      padding: SPACING.space_8,
-      borderColor: COLORS.secondaryLightGreyHex,
-      borderRadius: BORDERRADIUS.radius_8,
-      fontFamily: FONTFAMILY.poppins_regular,
-      color: COLORS.primaryWhiteHex,
-      backgroundColor: COLORS.primaryGreyHex,
+    width: '100%',
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_regular,
   },
   labelsContainer: {
     marginTop: SPACING.space_16,
@@ -668,5 +761,78 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_16,
     fontFamily: FONTFAMILY.poppins_bold,
     textAlign: 'center',
+  },
+  // New styles for improved UI
+  chartCard: {
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    borderRadius: BORDERRADIUS.radius_8,
+    padding: SPACING.space_12,
+    marginVertical: SPACING.space_16,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    borderRadius: BORDERRADIUS.radius_10,
+    marginVertical: SPACING.space_16,
+    padding: SPACING.space_4,
+    overflow: 'hidden',
+    justifyContent: 'space-between',
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.space_10,
+    flexDirection: 'column',
+  },
+  activeTab: {
+    backgroundColor: COLORS.primaryBlackHex,
+    borderRadius: BORDERRADIUS.radius_8,
+  },
+  tabText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_12,
+    fontFamily: FONTFAMILY.poppins_medium,
+    marginTop: SPACING.space_4,
+  },
+  activeTabText: {
+    color: COLORS.primaryOrangeHex,
+  },
+  wrapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.primaryOrangeHex,
+    borderRadius: BORDERRADIUS.radius_8,
+    padding: SPACING.space_12,
+    marginVertical: SPACING.space_16,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+  },
+  wrapButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_medium,
+    flex: 1,
+    textAlign: 'center',
+  },
+  statContainer: {
+    backgroundColor: 'transparent',
+    borderRadius: BORDERRADIUS.radius_8,
+    padding: SPACING.space_8,
   },
 });

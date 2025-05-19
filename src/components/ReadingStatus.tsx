@@ -169,7 +169,7 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     itemStyle={{height:50}}
                 >
                     {(status === 'Currently reading' || status === 'Paused') && (
-                        <Picker.Item label="Paused" value="Paused" />
+                        <Picker.Item label="Paused" value="Paused" color={COLORS.primaryWhiteHex} />
                     )}
                     <Picker.Item label="Read" value="Read" color={COLORS.primaryWhiteHex} />
                     <Picker.Item label="Currently reading" value="Currently reading" color={COLORS.primaryWhiteHex} />

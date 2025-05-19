@@ -81,13 +81,6 @@ const ChallengeScreen = ({navigation}: any) => {
           Find the best{'\n'}challenge for you
         </Text>
 
-        {/* Button to create challenge */}
-        <TouchableOpacity
-          onPress={() => setModalVisible(true)}
-          style={styles.createChallengeButton}>
-          <Text style={styles.createChallengeButtonText}>Create Challenge</Text>
-        </TouchableOpacity>
-
         {/* My Challenges */}
         <View style={styles.challengeListContainer}>
           <Text style={styles.ScreenTitle}>My Challenges</Text>
@@ -128,6 +121,12 @@ const ChallengeScreen = ({navigation}: any) => {
         setModalVisible={setModalVisible}
         fetchChallenges={fetchChallenges} // Pass the fetchChallenges function to refresh data
       />
+      {/* Button to create challenge */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setModalVisible(true)}>
+        <Text style={styles.fabText}>＋</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -148,18 +147,23 @@ const styles = StyleSheet.create({
     paddingLeft: SPACING.space_30,
     marginBottom: SPACING.space_10,
   },
-  createChallengeButton: {
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 100,
     backgroundColor: COLORS.primaryOrangeHex,
-    paddingVertical: SPACING.space_10,
-    paddingHorizontal: SPACING.space_30,
-    borderRadius: BORDERRADIUS.radius_25,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: SPACING.space_20,
+    zIndex: 1,
   },
-  createChallengeButtonText: {
+  fabText: {
     color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_18,
+    fontSize: 32,
     fontFamily: FONTFAMILY.poppins_bold,
+    marginBottom: 4,
   },
   challengeListContainer: {
     marginTop: SPACING.space_30,

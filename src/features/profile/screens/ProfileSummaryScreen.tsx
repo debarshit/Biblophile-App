@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import BookshelfComponent from '../components/BookshelfComponent';
 import UserReviews from '../../reading/components/UserReviews';
+import GradientBGIcon from '../../../components/GradientBGIcon';
 
 const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const [userData, setUserData] = useState(null);
@@ -190,63 +191,96 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.sectionTitle}>{username}'s Reading Journal</Text>
-      {!isPageOwner && (
-        <View style={styles.buttonsSection}>
-          <TouchableOpacity style={styles.addFriendButton}>
-            <Text style={styles.buttonText}>{getFriendButtonText()}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.followButton} onPress={() => handleFollowRequest()}>
-            <Text style={styles.buttonText}>{userRelations?.isFollowing ? "Unfollow" : "Follow"}</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      <View style={styles.horizontalLine} />
-      <View style={styles.infoSection}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mood Preferences</Text>
-          {userAverageEmotions.length === 0 ? (
-            <Text style={styles.highlightText}>Sufficient data not available.</Text>
-          ) : (
-            <Text style={styles.descriptionText}>
-              Prefers to read books which evoke <Text style={styles.highlightText}>{formattedMoodPreferences}</Text>.
-            </Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerTitle}>{username}'s Reading Journal</Text>
+          {isPageOwner && (
+            <TouchableOpacity style={styles.headerIcon} onPress={() => navigation.navigate('Settings')}>
+              <GradientBGIcon 
+                name="menufold"
+                color={COLORS.primaryWhiteHex}
+                size={FONTSIZE.size_16}
+              />
+            </TouchableOpacity>
           )}
         </View>
-        <View style={styles.section}>
-          <View style={styles.summaryItem}>
-            <Text style={styles.sectionTitle}>Average Days to Finish a Book</Text>
-            <Text style={styles.descriptionText}><Text style={styles.highlightText}>{averageReadingDays}</Text> days</Text>
+
+        {!isPageOwner && (
+          <View style={styles.buttonsSection}>
+            <TouchableOpacity style={styles.addFriendButton}>
+              <Text style={styles.buttonText}>{getFriendButtonText()}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.followButton} onPress={() => handleFollowRequest()}>
+              <Text style={styles.buttonText}>{userRelations?.isFollowing ? "Unfollow" : "Follow"}</Text>
+            </TouchableOpacity>
           </View>
-          <View style={styles.summaryItem}>
-            <Text style={styles.sectionTitle}>Average Rating</Text>
-            <Text style={styles.descriptionText}><Text style={styles.highlightText}>{userAverageRating}</Text> / 5</Text>
+        )}
+
+        <View style={styles.horizontalLine} />
+        <View style={styles.infoSection}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Mood Preferences</Text>
+            {userAverageEmotions.length === 0 ? (
+              <Text style={styles.highlightText}>Sufficient data not available.</Text>
+            ) : (
+              <Text style={styles.descriptionText}>
+                Prefers to read books which evoke <Text style={styles.highlightText}>{formattedMoodPreferences}</Text>.
+              </Text>
+            )}
+          </View>
+          <View style={styles.section}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.sectionTitle}>Average Days to Finish a Book</Text>
+              <Text style={styles.descriptionText}><Text style={styles.highlightText}>{averageReadingDays}</Text> days</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.sectionTitle}>Average Rating</Text>
+              <Text style={styles.descriptionText}><Text style={styles.highlightText}>{userAverageRating}</Text> / 5</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.horizontalLine} />
-      <View style={styles.TabBar}>
-        <TouchableOpacity onPress={() => setActiveTab('bookshelf')} style={[styles.TabButton, activeTab === 'bookshelf' && styles.TabButtonActive]}>
-          <Text style={[styles.TabLabel, activeTab === 'bookshelf' && styles.TabLabelActive]}>Bookshelf</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setActiveTab('reviews')} style={[styles.TabButton, activeTab === 'reviews' && styles.TabButtonActive]}>
-          <Text style={[styles.TabLabel, activeTab === 'reviews' && styles.TabLabelActive]}>Reviews</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.horizontalLine} />
+        <View style={styles.TabBar}>
+          <TouchableOpacity onPress={() => setActiveTab('bookshelf')} style={[styles.TabButton, activeTab === 'bookshelf' && styles.TabButtonActive]}>
+            <Text style={[styles.TabLabel, activeTab === 'bookshelf' && styles.TabLabelActive]}>Bookshelf</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setActiveTab('reviews')} style={[styles.TabButton, activeTab === 'reviews' && styles.TabButtonActive]}>
+            <Text style={[styles.TabLabel, activeTab === 'reviews' && styles.TabLabelActive]}>Reviews</Text>
+          </TouchableOpacity>
+        </View>
 
-      {renderContent()}
-    </ScrollView>
+        {renderContent()}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.primaryBlackHex,
+  },
   container: {
     padding: SPACING.space_20,
     backgroundColor: COLORS.primaryBlackHex,
     flex: 1,
+  },
+   headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.space_20,
+  },
+  headerTitle: {
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+    flex: 1,
+  },
+  headerIcon: {
+    paddingBottom: SPACING.space_20,
   },
   loadingContainer: {
     flex: 1,

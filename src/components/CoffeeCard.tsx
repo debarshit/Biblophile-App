@@ -75,7 +75,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
               name,
               photo,
               type,
-              prices: [{...price, quantity: 1}],
+              prices: [{...price, size: 'Buy', quantity: 1}],
             });
           }}>
           <BGIcon

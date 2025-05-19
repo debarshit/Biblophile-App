@@ -34,6 +34,7 @@ import FloatingIcon from '../../bookshop/components/FloatingIcon';
 import { useCity } from '../../../contexts/CityContext';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import SeasonalRecommendations from '../components/SeasonalRecommendations';
+import StreakWeeklyProgress from '../../readingInsights/components/StreakWeeklyProgress';
 
 interface Spotlight {
   Id: string;
@@ -43,6 +44,7 @@ interface Spotlight {
 
 const HomeScreen = ({navigation}: any) => {
   //useStore variables
+  const userDetails = useStore((state) => state.userDetails);
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const CartList = useStore((state: any) => state.CartList);
@@ -52,6 +54,8 @@ const HomeScreen = ({navigation}: any) => {
   const [spotlights, setSpotlights] = useState<Spotlight[]>([]);
   const [loading, setLoading] = useState(true);
   const [booksLoading, setBooksLoading] = useState(true);
+  const [currentStreak, setCurrentStreak] = useState(1);
+  const [latestUpdateTime, setLatestUpdateTime] = useState("");
 
   const ListRef: any = useRef<FlatList>();
   const scrollViewRef = useRef(null);
@@ -62,30 +66,16 @@ const HomeScreen = ({navigation}: any) => {
   const CoffeeCardAddToCart = ({
     id,
     name,
-    genre,
     photo,
-    poster,
     type,
-    prices,
-    actualPrice,
-    averageRating,
-    ratingCount,
-    description,
-    author,                    
+    prices,                
   }: any) => {
     addToCart({
       id,
       name,
-      genre,
       photo,
-      poster,
       type,
       prices,
-      actualPrice,
-      averageRating,
-      ratingCount,
-      description,
-      author, 
     });
     calculateCartPrice();
     if (Platform.OS == 'android') {
@@ -143,6 +133,25 @@ const HomeScreen = ({navigation}: any) => {
     getSpotlights();
   }, []);
 
+  useEffect(() => {
+    async function fetchCurrentStreak() {
+      try {
+        const response = await instance.post(requests.fetchReadingStreak, {
+          userId: userDetails[0].userId,
+        });
+        const data = response.data;
+        if (data.message === 1) {
+          setCurrentStreak(data.currentStreak);
+          setLatestUpdateTime(data.latestUpdateTime);
+        }
+      } catch (error) {
+        console.error('Error fetching streak:', error);
+      }
+    }
+  
+    fetchCurrentStreak();
+  }, [currentStreak]);
+
   return (
     <SafeAreaView style={styles.ScreenContainer}>
 
@@ -156,6 +165,12 @@ const HomeScreen = ({navigation}: any) => {
         scrollEventThrottle={16}>
         {/* App Header */}
         <HeaderBar title=""/>
+
+        <StreakWeeklyProgress 
+          currentStreak={currentStreak}
+          latestUpdateTime={latestUpdateTime}
+          userDetails={userDetails}
+        />
 
         <Banner />
  

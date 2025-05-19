@@ -124,9 +124,9 @@ const App = () => {
   }, []);
 
   // Initialize Microsoft Clarity for analytics
-  // useEffect(() => {
-  //   initialize("qysqkgnhfy");
-  // }, []);
+  useEffect(() => {
+    initialize("qysqkgnhfy");
+  }, []);
 
   //check for OTA updates start
   useEffect(() => {
