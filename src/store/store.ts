@@ -89,13 +89,26 @@ export const useStore = create<StoreState>()(
             selectedCity: null
           })
         },
-        updateProfile: (name, email, phone, address) => {
+        updateProfile: (field, value) => {
           set(
             produce((state) => {
-                state.userDetails[0].userName = name;
-                state.userDetails[0].userEmail = email;
-                state.userDetails[0].userPhone = phone;
-                state.userDetails[0].userAddress = address;
+                if (state.userDetails[0]) {
+                    // Map field names to userDetails properties
+                    const fieldMap = {
+                        'name': 'userName',
+                        'userName': 'userUniqueUserName',
+                        'email': 'userEmail',
+                        'phone': 'userPhone',
+                        'address': 'userAddress'
+                    };
+                    
+                    const userDetailField = fieldMap[field] || field;
+                    // Only update the specific field, preserving all other data including tokens
+                    state.userDetails[0] = {
+                        ...state.userDetails[0],
+                        [userDetailField]: value
+                    };
+                }
             })
           );
         },
