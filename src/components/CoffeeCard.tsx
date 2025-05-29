@@ -65,9 +65,13 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
       </Text>
       {/* <Text style={styles.CardSubtitle}>{special_ingredient}</Text> */}
       <View style={styles.CardFooterRow}>
-        <Text style={styles.CardPriceCurrency}>
-        ₹ <Text style={styles.CardPrice}>{price}</Text>
-        </Text>
+        {typeof Number(price) === 'number' && !isNaN(price) ? (
+          <Text style={styles.CardPriceCurrency}>
+            ₹ <Text style={styles.CardPrice}>{price}</Text>
+          </Text>
+        ) : (
+          <View />
+        )}
         {type !== "ExternalBook" && <TouchableOpacity
           onPress={() => {
             buttonPressHandler({
