@@ -121,7 +121,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
 
   const renderInput = (icon: string, placeholder: string, value: string, onChangeText: (text: string) => void, keyboardType?: any) => (
     <View style={styles.inputContainer}>
-      <MaterialIcons name={icon} size={20} color={COLORS.primaryOrangeHex} />
+      <MaterialIcons name={icon as keyof typeof MaterialIcons.glyphMap} size={20} color={COLORS.primaryOrangeHex} />
       <TextInput
         style={styles.input}
         value={value}

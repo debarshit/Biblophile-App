@@ -52,7 +52,7 @@ const CustomPicker: React.FC<CustomPickerProps> = ({
       >
         <View style={styles.triggerContent}>
           <MaterialIcons 
-            name={displayIcon} 
+            name={displayIcon as keyof typeof MaterialIcons.glyphMap} 
             size={20} 
             color={disabled ? COLORS.secondaryLightGreyHex : COLORS.primaryOrangeHex} 
           />
@@ -84,7 +84,7 @@ const CustomPicker: React.FC<CustomPickerProps> = ({
               onPress={() => handleOptionSelect(option.value)}
             >
               <MaterialIcons 
-                name={option.icon} 
+                name={option.icon as keyof typeof MaterialIcons.glyphMap} 
                 size={18} 
                 color={selectedValue === option.value ? COLORS.primaryOrangeHex : COLORS.primaryWhiteHex} 
               />
