@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Dimensions, TouchableWithoutFeedback, 
          ScrollView, TextInput, TouchableOpacity, 
-         SafeAreaView} from 'react-native';
+         SafeAreaView,
+         Platform} from 'react-native';
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Picker } from '@react-native-picker/picker';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -10,6 +11,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import ReadingGoals from '../components/ReadingGoals';
 import { Ionicons } from '@expo/vector-icons';
+import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -30,6 +32,11 @@ const StatScreen = () => {
   const screenWidth = Dimensions.get('window').width;
 
   const PIECOLORS = ['#FF7E5F', '#42D1D1', '#FFBC42', '#9C4DD4', '#45B69C'];
+
+  const timeFrameOptions: PickerOption[] = [
+    { label: 'Last week', value: 'last-week', icon: 'calendar-today' },
+    { label: 'Last month', value: 'last-month', icon: 'calendar-view-month' },
+  ];
 
   // Fetch functions remain the same...
   const fetchLeaderboard = async () => {
@@ -556,16 +563,23 @@ const StatScreen = () => {
         <View style={styles.statusDropdown}>
           <Text style={styles.label}>Time frame: </Text>
           <View style={styles.pickerContainer}>
-            <Picker
+            {Platform.OS === 'ios' ? (
+              <CustomPicker
+                options={timeFrameOptions}
+                selectedValue={timeFrame}
+                onValueChange={(value) => setTimeFrame(value)}
+              />
+            ) : (
+              <Picker
                 selectedValue={timeFrame}
                 style={styles.picker}
                 onValueChange={(itemValue) => setTimeFrame(itemValue)}
                 dropdownIconColor={COLORS.primaryWhiteHex}
-                itemStyle={{height:50}}
-            >
-                <Picker.Item label="Last week" value="last-week" color={COLORS.primaryWhiteHex} />
-                <Picker.Item label="Last month" value="last-month" color={COLORS.primaryWhiteHex} />
-            </Picker>
+              >
+                <Picker.Item label="Last week" value="last-week" />
+                <Picker.Item label="Last month" value="last-month" />
+              </Picker>
+            )}
           </View>
         </View>
 
@@ -712,8 +726,7 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     borderRadius: BORDERRADIUS.radius_8,
-    overflow: 'hidden',
-    width: 150,
+    width: 200,
   },
   picker: {
     width: '100%',

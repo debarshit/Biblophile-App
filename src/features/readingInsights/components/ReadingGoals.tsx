@@ -1,10 +1,11 @@
-import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { Picker } from '@react-native-picker/picker';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 
 const ReadingGoals = () => {
     const [goalState, setGoalState] = useState({
@@ -20,6 +21,11 @@ const ReadingGoals = () => {
         isResetting: false,
         error: null,
     });
+
+    const goalTypeOptions: PickerOption[] = [
+      { label: 'Books', value: 'books', icon: 'menu-book' },
+      { label: 'Pages', value: 'pages', icon: 'menu' },
+    ];
 
   const userDetails = useStore((state: any) => state.userDetails);
   const userId = userDetails[0].userId;
@@ -176,12 +182,13 @@ const ReadingGoals = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Reading Goals(2025)</Text>
       
-      {uiState.isLoading && (
+      {/* commented for now because this made the screen look a bit janky */}
+      {/* {uiState.isLoading && (
         <View style={styles.loadingIndicator}>
           <ActivityIndicator color={COLORS.primaryOrangeHex} />
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
-      )}
+      )} */}
       
       {uiState.error && (
         <View style={styles.errorMessage}>
@@ -206,16 +213,24 @@ const ReadingGoals = () => {
               <View style={styles.formRow}>
                 <Text style={styles.label}>Goal type:</Text>
                 <View style={styles.pickerContainer}>
-                  <Picker
-                    style={styles.picker}
-                    selectedValue={goalState.activeType}
-                    onValueChange={handleGoalTypeChange}
-                    dropdownIconColor={COLORS.primaryWhiteHex}
-                    mode="dropdown"
-                  >
-                    <Picker.Item label="Books" value="books" />
-                    <Picker.Item label="Pages" value="pages" />
-                  </Picker>
+                  {Platform.OS === 'ios' ? (
+                    <CustomPicker
+                      options={goalTypeOptions}
+                      selectedValue={goalState.activeType}
+                      onValueChange={handleGoalTypeChange}
+                    />
+                  ) : (
+                    <Picker
+                      style={styles.picker}
+                      selectedValue={goalState.activeType}
+                      onValueChange={handleGoalTypeChange}
+                      dropdownIconColor={COLORS.primaryWhiteHex}
+                      mode="dropdown"
+                    >
+                      <Picker.Item label="Books" value="books" />
+                      <Picker.Item label="Pages" value="pages" />
+                    </Picker>
+                  )}
                 </View>
               </View>
 
@@ -262,16 +277,24 @@ const ReadingGoals = () => {
           {showGoalTypeSelector && (
             <View style={styles.goalSelector}>
               <View style={styles.compactPickerContainer}>
-                <Picker
-                  style={styles.compactPicker}
-                  selectedValue={goalState.activeType}
-                  onValueChange={handleGoalTypeChange}
-                  dropdownIconColor={COLORS.primaryWhiteHex}
-                  mode="dropdown"
-                >
-                  {goalState.books.goal && <Picker.Item label="Books Goal" value="books" />}
-                  {goalState.pages.goal && <Picker.Item label="Pages Goal" value="pages" />}
-                </Picker>
+                {Platform.OS === 'ios' ? (
+                  <CustomPicker
+                    options={goalTypeOptions.filter(opt => goalState[opt.value].goal)}
+                    selectedValue={goalState.activeType}
+                    onValueChange={handleGoalTypeChange}
+                  />
+                ) : (
+                  <Picker
+                    style={styles.compactPicker}
+                    selectedValue={goalState.activeType}
+                    onValueChange={handleGoalTypeChange}
+                    dropdownIconColor={COLORS.primaryWhiteHex}
+                    mode="dropdown"
+                  >
+                    {goalState.books.goal && <Picker.Item label="Books Goal" value="books" />}
+                    {goalState.pages.goal && <Picker.Item label="Pages Goal" value="pages" />}
+                  </Picker>
+                )}
               </View>
             </View>
           )}
@@ -403,7 +426,6 @@ const styles = StyleSheet.create({
     borderRadius: BORDERRADIUS.radius_8,
     borderWidth: 1,
     borderColor: COLORS.primaryLightGreyHex,
-    overflow: 'hidden',
   },
   picker: {
     color: COLORS.primaryWhiteHex,
@@ -470,7 +492,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primaryLightGreyHex,
     width: 200,
-    overflow: 'hidden',
   },
   compactPicker: {
     color: COLORS.primaryWhiteHex,
