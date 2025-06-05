@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform, ToastAndroid } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Entypo from '@expo/vector-icons/Entypo';
-import instance from '../services/axios';
-import requests from '../services/requests';
-import { useStore } from '../store/store';
+import instance from '../../../services/axios';
+import requests from '../../../services/requests';
+import { useStore } from '../../../store/store';
 import {
     BORDERRADIUS,
     COLORS,
     FONTFAMILY,
     FONTSIZE,
     SPACING,
-  } from '../theme/theme';
+  } from '../../../theme/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 

@@ -5,7 +5,7 @@ import GradientBGIcon from '../../../components/GradientBGIcon';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import ReadingStatus from '../../../components/ReadingStatus';
+import ReadingStatus from './ReadingStatus';
 import CityModal from '../../bookshop/components/CityModal';
 import { useStore } from '../../../store/store';
 
