@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Modal, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Dimensions, SafeAreaView } from 'react-native';
 import BookshelfCard from '../components/BookshelfCard';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+
+const { width } = Dimensions.get('window');
+const CARD_MARGIN = SPACING.space_8;
+const CONTAINER_PADDING = SPACING.space_16;
+const AVAILABLE_WIDTH = width - (CONTAINER_PADDING * 2);
+const CARD_WIDTH = (AVAILABLE_WIDTH - CARD_MARGIN) / 2;
 
 interface Book {
     BookId: number;
@@ -24,13 +31,6 @@ const BookListScreen = ({ route, navigation }) => {
 
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0].accessToken;
-
-    const convertHttpToHttps = (url) => {
-        if (url && url.startsWith('http://')) {
-            return url.replace('http://', 'https://');
-        }
-        return url;
-    };
 
     const fetchBookShelf = async (page: number) => {
         setLoading(true);
@@ -76,65 +76,150 @@ const BookListScreen = ({ route, navigation }) => {
             setPage((prevPage) => prevPage + 1);
         }
     };
+
+    const renderBookItem = ({ item, index }) => (
+        <View style={[
+            styles.cardContainer,
+            {
+                marginLeft: index % 2 === 0 ? 0 : CARD_MARGIN / 2,
+                marginRight: index % 2 === 1 ? 0 : CARD_MARGIN / 2,
+            }
+        ]}>
+            <BookshelfCard
+                id={item.BookId}
+                isPageOwner={userData.isPageOwner}
+                photo={convertHttpToHttps(item.BookPhoto)}
+                status={item.Status}
+                startDate={item.StartDate}
+                endDate={item.EndDate}
+                currentPage={item.CurrentPage}
+                onUpdate={null}
+                navigation={navigation}
+            />
+        </View>
+    );
+
+    const renderLoadingFooter = () => {
+        if (!loading) return null;
+        return (
+            <View style={styles.loadingContainer}>
+                <View style={styles.loadingIndicator}>
+                    <Text style={styles.loadingText}>Loading more books...</Text>
+                </View>
+            </View>
+        );
+    };
+
+    const renderEmptyState = () => (
+        <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>No books found</Text>
+            <Text style={styles.emptySubtitle}>
+                {status === 'Read' ? 'No books marked as read yet' :
+                 status === 'Currently reading' ? 'No books currently being read' :
+                 status === 'To be read' ? 'No books in your reading list' :
+                 'No books found for this status'}
+            </Text>
+        </View>
+    );
       
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
           <FlatList
               data={books}
+              numColumns={2}
               keyExtractor={(item) => item.BookId.toString()}
-              renderItem={({ item }) => (
-                  <View style={styles.cardContainer}>
-                      <BookshelfCard
-                          id={item.BookId}
-                          isPageOwner={userData.isPageOwner}
-                          photo={convertHttpToHttps(item.BookPhoto)} 
-                          status={item.Status}
-                          startDate={item.StartDate}
-                          endDate={item.EndDate}
-                          currentPage={item.CurrentPage}
-                          onUpdate={null}
-                          navigation={navigation}
-                      />
-                  </View>
-              )}
+              renderItem={renderBookItem}
               onEndReached={loadMoreBooks}
               onEndReachedThreshold={0.5} // Trigger when the user is 50% away from the bottom
-              ListFooterComponent={loading ? <Text style={styles.loadingText}>Loading...</Text> : null}
-              contentContainerStyle={styles.listContent} // Add some padding to the list
+              ListFooterComponent={renderLoadingFooter}
+              ListEmptyComponent={books.length === 0 && !loading ? renderEmptyState : null}
+              contentContainerStyle={[
+                    styles.listContent,
+                    books.length === 0 && !loading && styles.emptyListContent
+              ]}
+              showsVerticalScrollIndicator={false}
+              columnWrapperStyle={styles.row}
           />
-      </View>
+      </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.primaryDarkGreyHex,
-    padding: SPACING.space_16,
-  },
-  cardContainer: {
-    flex: 1,
-    margin: SPACING.space_8,
-    borderRadius: BORDERRADIUS.radius_10,
-    overflow: 'hidden',
-    backgroundColor: COLORS.primaryGreyHex,
-    padding: SPACING.space_12,
-    shadowColor: COLORS.primaryBlackHex,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  loadingText: {
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_16,
-    textAlign: 'center',
-    padding: SPACING.space_20,
-  },
-  listContent: {
-    paddingBottom: SPACING.space_24,
-  },
+    container: {
+        flex: 1,
+        backgroundColor: COLORS.primaryDarkGreyHex,
+        paddingHorizontal: CONTAINER_PADDING,
+        paddingTop: SPACING.space_16,
+    },
+    listContent: {
+        paddingBottom: SPACING.space_24,
+        paddingHorizontal: SPACING.space_10,
+    },
+    emptyListContent: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    row: {
+        justifyContent: 'space-between',
+        marginBottom: SPACING.space_16,
+    },
+    cardContainer: {
+        width: CARD_WIDTH,
+        backgroundColor: COLORS.primaryGreyHex,
+        borderRadius: BORDERRADIUS.radius_15,
+        overflow: 'hidden',
+        shadowColor: COLORS.primaryBlackHex,
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 6,
+        marginBottom: SPACING.space_8,
+    },
+    loadingContainer: {
+        paddingVertical: SPACING.space_20,
+        alignItems: 'center',
+    },
+    loadingIndicator: {
+        backgroundColor: COLORS.primaryGreyHex,
+        paddingHorizontal: SPACING.space_20,
+        paddingVertical: SPACING.space_12,
+        borderRadius: BORDERRADIUS.radius_10,
+        shadowColor: COLORS.primaryBlackHex,
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    loadingText: {
+        color: COLORS.primaryWhiteHex,
+        fontFamily: FONTFAMILY.poppins_medium,
+        fontSize: FONTSIZE.size_14,
+        textAlign: 'center',
+    },
+    emptyContainer: {
+        alignItems: 'center',
+        paddingVertical: SPACING.space_36,
+        paddingHorizontal: SPACING.space_24,
+    },
+    emptyTitle: {
+        color: COLORS.primaryWhiteHex,
+        fontFamily: FONTFAMILY.poppins_semibold,
+        fontSize: FONTSIZE.size_20,
+        marginBottom: SPACING.space_12,
+        textAlign: 'center',
+    },
+    emptySubtitle: {
+        color: COLORS.secondaryLightGreyHex,
+        fontFamily: FONTFAMILY.poppins_regular,
+        fontSize: FONTSIZE.size_14,
+        textAlign: 'center',
+        lineHeight: 22,
+    },
 });
 
 export default BookListScreen;
