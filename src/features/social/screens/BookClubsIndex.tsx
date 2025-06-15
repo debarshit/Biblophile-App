@@ -14,8 +14,8 @@ interface User {
 }
 
 interface BookClub {
-  club_id: number;
-  club_name: string;
+  clubId: number;
+  clubName: string;
   host: User[];
 }
 
@@ -34,7 +34,7 @@ const BookClubsIndex = () => {
   const fetchBookClubs = async () => {
     try {
       const myBookClubsResponse = accessToken ? await instance.get(
-        requests.fetchBookClubs, {
+        requests.fetchMyBookClubs, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
           },
@@ -45,8 +45,8 @@ const BookClubsIndex = () => {
         requests.fetchBookClubs
       );
 
-      setMyBookClubs(myBookClubsResponse.data);
-      setActiveBookClubs(activeBookClubsResponse.data);
+      setMyBookClubs(myBookClubsResponse.data.data);
+      setActiveBookClubs(activeBookClubsResponse.data.data);
     } catch (err) {
       console.error(err);
       setError('Failed to fetch book clubs.');
@@ -88,7 +88,7 @@ const BookClubsIndex = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>My Clubs</Text>
           {myBookClubs.length > 0 ? (
-            myBookClubs.map((club) => <BookClubCard key={club.club_id} bookClub={club} />)
+            myBookClubs.map((club) => <BookClubCard key={club.clubId} bookClub={club} />)
           ) : (
             <Text style={styles.placeholderText}>You are not a member of any clubs.</Text>
           )}
@@ -97,7 +97,7 @@ const BookClubsIndex = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Active Book Clubs</Text>
           {activeBookClubs.length > 0 ? (
-            activeBookClubs.map((club) => <BookClubCard key={club.club_id} bookClub={club} />)
+            activeBookClubs.map((club) => <BookClubCard key={club.clubId} bookClub={club} />)
           ) : (
             <Text style={styles.placeholderText}>No active book clubs available.</Text>
           )}

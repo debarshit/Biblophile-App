@@ -8,14 +8,14 @@ import { useStore } from '../../../store/store';
 import Toast from 'react-native-toast-message';
 
 interface Prompt {
-    PromptId: string;
-    ChallengeId: string;
-    PromptDescription: string;
-    PromptType: string;
-    PromptValue: string;
+    promptId: string;
+    challengeId: string;
+    promptDescription: string;
+    promptType: string;
+    promptValue: string;
     Progress: string;
     Completed: boolean;
-    BookRecommendations?: string | null;
+    bookRecommendations?: string | null;
 }
 
 interface ChallengePromptDetailsProps {
@@ -40,14 +40,14 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
         try {
           setIsLoading(true);
           const response = await instance(
-            `${requests.fetchPromptDetails}&prompt_id=${promptId}`, {
+            `${requests.fetchPromptDetails(promptId)}`, {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
               },
             }
           );
     
-          const promptData = response.data;
+          const promptData = response.data.data;
           setPromptdata(promptData);
           setProgress(promptData.Progress || '');
           setIsCompleted(promptData.Completed || false);
@@ -72,10 +72,9 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
         if (!promptData) return;
 
         try {
-            const response = await instance.post(requests.updatePromptProgress, {
-                promptId: promptData.PromptId,
-                progress: promptData.PromptValue ? progress : null,
-                isCompleted: !promptData.PromptValue ? true : isCompleted,
+            const response = await instance.patch(requests.updatePromptProgress(promptId), {
+                progress: promptData.promptValue ? progress : null,
+                isCompleted: !promptData.promptValue ? true : isCompleted,
               }, {
                 headers: {
                   'Content-Type': 'application/json',
@@ -85,7 +84,7 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
             );
             const data = response.data;
     
-            if (data.success) {
+            if (data.message === 'Prompt progress and challenge progress updated successfully.') {
                 setIsCompleted(true);
                 Toast.show({
                     type: 'success',
@@ -111,7 +110,7 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
 
     const handleProgressChange = (value: string) => {
         if (!promptData) return;
-        if (Number(value) > Number(promptData.PromptValue)) {
+        if (Number(value) > Number(promptData.promptValue)) {
             setError('Progress cannot exceed the target value.');
         } else {
             setError('');
@@ -163,16 +162,16 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
 
             <View style={styles.contentContainer}>
                 <View style={styles.section}>
-                    <Text style={styles.promptDescription}>{promptData.PromptDescription}</Text>
+                    <Text style={styles.promptDescription}>{promptData.promptDescription}</Text>
                 </View>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>
-                        Type: <Text style={styles.highlightText}>{promptData.PromptType}</Text>
+                        Type: <Text style={styles.highlightText}>{promptData.promptType}</Text>
                     </Text>
                 </View>
 
-                {promptData.PromptValue !== null ? (
+                {promptData.promptValue !== null ? (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Target</Text>
                         <View style={styles.progressContainer}>
@@ -182,7 +181,7 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
                                 onChangeText={handleProgressChange}
                                 keyboardType="numeric"
                             />
-                            <Text style={styles.progressText}>/ {promptData.PromptValue}</Text>
+                            <Text style={styles.progressText}>/ {promptData.promptValue}</Text>
                         </View>
                         {error ? <Text style={styles.errorText}>{error}</Text> : null}
                     </View>
@@ -202,7 +201,7 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
                     </View>
                 )}
 
-                {promptData.BookRecommendations && renderBookRecommendations(promptData.BookRecommendations)}
+                {promptData.bookRecommendations && renderBookRecommendations(promptData.bookRecommendations)}
             </View>
 
             <TouchableOpacity

@@ -20,11 +20,15 @@ const SourceReferralModal: React.FC<SourceReferralModalProps> = ({ isOpen, onReq
   const updateSourceReferral = async () => {
     if (source !== null) {
       try {
-        const response = await axios.post(requests.updateUserData, {
-          userId: userDetails[0].userId,
-          property: 'SourceReferral',
+        const updateResponse = await axios.put(requests.updateUserData, {
+          property: 'sourceReferral',
           value: source,
+        }, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`
+          },
         });
+        const response = updateResponse.data;
         if (response.data.message === 'Updated') {
           setSource(null);
           onRequestClose();

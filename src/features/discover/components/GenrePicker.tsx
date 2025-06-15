@@ -32,7 +32,7 @@ const MAX_GENRES_PER_ROW = 3;
 const getBookList = async (genre) => {
   try {
     const response = await instance(requests.getBooks + genre);
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error('Error fetching books by genre:', error);
     return [];

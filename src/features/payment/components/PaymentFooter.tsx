@@ -40,8 +40,12 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
   useEffect(() => {
     async function fetchActivePlan() {
         try {
-            const response = await instance(requests.fetchActivePlan+userDetails[0].userId);
-            const data = response.data;
+            const response = await instance(requests.fetchActivePlan, {
+              headers: {
+                Authorization: `Bearer ${userDetails[0].accessToken}`,
+              },
+            });
+            const data = response.data.data;
             if (data[0].PlanId !== null) {
               setSubscription(true);
             }

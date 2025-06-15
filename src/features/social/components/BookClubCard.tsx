@@ -10,8 +10,8 @@ interface User {
 }
 
 interface BookClub {
-  club_id: number;
-  club_name: string;
+  clubId: number;
+  clubName: string;
   host: User[];
 }
 
@@ -21,7 +21,7 @@ interface BookClubCardProps {
 
 const BookClubCard: React.FC<BookClubCardProps> = ({ bookClub }) => {
   const navigation = useNavigation<any>();
-  const { club_id, club_name, host } = bookClub;
+  const { clubId, clubName, host } = bookClub;
 
   let runByText = '';
   if (host.length === 1) {
@@ -34,14 +34,14 @@ const BookClubCard: React.FC<BookClubCardProps> = ({ bookClub }) => {
 
   const handlePress = () => {
     navigation.navigate('BookClubDetails', {
-      bookClubId: club_id,
+      bookClubId: clubId,
     });
   };
 
   return (
     <View style={styles.cardContainer}>
       <Text style={styles.clubName} numberOfLines={1}>
-        {club_name}
+        {clubName}
       </Text>
       <Text style={styles.runByText}>{runByText}</Text>
       <TouchableOpacity onPress={handlePress} style={styles.viewButton}>

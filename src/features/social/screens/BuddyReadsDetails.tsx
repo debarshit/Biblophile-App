@@ -33,15 +33,15 @@ interface CurrentUser {
 }
 
 interface BuddyRead {
-  buddy_read_id: number;
-  book_id: string;
+  buddyReadId: number;
+  bookId: string;
   book_title: string;
   book_photo: string;
   book_pages: number;
-  buddy_read_description: string;
-  start_date: string;
-  end_date: string;
-  max_members: number;
+  buddyReadDescription: string;
+  startDate: string;
+  endDate: string;
+  maxMembers: number;
   members: Member[];
   host: Member;
 }
@@ -74,14 +74,15 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
     setError(null);
     try {
       const buddyReadResponse = await instance.get(
-        `${requests.fetchBuddyReadDetails}&buddy_read_id=${buddyReadId}`,
+        `${requests.fetchBuddyReadDetails(buddyReadId)}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      const buddyReadData = buddyReadResponse.data;
+      const buddyReadData = buddyReadResponse.data.data;
+      console.log(buddyReadResponse.data.data)
       setBuddyRead(buddyReadData);
       setDescription(buddyReadData?.buddy_read_description || 'Such empty! Much wow!');
 
@@ -91,15 +92,13 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
 
       if (accessToken) {
         // Only fetch user-specific data if accessToken is available
-        const currentUserReadingStatusResponse = await instance.post(
-          requests.fetchReadingStatus,
-          { bookId: buddyReadData?.book_id },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
+        const response = await instance.get(requests.fetchReadingStatus(buddyReadData?.bookId), {
+          headers: {
+              Authorization: `Bearer ${userDetails[0].accessToken}`,
+          },
+        });
+
+        const currentUserReadingStatusResponse = response.data;
         currentUserData = {
           userId: currentUserReadingStatusResponse.data.userId,
           readingStatus: currentUserReadingStatusResponse.data.status,
@@ -135,16 +134,14 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   };
 
   const updateDescription = async () => {
-    if (!accessToken || !buddyRead?.buddy_read_id || !currentUser.userId) {
+    if (!accessToken || !buddyRead?.buddyReadId || !currentUser.userId) {
       Alert.alert('Error', 'Not authorized or missing buddy read/user info.');
       return;
     }
     try {
-      const response = await instance.post(
-        requests.updateBuddyReadDescription,
+      const response = await instance.put(
+        requests.updateBuddyReadDescription(buddyRead.buddyReadId),
         {
-          userId: currentUser.userId,
-          buddyReadId: buddyRead.buddy_read_id,
           description: description,
         },
         {
@@ -154,7 +151,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
         }
       );
 
-      if (response.data.message === 'Updated') {
+      if (response.data.data.message == 'description updated') {
         Alert.alert('Success', 'Description updated successfully!');
         setIsEditing(false);
         setBuddyRead(prev => prev ? { ...prev, buddy_read_description: description } : prev);
@@ -168,21 +165,17 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   };
 
   const joinOrLeave = async () => {
-    if (buddyRead?.buddy_read_id && currentUser.userId) {
+    if (buddyRead?.buddyReadId && currentUser.userId) {
       try {
-        const response = await instance.post(
-          requests.JoinLeaveBuddyReads,
-          {
-            buddyReadId: buddyRead.buddy_read_id.toString(),
-            userId: currentUser.userId.toString(),
-          },
+        const joinLeaveResponse = await instance.post(
+          requests.JoinLeaveBuddyReads(buddyRead.buddyReadId.toString()), {},
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
           }
         );
-
+        const response = joinLeaveResponse.data;
         if (response.data.status === 'added' || response.data.status === 'removed') {
           console.log('Join/Leave action performed');
           fetchBuddyReadDetails(); // Refresh details
@@ -206,7 +199,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
     if (buddyRead?.book_title) {
       try {
         const result = await Share.share({
-          message: `Check out this buddy read for "${buddyRead.book_title}" on Biblophile! https://biblophile.com/social/buddy-reads/${buddyRead.buddy_read_id}`,
+          message: `Check out this buddy read for "${buddyRead.book_title}" on Biblophile! https://biblophile.com/social/buddy-reads/${buddyRead.buddyReadId}`,
         });
 
         if (result.action === Share.sharedAction) {
@@ -250,21 +243,21 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
               style={[
                 styles.actionButton,
                 {
-                  backgroundColor: isMember ? COLORS.primaryOrangeHex : buddyRead.members.length < buddyRead.max_members ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex,
+                  backgroundColor: isMember ? COLORS.primaryOrangeHex : buddyRead.members.length < buddyRead.maxMembers ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex,
                 },
               ]}
               onPress={joinOrLeave}
-              disabled={!isMember && buddyRead.members.length >= buddyRead.max_members}
+              disabled={!isMember && buddyRead.members.length >= buddyRead.maxMembers}
             >
               <Text style={styles.actionButtonText}>
-                {isMember ? 'Leave' : buddyRead.members.length < buddyRead.max_members ? 'Join' : 'Full'}
+                {isMember ? 'Leave' : buddyRead.members.length < buddyRead.maxMembers ? 'Join' : 'Full'}
               </Text>
             </TouchableOpacity>
             <Text style={styles.infoText}>
-              <Text style={styles.infoLabel}>Ends on:</Text> {buddyRead.end_date ? buddyRead.end_date : 'when everyone finishes'}
+              <Text style={styles.infoLabel}>Ends on:</Text> {buddyRead.endDate ? buddyRead.endDate : 'when everyone finishes'}
             </Text>
             <Text style={styles.infoText}>
-              <Text style={styles.infoLabel}>Max Members:</Text> {buddyRead.max_members}
+              <Text style={styles.infoLabel}>Max Members:</Text> {buddyRead.maxMembers}
             </Text>
             <Text style={styles.infoText}>
               <Text style={styles.infoLabel}>Host:</Text> {buddyRead.host.name}

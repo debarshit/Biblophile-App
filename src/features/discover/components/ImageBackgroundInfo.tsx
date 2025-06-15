@@ -58,7 +58,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     if (!isbn) return id;
     
     try {
-      const bookIdResponse = await instance.post(requests.fetchBookId, { ISBN: isbn });
+      const response = await instance.get(requests.fetchBookId(isbn));
+      const bookIdResponse = response.data;
       return bookIdResponse.data.bookId || id;
     } catch (error) {
       console.error('Failed to fetch BookId', error);
@@ -79,9 +80,9 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         const emotionsResponse = await instance(`${requests.fetchAverageEmotions}${bookId}`);
         
         setBookData({
-          averageRating: ratingResponse.data.averageRating,
-          ratingsCount: ratingResponse.data.totalRatings,
-          topEmotions: emotionsResponse.data.topEmotions || []
+          averageRating: ratingResponse.data.data.averageRating,
+          ratingsCount: ratingResponse.data.data.totalRatings,
+          topEmotions: emotionsResponse.data.data.topEmotions || []
         });
       } catch (error) {
         console.error('Error fetching book data:', error);

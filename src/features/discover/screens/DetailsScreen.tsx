@@ -133,8 +133,12 @@ const DetailsScreen = ({navigation, route}: any) => {
   useEffect(() => {
     async function fetchActivePlan() {
         try {
-            const response = await instance(requests.fetchActivePlan+userDetails[0].userId);
-            const data = response.data;
+            const response = await instance(requests.fetchActivePlan, {
+              headers: {
+                Authorization: `Bearer ${userDetails[0].accessToken}`,
+              },
+            });
+            const data = response.data.data;
             if (data[0].PlanId !== null) {
               setSubscription(true);
             }
@@ -154,16 +158,15 @@ const DetailsScreen = ({navigation, route}: any) => {
         }
         let response;
         if (type === 'ExternalBook') {
-            response = await instance(`${requests.fetchExternalBookDetails}${id}`);
+            response = await instance(`${requests.fetchExternalBookDetails(id)}`);
             setIsGoogleBook(true);
         } else {
-            response = await instance(`${requests.fetchProductDetails}${id}&type=${type}&userCity=${selectedCity}`);
+            response = await instance(`${requests.fetchProductDetails(id)}?type=${type}&userCity=${selectedCity}`);
             setIsGoogleBook(false);
         }
 
-        const data = response.data;
+        const data = response.data.data;
         setProduct(data);
-        console.log(product);
         setActualPrice(data.ProductPrice || data.saleInfo?.listPrice?.amount);
         const updatedPrices = getPrices();
         setPrices(updatedPrices);

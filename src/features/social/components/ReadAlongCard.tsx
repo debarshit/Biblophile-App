@@ -7,13 +7,13 @@ interface Host {
 }
 
 interface ReadAlong {
-  readalong_id: number;
+  readalongId: number;
   host: Host;
-  book_id: number;
+  bookId: number;
   book_title: string;
   book_photo: string;
-  start_date: string;
-  end_date: string;
+  startDate: string;
+  endDate: string;
   max_members: number;
   created_at: string;
 }
@@ -24,16 +24,16 @@ interface Props {
 }
 
 const ReadAlongCard: React.FC<Props> = ({ readalong, onPress }) => {
-  const { book_title, book_photo, end_date, start_date, host, readalong_id } = readalong;
+  const { book_title, book_photo, endDate, startDate, host, readalongId } = readalong;
 
   return (
-    <TouchableOpacity style={styles.cardContainer} onPress={() => onPress(readalong_id)}>
+    <TouchableOpacity style={styles.cardContainer} onPress={() => onPress(readalongId)}>
       <Image source={{ uri: book_photo }} style={styles.image} />
       <View style={styles.content}>
         <Text style={styles.title}>{book_title}</Text>
         <Text style={styles.subtitle}>Hosted by: {host.name}</Text>
         <Text style={styles.endDate}>
-            {start_date} - {end_date}
+            {startDate} - {endDate}
         </Text>
         <Text style={styles.link}>View</Text>
       </View>

@@ -14,12 +14,12 @@ const AVAILABLE_WIDTH = width - (CONTAINER_PADDING * 2);
 const CARD_WIDTH = (AVAILABLE_WIDTH - CARD_MARGIN) / 2;
 
 interface Book {
-    BookId: number;
-    BookPhoto: string;
-    Status: string;
-    StartDate: string;
-    EndDate: string;
-    CurrentPage: number;
+    bookId: number;
+    bookPhoto: string;
+    status: string;
+    startDate: string;
+    endDate: string;
+    currentPage: number;
 }
 
 const BookListScreen = ({ route, navigation }) => {
@@ -35,34 +35,32 @@ const BookListScreen = ({ route, navigation }) => {
     const fetchBookShelf = async (page: number) => {
         setLoading(true);
         try {
-          const response = await instance.post(requests.fetchBookShelf, {
-            userId: userData.userId,
-            status,
-            limit: 10,
-            offset: page * 10,
-          }, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
-      
-          const newBooks: Book[] = response.data.userBooks;
-      
-          // Prevent duplicates by filtering out books already in the state
-          setBooks((prevBooks) => {
-            const bookIds = new Set(prevBooks.map((book) => book.BookId));
-            const filteredNewBooks = newBooks.filter((book) => !bookIds.has(book.BookId));
-            return [...prevBooks, ...filteredNewBooks];
-          });
-      
-          if (newBooks.length < 10) {
-            setHasMore(false); // No more books to load
-          }
-      
+            const offset = page * 10;
+            const limit = 10;
+
+            const query = new URLSearchParams({
+                userId: userData.userId,
+                status,
+                limit: limit.toString(),
+                offset: offset.toString()
+            });
+
+            const response = await instance(`${requests.fetchBookShelf}?${query.toString()}`);
+            const newBooks: Book[] = Array.isArray(response.data?.data?.userBooks) ? response.data.data.userBooks : [];
+
+            setBooks((prevBooks) => {
+                const bookIds = new Set(prevBooks.map((book) => book.bookId));
+                const filteredNewBooks = newBooks.filter((book) => !bookIds.has(book.bookId));
+                return [...prevBooks, ...filteredNewBooks];
+            });
+
+            if (newBooks.length < limit) {
+                setHasMore(false); // No more books to load
+            }
         } catch (error) {
-          console.error('Failed to fetch user books:', error);
+            console.error('Failed to fetch user books:', error);
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
     };
 
@@ -86,13 +84,13 @@ const BookListScreen = ({ route, navigation }) => {
             }
         ]}>
             <BookshelfCard
-                id={item.BookId}
+                id={item.bookId}
                 isPageOwner={userData.isPageOwner}
-                photo={convertHttpToHttps(item.BookPhoto)}
-                status={item.Status}
-                startDate={item.StartDate}
-                endDate={item.EndDate}
-                currentPage={item.CurrentPage}
+                photo={convertHttpToHttps(item.bookPhoto)}
+                status={item.status}
+                startDate={item.startDate}
+                endDate={item.endDate}
+                currentPage={item.currentPage}
                 onUpdate={null}
                 navigation={navigation}
             />
@@ -127,7 +125,7 @@ const BookListScreen = ({ route, navigation }) => {
           <FlatList
               data={books}
               numColumns={2}
-              keyExtractor={(item) => item.BookId.toString()}
+              keyExtractor={(item) => item.bookId.toString()}
               renderItem={renderBookItem}
               onEndReached={loadMoreBooks}
               onEndReachedThreshold={0.5} // Trigger when the user is 50% away from the bottom

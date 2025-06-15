@@ -49,9 +49,12 @@ const PagesReadInput = ({navigation}: any) => {
 
   const fetchCurrentReads = async () => {
     try {
-      const response = await instance.post(requests.fetchCurrentReads, {
-        userId: userDetails[0].userId,
+      const currentReadsResponse = await instance(requests.fetchCurrentReads, {
+        headers: {
+            Authorization:  `Bearer ${userDetails[0].accessToken}`
+        },
       });
+      const response = currentReadsResponse.data;
       setCurrentReads(response.data.currentReads);
     } catch (error) {
       console.error('Failed to fetch current reads:', error);
@@ -64,9 +67,14 @@ const PagesReadInput = ({navigation}: any) => {
       console.log(`Saving session from ${sessionData.startTime} to ${new Date()} with ${diffInPages} pages read.`);   
       
       //send the data to backend
-      instance.post(requests.submitReadingDuration, sessionData)
+      instance.post(requests.submitReadingDuration, sessionData, 
+        {
+            headers: {
+                Authorization:  `Bearer ${userDetails[0].accessToken}`
+            },
+        })
         .then(response => {
-          console.log('Session saved:', response.data);
+          console.log('Session saved:', response.data.data);
           // Handle successful response
         })
         .catch(error => {
@@ -101,7 +109,7 @@ const handleCompleteSession = () => {
   const diffInPages = (Number(startingPage) === 0 || startingPage == null) ? pagesRead : Number(pagesRead)-Number(startingPage);
   const sessionStartTime = startingTime;
   const message = `Your reading session was from ${formatTime(sessionStartTime)} to ${formatTime(new Date())}. You've read ${diffInPages} pages. Do you wish to save this session?`;
-  setSessionData({ startTime: new Date(sessionStartTime), endTime: new Date(), pageDiff: diffInPages, userId: userDetails[0].userId });
+  setSessionData({ startTime: new Date(sessionStartTime), endTime: new Date(), pageDiff: diffInPages });
   setPromptMessage(message);
   setIsCompletingSession(false);
 };
@@ -122,7 +130,12 @@ const handleSessionPromptAction = () => {
   const fetchPagesRead = async () => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const response = await instance.get(`${requests.fetchPagesRead}${userDetails[0].userId}&timezone=${userTimezone}`);
+      const pagesReadResponse = await instance.get(`${requests.fetchPagesRead}?${userDetails[0].userId}&timezone=${userTimezone}`, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`
+        },
+      });
+      const response = pagesReadResponse.data;
       if (Array.isArray(response.data)) {
         const currentDate = new Date().setHours(0, 0, 0, 0);
         const todayPagesRead = response.data.find((item: any) => {
@@ -147,17 +160,22 @@ const handleSessionPromptAction = () => {
   useEffect(() => {
     fetchCurrentReads();
     fetchPagesRead();
-    fetchSourceReferral();
+    // fetchSourceReferral();
   }, [refreshData]);
 
   const updatePagesRead = async () => {
     if (pagesRead !== "" && pagesRead !== "0") {
       checkActiveSession();
       try {
-        const response = await instance.post(requests.updatePagesRead, {
-          userId: userDetails[0].userId,
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const updatePagesReadResponse = await instance.post(`${requests.updatePagesRead}?timezone=${userTimezone}`, {
           pageCount: pagesRead,
+        }, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`
+          },
         });
+        const response = updatePagesReadResponse.data;
         if (response.data.message === 'Updated') {
           if (!startingTime) {
             Alert.alert('Success', 'Updated');
@@ -175,18 +193,18 @@ const handleSessionPromptAction = () => {
     }
   };
 
-  const fetchSourceReferral = async () => {
-    try {
-      const response = await instance.post(requests.fetchUserData, {
-        userId: userDetails[0].userId,
-      });
-      if (response.data.sourceReferral === null) {
-        handleOpenModal();
-      }
-    } catch (error) {
-      console.error('Failed to fetch current reads:', error);
-    } 
-  };
+  // const fetchSourceReferral = async () => {
+  //   try {
+  //     const response = await instance.post(requests.fetchUserData, {
+  //       userId: userDetails[0].userId,
+  //     });
+  //     if (response.data.sourceReferral === null) {
+  //       handleOpenModal();
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to fetch current reads:', error);
+  //   } 
+  // };
 
   const toggleTooltip = () => {
     setShowTooltip(prev => !prev);

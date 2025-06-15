@@ -36,16 +36,16 @@ const BuddyReadsIndex = () => {
     try {
       setLoading(true);
       // Fetch "My BuddyReads"
-      const myBuddyReadsResponse = await instance.get(requests.fetchBuddyReads, {
+      const myBuddyReadsResponse = await instance.get(requests.fetchMyBuddyReads, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      setMyBuddyReads(myBuddyReadsResponse.data);
+      setMyBuddyReads(myBuddyReadsResponse.data.data);
 
       // Fetch "Active BuddyReads"
       const activeBuddyReadsResponse = await instance.get(requests.fetchBuddyReads);
-      setActiveBuddyReads(activeBuddyReadsResponse.data);
+      setActiveBuddyReads(activeBuddyReadsResponse.data.data);
     } catch (err) {
       setError('Failed to fetch BuddyReads');
       Toast.show({
@@ -82,7 +82,7 @@ const BuddyReadsIndex = () => {
             <FlatList
               data={myBuddyReads}
               renderItem={renderBuddyReadItem}
-              keyExtractor={(item) => item.buddy_read_id.toString()}
+              keyExtractor={(item) => item.buddyReadId.toString()}
               contentContainerStyle={styles.buddyReadsList}
             />
           ) : (
@@ -99,7 +99,7 @@ const BuddyReadsIndex = () => {
             <FlatList
               data={activeBuddyReads}
               renderItem={renderBuddyReadItem}
-              keyExtractor={(item) => item.buddy_read_id.toString()}
+              keyExtractor={(item) => item.buddyReadId.toString()}
               contentContainerStyle={styles.buddyReadsList}
             />
           ) : (

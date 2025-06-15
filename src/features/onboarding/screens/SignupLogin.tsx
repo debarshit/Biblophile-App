@@ -134,7 +134,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
             async function fetchData() {
                 setIsLoading(true);
                 try {
-                    const response = await instance.post(requests.userSignup, {
+                    const signupResponse = await instance.post(requests.userSignup, {
                         name: signupName,
                         userName: signupUserName,
                         email: signupEmail,
@@ -142,7 +142,10 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                         password: signupPass,
                         signupPassCnf: signupPassCnf,
                         source: source,
-                      });
+                    });
+
+                    const response = signupResponse.data;
+
                     if (response.data.message === 1)
                     {
                         setSignupMessage({ text: "Signup successful! You can login now.", color: COLORS.primaryOrangeHex });
@@ -178,10 +181,13 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
             async function fetchData() {
                 setIsLoading(true);
                 try {
-                    const response = await instance.post(requests.userLogin, {
+                    const loginResponse = await instance.post(requests.userLogin, {
                         email: loginEmail,
                         pass: loginPass,
                       });
+
+                    const response = loginResponse.data;
+
                     if (response.data.message === 1)
                     {
 
@@ -237,9 +243,12 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
         else {
             async function fetchData() {
                 try {
-                    const response = await instance.post(requests.forgotPassword, {
+                    const forgotPasswordResponse = await instance.post(requests.forgotPassword, {
                         email: loginEmail,
-                      });
+                    });
+
+                    const response = forgotPasswordResponse.data;
+
                     setLoginMessage({ text: response.data.message, color: COLORS.primaryRedHex });
                   } catch (error) {
                     setLoginMessage({ text: "There was an error! Please try again.", color: COLORS.primaryRedHex });

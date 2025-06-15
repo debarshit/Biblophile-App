@@ -26,9 +26,8 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userDataResponse = await instance.post(
-          requests.fetchUserDataFromUsername,
-          { username: username },
+        const response = await instance(
+          requests.fetchUserDataFromUsername(username),
           {
             headers: {
               Authorization: accessToken ? `Bearer ${accessToken}` : '',
@@ -36,17 +35,18 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
           }
         );
 
+        const userDataResponse = response.data;
         const userData = userDataResponse.data;
         setUserData(userData);
         setIsPageOwner(userData.isPageOwner || false);
 
         if (!userData.isPageOwner) {
           const [userRelationsResponse, privacyStatusResponse] = await Promise.all([
-            instance.post(requests.fetchUserRelations, { pageOwner: userData.userId }, { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }),
+            instance(requests.fetchUserRelations(userData.userId), { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }),
             instance.post(requests.fetchPrivacyStatus, { pageOwner: userData.userId }, { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } })
           ]);
-          setUserRelations(userRelationsResponse.data);
-          setPrivacyStatus(privacyStatusResponse.data);
+          setUserRelations(userRelationsResponse.data.data);
+          setPrivacyStatus(privacyStatusResponse.data.data);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -67,9 +67,10 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
             instance(requests.fetchAverageEmotionsByUser + userData.userId),
             instance(requests.fetchAverageDaystoFinish + userData.userId)
           ]);
-          setUserAverageRating(averageRatingResponse.data.averageRating);
-          setUserAverageEmotions(averageEmotionsResponse.data.topEmotions || []);
-          setAverageReadingDays(averageReadingDaysResponse.data.averageDaysToFinish);
+          console
+          setUserAverageRating(averageRatingResponse.data.data.averageRating);
+          setUserAverageEmotions(averageEmotionsResponse.data.data.topEmotions || []);
+          setAverageReadingDays(averageReadingDaysResponse.data.data.averageDaysToFinish);
         } catch (error) {
           console.error('Failed to fetch additional user data:', error);
         }
@@ -107,7 +108,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
         },
       });
       
-      console.log(response.data);
+      console.log(response.data.data);
       // Optionally, update the UI to reflect the new relationship state
       // You might want to refresh or update `userRelations` based on the response
     } catch (error) {
@@ -128,7 +129,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
           },
         }
       );
-      alert(response.data.message);
+      alert(response.data.data.message);
     } catch (error) {
       console.error('Error handling follow request:', error);
     }

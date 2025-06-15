@@ -41,7 +41,7 @@ const getGenresFromData = (data: any) => {
 const getBookList = async (genre: any) => {
   try {
     const response = await instance(requests.getBooks+genre);
-    const data = response.data;
+    const data = response.data.data;
     return data;
   } catch (error) {
     console.error('Error fetching genres:', error);
@@ -85,8 +85,9 @@ const LibraryScreen = ({navigation}: any) => {
       if (search !== '') {
         setBooksLoading(true);
         try {
-          const response = await instance(requests.searchBooks + search);
-          const data = response.data;
+          const localSearchResponse = await instance(requests.searchBooks + search);
+          const localResponse = localSearchResponse.data;
+          const data = localResponse.data;
           setSortedCoffee(data);
           setBooksLoading(false);
         } catch (error) {

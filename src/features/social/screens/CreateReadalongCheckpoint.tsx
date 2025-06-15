@@ -14,9 +14,10 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
+import { useStore } from '../../../store/store';
 
 // --- Interface Definitions (Ensure consistency) ---
-interface Member {
+interface Host {
     name: string;
     userId: string;
 }
@@ -27,18 +28,18 @@ interface CurrentUser {
     currentPage: number;
 }
 interface Readalong {
-    readalong_id: number;
-    book_id: string;
-    book_title: string;
-    book_photo: string;
-    book_pages: number;
-    readalong_description: string;
-    start_date: string;
-    end_date: string;
-    max_members: number;
-    members: Member[];
-    host: Member;
-  }
+  readalongId: number;
+  bookId: string;
+  book_title: string;
+  book_photo: string;
+  book_pages: number;
+  readalong_description: string;
+  startDate: string;
+  endDate: string;
+  maxMembers: number;
+  members: number;
+  host: Host;
+}
 // -------------------------------------------------------------------------
 
 type CreateCheckpointRouteParams = {
@@ -66,6 +67,8 @@ const CreateReadalongCheckpoint: React.FC = () => {
         currentUser, 
         isHost 
     } = route.params;
+
+    const userDetails = useStore((state: any) => state.userDetails);
 
     // --- Form State ---
     const [pageNumber, setPageNumber] = useState<string>('');
@@ -149,7 +152,7 @@ const CreateReadalongCheckpoint: React.FC = () => {
              setSubmitting(false);
              return;
          }
-         if (!readalong.readalong_id) {
+         if (!readalong.readalongId) {
              setFormError("Readalong ID is missing. Cannot submit.");
              setSubmitting(false);
              return;
@@ -157,7 +160,7 @@ const CreateReadalongCheckpoint: React.FC = () => {
 
          // --- Prepare Payload ---
          const payload = {
-             readalongId: parseInt(readalong.readalong_id.toString()),
+             readalongId: parseInt(readalong.readalongId.toString()),
              checkpointId: checkpoint.checkpointId || null,
              userId: currentUserId,
              pageNumber: pageNum, // Send as number
@@ -167,11 +170,15 @@ const CreateReadalongCheckpoint: React.FC = () => {
 
          try {
              // Use your axios instance and requests object
-             const response = await instance.post(`${requests.createOrUpdateReadalongCheckpoints}`, payload);
+             const response = await instance.post(`${requests.createOrUpdateReadalongCheckpoints}`, payload, {
+                headers: {
+                    Authorization: `Bearer ${userDetails[0].accessToken}`
+                },
+             });
 
              const data = response.data;
 
-             if (data.success) {
+             if (data.message === 'Readalong checkpoint created successfully.' || data.message === 'Readalong checkpoint updated successfully.') {
                  Alert.alert("Success", checkpoint.checkpointId ? "Checkpoint updated successfully!" : "Checkpoint created successfully!");
                  navigation.goBack();
              } else {

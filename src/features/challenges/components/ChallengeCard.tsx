@@ -15,12 +15,12 @@ interface Host {
 }
 
 interface Challenge {
-  ChallengeId: number;
-  ChallengeTitle: string;
+  challengeId: number;
+  challengeTitle: string;
   Host: Host;
-  StartDate: string;
-  EndDate: string;
-  CreatedAt: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
 }
 
 interface ChallengeCardProps {
@@ -28,17 +28,17 @@ interface ChallengeCardProps {
 }
 
 const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge=null }) => {
-  const { ChallengeId, ChallengeTitle, EndDate, StartDate, Host } = challenge;
+  const { challengeId, challengeTitle, endDate, startDate, Host } = challenge;
   const navigation = useNavigation<any>();
 
   const handlePress = () => {
-    navigation.navigate("ChallengeDetails", { ChallengeId, ChallengeTitle });
+    navigation.navigate("ChallengeDetails", { challengeId, challengeTitle });
   };
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>{ChallengeTitle}</Text>
-      <Text style={styles.date}>{`${StartDate} - ${EndDate}`}</Text>
+      <Text style={styles.title}>{challengeTitle}</Text>
+      <Text style={styles.date}>{`${startDate} - ${endDate}`}</Text>
       <Text style={styles.host}>
         Hosted by: <Text style={styles.hostName}>{Host.name}</Text>
       </Text>

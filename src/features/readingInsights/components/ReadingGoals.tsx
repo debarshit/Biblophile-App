@@ -68,13 +68,21 @@ const ReadingGoals = () => {
     
     try {
       const [goalsResponse, progressResponse] = await Promise.all([
-        instance.get(`${requests.fetchUserGoals}${userId}`),
-        instance.get(`${requests.fetchCurrentProgress}${userId}`)
+        instance.get(`${requests.fetchUserGoals}`, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`
+          },
+        }),
+        instance.get(`${requests.fetchCurrentProgress}`, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`
+          },
+        })
       ]);
   
       // Process data
-      const goalsData = goalsResponse.data?.goals || {};
-      const progressData = progressResponse.data || {};
+      const goalsData = goalsResponse.data.data?.goals || {};
+      const progressData = progressResponse.data.data || {};
       
       // Determine active goal type
       let activeType = 'books';
@@ -120,13 +128,18 @@ const ReadingGoals = () => {
     setUiState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      const response = await instance.post(requests.submitGoal, { 
-        userId, 
+      const submitGoalResponse = await instance.post(requests.submitGoal, { 
         goal: goalToSubmit, 
         goalType: goalState.activeType 
+      }, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`
+        },
       });
+
+      const response = submitGoalResponse.data;
       
-      if (response.data?.success) {
+      if (response.data?.message === 'Goal set successfully!' || response.data?.message === 'Goal updated successfully!') {
         setUiState(prev => ({ 
           ...prev, 
           isFormVisible: false, 

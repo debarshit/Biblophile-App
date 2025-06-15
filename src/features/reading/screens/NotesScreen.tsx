@@ -23,8 +23,12 @@ const NotesScreen: React.FC = ({navigation}: any) => {
         setLoading(true);
         try {
             const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const response = await instance.get(`${requests.fetchUserNotes}${userId}?offset=${offset}&limit=10&timezone=${userTimezone}`);
-            const newNotes = response.data;
+            const response = await instance.get(`${requests.fetchUserNotes}?offset=${offset}&limit=10&timezone=${userTimezone}`, {
+                headers: {
+                    Authorization: `Bearer ${userDetails[0].accessToken}`
+                },
+            });
+            const newNotes = response.data.data;
 
             setNotes(initial ? newNotes : [...notes, ...newNotes]);
 
@@ -60,14 +64,16 @@ const NotesScreen: React.FC = ({navigation}: any) => {
                 },
                 {
                     text: "OK", onPress: () => {
-                        instance.post(requests.updateUserNote, {
-                            userId,
-                            noteId,
+                        instance.put(requests.updateUserNote(noteId), {
                             actionType: 'delete'
+                        }, {
+                            headers: {
+                                Authorization:  `Bearer ${userDetails[0].accessToken}`
+                            },
                         })
                             .then(response => {
                                 setNotes(notes.filter(note => note.noteId !== noteId));
-                                Alert.alert(response.data.message);
+                                Alert.alert(response.data.data.message);
                             })
                             .catch(error => console.error("Error deleting note:", error));
                     }
@@ -77,18 +83,20 @@ const NotesScreen: React.FC = ({navigation}: any) => {
     };
 
     const handleSave = (noteId: number) => {
-        instance.post(requests.updateUserNote, {
-            userId,
-            noteId,
+        instance.put(requests.updateUserNote(noteId), {
             note: currentNote,
             actionType: 'update'
+        }, {
+            headers: {
+                Authorization:  `Bearer ${userDetails[0].accessToken}`
+            },
         })
             .then(response => {
                 setNotes(notes.map(note =>
                     note.noteId === noteId ? { ...note, note: currentNote } : note
                 ));
                 setEditing(null);
-                Alert.alert(response.data.message);
+                Alert.alert(response.data.data.message);
             })
             .catch(error => console.error("Error updating note:", error));
     };

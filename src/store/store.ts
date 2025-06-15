@@ -62,10 +62,12 @@ export const useStore = create<StoreState>()(
 
           if (refreshToken && notificationToken) {
             try {
-                const response = await instance.post(requests.userLogout, {
+                const logoutResponse = await instance.post(requests.userLogout, {
                     refreshToken,
                     notificationToken,
                 });
+
+                const response = logoutResponse.data;
     
                 if (response.data.message === "Logged out successfully.") {
                     console.log('Logged out from backend successfully');
@@ -126,7 +128,7 @@ export const useStore = create<StoreState>()(
         fetchGenres: async () => {
           try {
             const response = await instance(requests.getBookGenre);
-            const data = response.data;
+            const data = response.data.data;
             set({ GenreList: data });
           } catch (error) {
             console.error('Error fetching genres:', error);

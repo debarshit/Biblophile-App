@@ -26,14 +26,14 @@ interface Member {
 }
 
 interface BookClub {
-  club_id: number;
-  club_name: string;
+  clubId: number;
+  clubName: string;
   description: string;
   about: string;
-  code_of_conduct: string;
+  codeOfConduct: string;
   hosts: Member[];
   isHost: boolean;
-  created_by_user_id: string;
+  createdByUserId: string;
 }
 
 export default function BookClubDetailsScreen() {
@@ -57,23 +57,22 @@ export default function BookClubDetailsScreen() {
 
   const fetchBookClubDetails = async () => {
     try {
-      const response = await instance.get(
-        `${requests.fetchBookClubDetails}&book_club_id=${bookClubId}`,
+      const bookclubResponse = await instance.get(
+        `${requests.fetchBookClubDetails(bookClubId)}`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-
+      const response = bookclubResponse.data;
       if (response.data) {
         setBookClub(response.data);
         setDescription(response.data.description || 'Such empty! Much wow!');
         setIsHost(response.data.isHost);
 
-        const membershipCheck = await instance.post(
-          `${requests.checkBookClubMembership}`,
-          { bookClubId },
+        const membershipCheck = await instance.get(
+          `${requests.checkBookClubMembership(bookClubId)}`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
 
-        setIsMember(membershipCheck.data?.isMember ?? false);
+        setIsMember(membershipCheck.data.data?.isMember ?? false);
       }
     } catch (err) {
       setError('Failed to fetch Book club details');
@@ -84,10 +83,9 @@ export default function BookClubDetailsScreen() {
 
   const updateDescription = async () => {
     try {
-      const response = await instance.post(
-        `${requests.updateBookClubDescription}`,
+      const response = await instance.put(
+        `${requests.updateBookClubDescription(bookClub?.clubId)}`,
         {
-          bookClubId: bookClub?.club_id,
           description,
         },
         {
@@ -97,7 +95,7 @@ export default function BookClubDetailsScreen() {
         }
       );
 
-      if (response.data?.message === 'Updated') {
+      if (response.data?.message === 'Book club description updated successfully.') {
         Alert.alert('Success', 'Description updated successfully!');
         toggleEditing();
       } else {
@@ -110,15 +108,15 @@ export default function BookClubDetailsScreen() {
 
   const joinOrLeave = async () => {
     try {
-      const response = await instance.post(
+      const joinLeaveResponse = await instance.post(
         `${requests.JoinLeaveBookClub}`,
-        { bookClubId: bookClub?.club_id },
+        { bookClubId: bookClub?.clubId },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-
-      if (response.data.status === 'added') {
+      const response = joinLeaveResponse.data;
+      if (joinLeaveResponse.data.message === 'added') {
         setIsMember(true);
-      } else if (response.data.status === 'removed') {
+      } else if (joinLeaveResponse.data.message === 'removed') {
         setIsMember(false);
       } else {
         Alert.alert('Error', response.data.message);
@@ -131,8 +129,8 @@ export default function BookClubDetailsScreen() {
   const sharePage = async () => {
     try {
       await Share.share({
-        title: bookClub?.club_name ?? 'Book Club',
-        message: `Check out this book club: https://www.biblophile.com/social/book-clubs/${bookClub?.club_id}/${bookClub?.club_name}`,
+        title: bookClub?.clubName ?? 'Book Club',
+        message: `Check out this book club: https://www.biblophile.com/social/book-clubs/${bookClub?.clubName}/${bookClub?.clubName}`,
       });
     } catch (error) {
       console.error('Sharing failed:', error);
@@ -182,7 +180,7 @@ export default function BookClubDetailsScreen() {
                 size={FONTSIZE.size_16} 
             />
             </TouchableOpacity>
-            <Text style={styles.title}>{bookClub.club_name}</Text>
+            <Text style={styles.title}>{bookClub.clubName}</Text>
 
             <View style={styles.section}>
                 <TouchableOpacity style={styles.joinButton} onPress={joinOrLeave}>

@@ -1,8 +1,10 @@
 import axios from "axios";
 
-/* base url to make requests to biblophile actions api. Turn it to spadeleaf actions later */
+const isDevelopment = __DEV__;
+
+// Axios instance with base URL depending on environment
 const instance = axios.create({
-    baseURL: "https://biblophile.com/",
+    baseURL: isDevelopment ? "http://localhost:3000/" : "https://biblophile.com/",
 });
 
 export default instance;

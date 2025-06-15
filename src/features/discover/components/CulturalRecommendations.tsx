@@ -38,8 +38,8 @@ const CulturalRecommendations = () => {
       try {
         const response = await instance.get(requests.fetchCulturalRecommendations);
   
-        if (response.data && response.data.length > 0) {
-          setIndianBooks(response.data);
+        if (response.data.data && response.data.data.length > 0) {
+          setIndianBooks(response.data.data);
         }
   
         setLoading(false);

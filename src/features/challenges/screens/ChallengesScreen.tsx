@@ -43,11 +43,12 @@ const ChallengeScreen = ({navigation}: any) => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      setMyChallenges(myChallengesResponse.data);
+      setMyChallenges(myChallengesResponse.data.data);
 
       // Fetch "Active Challenges"
       const activeChallengesResponse = await instance.get(requests.fetchChallenges);
-      setActiveChallenges(activeChallengesResponse.data);
+      console.log(activeChallengesResponse.data.data);
+      setActiveChallenges(activeChallengesResponse.data.data);
     } catch (err) {
       setError('Failed to fetch challenges');
       Toast.show({
@@ -90,7 +91,7 @@ const ChallengeScreen = ({navigation}: any) => {
             <FlatList
               data={myChallenges}
               renderItem={renderChallengeItem}
-              keyExtractor={(item) => item.ChallengeId.toString()}
+              keyExtractor={(item) => item.challengeId.toString()}
               contentContainerStyle={styles.challengeList}
             />
           ) : (
@@ -107,7 +108,7 @@ const ChallengeScreen = ({navigation}: any) => {
             <FlatList
               data={activeChallenges}
               renderItem={renderChallengeItem}
-              keyExtractor={(item) => item.ChallengeId.toString()}
+              keyExtractor={(item) => item.challengeId.toString()}
               contentContainerStyle={styles.challengeList}
             />
           ) : (

@@ -41,15 +41,15 @@ const SeasonalRecommendations: React.FC<SeasonalRecommendationsProps> = ({
     const fetchSeasonalBooks = async () => {
       try {
         const url = latitude && longitude
-        ? `${requests.fetchSeasonalRecommendations}&lat=${latitude}&lng=${longitude}`
+        ? `${requests.fetchSeasonalRecommendations}?lat=${latitude}&lng=${longitude}`
         : requests.fetchSeasonalRecommendations;
 
         const response = await instance.get(url);
 
-        if (response.data.items && response.data.items.length > 0) {
-            setSeasonalBooks(response.data.items);
+        if (response.data.data.items && response.data.data.items.length > 0) {
+            setSeasonalBooks(response.data.data.items);
             const capitalizedSeason =
-            response.data.season.charAt(0).toUpperCase() + response.data.season.slice(1);
+            response.data.data.season.charAt(0).toUpperCase() + response.data.data.season.slice(1);
             setCurrentSeason(capitalizedSeason);
         }
         setLoading(false);

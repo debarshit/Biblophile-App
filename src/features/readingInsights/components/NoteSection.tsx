@@ -21,9 +21,12 @@ const NoteSection = ({ userDetails }) => {
 
   const fetchCurrentReads = async () => {
     try {
-      const response = await instance.post(requests.fetchCurrentReads, {
-        userId: userDetails[0].userId,
+      const currentReadsResponse = await instance(requests.fetchCurrentReads, {
+        headers: {
+            Authorization:  `Bearer ${userDetails[0].accessToken}`
+        },
       });
+      const response = currentReadsResponse.data;
       setReadingBooks(response.data.currentReads);
     } catch (error) {
       console.error('Failed to fetch current reads:', error);
@@ -38,19 +41,22 @@ const NoteSection = ({ userDetails }) => {
 
     try {
       const noteData = {
-        userId: userDetails[0].userId,
         bookId: selectedBook,
         note: note,
       };
 
-      const response = await instance.post(requests.submitNote, noteData);
-      if (response.data.message === 'Note added successfully.') {
+      const response = await instance.post(requests.submitNote, noteData, {
+          headers: {
+              Authorization:  `Bearer ${userDetails[0].accessToken}`
+          },
+        });
+      if (response.data.data.message === 'Note added successfully.') {
         Alert.alert('Success', 'Note added successfully.');
         setNote("");
         setSelectedBook("");
         setShowNoteInput(false);
       } else {
-        Alert.alert('Error', response.data.message || 'Something went wrong.');
+        Alert.alert('Error', response.data.data.message || 'Something went wrong.');
       }
     } catch (error) {
       console.error('Error submitting note:', error);

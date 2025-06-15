@@ -87,12 +87,14 @@ const ProfileScreen = ({navigation, route}: any) => {
         setUpdatingFields(prev => ({ ...prev, [fieldKey]: true }));
         
         try {
-            const response = await instance.post(requests.updateUserData, {
+            const updateResponse = await instance.put(requests.updateUserData, {
                 property: config.property,
                 value: value.trim()
             }, {
-                headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' }
+                headers: { Authorization: `Bearer ${accessToken}` }
             });
+
+            const response = updateResponse.data;
 
             if (response.data.message === "Updated") {
                 setMessage(fieldKey, 'Updated successfully');
@@ -126,12 +128,14 @@ const ProfileScreen = ({navigation, route}: any) => {
         setUpdatingFields(prev => ({ ...prev, password: true }));
         
         try {
-            const response = await instance.post(requests.updateUserData, {
+            const updateResponse = await instance.post(requests.updateUserData, {
                 property: 'UserPassword',
                 value: password
             }, {
                 headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' }
             });
+
+            const response = updateResponse.data;
 
             if (response.data.message === "Updated") {
                 setMessage('password', 'Password updated successfully');

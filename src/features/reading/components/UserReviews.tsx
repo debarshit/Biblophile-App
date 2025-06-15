@@ -5,6 +5,7 @@ import requests from '../../../services/requests';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import Mascot from '../../../components/Mascot';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 interface ReviewScreenProps {
     userData: {
@@ -24,23 +25,15 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0].accessToken;
 
-
-    const convertHttpToHttps = (url) => {
-        if (url && url.startsWith('http://')) {
-          return url.replace('http://', 'https://');
-        }
-        return url;
-      };
-
-      const fetchReviews = async (initial = false) => {
+    const fetchReviews = async (initial = false) => {
         if (loading || !hasMore) return;
 
         setLoading(true);
         try {
             const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const response = await instance.get(`${requests.fetchUserReviews}${userData.userId}?offset=${offset}&limit=10&timezone=${userTimezone}`);
-            const newReviews = response.data;
-
+            const response = await instance(`${requests.fetchUserReviews}${userData.userId}&offset=${offset}&limit=10&timezone=${userTimezone}`);
+            const newReviews = response.data.data;
+            
             setReviews(initial ? newReviews : [...reviews, ...newReviews]);
 
             if (newReviews.length < 10) {
@@ -57,7 +50,7 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
 
     useEffect(() => {
         fetchReviews(true);
-    }, [userData.userId]);
+    }, [reviews]);
 
     const handleEdit = (review: any) => {
         setEditing(review.ratingId);
@@ -75,9 +68,7 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
                 },
                 {
                     text: "OK", onPress: () => {
-                        instance.post(requests.updateUserReview, {
-                            userId: userData.userId,
-                            productId,
+                        instance.put(requests.updateUserReview(productId), {
                             actionType: 'delete'
                         },{
                             headers: {
@@ -86,7 +77,7 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
                         })
                             .then(response => {
                                 setReviews(reviews.filter(review => review.ratingId !== ratingId));
-                                Alert.alert(response.data.message);
+                                Alert.alert(response.data.data.message);
                             })
                             .catch(error => console.error("Error deleting review:", error));
                     }
@@ -96,9 +87,7 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
     };
 
     const handleSave = (ratingId: number, productId: number) => {
-        instance.post(requests.updateUserReview, {
-            userId: userData.userId,
-            productId,
+        instance.put(requests.updateUserReview(productId), {
             rating: currentReview.rating,
             review: currentReview.review,
             actionType: 'update'
@@ -112,7 +101,7 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
                     review.ratingId === ratingId ? { ...review, rating: currentReview.rating, review: currentReview.review } : review
                 ));
                 setEditing(null);
-                Alert.alert(response.data.message);
+                Alert.alert(response.data.data.message);
             })
             .catch(error => console.error("Error updating review:", error));
     };

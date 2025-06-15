@@ -27,11 +27,11 @@ interface MeetingModalProps {
 }
 
 interface Meeting {
-  meeting_id?: string;
-  club_id: string;
+  meetingId?: string;
+  clubId: string;
   agenda: string;
-  meeting_date: string;
-  meeting_location: string;
+  meetingDate: string;
+  meetingLocation: string;
 }
 
 const CreateMeetingModal: React.FC<MeetingModalProps> = ({
@@ -53,11 +53,11 @@ const CreateMeetingModal: React.FC<MeetingModalProps> = ({
   useEffect(() => {
     if (existingMeeting) {
       setAgenda(existingMeeting.agenda || '');
-      setMeetingLocation(existingMeeting.meeting_location || '');
+      setMeetingLocation(existingMeeting.meetingLocation || '');
       
       // Convert string date to Date object
-      if (existingMeeting.meeting_date) {
-        setMeetingDate(new Date(existingMeeting.meeting_date));
+      if (existingMeeting.meetingDate) {
+        setMeetingDate(new Date(existingMeeting.meetingDate));
       }
     } else {
       // Reset form for new meeting
@@ -78,7 +78,7 @@ const CreateMeetingModal: React.FC<MeetingModalProps> = ({
 
     const meetingData = {
       clubId: bookClubId,
-      meetingId: existingMeeting?.meeting_id || null,
+      meetingId: existingMeeting?.meetingId || null,
       agenda: agenda.trim(),
       meetingDate: meetingDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
       meetingLocation: meetingLocation.trim(),
@@ -90,8 +90,7 @@ const CreateMeetingModal: React.FC<MeetingModalProps> = ({
           'Authorization': `Bearer ${accessToken}`,
         },
       });
-
-      if (response.data.success) {
+      if (response.data.data.success) {
         onSuccess();
         onClose();
       } else {

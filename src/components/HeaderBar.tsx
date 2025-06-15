@@ -19,11 +19,14 @@ const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
 
   const fetchCurrentStreak = async () => {
     try {
-      const response = await instance.post(requests.fetchReadingStreak, {
-        userId: userDetails[0].userId,
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const response = await instance(`${requests.fetchReadingStreak}?timezone=${userTimezone}`, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`,
+        },
       });
-      const data = response.data;
-      if (data.message === 1) {
+      const data = response.data.data;
+      if (data) {
         setStreak(data.currentStreak);
       }
     } catch (error) {
@@ -56,7 +59,8 @@ const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
         <Text style={styles.StreakText}>{streak !== null && `Active Streak: ${streak} days`}</Text>
       </TouchableOpacity>}
       
-      <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
+      {/* Update Settings to Notifications */}
+      <TouchableOpacity onPress={() => navigation.navigate('Settings')}>  
         <Ionicons name="notifications" size={24} color={COLORS.primaryWhiteHex} />
       </TouchableOpacity>
     </View>

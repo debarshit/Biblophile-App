@@ -21,8 +21,12 @@ const DurationTrackScreen: React.FC = ({navigation}: any) => {
         setLoading(true);
         try {
             const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const response = await instance.get(`${requests.fetchReadingDurations}${userId}?offset=${offset}&limit=10&timezone=${userTimezone}`);
-            const newDurations = response.data;
+            const response = await instance.get(`${requests.fetchReadingDurations}?offset=${offset}&limit=10&timezone=${userTimezone}`, {
+                headers: {
+                    Authorization: `Bearer ${userDetails[0].accessToken}`
+                },
+            });
+            const newDurations = response.data.data;
 
             setDurations(initial ? newDurations : [...durations, ...newDurations]);
 

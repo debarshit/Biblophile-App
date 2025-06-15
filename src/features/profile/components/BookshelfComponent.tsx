@@ -31,11 +31,15 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
   const navigation:any = useNavigation();
 
   const fetchUserBooks = async () => {
+    setLoading(true);
     try {
-      const response = await instance.post(requests.fetchUserBooks, {
-        userId: userData.userId,
+      const response = await instance.get(requests.fetchUserBooks, {
+        params: {
+          userId: userData.userId,
+        },
       });
-      setUserBooks(response.data.userBooks);
+
+      setUserBooks(response.data.data.userBooks);
     } catch (error) {
       console.error('Failed to fetch user books:', error);
     } finally {

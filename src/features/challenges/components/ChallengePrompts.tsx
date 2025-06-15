@@ -5,11 +5,10 @@ import requests from '../../../services/requests';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 
 interface Prompt {
-    PromptId: string;
-    PromptDescription: string;
-    PromptType: string;
-    PromptValue: string;
-    createdAt?: string;
+    promptId: string;
+    promptDescription: string;
+    promptType: string;
+    promptValue: string;
 }
 
 interface ChallengePromptsProps {
@@ -33,14 +32,8 @@ const ChallengePrompts = ({ ChallengeId, IsHost, onCreatePrompt, onViewPrompt }:
             setLoading(true);
             setError(null);
             
-            const response = await instance.get(`${requests.fetchChallengePrompts}`, {
-                params: {
-                    offset: isRefreshing ? 0 : offset,
-                    limit: PAGE_SIZE,
-                    challengeId: ChallengeId,
-                }
-            });
-
+            const challengePromptResponse = await instance.get(`${requests.fetchChallengePrompts(ChallengeId)}?limit=${PAGE_SIZE}&offset=${ isRefreshing ? 0 : offset}`);
+            const response = challengePromptResponse.data;
             const fetchedPrompts: Prompt[] = response.data?.prompts || response.data || [];
             
             if (!Array.isArray(fetchedPrompts)) {
@@ -74,8 +67,8 @@ const ChallengePrompts = ({ ChallengeId, IsHost, onCreatePrompt, onViewPrompt }:
             activeOpacity={0.8}
         >
             <View style={styles.itemContent}>
-                <Text style={styles.promptTitle}>{item.PromptDescription}</Text>
-                <Text style={styles.promptType}>{item.PromptType}</Text>
+                <Text style={styles.promptTitle}>{item.promptDescription}</Text>
+                <Text style={styles.promptType}>{item.promptType}</Text>
             </View>
             <View>
                 <Text style={styles.arrowIcon}>→</Text>
@@ -125,7 +118,7 @@ const ChallengePrompts = ({ ChallengeId, IsHost, onCreatePrompt, onViewPrompt }:
             <FlatList
                 data={prompts}
                 renderItem={renderItem}
-                keyExtractor={(item) => item.PromptId}
+                keyExtractor={(item) => item.promptId}
                 contentContainerStyle={prompts.length === 0 ? styles.listContent : null}
                 ListEmptyComponent={!loading && renderEmptyComponent()}
                 ListFooterComponent={renderFooter()}

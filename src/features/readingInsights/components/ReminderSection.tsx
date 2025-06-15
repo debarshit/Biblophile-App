@@ -9,7 +9,7 @@ const ReminderSection = ({ onReminderPress }) => {
   const handleTipsPress = async () => {
     try {
       const response = await instance(requests.fetchReadingTips);
-      const data = response.data;
+      const data = response.data.data;
       Alert.alert("Reading tips", data.tip);
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch reading tips.');

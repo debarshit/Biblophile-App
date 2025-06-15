@@ -107,27 +107,26 @@ const HomeScreen = ({navigation}: any) => {
     async function fetchBookList() {
       try {
         const response = await instance(requests.getBooks+'All');
-        const data = response.data;
-        setBookList(data);
+        const responseData = response.data;
+        setBookList(responseData.data);
         setBooksLoading(false);
       } catch (error) {
         console.error('Error fetching book list:', error);
       }
     }
-  
     fetchBookList();
   }, []);
 
   useEffect(() => {
     async function getSpotlights() {
-        try {
-            const response = await instance(requests.getSpotlight);
-            const data = response.data;
-            setSpotlights(data);
-            setLoading(false);
-          } catch (error) {
-            console.error('Error fetching spotlights:', error);
-          }
+      try {
+        const response = await instance(requests.getSpotlight);
+        const responseData = response.data;
+        setSpotlights(responseData.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching spotlights:', error);
+      }
     }
   
     getSpotlights();
@@ -136,11 +135,14 @@ const HomeScreen = ({navigation}: any) => {
   useEffect(() => {
     async function fetchCurrentStreak() {
       try {
-        const response = await instance.post(requests.fetchReadingStreak, {
-          userId: userDetails[0].userId,
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const response = await instance(`${requests.fetchReadingStreak}?timezone=${userTimezone}`, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`,
+          },
         });
-        const data = response.data;
-        if (data.message === 1) {
+        const data = response.data.data;
+        if (data) {
           setCurrentStreak(data.currentStreak);
           setLatestUpdateTime(data.latestUpdateTime);
         }

@@ -81,11 +81,13 @@ const SearchScreen = ({ route }) => {
     
     try {
       // Fetch local books
-      const localResponse = await instance(requests.searchBooks + query);
+      const localSearchResponse = await instance(requests.searchBooks + query);
+      const localResponse = localSearchResponse.data;
       setBooks(localResponse.data || []);
       
       // Fetch external books
-      const externalResponse = await instance.get(requests.searchExternalBooks + query);
+      const externalSearchResponse = await instance.get(requests.searchExternalBooks + query);
+      const externalResponse = externalSearchResponse.data;
       setExternalBooks(externalResponse.data || []);
     } catch (error) {
       console.error('Error searching books:', error);

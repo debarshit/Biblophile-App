@@ -21,7 +21,7 @@ interface BuddyReadCommentsSectionProps {
   }
 
   interface Comment {
-    comment_id: number;
+    commentId: number;
     comment_text: string;
     page_number: number;
     user_name: string;
@@ -63,21 +63,22 @@ interface BuddyReadCommentsSectionProps {
           let initialHasMoreRepliesData: Record<number, boolean> = {};
     
           if (accessToken) {
+            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const commentsResponse = await instance.get(
-              `${requests.fetchComments}&buddy_read_id=${buddyReadId}&page=${1}&order_by=${currentSort}`,
+              `${requests.fetchComments(String(buddyReadId))}?page=${1}&order_by=${currentSort}&timezone=${userTimezone}`,
               {
                 headers: {
                   Authorization: `Bearer ${accessToken}`,
                 },
               }
             );
-            initialComments = commentsResponse.data.comments || [];
-            initialHasMoreComments = commentsResponse.data.hasMoreComments || false;
+            initialComments = commentsResponse.data.data.comments || [];
+            initialHasMoreComments = commentsResponse.data.data.hasMoreComments || false;
     
             // Explicitly set hasMoreReplies based on reply_count
             initialHasMoreRepliesData = initialComments.reduce((acc, comment) => {
               if (comment.reply_count > 0) {
-                acc[comment.comment_id] = true;
+                acc[comment.commentId] = true;
               }
               return acc;
             }, {});
@@ -107,8 +108,9 @@ interface BuddyReadCommentsSectionProps {
       const nextPage = commentPage + 1;
   
       try {
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const response = await instance.get(
-          `${requests.fetchComments}&buddy_read_id=${buddyReadId}&page=${nextPage}&order_by=${sort}`,
+          `${requests.fetchComments(String(buddyReadId))}?page=${1}&order_by=${sort}&timezone=${userTimezone}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -116,7 +118,7 @@ interface BuddyReadCommentsSectionProps {
           }
         );
         if (response.status === 200) {
-          const newCommentsData = response.data;
+          const newCommentsData = response.data.data;
           setComments((prev) => [...prev, ...(newCommentsData.comments || [])]);
           setHasMoreCommentsState(newCommentsData.hasMoreComments || false);
           setCommentPage((prev) => prev + 1);
@@ -135,23 +137,24 @@ interface BuddyReadCommentsSectionProps {
       const currentPage = replyPages[parentCommentId] || 1;
   
       try {
-        const response = await instance.get(
-          `${requests.fetchReplies}&parent_comment_id=${parentCommentId}&page=${currentPage}&order_by=${sort}`,
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const repliesResponse = await instance.get(
+          `${requests.fetchReplies}?parent_comment_id=${parentCommentId}&page=${currentPage}&order_by=${sort}&timezone=${userTimezone}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
           }
         );
-  
+        const response = repliesResponse.data;
         const newReplies = response.data.replies || [];
         const hasMore = response.data.hasMoreReplies ?? false;
   
         const filteredReplies = newReplies.filter(newReply =>
           !comments.some(comment =>
-            comment.comment_id === parentCommentId &&
+            comment.commentId === parentCommentId &&
             comment.replies?.some(existingReply =>
-              existingReply.comment_id === newReply.comment_id
+              existingReply.commentId === newReply.comment_id
             )
           )
         );
@@ -168,7 +171,7 @@ interface BuddyReadCommentsSectionProps {
   
         setComments(prevComments =>
           prevComments.map(comment => {
-            if (comment.comment_id === parentCommentId) {
+            if (comment.commentId === parentCommentId) {
               return {
                 ...comment,
                 replies: [...(comment.replies || []), ...filteredReplies],
@@ -198,7 +201,7 @@ interface BuddyReadCommentsSectionProps {
       newReplies: Comment[]
     ): Comment[] => {
       return replies.map(reply => {
-        if (reply.comment_id === parentCommentId) {
+        if (reply.commentId === parentCommentId) {
           return {
             ...reply,
             replies: [...(reply.replies || []), ...newReplies],
@@ -228,20 +231,20 @@ interface BuddyReadCommentsSectionProps {
     const handleDeleteComment = async (commentId: number) => {
       if (!accessToken || !currentUser.userId) return;
       try {
-        const response = await instance.post(
-          requests.deleteComment,
-          { comment_id: commentId, user_id: currentUser.userId },
+        const deleteResponse = await instance.delete(
+          requests.deleteComment(commentId),
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
           }
         );
+        const response = deleteResponse.data;
         console.log(response.data);
   
         if (response.data.status === 'success') {
           Alert.alert('Success', 'Comment deleted successfully.');
-          setComments((prevComments) => prevComments?.filter((comment) => comment.comment_id !== commentId) || []);
+          setComments((prevComments) => prevComments?.filter((comment) => comment.commentId !== commentId) || []);
         } else {
           Alert.alert('Error', response.data.message || 'Failed to delete comment.');
         }
@@ -275,23 +278,23 @@ interface BuddyReadCommentsSectionProps {
           params.append('parent_comment_id', String(parentCommentId));
         }
   
-        const response = await instance.post(requests.submitComment, params, {
+        const response = await instance.post(requests.submitComment(String(buddyReadId)), params, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
   
-        if (response.data.status === 'success') {
+        if (response.data.data.message == 'Comment added') {
           console.log('Comment posted');
           setNewComment('');
           setNewReply('');
           setReplyingTo(null);
           setCommentPage(1); // Reset to first page to see the new comment
           fetchComments(sort); // Refresh comments
-        } else if (response.data.status === 'error') {
+        } else if (response.data.data.status === 'error') {
           console.log('Not posted');
         } else {
-          console.error('Failed to post comment:', response.data.message);
+          console.error('Failed to post comment:', response.data.data.message);
         }
       } catch (error) {
         console.error('Failed to post comment', error);
@@ -302,7 +305,7 @@ interface BuddyReadCommentsSectionProps {
       if (!accessToken) return;
       const updateLikesRecursively = (currentComments: Comment[]): Comment[] => {
         return currentComments.map((comment) => {
-          if (comment.comment_id === commentId) {
+          if (comment.commentId === commentId) {
             const updatedLikeCount = comment.liked_by_user ? comment.like_count - 1 : comment.like_count + 1;
             return {
               ...comment,
@@ -322,19 +325,18 @@ interface BuddyReadCommentsSectionProps {
       setComments((prevComments) => updateLikesRecursively(prevComments));
   
       try {
-        const response = await instance.post(
-          requests.toggleLike,
-          { comment_id: commentId.toString(), user_id: userId.toString() },
+        const toggleLikeResponse = await instance.post(
+          requests.toggleLike(commentId),{},
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
           }
         );
-  
-        if (response.data.status === 'liked') {
+        const response = toggleLikeResponse.data;
+        if (response.data.message == 'Comment liked') {
           console.log('Comment liked');
-        } else if (response.data.status === 'unliked') {
+        } else if (response.data.message == 'Comment unliked') {
           console.log('Comment unliked');
         } else {
           console.error('Failed to toggle like:', response.data.message);
@@ -342,7 +344,7 @@ interface BuddyReadCommentsSectionProps {
           setComments((prevComments) => {
             const revertLikesRecursively = (revertComments: Comment[]): Comment[] => {
               return revertComments.map((comment) => {
-                if (comment.comment_id === commentId) {
+                if (comment.commentId === commentId) {
                   const updatedLikeCount = comment.liked_by_user ? comment.like_count + 1 : comment.like_count - 1;
                   return {
                     ...comment,
@@ -367,7 +369,7 @@ interface BuddyReadCommentsSectionProps {
         setComments((prevComments) => {
           const revertLikesRecursively = (revertComments: Comment[]): Comment[] => {
             return revertComments.map((comment) => {
-              if (comment.comment_id === commentId) {
+              if (comment.commentId === commentId) {
                 const updatedLikeCount = comment.liked_by_user ? comment.like_count + 1 : comment.like_count - 1;
                 return {
                   ...comment,
@@ -390,15 +392,15 @@ interface BuddyReadCommentsSectionProps {
   
     const renderComments = (currentComments: Comment[], depth: number = 0, maxDepth: number = 3): JSX.Element[] => {
         return currentComments?.map((comment) => (
-          <View key={comment.comment_id} style={[styles.commentContainer, { marginLeft: depth * SPACING.space_16 }]}>
+          <View key={comment.commentId} style={[styles.commentContainer, { marginLeft: depth * SPACING.space_16 }]}>
             {(isHost || comment.user_id == currentUser.userId) && (
-              <TouchableOpacity onPress={() => handleEllipsisClick(comment.comment_id)} style={styles.ellipsisButton}>
+              <TouchableOpacity onPress={() => handleEllipsisClick(comment.commentId)} style={styles.ellipsisButton}>
                 <Text style={styles.ellipsis}>...</Text>
               </TouchableOpacity>
             )}
-            {selectedCommentForDeletion === comment.comment_id && (
+            {selectedCommentForDeletion === comment.commentId && (
               <View style={styles.deleteDropdown}>
-                <TouchableOpacity onPress={() => handleDeleteComment(comment.comment_id)} style={styles.deleteButton}>
+                <TouchableOpacity onPress={() => handleDeleteComment(comment.commentId)} style={styles.deleteButton}>
                   <Text style={styles.deleteButtonText}>Delete Comment</Text>
                 </TouchableOpacity>
               </View>
@@ -411,21 +413,21 @@ interface BuddyReadCommentsSectionProps {
               </Text>
             </Text>
             <View style={styles.commentActions}>
-              <TouchableOpacity onPress={() => toggleLike(comment.comment_id, Number(currentUser.userId))} style={styles.likeButton}>
+              <TouchableOpacity onPress={() => toggleLike(comment.commentId, Number(currentUser.userId))} style={styles.likeButton}>
                 <FontAwesome6 name="heart" size={20} color={comment.liked_by_user ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex} />
                 <Text style={[styles.likeCount, { color: comment.liked_by_user ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex }]}>
                   {comment.like_count} likes
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setReplyingTo(comment.comment_id)} style={styles.replyButton}>
+              <TouchableOpacity onPress={() => setReplyingTo(comment.commentId)} style={styles.replyButton}>
                 <Text style={styles.replyButtonText}>Reply</Text>
               </TouchableOpacity>
             </View>
-            {replyingTo === comment.comment_id && (
+            {replyingTo === comment.commentId && (
               <CommentInputForm
                 value={newReply}
                 onChangeText={setNewReply}
-                onSubmit={(text, page) => handleCommentSubmit(text, page, comment.comment_id)}
+                onSubmit={(text, page) => handleCommentSubmit(text, page, comment.commentId)}
                 placeholder="Write your reply..."
                 showPageInput={true}
                 initialPageNumber={currentUser.currentPage}
@@ -437,7 +439,7 @@ interface BuddyReadCommentsSectionProps {
               </View>
             )}
             {comment.reply_count > (comment.replies?.length || 0) && (
-              <TouchableOpacity onPress={() => loadReplies(comment.comment_id)} style={styles.loadMoreRepliesButton}>
+              <TouchableOpacity onPress={() => loadReplies(comment.commentId)} style={styles.loadMoreRepliesButton}>
                 <Text style={styles.loadMoreRepliesText}>
                   Load more replies ({comment.reply_count - (comment.replies?.length || 0)} more)
                 </Text>

@@ -7,10 +7,10 @@ interface User {
 }
 
 interface BuddyRead {
-  buddy_read_id: number;
+  buddyReadId: number;
   book_title: string;
   book_photo: string;
-  end_date: string;
+  endDate: string;
   users: User[];
 }
 
@@ -20,7 +20,7 @@ interface Props {
 }
 
 const BuddyReadCard: React.FC<Props> = ({ buddyRead, onPress }) => {
-  const { book_title, book_photo, end_date, users, buddy_read_id } = buddyRead;
+  const { book_title, book_photo, endDate, users, buddyReadId } = buddyRead;
 
   let readingWithText = '';
   if (users.length === 1) {
@@ -32,13 +32,13 @@ const BuddyReadCard: React.FC<Props> = ({ buddyRead, onPress }) => {
   }
 
   return (
-    <TouchableOpacity style={styles.cardContainer} onPress={() => onPress(buddy_read_id)}>
+    <TouchableOpacity style={styles.cardContainer} onPress={() => onPress(buddyReadId)}>
       <Image source={{ uri: book_photo }} style={styles.image} />
       <View style={styles.content}>
         <Text style={styles.title}>{book_title}</Text>
         <Text style={styles.subtitle}>{readingWithText}</Text>
         <Text style={styles.endDate}>
-          Ends on: {end_date ? end_date : 'when everyone finishes the book'}
+          Ends on: {endDate ? endDate : 'when everyone finishes the book'}
         </Text>
         <Text style={styles.link}>View</Text>
       </View>

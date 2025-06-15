@@ -71,9 +71,14 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
     }
 
     try {
-      const response = await instance.post(requests.updateBookDates, {
+      const updateBookDatesResponse = await instance.put(requests.updateBookDates, {
         bookId, startDate: localStartDate, endDate: localEndDate
+      }, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`
+        },
       });
+      const response = updateBookDatesResponse.data;
       setUpdateMessage(response.data.status === "success" ? "Dates updated successfully!" : response.data.message);
       if (response.data.status === "success") onUpdate();
     } catch (error) {
@@ -95,13 +100,18 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
 
     try {
       const response = await instance.post(requests.submitReadingStatus, {
-        userId, bookId, status: localStatus,
+        bookId, status: localStatus,
         currentPage: localStatus === 'Currently reading' ? localPage : undefined,
         startDate: localStartDate || undefined,
         endDate: localStatus === 'Read' ? localEndDate : undefined,
+      }, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`,
+        },
       });
-      setUpdateMessage(response.data.message === "Updated" ? "Updated successfully!" : response.data.message);
-      if (response.data.message === "Updated") onUpdate();
+      const submitReadingStatusResponse = response.data;
+      setUpdateMessage(submitReadingStatusResponse.data.message === "Updated" ? "Updated successfully!" : submitReadingStatusResponse.data.message);
+      if (submitReadingStatusResponse.data.message === "Updated") onUpdate();
     } catch (error) {
       setUpdateMessage("Uh oh! Please try again");
     }

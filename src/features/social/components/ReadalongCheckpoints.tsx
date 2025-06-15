@@ -8,20 +8,20 @@ import { useNavigation } from '@react-navigation/native';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 
 // --- Interface Definitions (Ensure they are the same as used in Details component) ---
-interface Member { name: string; userId: string; }
+interface Host { name: string; userId: string; }
 interface CurrentUser { userId: string; readingStatus: string, currentPage: number; }
 interface Readalong {
-    readalong_id: number;
-    book_id: string;
+    readalongId: number;
+    bookId: string;
     book_title: string;
     book_photo: string;
     book_pages: number;
     readalong_description: string;
-    start_date: string;
-    end_date: string;
-    max_members: number;
-    members: Member[];
-    host: Member;
+    startDate: string;
+    endDate: string;
+    maxMembers: number;
+    members: number;
+    host: Host;
   }
 interface Checkpoint {
     checkpoint_id: string; readalong_id: string; page_number: string; // Keep string here as per loader data
@@ -58,24 +58,16 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
     const navigation = useNavigation<any>();
 
     const fetchCheckpoints = useCallback(async () => {
-        if (loading || !hasMore || !readalong?.readalong_id || selectedCheckpointId !== null) {
-             if (!readalong?.readalong_id) console.warn("Readalong ID is missing, cannot fetch checkpoints.");
+        if (loading || !hasMore || !readalong?.readalongId || selectedCheckpointId !== null) {
+             if (!readalong?.readalongId) console.warn("Readalong ID is missing, cannot fetch checkpoints.");
              if(selectedCheckpointId !== null) console.log("Checkpoint details view is open, skipping list fetch.");
              return;
         }
 
         setLoading(true);
         try {
-            const response = await instance.get(`${requests.fetchreadalongCheckpoints}`, {
-                params: {
-                    userId: currentUser.userId,
-                    offset,
-                    limit: checkpointsLimit,
-                    readalongId: readalong.readalong_id,
-                },
-            });
-
-            const fetchedCheckpoints: Checkpoint[] = response.data;
+            const response = await instance.get(`${requests.fetchreadalongCheckpoints(readalong.readalongId)}?limit=${checkpointsLimit}&offset=${offset}`);
+            const fetchedCheckpoints: Checkpoint[] = response.data.data;
 
             if (fetchedCheckpoints.length < checkpointsLimit) {
                 setHasMore(false);
@@ -94,14 +86,14 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
         } finally {
             setLoading(false);
         }
-    }, [offset, currentUser.userId, readalong?.readalong_id, loading, hasMore, selectedCheckpointId]);
+    }, [offset, currentUser.userId, readalong?.readalongId, loading, hasMore, selectedCheckpointId]);
 
     useEffect(() => {
          // Only fetch if readalong ID is available and no checkpoint is currently selected for details
-         if (readalong?.readalong_id && selectedCheckpointId === null) {
+         if (readalong?.readalongId && selectedCheckpointId === null) {
             fetchCheckpoints();
          }
-    }, [offset, readalong?.readalong_id, selectedCheckpointId, fetchCheckpoints]);
+    }, [offset, readalong?.readalongId, selectedCheckpointId, fetchCheckpoints]);
 
     const handleLoadMoreCheckpoints = () => {
         if (!loading && hasMore && selectedCheckpointId === null) {

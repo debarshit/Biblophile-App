@@ -43,7 +43,8 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                 if (isGoogleBook) {
                     const isbn = product.volumeInfo?.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier || '';
                     if (isbn) {
-                        const bookIdResponse = await instance.post(requests.fetchBookId, { ISBN: isbn });
+                        const response = await instance.get(requests.fetchBookId(isbn));
+                        const bookIdResponse = response.data;
                         if (bookIdResponse.data.bookId) {
                             bookIdToFetch = bookIdResponse.data.bookId;
                         } else {
@@ -52,17 +53,20 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     }
                 }
 
-                const response = await instance.post(requests.fetchReadingStatus, {
-                    userId: userDetails[0].userId,
-                    bookId: bookIdToFetch,
+                const response = await instance.get(requests.fetchReadingStatus(bookIdToFetch), {
+                    headers: {
+                        Authorization: `Bearer ${userDetails[0].accessToken}`,
+                    },
                 });
 
-                if (response.data.status) {
-                    setStatus(response.data.status);
+                const readingStatusResponse = response.data;
+
+                if (readingStatusResponse.data.status) {
+                    setStatus(readingStatusResponse.data.status);
                 }
 
-                if (response.data.currentPage) {
-                    setCurrentPage(response.data.currentPage);
+                if (readingStatusResponse.data.currentPage) {
+                    setCurrentPage(readingStatusResponse.data.currentPage);
                 }
                 
             } catch (error) {
@@ -76,7 +80,6 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
     }, [product]);
 
     interface ReadingStatusRequest {
-        userId: any;
         bookId: any;
         status: string;
         currentPage?: string; // Optional property
@@ -99,7 +102,8 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                         Image: product.volumeInfo?.imageLinks?.thumbnail || ''
                     };
 
-                    const bookResponse = await instance.post(requests.addBook, bookData);
+                    const response = await instance.post(requests.addBook, bookData);
+                    const bookResponse = response.data;
 
                     if (bookResponse.data.message === "Book added/updated successfully") {
                         bookId = bookResponse.data.bookId;
@@ -110,7 +114,6 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                 }
 
                 const requestData: ReadingStatusRequest = {
-                    userId: userDetails[0].userId,
                     bookId: bookId,
                     status: status,
                 };
@@ -119,9 +122,15 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     requestData.currentPage = currentPage;
                 }
 
-                const response = await instance.post(requests.submitReadingStatus, requestData);
+                const response = await instance.post(requests.submitReadingStatus, requestData, {
+                    headers: {
+                        Authorization: `Bearer ${userDetails[0].accessToken}`,
+                    },
+                });
+                
+                const submitReadingStatusResponse = response.data;
 
-                if (response.data.message === "Updated") {
+                if (submitReadingStatusResponse.data.message === "Updated") {
                     setUpdateMessage("Updated successfully!");
                     if (Platform.OS == 'android') {
                         ToastAndroid.showWithGravity(
@@ -141,7 +150,7 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                         });
                       }
                 } else {
-                    setUpdateMessage(response.data.message);
+                    setUpdateMessage(submitReadingStatusResponse.data.message);
                     if (Platform.OS == 'android') {
                         ToastAndroid.showWithGravity(
                           `Updated successfully!`,

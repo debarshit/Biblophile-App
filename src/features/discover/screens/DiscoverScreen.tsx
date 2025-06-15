@@ -83,7 +83,8 @@ const DiscoverScreen = ({ navigation }) => {
     const getSpotlights = async () => {
       try {
         const response = await instance(requests.getSpotlight);
-        setSpotlights(response.data);
+        const responseData = response.data;
+        setSpotlights(responseData.data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching spotlights:', error);

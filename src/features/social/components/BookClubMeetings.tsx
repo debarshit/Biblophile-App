@@ -19,20 +19,20 @@ interface Member {
 }
 
 interface BookClub {
-  club_id: number;
-  club_name: string;
+  clubId: number;
+  clubName: string;
   description: string;
   hosts: Member[];
   isHost: boolean;
-  created_by_user_id: string;
+  createdByUserId: string;
 }
 
 interface Meeting {
-  meeting_id: string;
-  club_id: string;
+  meetingId: string;
+  clubId: string;
   agenda: string;
-  meeting_date: string;
-  meeting_location: string;
+  meetingDate: string;
+  meetingLocation: string;
 }
 
 interface Props {
@@ -61,31 +61,26 @@ const BookClubMeetings: React.FC<Props> = ({
   const limit = 10;
 
   const fetchMeetings = async () => {
-    if (!bookClub?.club_id) return;
+    if (!bookClub?.clubId) return;
 
     setLoading(true);
     try {
-      const response = await instance.get(requests.fetchBookClubMeetings, {
+      const response = await instance.get(`${requests.fetchBookClubMeetings(bookClub.clubId)}?timeFrame=${timeFrame}&offset=${offset}&limit=${limit}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-        params: {
-          offset,
-          limit,
-          clubId: bookClub.club_id,
-          timeFrame,
-        },
       });
+      console.log(response.data);
 
-      const newMeetings = Array.isArray(response.data)
-        ? response.data
-        : response.data.meetings || [];
+      const newMeetings = Array.isArray(response.data.data)
+        ? response.data.data
+        : response.data.data.meetings || [];
 
       if (newMeetings.length < limit) setHasMore(false);
 
       setMeetings((prev) => {
-        const existingIds = new Set(prev.map((m) => m.meeting_id));
-        const uniqueMeetings = newMeetings.filter((m) => !existingIds.has(m.meeting_id));
+        const existingIds = new Set(prev.map((m) => m.meetingId));
+        const uniqueMeetings = newMeetings.filter((m) => !existingIds.has(m.meetingId));
         return [...prev, ...uniqueMeetings];
       });
     } catch (err) {
@@ -140,7 +135,7 @@ const BookClubMeetings: React.FC<Props> = ({
       onPress={() => null} // Could add navigation to a meeting details page
     >
       <View style={styles.cardHeader}>
-        <Text style={styles.meetingDate}>{item.meeting_date}</Text>
+        <Text style={styles.meetingDate}>{item.meetingDate}</Text>
         {isHost && (
           <TouchableOpacity onPress={() => handleEditMeeting(item)}>
             <Text style={styles.editText}>Edit</Text>
@@ -148,7 +143,7 @@ const BookClubMeetings: React.FC<Props> = ({
         )}
       </View>
       <Text style={styles.meetingTitle}>{item.agenda}</Text>
-      <Text style={styles.meetingLocation}>Location: {item.meeting_location}</Text>
+      <Text style={styles.meetingLocation}>Location: {item.meetingLocation}</Text>
     </TouchableOpacity>
   );
 
@@ -171,7 +166,7 @@ const BookClubMeetings: React.FC<Props> = ({
           <FlatList
             data={meetings}
             renderItem={renderMeetingItem}
-            keyExtractor={(item) => item.meeting_id}
+            keyExtractor={(item) => item.meetingId}
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
             ListFooterComponent={loading ? <ActivityIndicator color={COLORS.primaryOrangeHex} /> : null}
@@ -189,7 +184,7 @@ const BookClubMeetings: React.FC<Props> = ({
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onSuccess={handleMeetingSuccess}
-        bookClubId={bookClub?.club_id}
+        bookClubId={bookClub?.clubId}
         accessToken={accessToken}
         isHost={isHost}
         existingMeeting={selectedMeeting}
