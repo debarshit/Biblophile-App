@@ -34,7 +34,7 @@ const SettingsScreen = ({navigation, route}: any) => {
 
 Join me on Biblophile, the app that brings together book lovers, offering a seamless experience for buying, selling, renting books, and more! Explore our extensive collection and enjoy exclusive features today.
 
-📲 Download now: https://play.google.com/store/apps/details?id=com.debar_shit.BiblophileApp`,
+📲 Download now: https://onelink.to/dxjdkb`,
       });
     } catch (error) {
       Alert.alert('Error', 'Failed to refer.');
@@ -42,7 +42,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
   };
 
   const rateApp = () => {
-    const url = 'https://play.google.com/store/apps/details?id=com.debar_shit.BiblophileApp&pcampaignid=web_share';
+    const url = 'https://onelink.to/rpe3dq';
     Linking.openURL(url).catch(err => console.error("Couldn't load page", err));
   };
 
