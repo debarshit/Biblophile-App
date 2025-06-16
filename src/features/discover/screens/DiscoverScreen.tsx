@@ -136,7 +136,7 @@ const DiscoverScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         {/* Book giveaway */}
-        <BookGiveaway />
+        {/* <BookGiveaway /> */}
 
         {/* Spotlight Section */}
         <Spotlights spotlights={spotlights} />

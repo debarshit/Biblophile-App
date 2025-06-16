@@ -66,10 +66,8 @@ export const useStore = create<StoreState>()(
                     refreshToken,
                     notificationToken,
                 });
-
-                const response = logoutResponse.data;
     
-                if (response.data.message === "Logged out successfully.") {
+                if (logoutResponse.data.message === "Logged out successfully.") {
                     console.log('Logged out from backend successfully');
                 } else {
                     console.error('Failed to log out from backend');
