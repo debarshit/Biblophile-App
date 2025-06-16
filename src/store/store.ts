@@ -17,6 +17,14 @@ interface StoreState {
   selectedCity: string | null;
   latitude: number | null;
   longitude: number | null;
+  notifications: {
+    inAppPermissionAsked: boolean;
+    inAppPermissionGranted: boolean;
+    devicePermissionAsked: boolean;
+    lastPermissionRequest: string | null;
+    expoPushToken: string | null;
+  };
+  
   login: (userData: any) => Promise<void>;
   logout: () => void;
   updateProfile: (name: string, email: string, phone: string, address: string) => void;
@@ -32,6 +40,12 @@ interface StoreState {
   setSelectedCity: (city: string) => void;
   getSelectedCity: () => string | null;
   setCoordinates: (lat: number, lng: number) => void;
+  setInAppPermissionAsked: (asked: boolean) => void;
+  setInAppPermissionGranted: (granted: boolean) => void;
+  setDevicePermissionAsked: (asked: boolean) => void;
+  setLastPermissionRequest: (timestamp: string) => void;
+  setExpoPushToken: (token: string) => void;
+  resetNotificationPermissions: () => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -48,6 +62,14 @@ export const useStore = create<StoreState>()(
         selectedCity: null,
         latitude: null,
         longitude: null,
+        notifications: {
+          inAppPermissionAsked: false,
+          inAppPermissionGranted: false,
+          devicePermissionAsked: false,
+          lastPermissionRequest: null,
+          expoPushToken: null,
+        },
+        
         login: async (userData) => {
           await set(state => ({
             userDetails: [...state.userDetails, userData],
@@ -86,7 +108,14 @@ export const useStore = create<StoreState>()(
             CartList: [],
             sessionStartTime: null,
             sessionStartPage: null,
-            selectedCity: null
+            selectedCity: null,
+            notifications: {
+              inAppPermissionAsked: false,
+              inAppPermissionGranted: false,
+              devicePermissionAsked: false,
+              lastPermissionRequest: null,
+              expoPushToken: null,
+            }
           })
         },
         updateProfile: (field, value) => {
@@ -241,6 +270,42 @@ export const useStore = create<StoreState>()(
           getSelectedCity: () => get().selectedCity,
           setCoordinates: (lat: number, lng: number) => {
             set({ latitude: lat, longitude: lng });
+          },
+          setInAppPermissionAsked: (asked: boolean) => {
+            set(produce(state => {
+              state.notifications.inAppPermissionAsked = asked;
+            }));
+          },
+          setInAppPermissionGranted: (granted: boolean) => {
+            set(produce(state => {
+              state.notifications.inAppPermissionGranted = granted;
+            }));
+          },
+          setDevicePermissionAsked: (asked: boolean) => {
+            set(produce(state => {
+              state.notifications.devicePermissionAsked = asked;
+            }));
+          },
+          setLastPermissionRequest: (timestamp: string) => {
+            set(produce(state => {
+              state.notifications.lastPermissionRequest = timestamp;
+            }));
+          },
+          setExpoPushToken: (token: string) => {
+            set(produce(state => {
+              state.notifications.expoPushToken = token;
+            }));
+          },
+          resetNotificationPermissions: () => {
+            set(produce(state => {
+              state.notifications = {
+                inAppPermissionAsked: false,
+                inAppPermissionGranted: false,
+                devicePermissionAsked: false,
+                lastPermissionRequest: null,
+                expoPushToken: null,
+              };
+            }));
           },
       }),
       {

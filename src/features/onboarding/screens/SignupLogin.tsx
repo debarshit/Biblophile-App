@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Platform, Alert } from 'react-native';
+import { notificationService } from '../../../utils/notificationUtils';
 import { FontAwesome as FaIcon, MaterialCommunityIcons as MdIcon } from '@expo/vector-icons';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests'; 
@@ -8,7 +8,6 @@ import {useStore} from '../../../store/store';
 import { COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
 import { Picker } from '@react-native-picker/picker';
-
 
 const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible, onPress }) => {
     return (
@@ -43,6 +42,51 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const [loginMessage, setLoginMessage] = useState<{ text: string; color: string }>({ text: '', color: COLORS.primaryBlackHex });
     const [signupMessage, setSignupMessage] = useState<{ text: string; color: string }>({ text: '', color: COLORS.primaryBlackHex });
     const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const handleNotificationPermission = async (userData: any) => {
+        try {
+            // Use the notification service's permission flow
+            const result = await notificationService.requestPermissions('general');
+            
+            if (result.success) {
+                // Get the push token from the service
+                const token = notificationService.getPushToken();
+                completeLogin(userData, token);
+            } else {
+                // Complete login without notifications
+                completeLogin(userData, null);
+            }
+        } catch (error) {
+            console.error('Error handling notification permission:', error);
+            completeLogin(userData, null);
+        }
+    };
+
+     // Complete login process
+    const completeLogin = async (userData: any, notificationToken: string | null) => {
+        const newUser = {
+            ...userData,
+            notificationToken: notificationToken,
+        };
+        
+        login(newUser);
+
+        // Update notification token on server if we have one
+        if (notificationToken) {
+            try {
+                const updateResponse = await instance.post(requests.registerNotificationToken, {
+                    userId: userData.userId,
+                    token: notificationToken,
+                    device: Platform.OS,
+                });
+                if (updateResponse.data.message !== 'Notification token saved') {
+                    console.log('Failed to update notification token');
+                }
+            } catch (error) {
+                console.log('Error updating notification token:', error);
+            }
+        }
+    };
 
     // function to update state of input with
     // values entered by user in form
@@ -190,9 +234,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
 
                     if (response.data.message === 1)
                     {
-
-                        const expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
-                        const newUser = {
+                        const userData = {
                             accessToken: response.data.accessToken,
                             refreshToken: response.data.refreshToken,
                             userId: response.data.userId,
@@ -203,23 +245,10 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                             userUniqueUserName: response.data.name,
                             deposit: response.data.deposit,
                             profilePic: response.data.profilePic,
-                            notificationToken: expoPushToken,
-                          };
-                          
-                        login(newUser);
-            
-                        try {
-                            const updateResponse = await instance.post(requests.registerNotificationToken, {
-                            userId: response.data.userId,
-                            token: expoPushToken,
-                            device: Platform.OS,
-                            });
-                            if (updateResponse.data.message !== 1) {
-                                console.log('Failed to update notification token');
-                            }
-                        } catch (error) {
-                            console.log(error);
-                        }
+                        };
+
+                        // Show notification permission dialog after successful login
+                        await handleNotificationPermission(userData);
                     }
                     else
                     {

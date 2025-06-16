@@ -8,6 +8,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import * as Linking from 'expo-linking';
 import Toast from 'react-native-toast-message';
 import * as Notifications from 'expo-notifications';
+import { notificationService } from './src/utils/notificationUtils';
 import { initialize } from '@microsoft/react-native-clarity';
 import * as Font from 'expo-font';
 import {useStore} from './src/store/store';
@@ -47,6 +48,7 @@ import { CityProvider } from './src/contexts/CityContext';
 import SearchScreen from './src/features/discover/screens/SearchScreen';
 import CreateBookClubScreen from './src/features/social/screens/BookClubsCreate';
 import BookClubDetailsScreen from './src/features/social/screens/BookClubDetails';
+import NotificationSettingsScreen from './src/features/settings/screens/NotificationSettingsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -89,14 +91,6 @@ const linking = {
     },
   },
 };
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
 
 const App = () => {
   const isAuthenticated = useStore((state: any) => state.isAuthenticated);
@@ -184,8 +178,22 @@ const App = () => {
   //check for appstores update and implement accordingly end
 
   // for expo notifications start
+  // Initialize notification service
   useEffect(() => {
-    registerForPushNotificationsAsync();
+    async function initializeNotifications() {
+      try {
+        await notificationService.initialize();
+        console.log('Notification service initialized');
+      } catch (error) {
+        console.error('Error initializing notification service:', error);
+      }
+    }
+
+    initializeNotifications();
+  }, []);
+
+  // Handle notification responses
+  useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       const url = response.notification.request.content.data.urlScheme;
       if (url) {
@@ -195,52 +203,11 @@ const App = () => {
   
     return () => subscription.remove();
   }, []);
-
-  async function registerForPushNotificationsAsync() {
-    try {
-      // Check existing permissions
-      let { status: existingStatus } = await Notifications.getPermissionsAsync();
-      console.log('Existing permission status:', existingStatus);
-
-      let finalStatus = existingStatus;
-
-      // Request permissions if not already granted
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-        console.log('New permission status:', finalStatus);
-      }
-
-      // Handle permissions
-      if (finalStatus !== 'granted') {
-        Alert.alert('Failed to get push token for push notification!');
-        return;
-      }
-
-    const token = (await Notifications.getExpoPushTokenAsync({
-      projectId: "1c34706d-2df8-4c6b-939c-9e3f1e5185d3",  //project id copied from app.json
-    })).data;
-    console.log(token);
-
-    // Configure Android-specific settings
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-      });
-    }
-  } catch (error) {
-    console.error('Error in registering for push notifications:', error);
-    // Alert.alert('Error in registering for push notifications!');
-  }
-  }
   // for expo notifications end
 
   //temporarily clear out all prev notifications start
   useEffect(() => {
-    Notifications.cancelAllScheduledNotificationsAsync();
+    notificationService.cancelAllNotifications();
   }, []);
   //temporarily clear out all prev notifications end
 
@@ -316,6 +283,10 @@ const App = () => {
             <Stack.Screen
               name="Settings"
               component={SettingsScreen}
+              options={{animation: 'slide_from_right'}}></Stack.Screen>
+            <Stack.Screen
+              name="NotificationsSettings"
+              component={NotificationSettingsScreen}
               options={{animation: 'slide_from_right'}}></Stack.Screen>
             <Stack.Screen
               name="Resources"
