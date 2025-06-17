@@ -22,6 +22,7 @@
       "**/*"
     ],
     "ios": {
+      "buildNumber": "1",
       "supportsTablet": true,
       "infoPlist": {
         "UIBackgroundModes": [
