@@ -292,7 +292,7 @@ const App = () => {
               component={SettingsScreen}
               options={{animation: 'slide_from_right'}}></Stack.Screen>
             <Stack.Screen
-              name="NotificationsSettings"
+              name="NotificationSettings"
               component={NotificationSettingsScreen}
               options={{animation: 'slide_from_right'}}></Stack.Screen>
             <Stack.Screen

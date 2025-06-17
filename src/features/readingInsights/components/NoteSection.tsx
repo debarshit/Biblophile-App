@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Platform } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
+import CustomPicker from '../../../components/CustomPickerComponent';
 
 const NoteSection = ({ userDetails }) => {
   const [showNoteInput, setShowNoteInput] = useState(false);
@@ -64,6 +65,41 @@ const NoteSection = ({ userDetails }) => {
     }
   };
 
+  const getPickerOptions = () => {
+    return readingBooks.map(book => ({
+      label: book.BookName,
+      value: book.BookId,
+      icon: 'book'
+    }));
+  };
+
+  const renderBookPicker = () => {
+    if (Platform.OS === 'ios') {
+      return (
+        <CustomPicker
+          options={getPickerOptions()}
+          selectedValue={selectedBook}
+          onValueChange={setSelectedBook}
+          placeholder="Is it related to a specific book?"
+          style={styles.customPickerStyle}
+        />
+      );
+    } else {
+      return (
+        <Picker
+          selectedValue={selectedBook}
+          style={styles.bookDropdown}
+          onValueChange={(itemValue) => setSelectedBook(itemValue)}
+        >
+          <Picker.Item label="Is it related to a specific book?" value="" />
+          {readingBooks.map((book) => (
+            <Picker.Item key={book.BookId} label={book.BookName} value={book.BookId} />
+          ))}
+        </Picker>
+      );
+    }
+  };
+
   const renderNotesInput = () => {
     if (showNoteInput) {
       return (
@@ -75,18 +111,11 @@ const NoteSection = ({ userDetails }) => {
             value={note}
             onChangeText={setNote}
             numberOfLines={5}
+            multiline
+            textAlignVertical="top"
           />
-          <Picker
-            selectedValue={selectedBook}
-            style={styles.bookDropdown}
-            onValueChange={(itemValue) => setSelectedBook(itemValue)}
-          >
-            <Picker.Item label="Is it related to a specific book?" value={null} />
-            {readingBooks.map((book) => (
-              <Picker.Item key={book.BookId} label={book.BookName} value={book.BookId} />
-            ))}
-          </Picker>
-          <TouchableOpacity onPress={handleNoteSubmit}>
+          {renderBookPicker()}
+          <TouchableOpacity onPress={handleNoteSubmit} style={styles.submitButton}>
             <Entypo name="check" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_24} />
           </TouchableOpacity>
         </View>
@@ -141,6 +170,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryBlackHex,
     color: COLORS.primaryWhiteHex,
     marginVertical: SPACING.space_10,
+  },
+  customPickerStyle: {
+    marginVertical: SPACING.space_10,
+  },
+  submitButton: {
+    alignSelf: 'center',
+    marginTop: SPACING.space_10,
+    padding: SPACING.space_8,
   },
 });
 

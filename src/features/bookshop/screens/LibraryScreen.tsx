@@ -32,6 +32,7 @@ import {
 import HeaderBar from '../../../components/HeaderBar';
 import CoffeeCard from '../../../components/CoffeeCard';
 import FloatingIcon from '../components/FloatingIcon';
+import MerchShopBanner from '../../../components/MerchShopBanner';
 
 const getGenresFromData = (data: any) => {
   const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
@@ -356,19 +357,7 @@ const LibraryScreen = ({navigation}: any) => {
         <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
 
         {/* Checkout Bookmarks shop */}
-        <View style={styles.merchShopSection}>
-          <TouchableOpacity onPress={openShopLink} style={styles.bannerContainer}>
-            <Image
-              source={{ uri: 'https://ik.imagekit.io/umjnzfgqh/shop/common_assets/banners/banner-large.png' }}
-              style={styles.bannerImage}
-            />
-            <Text style={styles.merchShopTitle}>Check Out Our Smart bookmarks!</Text>
-            <Text style={styles.merchShopDescription}>Browse our latest bookmarks, only for book lovers like you.</Text>
-            <View style={styles.buttonContainer}>
-              <Text style={styles.shopButton}>Visit Our Shop</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+        <MerchShopBanner />
 
       </ScrollView>
       {CartList.length > 0 && <FloatingIcon />}
@@ -460,51 +449,6 @@ const styles = StyleSheet.create({
     marginTop: SPACING.space_20,
     fontFamily: FONTFAMILY.poppins_medium,
     color: COLORS.secondaryLightGreyHex,
-  },
-  merchShopSection: {
-    marginVertical: SPACING.space_24,
-    marginHorizontal: SPACING.space_4,
-    padding: SPACING.space_4,
-  },
-  bannerContainer: {
-    backgroundColor: COLORS.primaryDarkGreyHex,
-    padding: SPACING.space_8,
-    borderRadius: BORDERRADIUS.radius_15,
-    shadowColor: COLORS.primaryBlackHex,
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  bannerImage: {
-    width: '100%',
-    aspectRatio: 4.5,
-    borderRadius: BORDERRADIUS.radius_15,
-    marginBottom: SPACING.space_4,
-  },
-  merchShopTitle: {
-    fontSize: FONTSIZE.size_20,
-    fontFamily: FONTFAMILY.poppins_bold,
-    color: COLORS.primaryWhiteHex,
-    marginBottom: SPACING.space_2,
-  },
-  merchShopDescription: {
-    fontSize: FONTSIZE.size_14,
-    fontFamily: FONTFAMILY.poppins_regular,
-    color: COLORS.secondaryLightGreyHex,
-    marginBottom: SPACING.space_4,
-  },
-  buttonContainer: {
-    alignItems: 'center',
-  },
-  shopButton: {
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    color: COLORS.primaryWhiteHex,
-    paddingVertical: SPACING.space_2,
-    paddingHorizontal: SPACING.space_8,
-    borderRadius: BORDERRADIUS.radius_10,
-    textAlign: 'center',
-    fontSize: FONTSIZE.size_14,
-    fontFamily: FONTFAMILY.poppins_medium,
   },
 });
 

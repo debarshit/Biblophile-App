@@ -40,7 +40,7 @@
         "backgroundColor": "#0C0F14"
       },
       "googleServicesFile": "./google-services.json",
-      "versionCode": 7,
+      "versionCode": 8,
       "package": "com.debar_shit.BiblophileApp",
       "permissions": [
         "NOTIFICATIONS"

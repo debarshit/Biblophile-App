@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 
@@ -33,6 +33,12 @@ const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) 
     return styles.day;
   };
 
+  const handleBuyNow = () => {
+    Linking.openURL("https://shop.biblophile.com/shop/1/Bookmarks").catch(err =>
+      console.error('An error occurred while opening the URL', err)
+    );
+  };
+
   return (
     <View style={styles.progressContainer}>
       <View style={styles.progressText}>
@@ -44,6 +50,9 @@ const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) 
               <Text style={styles.tooltipText}>
                 Use our nfc bookmarks to maintain reading streak
               </Text>
+              <TouchableOpacity onPress={handleBuyNow}>
+                <Text style={styles.buyNowText}>Buy Now</Text>
+              </TouchableOpacity>
             </View>
           )}
         </TouchableOpacity>
@@ -67,6 +76,7 @@ const styles = StyleSheet.create({
   streakInfo: {
     alignItems: 'center',
     marginVertical: SPACING.space_10,
+    zIndex: -1,
   },
   streakText: {
     fontFamily: FONTFAMILY.poppins_semibold,
@@ -78,6 +88,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDERRADIUS.radius_10,
     padding: SPACING.space_12,
     margin: SPACING.space_12,
+    zIndex: -1,
   },
   progressText: {
     flexDirection: 'row',
@@ -111,6 +122,12 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_regular,
     fontSize: FONTSIZE.size_10,
     color: COLORS.primaryWhiteHex,
+  },
+  buyNowText: {
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_10,
+    color: COLORS.primaryOrangeHex,
+    textDecorationLine: 'underline',
   },
   weekContainer: {
     flexDirection: 'row',

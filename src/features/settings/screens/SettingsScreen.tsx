@@ -15,6 +15,7 @@ import * as Linking from 'expo-linking';
 import { Feather, FontAwesome, MaterialIcons, FontAwesome5, Entypo } from '@expo/vector-icons';
 import { useStore } from '../../../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
+import Constants from 'expo-constants';
 
 const SettingsScreen = ({navigation, route}: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
@@ -63,6 +64,12 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           onPress: () => navigation.push('Subscription'),
           // bgColor: '#FF8C42',
         },
+        // {
+        //   icon: <FontAwesome color="#fff" name="rupee" size={20} />,
+        //   label: 'Manage Notifications',
+        //   onPress: () => navigation.push('NotificationSettings'),
+        //   // bgColor: '#FF8C42',
+        // },
       ]
     },
     {
@@ -272,7 +279,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
         ))}
         
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Biblophile v0.0.1</Text>
+          <Text style={styles.footerText}>Biblophile {Constants.manifest2?.extra?.expoClient?.version}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

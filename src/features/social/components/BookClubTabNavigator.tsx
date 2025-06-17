@@ -14,14 +14,14 @@ const BookClubTabNavigator = ({ activeTab, setActiveTab }) => {
             </Text>
         </TouchableOpacity>
       
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
         onPress={() => setActiveTab('forum')} 
         style={[styles.TabButton, activeTab === 'forum' && styles.TabButtonActive]}
         >
         <Text style={[styles.TabLabel, activeTab === 'forum' && styles.TabLabelActive]}>
             Forum
         </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
           
         <TouchableOpacity 
         onPress={() => setActiveTab('about')} 

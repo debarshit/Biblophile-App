@@ -11,6 +11,7 @@ import {
 import { useStore } from '../../../store/store';
 import requests from '../../../services/requests';
 import instance from '../../../services/axios';
+import { COLORS } from '../../../theme/theme';
 
 interface BookClub {
   clubId: number;
@@ -86,13 +87,13 @@ const BookClubAbout: React.FC<Props> = ({
               onChangeText={setAbout}
               multiline
             />
-            <Button title="Save" onPress={() => handleUpdate('about')} />
+            <Button color={COLORS.primaryOrangeHex} title="Save" onPress={() => handleUpdate('about')} />
           </>
         ) : (
           <>
             <Text style={styles.text}>{about}</Text>
             {isHost && (
-              <Button title="Edit" onPress={() => setEditingField('about')} />
+              <Button color={COLORS.primaryOrangeHex} title="Edit" onPress={() => setEditingField('about')} />
             )}
           </>
         )}
@@ -109,13 +110,13 @@ const BookClubAbout: React.FC<Props> = ({
               onChangeText={setCodeOfConduct}
               multiline
             />
-            <Button title="Save" onPress={() => handleUpdate('code')} />
+            <Button color={COLORS.primaryOrangeHex} title="Save" onPress={() => handleUpdate('code')} />
           </>
         ) : (
           <>
             <Text style={styles.text}>{codeOfConduct}</Text>
             {isHost && (
-              <Button title="Edit" onPress={() => setEditingField('code')} />
+              <Button color={COLORS.primaryOrangeHex} title="Edit" onPress={() => setEditingField('code')} />
             )}
           </>
         )}

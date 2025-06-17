@@ -24,7 +24,7 @@ interface ImageBackgroundInfoProps {
 }
 
 interface Emotion {
-  Emotion: string;
+  emotion: string;
 }
 
 const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
@@ -74,10 +74,10 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         const bookId = await getBookId();
         
         // Fetch ratings
-        const ratingResponse = await instance(`${requests.fetchAverageRating}${bookId}`);
+        const ratingResponse = await instance(`${requests.fetchAverageRating(bookId)}`);
         
         // Fetch emotions
-        const emotionsResponse = await instance(`${requests.fetchAverageEmotions}${bookId}`);
+        const emotionsResponse = await instance(`${requests.fetchAverageEmotions(bookId)}`);
         
         setBookData({
           averageRating: ratingResponse.data.data.averageRating,
@@ -143,7 +143,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
           <ScrollView horizontal style={styles.emotionContainer}>
             {bookData.topEmotions.map((emotion, index) => (
               <Text key={index} style={styles.emotionText}>
-                {emotion.Emotion}
+                {emotion.emotion}
               </Text>
             ))}
           </ScrollView>

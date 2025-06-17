@@ -60,7 +60,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
       </TouchableOpacity>}
       
       {/* Update Settings to Notifications */}
-      <TouchableOpacity onPress={() => navigation.navigate('Settings')}>  
+      <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>  
         <Ionicons name="notifications" size={24} color={COLORS.primaryWhiteHex} />
       </TouchableOpacity>
     </View>
