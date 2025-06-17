@@ -129,7 +129,14 @@ const App = () => {
         const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
           await Updates.fetchUpdateAsync();
-          await Updates.reloadAsync(); 
+          Alert.alert(
+            'Update Available',
+            'We’ve made some improvements. Restart now to update?',
+            [
+              { text: 'Later', style: 'cancel' },
+              { text: 'Restart', onPress: () => Updates.reloadAsync() },
+            ]
+          );
         }
       } catch (e) {
         console.log(e);

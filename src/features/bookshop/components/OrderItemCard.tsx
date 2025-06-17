@@ -8,6 +8,7 @@ import {
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 interface OrderItemCardProps {
   type: string;
@@ -26,12 +27,6 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
   ItemPrice,
   quantity,
 }) => {
-  const convertHttpToHttps = (url) => {
-    if (url && url.startsWith('http://')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
-  };
   return (
     <LinearGradient
       start={{x: 0, y: 0}}
