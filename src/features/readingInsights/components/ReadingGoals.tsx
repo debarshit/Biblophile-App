@@ -86,23 +86,23 @@ const ReadingGoals = () => {
       
       // Determine active goal type
       let activeType = 'books';
-      if (!goalsData.booksGoal?.Goal && goalsData.pagesGoal?.Goal) {
+      if (!goalsData.booksGoal?.goal && goalsData.pagesGoal?.goal) {
         activeType = 'pages';
-      } else if (goalsData.booksGoal?.Goal && goalsData.pagesGoal?.Goal) {
+      } else if (goalsData.booksGoal?.goal && goalsData.pagesGoal?.goal) {
         activeType = goalState.activeType;
       }
 
       setGoalState({
         books: { 
-          goal: goalsData.booksGoal?.Goal || '', 
+          goal: goalsData.booksGoal?.goal || '', 
           progress: progressData.progressBooks || 0 
         },
         pages: { 
-          goal: goalsData.pagesGoal?.Goal || '', 
-          progress: progressData.progressPages || 0 
+          goal: goalsData.pagesGoal?.goal || '', 
+          progress: Number(progressData.progressPages) || 0 
         },
         activeType,
-        isGoalSet: !!(goalsData.booksGoal?.Goal || goalsData.pagesGoal?.Goal)
+        isGoalSet: !!(goalsData.booksGoal?.goal || goalsData.pagesGoal?.goal) // FIXED
       });
     } catch (error) {
       setUiState(prev => ({ 
