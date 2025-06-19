@@ -4,7 +4,7 @@ import { useStore } from "../store/store";
 
 const isDevelopment = __DEV__;
 
-const baseURL = isDevelopment ? "http://192.168.1.34:3000/" : "https://biblophile.com/";
+const baseURL = isDevelopment ? "http://192.168.1.45:3000/" : "https://biblophile.com/";
 
 // Main axios instance
 const instance = axios.create({
@@ -70,7 +70,7 @@ instance.interceptors.request.use(
           const response = await refreshInstance.post(
             isDevelopment
               ? "api/v0/auth/refresh-token"
-              : "backend/api/v0/refresh-token",
+              : "backend/api/v0/auth/refresh-token",
             { refreshToken: user.refreshToken }
           );
 
@@ -124,7 +124,7 @@ instance.interceptors.response.use(
         const { data } = await refreshInstance.post(
           isDevelopment
             ? "api/v0/auth/refresh-token"
-            : "backend/api/v0/refresh-token",
+            : "backend/api/v0/auth/refresh-token",
           { refreshToken }
         );
 
