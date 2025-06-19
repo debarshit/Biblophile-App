@@ -63,8 +63,7 @@ const PaymentScreen = ({navigation, route}: any) => {
     else {
       try {
         for (const data of route.params.cart) {
-          const response = await instance.post(requests.placeOrder, {
-            custId: userDetails[0].userId,
+          const placeOrderResponse = await instance.post(requests.placeOrder, {
             custName: userDetails[0].userName,
             custPhone: userDetails[0].userPhone,
             custAddress: userDetails[0].userAddress,
@@ -74,7 +73,13 @@ const PaymentScreen = ({navigation, route}: any) => {
             orderMode: data.prices[0].size,
             custOrderDuration: data.prices[0].quantity, //duration for rent and qty for buy
             amount: (data.prices[0].price*data.prices[0].quantity),
+          }, {
+            headers: {
+              Authorization: `Bearer ${userDetails[0].accessToken}`,
+            },
           });
+
+          const response  = placeOrderResponse.data;
           
           if (response.data.message === 1) {
             setShowAnimation(true);
@@ -97,10 +102,15 @@ const PaymentScreen = ({navigation, route}: any) => {
 
   const placeSubscriptionOrder = async () => {
     try {
-        const response = await instance.post(requests.placeSubscriptionOrder, {
-          custId: userDetails[0].userId,
+        const placeSubscriptionOrderResponse = await instance.post(requests.placeSubscriptionOrder, {
           planId: route.params.subscription,
+        }, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`,
+          },
         });
+
+        const response = placeSubscriptionOrderResponse.data;
         
         if (response.data.message === 1) {
           //navigate to subscription page or just do navigation.back
@@ -141,12 +151,12 @@ const PaymentScreen = ({navigation, route}: any) => {
     } else {
       if (amount > 0) {
         try {
-          const response = await instance.post(requests.paymentRequest, {
+          const paymentRequestResponse = await instance.post(requests.paymentRequest, {
             customerName: userDetails[0].userName,
             customerPhone: userDetails[0].userPhone,
             amount: amount,
           });
-
+          const response = paymentRequestResponse.data;
           if (response.data && response.data.link_url) {
             navigation.push('PaymentGateway', {
               url: response.data.link_url,
@@ -158,15 +168,18 @@ const PaymentScreen = ({navigation, route}: any) => {
 
             const pollPaymentStatus = setInterval(async () => {
               try {
-                const statusResponse = await instance.post(
-                  requests.paymentSuccessful + link_id,
-                  {
+                const statusResponse = await instance.post(`${requests.paymentSuccessful}?linkId=${link_id}`, {
                     customerId: userDetails[0].userId,
                     customerPhone: userDetails[0].userPhone,
-                    amount: route.params.amount,
-                  },
+                    amount: amount,
+                  }, {
+                    headers: {
+                      Authorization: `Bearer ${userDetails[0].accessToken}`
+                    },
+                  }
                 );
-                if (statusResponse.data.status === 'success. You can close this window.') {
+                const statusResponseOutput = statusResponse.data;
+                if (statusResponseOutput.message == 'Payment recorded successfully. You can close this window.') {
                   clearInterval(pollPaymentStatus);
                   if (action) {
                     navigation.navigate('History');

@@ -26,8 +26,8 @@ const RequestBookButton = ({ id, isGoogleBook, product, userDetails, actualPrice
             Image: product['volumeInfo']['imageLinks']['thumbnail'] || ''
           };
 
-          const bookResponse = await instance.post(requests.addBook, bookData);
-
+          const response = await instance.post(requests.addBook, bookData);
+          const bookResponse = response.data;
           if (bookResponse.data.message === "Book added/updated successfully") {
             bookId = bookResponse.data.bookId;
           } else {
@@ -42,8 +42,9 @@ const RequestBookButton = ({ id, isGoogleBook, product, userDetails, actualPrice
         };
 
         const response = await instance.post(requests.submitBookRequest, requestData);
+        const submitBookRequestResponse = response.data;
 
-        if (response.data.message === "Updated" || response.data.message) {
+        if (submitBookRequestResponse.data.message === "Updated" || submitBookRequestResponse.data.message) {
           if (Platform.OS === 'android') {
             ToastAndroid.showWithGravity(
               `Request Updated successfully!`,

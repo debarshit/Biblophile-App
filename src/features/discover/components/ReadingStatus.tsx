@@ -2,18 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform, ToastAndroid } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Entypo from '@expo/vector-icons/Entypo';
-import instance from '../services/axios';
-import requests from '../services/requests';
-import { useStore } from '../store/store';
+import instance from '../../../services/axios';
+import requests from '../../../services/requests';
+import { useStore } from '../../../store/store';
 import {
     BORDERRADIUS,
     COLORS,
     FONTFAMILY,
     FONTSIZE,
     SPACING,
-  } from '../theme/theme';
+  } from '../../../theme/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
+import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 
 
 const ReadingStatus = ({ id, isGoogleBook, product }) => {
@@ -23,6 +24,17 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
 
     const userDetails = useStore((state: any) => state.userDetails);
 
+    const statusOptions: PickerOption[] = [
+        ...(status === 'Currently reading' || status === 'Paused'
+            ? [{ label: 'Paused', value: 'Paused', icon: 'pause' }]
+            : []),
+        { label: 'Read', value: 'Read', icon: 'check-circle' },
+        { label: 'Currently reading', value: 'Currently reading', icon: 'menu-book' },
+        { label: 'To be read', value: 'To be read', icon: 'bookmark-border' },
+        { label: 'Did not finish', value: 'Did not finish', icon: 'cancel' },
+        { label: 'Remove', value: 'Remove', icon: 'delete' },
+    ];
+
     async function fetchReadingStatus() {
         if (userDetails) {
             try {
@@ -31,7 +43,8 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                 if (isGoogleBook) {
                     const isbn = product.volumeInfo?.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier || '';
                     if (isbn) {
-                        const bookIdResponse = await instance.post(requests.fetchBookId, { ISBN: isbn });
+                        const response = await instance.get(requests.fetchBookId(isbn));
+                        const bookIdResponse = response.data;
                         if (bookIdResponse.data.bookId) {
                             bookIdToFetch = bookIdResponse.data.bookId;
                         } else {
@@ -40,17 +53,20 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     }
                 }
 
-                const response = await instance.post(requests.fetchReadingStatus, {
-                    userId: userDetails[0].userId,
-                    bookId: bookIdToFetch,
+                const response = await instance.get(requests.fetchReadingStatus(bookIdToFetch), {
+                    headers: {
+                        Authorization: `Bearer ${userDetails[0].accessToken}`,
+                    },
                 });
 
-                if (response.data.status) {
-                    setStatus(response.data.status);
+                const readingStatusResponse = response.data;
+
+                if (readingStatusResponse.data.status) {
+                    setStatus(readingStatusResponse.data.status);
                 }
 
-                if (response.data.currentPage) {
-                    setCurrentPage(response.data.currentPage);
+                if (readingStatusResponse.data.currentPage) {
+                    setCurrentPage(readingStatusResponse.data.currentPage);
                 }
                 
             } catch (error) {
@@ -64,7 +80,6 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
     }, [product]);
 
     interface ReadingStatusRequest {
-        userId: any;
         bookId: any;
         status: string;
         currentPage?: string; // Optional property
@@ -87,7 +102,8 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                         Image: product.volumeInfo?.imageLinks?.thumbnail || ''
                     };
 
-                    const bookResponse = await instance.post(requests.addBook, bookData);
+                    const response = await instance.post(requests.addBook, bookData);
+                    const bookResponse = response.data;
 
                     if (bookResponse.data.message === "Book added/updated successfully") {
                         bookId = bookResponse.data.bookId;
@@ -98,7 +114,6 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                 }
 
                 const requestData: ReadingStatusRequest = {
-                    userId: userDetails[0].userId,
                     bookId: bookId,
                     status: status,
                 };
@@ -107,9 +122,15 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                     requestData.currentPage = currentPage;
                 }
 
-                const response = await instance.post(requests.submitReadingStatus, requestData);
+                const response = await instance.post(requests.submitReadingStatus, requestData, {
+                    headers: {
+                        Authorization: `Bearer ${userDetails[0].accessToken}`,
+                    },
+                });
+                
+                const submitReadingStatusResponse = response.data;
 
-                if (response.data.message === "Updated") {
+                if (submitReadingStatusResponse.data.message === "Updated") {
                     setUpdateMessage("Updated successfully!");
                     if (Platform.OS == 'android') {
                         ToastAndroid.showWithGravity(
@@ -129,7 +150,7 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                         });
                       }
                 } else {
-                    setUpdateMessage(response.data.message);
+                    setUpdateMessage(submitReadingStatusResponse.data.message);
                     if (Platform.OS == 'android') {
                         ToastAndroid.showWithGravity(
                           `Updated successfully!`,
@@ -162,21 +183,30 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
             {updateMessage && <Text style={styles.updateMessage}>{updateMessage}</Text>}
             <View style={styles.statusDropdown}>
                 {/* <Text style={styles.label}>Status: </Text> */}
-                <Picker
-                    selectedValue={status}
-                    style={styles.picker}
-                    onValueChange={(itemValue) => setStatus(itemValue)}
-                    itemStyle={{height:50}}
-                >
-                    {(status === 'Currently reading' || status === 'Paused') && (
-                        <Picker.Item label="Paused" value="Paused" color={COLORS.primaryWhiteHex} />
+                <View style={styles.pickerContainer}>
+                    {Platform.OS === 'ios' ? (
+                        <CustomPicker
+                          options={statusOptions}
+                          selectedValue={status}
+                          onValueChange={(value) => setStatus(value)}
+                        />
+                    ) : (
+                        <Picker
+                        selectedValue={status}
+                        style={styles.picker}
+                        onValueChange={(itemValue) => setStatus(itemValue)}
+                        >
+                        {(status === 'Currently reading' || status === 'Paused') && (
+                            <Picker.Item label="Paused" value="Paused" color={COLORS.primaryWhiteHex} />
+                        )}
+                        <Picker.Item label="Read" value="Read" color={COLORS.primaryWhiteHex} />
+                        <Picker.Item label="Currently reading" value="Currently reading" color={COLORS.primaryWhiteHex} />
+                        <Picker.Item label="To be read" value="To be read" color={COLORS.primaryWhiteHex} />
+                        <Picker.Item label="Did not finish" value="Did not finish" color={COLORS.primaryWhiteHex} />
+                        <Picker.Item label="Remove" value="Remove" color={COLORS.primaryWhiteHex} />
+                        </Picker>
                     )}
-                    <Picker.Item label="Read" value="Read" color={COLORS.primaryWhiteHex} />
-                    <Picker.Item label="Currently reading" value="Currently reading" color={COLORS.primaryWhiteHex} />
-                    <Picker.Item label="To be read" value="To be read" color={COLORS.primaryWhiteHex} />
-                    <Picker.Item label="Did not finish" value="Did not finish" color={COLORS.primaryWhiteHex} />
-                    <Picker.Item label="Remove" value="Remove" color={COLORS.primaryWhiteHex} />
-                </Picker>
+                </View>
             </View>
             {status === 'Currently reading' && (
                 <View style={styles.pageNumberInput}>
@@ -245,8 +275,12 @@ const styles = StyleSheet.create({
     //     marginRight: SPACING.space_8,
     //     color: COLORS.primaryWhiteHex,
     // },
+    pickerContainer: {
+        borderRadius: BORDERRADIUS.radius_8,
+        width: 250,
+    },
     picker: {
-        width: '70%',
+        width: '100%',
         padding: SPACING.space_8,
         borderColor: COLORS.secondaryLightGreyHex,
         borderRadius: BORDERRADIUS.radius_10,

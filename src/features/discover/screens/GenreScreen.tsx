@@ -24,8 +24,7 @@ const GenreScreen = () => {
     try {
       // const response = await instance.get(`${requests.getBooks}${genre}&limit=10&offset=${(page - 1) * 10}`);
       const response = await instance.get(`${requests.getBooks}${'All'}&limit=10&offset=${(page - 1) * 10}`);
-      const data = response.data;
-      console.log(data);
+      const data = response.data.data;
       
       if (data?.length < 10) setHasMore(false);
       setBooks((prevBooks) => [...prevBooks, ...data]);

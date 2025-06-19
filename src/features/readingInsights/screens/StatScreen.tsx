@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Dimensions, TouchableWithoutFeedback, 
          ScrollView, TextInput, TouchableOpacity, 
-         SafeAreaView} from 'react-native';
+         SafeAreaView,
+         Platform} from 'react-native';
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Picker } from '@react-native-picker/picker';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -10,6 +11,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import ReadingGoals from '../components/ReadingGoals';
 import { Ionicons } from '@expo/vector-icons';
+import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -31,10 +33,20 @@ const StatScreen = () => {
 
   const PIECOLORS = ['#FF7E5F', '#42D1D1', '#FFBC42', '#9C4DD4', '#45B69C'];
 
+  const timeFrameOptions: PickerOption[] = [
+    { label: 'Last week', value: 'last-week', icon: 'calendar-today' },
+    { label: 'Last month', value: 'last-month', icon: 'calendar-view-month' },
+  ];
+
   // Fetch functions remain the same...
   const fetchLeaderboard = async () => {
     try {
-      const response = await instance.get(requests.fetchReadingStreakLeaderboard + userDetails[0].userId);
+      const readingStreakLeaderboardResponse = await instance.get(`${requests.fetchReadingStreakLeaderboard}?${userDetails[0].userId}`, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`
+        },
+      });
+      const response = readingStreakLeaderboardResponse.data;
       if (Array.isArray(response.data)) {
         setLeaderboard(response.data);
       } else {
@@ -48,11 +60,15 @@ const StatScreen = () => {
   const fetchPagesRead = async () => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const response = await instance.get(`${requests.fetchPagesRead}${userDetails[0].userId}&timeFrame=${timeFrame}&timezone=${userTimezone}`);
-      if (Array.isArray(response.data)) {
-        setPagesRead(response.data);
+      const response = await instance(`${requests.fetchPagesRead}?${userDetails[0].userId}&timeFrame=${timeFrame}&timezone=${userTimezone}`, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`
+        },
+      });
+      if (Array.isArray(response.data.data)) {
+        setPagesRead(response.data.data);
       } else {
-        console.error('Pages read data is not an array:', response.data);
+        console.error('Pages read data is not an array:', response.data.data);
       }
     } catch (error) {
       console.error('Failed to fetch pages read:', error);
@@ -62,7 +78,12 @@ const StatScreen = () => {
   const fetchReadingDurations = async () => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const response = await instance.get(`${requests.fetchReadingDurationGraph}${userDetails[0].userId}&timeFrame=${timeFrame}&timezone=${userTimezone}`);
+      const readingDurationGraphResponse = await instance.get(`${requests.fetchReadingDurationGraph}?${userDetails[0].userId}&timeFrame=${timeFrame}&timezone=${userTimezone}`, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`
+        },
+      });
+      const response = readingDurationGraphResponse.data;
       if (Array.isArray(response.data)) {
         setReadingDurations(response.data);
       } else {
@@ -76,7 +97,7 @@ const StatScreen = () => {
   const fetchAverageEmotionsByUser = async () => {
     try {
       const response = await instance.get(`${requests.fetchAverageEmotionsByUser}${userDetails[0].userId}&timeFrame=${timeFrame}`);
-      setUserAverageEmotions(response.data.topEmotions);
+      setUserAverageEmotions(response.data.data.topEmotions);
     } catch (error) {
       console.error('Failed to fetch user emotions:', error);
     }
@@ -84,8 +105,13 @@ const StatScreen = () => {
 
   const fetchUserBooks = async () => {
     try {
-      const response = await instance.post(`${requests.fetchUserBooks}&timeFrame=${timeFrame}`, {userId: userDetails[0].userId});
-      const books = response.data.userBooks;
+      const response = await instance.get(requests.fetchUserBooks, {
+        params: {
+          userId: userDetails[0].userId,
+          timeFrame: 'all-time',
+        },
+      });
+      const books = response.data.data.userBooks;
   
       if (Array.isArray(books)) {
         setReadingStatusData(books);
@@ -100,12 +126,16 @@ const StatScreen = () => {
   const handleSave = async () => {
     try {
       const updatedPageCount = parseInt(editPageCount, 10);
-      const response = await instance.post(`${requests.updatePagesRead}`, {
-        userId: userDetails[0].userId,
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const updatePagesReadResponse = await instance.post(`${requests.updatePagesRead}?timezone=${userTimezone}`, {
         pageCount: updatedPageCount,
         date: selectedDate
+      }, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`
+          },
       });
-  
+      const response = updatePagesReadResponse.data;
       if (response.data.message === "Updated" || response.data.message === "Inserted") {
         alert('Page count updated successfully');
         setIsEditing(false);
@@ -556,16 +586,23 @@ const StatScreen = () => {
         <View style={styles.statusDropdown}>
           <Text style={styles.label}>Time frame: </Text>
           <View style={styles.pickerContainer}>
-            <Picker
+            {Platform.OS === 'ios' ? (
+              <CustomPicker
+                options={timeFrameOptions}
+                selectedValue={timeFrame}
+                onValueChange={(value) => setTimeFrame(value)}
+              />
+            ) : (
+              <Picker
                 selectedValue={timeFrame}
                 style={styles.picker}
                 onValueChange={(itemValue) => setTimeFrame(itemValue)}
                 dropdownIconColor={COLORS.primaryWhiteHex}
-                itemStyle={{height:50}}
-            >
-                <Picker.Item label="Last week" value="last-week" color={COLORS.primaryWhiteHex} />
-                <Picker.Item label="Last month" value="last-month" color={COLORS.primaryWhiteHex} />
-            </Picker>
+              >
+                <Picker.Item label="Last week" value="last-week" />
+                <Picker.Item label="Last month" value="last-month" />
+              </Picker>
+            )}
           </View>
         </View>
 
@@ -712,8 +749,7 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     borderRadius: BORDERRADIUS.radius_8,
-    overflow: 'hidden',
-    width: 150,
+    width: 200,
   },
   picker: {
     width: '100%',

@@ -11,7 +11,8 @@ const TeamInfoComponent = () => {
 
     const fetchCurrentReads = async (userId) => {
         try {
-        const response = await instance.post(requests.fetchCurrentReads, { userId });
+        const currentReadsResponse = await instance(`${requests.fetchCurrentReads}?userId=${userId}`);
+        const response = currentReadsResponse.data;
         const books = response.data.currentReads || [];
         return books.length > 0 ? books.map(book => ({ name: book.BookName, id: book.BookId })) : 'nothing';
         } catch (error) {

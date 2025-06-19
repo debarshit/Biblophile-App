@@ -1,10 +1,11 @@
-import React from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Alert, Modal, Platform, Pressable, Text } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
 import { COLORS } from '../../../theme/theme';
 
 const TimePicker = ({ visible, reminderTime, setReminderTime, setDatePickerVisible }) => {
+  const [tempTime, setTempTime] = useState(reminderTime || new Date());
   
   const scheduleNotification = async (date: Date) => {
     const now = new Date();
@@ -46,40 +47,92 @@ const TimePicker = ({ visible, reminderTime, setReminderTime, setDatePickerVisib
     }
   };
 
+  const onConfirm = () => {
+    setReminderTime(tempTime);
+    scheduleNotification(tempTime);
+    setDatePickerVisible(false);
+  };
+
+  const onCancel = () => {
+    setDatePickerVisible(false);
+  };
+
   if (!visible) return null;
 
   return (
-    <View style={styles.modalContainer}>
-      <DateTimePicker
-        value={reminderTime || new Date()}
-        mode="time"
-        is24Hour={true}
-        display="spinner"
-        onChange={(event, selectedDate) => {
-          if (event.type === 'set' && selectedDate) {
-            setReminderTime(selectedDate);
-            setDatePickerVisible(false);
-            scheduleNotification(selectedDate);
-          } else {
-            setDatePickerVisible(false);
-          }
-        }}
-      />
-    </View>
+    <Modal
+      transparent
+      animationType="slide"
+      visible={visible}
+      onRequestClose={onCancel}
+    >
+      <View style={styles.overlay}>
+        <View style={styles.modalContainer}>
+          <DateTimePicker
+            value={tempTime}
+            mode="time"
+            is24Hour={true}
+            display='spinner'
+            textColor={COLORS.primaryWhiteHex}
+            onChange={(event, selectedDate) => {
+              if (Platform.OS === 'android') {
+                if (event.type === 'set' && selectedDate) {
+                  setReminderTime(selectedDate);
+                  scheduleNotification(selectedDate);
+                }
+                setDatePickerVisible(false);
+              } else if (selectedDate) {
+                setTempTime(selectedDate);
+              }
+            }}
+          />
+          {Platform.OS === 'ios' && (
+            <View style={styles.buttonContainer}>
+              <Pressable onPress={onCancel} style={styles.button}>
+                <Text style={styles.buttonText}>Cancel</Text>
+              </Pressable>
+              <Pressable onPress={onConfirm} style={[styles.button, styles.confirmButton]}>
+                <Text style={styles.buttonText}>Confirm</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+      </View>
+    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
   modalContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     backgroundColor: COLORS.primaryGreyHex,
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    zIndex: 1000,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  button: {
+    flex: 1,
+    padding: 12,
+    marginHorizontal: 5,
+    borderRadius: 10,
+    backgroundColor: COLORS.primaryGreyHex,
+    alignItems: 'center',
+  },
+  confirmButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });
 

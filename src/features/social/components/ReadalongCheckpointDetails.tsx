@@ -5,9 +5,10 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import { CommentInputForm } from './CommentInputForm';
+import { useStore } from '../../../store/store';
 
 // Types
-interface Member {
+interface Host {
     name: string;
     userId: string;
 }
@@ -19,27 +20,27 @@ interface CurrentUser {
 }
 
 interface Readalong {
-    readalong_id: number;
-    book_id: string;
-    book_title: string;
-    book_photo: string;
-    book_pages: number;
-    readalong_description: string;
-    start_date: string;
-    end_date: string;
-    max_members: number;
-    members: Member[];
-    host: Member;
+  readalongId: number;
+  bookId: string;
+  book_title: string;
+  book_photo: string;
+  book_pages: number;
+  readalong_description: string;
+  startDate: string;
+  endDate: string;
+  maxMembers: number;
+  members: number;
+  host: Host;
 }
 
 interface Comment {
-    comment_id: number;
-    comment_text: string;
-    page_number: number;
+    commentId: number;
+    commentText: string;
+    pageNumber: number;
     user_name: string;
-    user_id: string;
+    userId: string;
     like_count: number;
-    created_at: string;
+    createdAt: string;
     liked_by_user: boolean;
 }
 
@@ -61,7 +62,7 @@ const SORT_OPTIONS = {
 };
 
 // Custom Hooks
-const useComments = (checkpointId: string, currentUser: CurrentUser) => {
+const useComments = (checkpointId: string, currentUser: CurrentUser,  userDetails: any) => {
     const [comments, setComments] = useState<Comment[]>([]);
     const [pagination, setPagination] = useState({
         page: 1,
@@ -83,17 +84,15 @@ const useComments = (checkpointId: string, currentUser: CurrentUser) => {
         }
 
         try {
-            const response = await instance.get(requests.fetchReadalongComments, {
-                params: {
-                    checkpoint_id: checkpointId,
-                    page,
-                    user_id: currentUser.userId,
-                    order_by: currentSort,
-                    limit: COMMENTS_LIMIT
-                }
+            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const response = await instance.get(`${requests.fetchReadalongComments(checkpointId)}?page=${page}&order_by=${currentSort}&limit=${COMMENTS_LIMIT}&timezone=${userTimezone}`, {
+                headers: {
+                    Authorization: `Bearer ${userDetails[0].accessToken}`
+                },
             });
 
-            const fetchedData = response.data;
+            const fetchedData = response.data.data;
+            console.log(fetchedData);
             const hasMore = fetchedData.comments.length === COMMENTS_LIMIT;
 
             if (!appending && fetchedData.comments.length === 0) {
@@ -144,12 +143,12 @@ const useComments = (checkpointId: string, currentUser: CurrentUser) => {
 
     const updateComment = useCallback((commentId: number, updatedComment: Partial<Comment>) => {
         setComments(prev => prev.map(comment => 
-            comment.comment_id === commentId ? { ...comment, ...updatedComment } : comment
+            comment.commentId === commentId ? { ...comment, ...updatedComment } : comment
         ));
     }, []);
 
     const deleteComment = useCallback((commentId: number) => {
-        setComments(prev => prev.filter(comment => comment.comment_id !== commentId));
+        setComments(prev => prev.filter(comment => comment.commentId !== commentId));
     }, []);
 
     useEffect(() => {
@@ -187,12 +186,12 @@ const CommentItem = memo(({
     onDeleteComment: (commentId: number) => void
 }) => {
     const [showDeleteMenu, setShowDeleteMenu] = useState(false);
-    const shouldBlur = currentUser.currentPage < comment.page_number;
-    const canDelete = isHost || comment.user_id === currentUser.userId;
+    const shouldBlur = currentUser.currentPage < comment.pageNumber;
+    const canDelete = isHost || comment.userId === currentUser.userId;
     
     const formattedDate = useMemo(() => {
-        return new Date(comment.created_at).toLocaleDateString();
-    }, [comment.created_at]);
+        return new Date(comment.createdAt).toLocaleDateString();
+    }, [comment.createdAt]);
 
     return (
         <View style={styles.commentContainer}>
@@ -210,7 +209,7 @@ const CommentItem = memo(({
                     <View style={styles.deleteMenu}>
                         <Pressable
                             onPress={() => {
-                                onDeleteComment(comment.comment_id);
+                                onDeleteComment(comment.commentId);
                                 setShowDeleteMenu(false);
                             }}
                             style={styles.deleteMenuItem}
@@ -222,18 +221,18 @@ const CommentItem = memo(({
 
                 <Text style={styles.commentMeta}>
                     <Text style={styles.commentUser}>{comment.user_name}</Text>
-                    <Text style={styles.commentPage}> (Page {comment.page_number})</Text>
+                    <Text style={styles.commentPage}> (Page {comment.pageNumber})</Text>
                     <Text style={styles.commentDate}> - {formattedDate}</Text>
                 </Text>
                 
                 <Text style={[styles.commentText, shouldBlur && styles.blurredText]}>
-                    {comment.comment_text}
+                    {comment.commentText}
                 </Text>
 
                 <View style={styles.commentActions}>
                     <Pressable
                         style={styles.likeButton}
-                        onPress={() => onToggleLike(comment.comment_id)}
+                        onPress={() => onToggleLike(comment.commentId)}
                     >
                         {comment.liked_by_user ? (
                             <Ionicons name="heart" size={20} color={COLORS.primaryOrangeHex} />
@@ -257,6 +256,7 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
     checkpointId,
     onBack,
 }) => {
+    const userDetails = useStore((state: any) => state.userDetails);
     const {
         comments,
         pagination,
@@ -267,11 +267,11 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
         addComment,
         updateComment,
         deleteComment
-    } = useComments(checkpointId, currentUser);
+    } = useComments(checkpointId, currentUser, userDetails);
     
     const handleToggleLike = useCallback(async (commentId: number) => {
         // Optimistic update
-        const commentToUpdate = comments.find(c => c.comment_id === commentId);
+        const commentToUpdate = comments.find(c => c.commentId === commentId);
         if (!commentToUpdate) return;
         
         const willBeLiked = !commentToUpdate.liked_by_user;
@@ -283,9 +283,12 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
         });
 
         try {
-            const response = await instance.post(requests.toggleReadalongLike, {
-                comment_id: commentId,
+            const response = await instance.post(requests.toggleReadalongLike(commentId), {
                 user_id: currentUser.userId,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${userDetails[0].accessToken}`
+                },
             });
 
             if (response.data.status === "error") {
@@ -311,9 +314,10 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
         deleteComment(commentId);
 
         try {
-            const response = await instance.post(requests.deleteReadalongComment, {
-                comment_id: commentId,
-                user_id: currentUser.userId,
+            const response = await instance.delete(requests.deleteReadalongComment(commentId), {
+                headers: {
+                    Authorization: `Bearer ${userDetails[0].accessToken}`
+                },
             });
 
             if (response.data.status !== 'success') {
@@ -329,32 +333,35 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
     }, [deleteComment, currentUser.userId, handleSortChange, sort]);
 
     const handleCommentSubmit = useCallback(async (text: string, pageNumber: number) => {
-        if (!text.trim() || !pageNumber || !readalong?.readalong_id || !checkpointId) {
+        if (!text.trim() || !pageNumber || !readalong?.readalongId || !checkpointId) {
             return;
         }
 
         const tempId = Date.now();
         const tempComment: Comment = {
-            comment_id: tempId,
-            comment_text: text,
-            page_number: pageNumber,
+            commentId: tempId,
+            commentText: text,
+            pageNumber: pageNumber,
             user_name: currentUser.userId, // Will be replaced with actual name from API
-            user_id: currentUser.userId,
+            userId: currentUser.userId,
             like_count: 0,
-            created_at: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
             liked_by_user: false
         };
         
         addComment(tempComment);
 
         try {
-            const response = await instance.post(requests.submitReadalongComment, {
-                comment_text: text,
-                readalong_id: readalong.readalong_id,
-                checkpoint_id: checkpointId,
-                page_number: pageNumber,
-                user_id: currentUser.userId,
-            });
+            const response = await instance.post(requests.submitReadalongComment(checkpointId), {
+                commentText: text,
+                readalongId: readalong.readalongId,
+                pageNumber: pageNumber,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${userDetails[0].accessToken}`,
+                },
+          });
 
             const data = response.data;
 
@@ -377,7 +384,7 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
             // Remove the temp comment on error
             deleteComment(tempId);
         }
-    }, [readalong?.readalong_id, checkpointId, currentUser.userId, addComment, deleteComment, sort, handleSortChange]);
+    }, [readalong?.readalongId, checkpointId, currentUser.userId, addComment, deleteComment, sort, handleSortChange]);
 
     const renderFooter = useCallback(() => {
         if (!pagination.loading) return null;
@@ -445,7 +452,7 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
                                 onDeleteComment={handleDeleteComment}
                             />
                         )}
-                        keyExtractor={(item) => item.comment_id.toString()}
+                        keyExtractor={(item) => item.commentId.toString()}
                         onEndReached={comments.length > 0 ? handleLoadMore : undefined}
                         onEndReachedThreshold={0.5}
                         ListFooterComponent={renderFooter}

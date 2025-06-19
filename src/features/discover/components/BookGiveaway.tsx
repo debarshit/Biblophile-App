@@ -29,8 +29,8 @@ const BookGiveaway = () => {
       try {
         const response = await instance.get(requests.fetchGiveawayBooks);
   
-        if (response.data) {
-          setGiveawayBook(response.data);
+        if (response.data.data) {
+          setGiveawayBook(response.data.data);
         }
         setLoading(false);
       } catch (error) {

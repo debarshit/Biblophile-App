@@ -57,11 +57,15 @@ const StreaksScreen = ({ navigation, route }) => {
     async function updateData() {
       try {
         const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const response = await instance.post(requests.updateReadingStreak, {
-          userId: userDetails[0].userId,
+        const updateReadingStreakResponse = await instance.post(requests.updateReadingStreak, {
           currentStreak: currentStreak,
           timezone: userTimezone,
+        }, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`
+          },
         });
+        const response = updateReadingStreakResponse.data;
         if (response.data.message) {
           if (response.data.message === "Updated") {
             setCurrentStreak(response.data.streak);
@@ -84,11 +88,12 @@ const StreaksScreen = ({ navigation, route }) => {
     async function fetchReadingStreak() {
       try {
         const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const response = await instance.post(requests.fetchReadingStreak, {
-          userId: userDetails[0].userId,
-          timezone: userTimezone,
+        const response = await instance(`${requests.fetchReadingStreak}?timezone=${userTimezone}`, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`,
+          },
         });
-        const data = response.data;
+        const data = response.data.data;
         setCurrentStreak(data.currentStreak);
         setMaxStreak(data.maxStreak);
         setLatestUpdateTime(data.latestUpdateTime);

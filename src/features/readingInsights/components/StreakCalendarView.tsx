@@ -30,12 +30,12 @@ const StreakCalendarView = () => {
     
     try {
       const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const response = await instance.post(requests.fetchReadingStreakLogs, {
-        userId: userId,
-        month: month,
-        timezone: userTimeZone
+      const readingStreakLogsResponse = await instance(`${requests.fetchReadingStreakLogs}?timezone=${userTimeZone}&month=${month}`,{
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`
+        },
       });
-
+      const response = readingStreakLogsResponse.data;
       if (response.data && response.data.dates) {
         const newMarkedDates = {};
         

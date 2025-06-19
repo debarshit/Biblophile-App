@@ -5,7 +5,7 @@ import GradientBGIcon from '../../../components/GradientBGIcon';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import ReadingStatus from '../../../components/ReadingStatus';
+import ReadingStatus from './ReadingStatus';
 import CityModal from '../../bookshop/components/CityModal';
 import { useStore } from '../../../store/store';
 
@@ -24,7 +24,7 @@ interface ImageBackgroundInfoProps {
 }
 
 interface Emotion {
-  Emotion: string;
+  emotion: string;
 }
 
 const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
@@ -58,7 +58,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     if (!isbn) return id;
     
     try {
-      const bookIdResponse = await instance.post(requests.fetchBookId, { ISBN: isbn });
+      const response = await instance.get(requests.fetchBookId(isbn));
+      const bookIdResponse = response.data;
       return bookIdResponse.data.bookId || id;
     } catch (error) {
       console.error('Failed to fetch BookId', error);
@@ -73,15 +74,15 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         const bookId = await getBookId();
         
         // Fetch ratings
-        const ratingResponse = await instance(`${requests.fetchAverageRating}${bookId}`);
+        const ratingResponse = await instance(`${requests.fetchAverageRating(bookId)}`);
         
         // Fetch emotions
-        const emotionsResponse = await instance(`${requests.fetchAverageEmotions}${bookId}`);
+        const emotionsResponse = await instance(`${requests.fetchAverageEmotions(bookId)}`);
         
         setBookData({
-          averageRating: ratingResponse.data.averageRating,
-          ratingsCount: ratingResponse.data.totalRatings,
-          topEmotions: emotionsResponse.data.topEmotions || []
+          averageRating: ratingResponse.data.data.averageRating,
+          ratingsCount: ratingResponse.data.data.totalRatings,
+          topEmotions: emotionsResponse.data.data.topEmotions || []
         });
       } catch (error) {
         console.error('Error fetching book data:', error);
@@ -142,7 +143,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
           <ScrollView horizontal style={styles.emotionContainer}>
             {bookData.topEmotions.map((emotion, index) => (
               <Text key={index} style={styles.emotionText}>
-                {emotion.Emotion}
+                {emotion.emotion}
               </Text>
             ))}
           </ScrollView>

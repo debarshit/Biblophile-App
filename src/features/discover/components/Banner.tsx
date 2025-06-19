@@ -23,7 +23,7 @@ const Banner: React.FC = ( navigation: any) => {
     const fetchBannerData = async () => {
       try {
         const bannerResponse = await instance.get(requests.fetchBannerData);
-        setBannerItems(bannerResponse.data);
+        setBannerItems(bannerResponse.data.data);
       } catch (error) {
         console.error("Error fetching banner data:", error);
       }

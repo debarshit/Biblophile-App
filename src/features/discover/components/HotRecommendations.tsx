@@ -32,8 +32,8 @@ const HotRecommendations = () => {
     const fetchNewReleases = async () => {
       try {
         const response = await instance.get(requests.fetchHotRecommendations);
-        if (response.data.items && response.data.items.length > 0) {
-          setNewBooks(response.data.items);
+        if (response.data.data.items && response.data.data.items.length > 0) {
+          setNewBooks(response.data.data.items);
         }
       } catch (error) {
         console.error('Error fetching new releases:', error);

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Platform } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
+import CustomPicker from '../../../components/CustomPickerComponent';
 
 const NoteSection = ({ userDetails }) => {
   const [showNoteInput, setShowNoteInput] = useState(false);
@@ -21,9 +22,12 @@ const NoteSection = ({ userDetails }) => {
 
   const fetchCurrentReads = async () => {
     try {
-      const response = await instance.post(requests.fetchCurrentReads, {
-        userId: userDetails[0].userId,
+      const currentReadsResponse = await instance(requests.fetchCurrentReads, {
+        headers: {
+            Authorization:  `Bearer ${userDetails[0].accessToken}`
+        },
       });
+      const response = currentReadsResponse.data;
       setReadingBooks(response.data.currentReads);
     } catch (error) {
       console.error('Failed to fetch current reads:', error);
@@ -38,23 +42,61 @@ const NoteSection = ({ userDetails }) => {
 
     try {
       const noteData = {
-        userId: userDetails[0].userId,
         bookId: selectedBook,
         note: note,
       };
 
-      const response = await instance.post(requests.submitNote, noteData);
-      if (response.data.message === 'Note added successfully.') {
+      const response = await instance.post(requests.submitNote, noteData, {
+          headers: {
+              Authorization:  `Bearer ${userDetails[0].accessToken}`
+          },
+        });
+      if (response.data.data.message === 'Note added successfully.') {
         Alert.alert('Success', 'Note added successfully.');
         setNote("");
         setSelectedBook("");
         setShowNoteInput(false);
       } else {
-        Alert.alert('Error', response.data.message || 'Something went wrong.');
+        Alert.alert('Error', response.data.data.message || 'Something went wrong.');
       }
     } catch (error) {
       console.error('Error submitting note:', error);
       Alert.alert('Error', 'There was an error :( Try again in a while');
+    }
+  };
+
+  const getPickerOptions = () => {
+    return readingBooks.map(book => ({
+      label: book.BookName,
+      value: book.BookId,
+      icon: 'book'
+    }));
+  };
+
+  const renderBookPicker = () => {
+    if (Platform.OS === 'ios') {
+      return (
+        <CustomPicker
+          options={getPickerOptions()}
+          selectedValue={selectedBook}
+          onValueChange={setSelectedBook}
+          placeholder="Is it related to a specific book?"
+          style={styles.customPickerStyle}
+        />
+      );
+    } else {
+      return (
+        <Picker
+          selectedValue={selectedBook}
+          style={styles.bookDropdown}
+          onValueChange={(itemValue) => setSelectedBook(itemValue)}
+        >
+          <Picker.Item label="Is it related to a specific book?" value="" />
+          {readingBooks.map((book) => (
+            <Picker.Item key={book.BookId} label={book.BookName} value={book.BookId} />
+          ))}
+        </Picker>
+      );
     }
   };
 
@@ -69,18 +111,11 @@ const NoteSection = ({ userDetails }) => {
             value={note}
             onChangeText={setNote}
             numberOfLines={5}
+            multiline
+            textAlignVertical="top"
           />
-          <Picker
-            selectedValue={selectedBook}
-            style={styles.bookDropdown}
-            onValueChange={(itemValue) => setSelectedBook(itemValue)}
-          >
-            <Picker.Item label="Is it related to a specific book?" value={null} />
-            {readingBooks.map((book) => (
-              <Picker.Item key={book.BookId} label={book.BookName} value={book.BookId} />
-            ))}
-          </Picker>
-          <TouchableOpacity onPress={handleNoteSubmit}>
+          {renderBookPicker()}
+          <TouchableOpacity onPress={handleNoteSubmit} style={styles.submitButton}>
             <Entypo name="check" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_24} />
           </TouchableOpacity>
         </View>
@@ -135,6 +170,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryBlackHex,
     color: COLORS.primaryWhiteHex,
     marginVertical: SPACING.space_10,
+  },
+  customPickerStyle: {
+    marginVertical: SPACING.space_10,
+  },
+  submitButton: {
+    alignSelf: 'center',
+    marginTop: SPACING.space_10,
+    padding: SPACING.space_8,
   },
 });
 

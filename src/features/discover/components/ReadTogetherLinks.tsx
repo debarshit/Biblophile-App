@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
-import axios from "../../../services/axios";
+import instance from "../../../services/axios";
 import requests from "../../../services/requests";
 import { useNavigation } from '@react-navigation/native';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
@@ -32,7 +32,8 @@ const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, prod
           Genres: JSON.stringify(product.volumeInfo?.categories || []),
           Image: product.volumeInfo?.imageLinks?.thumbnail || '',
         };
-        const bookResponse = await axios.post(requests.addBook, bookData);
+        const response = await instance.post(requests.addBook, bookData);
+        const bookResponse = response.data;
 
         if (bookResponse.data.message === "Book added/updated successfully") {
           fetchedBookId = bookResponse.data.bookId;

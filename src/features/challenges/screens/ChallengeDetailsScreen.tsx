@@ -28,7 +28,7 @@ import ChallengePromptDetails from '../components/ChallengePromptDetails';
 import CreatePrompt from '../components/CreatePrompt';
 
 const ChallengeDetailsScreen = ({ route, navigation }: any) => {
-  const { ChallengeId } = route.params;
+  const { challengeId } = route.params;
   const [challenge, setChallenge] = useState(null);
   const [description, setDescription] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -47,22 +47,23 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
   const fetchChallengeDetails = async () => {
     try {
       setLoading(true);
-      const response = await instance(`${requests.fetchChallengeDetails}&challenge_id=${ChallengeId}`);
+      const response = await instance(`${requests.fetchChallengeDetails(challengeId)}`);
 
-      const challengeData = response.data;
+      const challengeData = response.data.data;
+      console.log(challengeData);
       setChallenge(challengeData);
-      setDescription(challengeData.ChallengeDescription || 'No description available.');
+      setDescription(challengeData.challengeDescription || 'No description available.');
       setIsHost(challengeData.Host.userId === userDetails[0]?.userId);
 
       const progressResponse = await instance.post(requests.checkChallengeMembership, {
-        challengeId: ChallengeId,
+        challengeId: challengeId,
       }, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
-      const membershipData = progressResponse.data;
+      const membershipData = progressResponse.data.data;
       setIsMember(membershipData.isMember);
       setProgress((membershipData.progress || 0) / 100);
 
@@ -80,7 +81,7 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
 
   useEffect(() => {
     fetchChallengeDetails();
-  }, [ChallengeId]);
+  }, [challengeId]);
 
   const toggleEditing = () => {
     setIsEditing(!isEditing);
@@ -88,8 +89,7 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
 
   const updateDescription = async () => {
     try {
-      const response = await instance.post(requests.updateChallengeDescription, {
-        challengeId: challenge.ChallengeId,
+      const response = await instance.put(requests.updateChallengeDescription(challenge.challengeId), {
         description: description,
       }, {
         headers: {
@@ -98,7 +98,7 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
       });
 
       const result = response.data;
-      if (result.message === 'Updated') {
+      if (result.message === 'Challenge description updated successfully.') {
         Toast.show({
             type: 'success',
             text1: 'Success',
@@ -115,7 +115,7 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
   const joinOrLeaveChallenge = async () => {
     try {
       const response = await instance.post(requests.JoinLeaveChallenge, {
-        challengeId: challenge.ChallengeId,
+        challengeId: challenge.challengeId,
       }, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -123,14 +123,14 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
       });
 
       const data = response.data;
-      if (data.status === 'added') {
+      if (data.message === 'User successfully joined the challenge.') {
         setIsMember(true);
         Toast.show({
           type: 'success',
           text1: 'Success',
           text2: 'You joined the challenge!',
         });
-      } else if (data.status === 'removed') {
+      } else if (data.message === 'User successfully left the challenge.') {
         setIsMember(false);
         Toast.show({
           type: 'success',
@@ -165,7 +165,7 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
       >
-      <Text style={styles.challengeTitle}>{challenge.ChallengeTitle}</Text>
+      <Text style={styles.challengeTitle}>{challenge.challengeTitle}</Text>
 
       {/* Join/Leave Challenge Button */}
       <TouchableOpacity onPress={joinOrLeaveChallenge} style={styles.joinLeaveButton}>
@@ -224,7 +224,7 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
         <View style={styles.promptsContainer}>
             {currentView === 'prompts' && (
             <ChallengePrompts 
-                ChallengeId={ChallengeId} 
+                ChallengeId={challengeId} 
                 IsHost={isHost}
                 onCreatePrompt={() => setCurrentView('create')}
                 onViewPrompt={(prompt) => {
@@ -236,7 +236,7 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
             {currentView === 'create' && (
             <CreatePrompt
                 IsHost={isHost}
-                challengeId={ChallengeId}
+                challengeId={challengeId}
                 onBack={() => setCurrentView('prompts')}
                 onSuccess={() => {
                 setCurrentView('prompts');
@@ -246,7 +246,7 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
             )}
             {currentView === 'details' && selectedPrompt && (
             <ChallengePromptDetails 
-                promptId={selectedPrompt.PromptId}
+                promptId={selectedPrompt.promptId}
                 onBack={() => setCurrentView('prompts')}
             />
             )}

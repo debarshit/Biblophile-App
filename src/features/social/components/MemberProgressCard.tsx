@@ -28,17 +28,15 @@ const MemberProgressCard: React.FC<Props> = ({ memberDetails }) => {
     const fetchProgress = async () => {
       setLoading(true);
       try {
-        const response = await instance.post(
-          requests.fetchReadingStatus,
-          { bookId: memberDetails.bookId, userId: memberDetails.userId },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        setCurrentPage(response.data.currentPage || 0);
-        setReadingStatus(response.data.status);
+        const response = await instance.get(requests.fetchReadingStatus(memberDetails.bookId), {
+          headers: {
+              Authorization: `Bearer ${userDetails[0].accessToken}`,
+          },
+        });
+
+        const readingStatusResponse = response.data;
+        setCurrentPage(readingStatusResponse.data.currentPage || 0);
+        setReadingStatus(readingStatusResponse.data.status);
       } catch (error) {
         console.error('Error fetching member progress:', error);
       } finally {

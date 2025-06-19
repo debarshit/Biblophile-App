@@ -40,8 +40,12 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
   useEffect(() => {
     async function fetchActivePlan() {
         try {
-            const response = await instance(requests.fetchActivePlan+userDetails[0].userId);
-            const data = response.data;
+            const response = await instance(requests.fetchActivePlan, {
+              headers: {
+                Authorization: `Bearer ${userDetails[0].accessToken}`,
+              },
+            });
+            const data = response.data.data;
             if (data[0].PlanId !== null) {
               setSubscription(true);
             }
@@ -76,6 +80,11 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
 
   // Calculate the security deposit if needed
   const calculateSecurityDeposit = () => {
+    const hasRentItem = CartList.some((item) => item.type === 'Book' && item.prices[0].size !== 'Buy');
+    if (!hasRentItem) {
+      return "0.00";
+    }
+
     const currentDeposit = userDetails[0].deposit || 0;
     return currentDeposit < 300 ? (300 - currentDeposit).toFixed(2) : "0.00";
   };

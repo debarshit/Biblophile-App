@@ -21,7 +21,7 @@ import ReadalongCheckpoints from '../components/ReadalongCheckpoints';
 import { useNavigation } from '@react-navigation/native';
 
 // Define the Readalong interface
-interface Member {
+interface Host {
   name: string;
   userId: string;
 }
@@ -33,17 +33,17 @@ interface CurrentUser {
 }
 
 interface Readalong {
-  readalong_id: number;
-  book_id: string;
+  readalongId: number;
+  bookId: string;
   book_title: string;
   book_photo: string;
   book_pages: number;
   readalong_description: string;
-  start_date: string;
-  end_date: string;
-  max_members: number;
-  members: Member[];
-  host: Member;
+  startDate: string;
+  endDate: string;
+  maxMembers: number;
+  members: number;
+  host: Host;
 }
 
 interface ReadalongssRouteParams {
@@ -75,14 +75,14 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
     setError(null);
     try {
       const readalongResponse = await instance.get(
-        `${requests.fetchReadalongDetails}&readalong_id=${readalongId}`,
+        `${requests.fetchReadalongDetails(readalongId)}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      const readalong = readalongResponse.data;
+      const readalong = readalongResponse.data.data;
       setReadalong(readalong);
       setDescription(readalong?.readalong_description || 'Such empty! Much wow!');
 
@@ -92,15 +92,13 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
 
       if (accessToken) {
         // Only fetch user-specific data if accessToken is available
-        const currentUserReadingStatusResponse = await instance.post(
-          requests.fetchReadingStatus,
-          { bookId: readalong?.book_id },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
+        const response = await instance.get(requests.fetchReadingStatus(readalong?.bookId), {
+          headers: {
+              Authorization: `Bearer ${userDetails[0].accessToken}`,
+          },
+        });
+
+        const currentUserReadingStatusResponse = response.data;
         currentUserData = {
           userId: currentUserReadingStatusResponse.data.userId,
           readingStatus: currentUserReadingStatusResponse.data.status,
@@ -114,14 +112,13 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
          const memberCheckResponse = await instance.post(
             requests.checkReadalongMembership, {
                 readalongId: readalongId,
-                userId: currentUserData.userId,
             }, {
               headers: {
                 'Authorization': `Bearer ${accessToken}`,
               },
           }
         );
-        isMemberUser = memberCheckResponse.data.isMember || false
+        isMemberUser = memberCheckResponse.data.data.isMember || false
       }
 
       setCurrentUser(currentUserData);
@@ -148,16 +145,14 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
   };
 
   const updateDescription = async () => {
-    if (!accessToken || !readalong?.readalong_id || !currentUser.userId) {
+    if (!accessToken || !readalong?.readalongId || !currentUser.userId) {
       Alert.alert('Error', 'Not authorized or missing readalong/user info.');
       return;
     }
     try {
-      const response = await instance.post(
-        requests.updateReadalongDescription,
+      const response = await instance.put(
+        requests.updateReadalongDescription(readalong.readalongId),
         {
-          userId: currentUser.userId,
-          readalongId: readalong.readalong_id,
           description: description,
         },
         {
@@ -167,7 +162,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
         }
       );
 
-      if (response.data.message === 'Updated') {
+      if (response.data.message === 'Readalong description updated successfully.') {
         Alert.alert('Success', 'Description updated successfully!');
         setIsEditing(false);
         setReadalong(prev => prev ? { ...prev, readalong_description: description } : prev);
@@ -181,12 +176,12 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
   };
 
   const joinOrLeave = async () => {
-    if (readalong?.readalong_id && currentUser.userId) {
+    if (readalong?.readalongId && currentUser.userId) {
       try {
         const response = await instance.post(
           requests.JoinLeaveReadalongs,
           {
-            readalongId: readalong.readalong_id.toString(),
+            readalongId: readalong.readalongId.toString(),
             userId: currentUser.userId.toString(),
           },
           {
@@ -215,7 +210,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
     if (readalong?.book_title) {
       try {
         const result = await Share.share({
-          message: `Check out this readalong for "${readalong.book_title}" on Biblophile! https://biblophile.com/social/readalong/${readalong.readalong_id}`,
+          message: `Check out this readalong for "${readalong.book_title}" on Biblophile! https://biblophile.com/social/readalong/${readalong.readalongId}`,
         });
 
         if (result.action === Share.sharedAction) {
@@ -261,21 +256,21 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
               style={[
                 styles.actionButton,
                 {
-                  backgroundColor: isMember ? COLORS.primaryOrangeHex : readalong.members.length < readalong.max_members ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex,
+                  backgroundColor: isMember ? COLORS.primaryOrangeHex : readalong.members < readalong.maxMembers ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex,
                 },
               ]}
               onPress={joinOrLeave}
-              disabled={!isMember && readalong.members.length >= readalong.max_members}
+              disabled={!isMember && readalong.members >= readalong.maxMembers}
             >
               <Text style={styles.actionButtonText}>
-                {isMember ? 'Leave' : readalong.members.length < readalong.max_members ? 'Join' : 'Full'}
+                {isMember ? 'Leave' : readalong.members < readalong.maxMembers ? 'Join' : 'Full'}
               </Text>
             </TouchableOpacity>
             <Text style={styles.infoText}>
-              <Text style={styles.infoLabel}>Ends on:</Text> {readalong.end_date ? readalong.end_date : 'when everyone finishes'}
+              <Text style={styles.infoLabel}>Ends on:</Text> {readalong.endDate ? readalong.endDate : 'when everyone finishes'}
             </Text>
             <Text style={styles.infoText}>
-              <Text style={styles.infoLabel}>Max Members:</Text> {readalong.max_members}
+              <Text style={styles.infoLabel}>Max Members:</Text> {readalong.maxMembers}
             </Text>
             <Text style={styles.infoText}>
               <Text style={styles.infoLabel}>Host:</Text> {readalong.host.name}
@@ -309,6 +304,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
           )}
         </View>
 
+          {/* update the text color; it is invisible currently */}
         {isHost && (
           <TouchableOpacity onPress={() => navigation.navigate('CreateReadalongCheckpoint', { readalong: readalong, currentUser: currentUser, isHost: isHost })}>
             <Text>Create a new checkpoint</Text>

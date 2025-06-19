@@ -35,6 +35,7 @@ import SeasonalRecommendations from '../components/SeasonalRecommendations';
 import BookGiveaway from '../components/BookGiveaway';
 import HotRecommendations from '../components/HotRecommendations';
 import CulturalRecommendations from '../components/CulturalRecommendations';
+import MerchShopBanner from '../../../components/MerchShopBanner';
 
 const DiscoverScreen = ({ navigation }) => {
   // Global state from store
@@ -83,7 +84,8 @@ const DiscoverScreen = ({ navigation }) => {
     const getSpotlights = async () => {
       try {
         const response = await instance(requests.getSpotlight);
-        setSpotlights(response.data);
+        const responseData = response.data;
+        setSpotlights(responseData.data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching spotlights:', error);
@@ -135,7 +137,7 @@ const DiscoverScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         {/* Book giveaway */}
-        <BookGiveaway />
+        {/* <BookGiveaway /> */}
 
         {/* Spotlight Section */}
         <Spotlights spotlights={spotlights} />
@@ -148,6 +150,9 @@ const DiscoverScreen = ({ navigation }) => {
           genres={GenreList.length > 0 ? ['All', ...new Set(GenreList.map(item => item.genre))] : ['All']} 
           CoffeeCardAddToCart={handleAddToCart} 
         />
+
+        {/* Checkout Bookmarks shop */}
+        <MerchShopBanner />
 
         {/* Indian voices */}
         <CulturalRecommendations />

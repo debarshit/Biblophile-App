@@ -6,9 +6,10 @@ import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
-import PageStatus from '../../reading/components/PageStatus';
+import BookStatusModal from '../../reading/components/BookStatusModal'; // Changed import
 import SourceReferralModal from '../../../components/SourceReferralModal';
 import SessionPrompt from './SessionPrompt';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 const PagesReadInput = ({navigation}: any) => {
   const [pagesRead, setPagesRead] = useState<string>('0');
@@ -17,9 +18,17 @@ const PagesReadInput = ({navigation}: any) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
 
+  // states for BookStatusModal
+  const [selectedBookId, setSelectedBookId] = useState<string>('');
+  const [selectedBookStatus, setSelectedBookStatus] = useState<string>('');
+  const [selectedBookPage, setSelectedBookPage] = useState<number | undefined>(undefined);
+  const [selectedBookStartDate, setSelectedBookStartDate] = useState<string | undefined>(undefined);
+  const [selectedBookEndDate, setSelectedBookEndDate] = useState<string | undefined>(undefined);
+  const [isBookStatusModalVisible, setIsBookStatusModalVisible] = useState(false);
+
   const userDetails = useStore((state: any) => state.userDetails);
 
-  //states for reading sessions
+  //  states for reading sessions
   const [showSessionPrompt, setShowSessionPrompt] = useState(false);
   const [sessionData, setSessionData] = useState(null);
   const [promptMessage, setPromptMessage] = useState("");
@@ -40,9 +49,12 @@ const PagesReadInput = ({navigation}: any) => {
 
   const fetchCurrentReads = async () => {
     try {
-      const response = await instance.post(requests.fetchCurrentReads, {
-        userId: userDetails[0].userId,
+      const currentReadsResponse = await instance(requests.fetchCurrentReads, {
+        headers: {
+            Authorization:  `Bearer ${userDetails[0].accessToken}`
+        },
       });
+      const response = currentReadsResponse.data;
       setCurrentReads(response.data.currentReads);
     } catch (error) {
       console.error('Failed to fetch current reads:', error);
@@ -55,9 +67,14 @@ const PagesReadInput = ({navigation}: any) => {
       console.log(`Saving session from ${sessionData.startTime} to ${new Date()} with ${diffInPages} pages read.`);   
       
       //send the data to backend
-      instance.post(requests.submitReadingDuration, sessionData)
+      instance.post(requests.submitReadingDuration, sessionData, 
+        {
+            headers: {
+                Authorization:  `Bearer ${userDetails[0].accessToken}`
+            },
+        })
         .then(response => {
-          console.log('Session saved:', response.data);
+          console.log('Session saved:', response.data.data);
           // Handle successful response
         })
         .catch(error => {
@@ -92,7 +109,7 @@ const handleCompleteSession = () => {
   const diffInPages = (Number(startingPage) === 0 || startingPage == null) ? pagesRead : Number(pagesRead)-Number(startingPage);
   const sessionStartTime = startingTime;
   const message = `Your reading session was from ${formatTime(sessionStartTime)} to ${formatTime(new Date())}. You've read ${diffInPages} pages. Do you wish to save this session?`;
-  setSessionData({ startTime: new Date(sessionStartTime), endTime: new Date(), pageDiff: diffInPages, userId: userDetails[0].userId });
+  setSessionData({ startTime: new Date(sessionStartTime), endTime: new Date(), pageDiff: diffInPages });
   setPromptMessage(message);
   setIsCompletingSession(false);
 };
@@ -113,7 +130,12 @@ const handleSessionPromptAction = () => {
   const fetchPagesRead = async () => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const response = await instance.get(`${requests.fetchPagesRead}${userDetails[0].userId}&timezone=${userTimezone}`);
+      const pagesReadResponse = await instance.get(`${requests.fetchPagesRead}?${userDetails[0].userId}&timezone=${userTimezone}`, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`
+        },
+      });
+      const response = pagesReadResponse.data;
       if (Array.isArray(response.data)) {
         const currentDate = new Date().setHours(0, 0, 0, 0);
         const todayPagesRead = response.data.find((item: any) => {
@@ -135,27 +157,25 @@ const handleSessionPromptAction = () => {
     }
   };
 
-  const convertHttpToHttps = (url) => {
-    if (url && url.startsWith('http://')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
-  };
-
   useEffect(() => {
     fetchCurrentReads();
     fetchPagesRead();
-    fetchSourceReferral();
+    // fetchSourceReferral();
   }, [refreshData]);
 
   const updatePagesRead = async () => {
     if (pagesRead !== "" && pagesRead !== "0") {
       checkActiveSession();
       try {
-        const response = await instance.post(requests.updatePagesRead, {
-          userId: userDetails[0].userId,
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const updatePagesReadResponse = await instance.post(`${requests.updatePagesRead}?timezone=${userTimezone}`, {
           pageCount: pagesRead,
+        }, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`
+          },
         });
+        const response = updatePagesReadResponse.data;
         if (response.data.message === 'Updated') {
           if (!startingTime) {
             Alert.alert('Success', 'Updated');
@@ -173,18 +193,18 @@ const handleSessionPromptAction = () => {
     }
   };
 
-  const fetchSourceReferral = async () => {
-    try {
-      const response = await instance.post(requests.fetchUserData, {
-        userId: userDetails[0].userId,
-      });
-      if (response.data.sourceReferral === null) {
-        handleOpenModal();
-      }
-    } catch (error) {
-      console.error('Failed to fetch current reads:', error);
-    } 
-  };
+  // const fetchSourceReferral = async () => {
+  //   try {
+  //     const response = await instance.post(requests.fetchUserData, {
+  //       userId: userDetails[0].userId,
+  //     });
+  //     if (response.data.sourceReferral === null) {
+  //       handleOpenModal();
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to fetch current reads:', error);
+  //   } 
+  // };
 
   const toggleTooltip = () => {
     setShowTooltip(prev => !prev);
@@ -196,6 +216,30 @@ const handleSessionPromptAction = () => {
 
   const handleCloseModal = () => {
     setModalOpen(false);
+  };
+
+  const handleOpenBookStatusModal = (book: any) => {
+    setSelectedBookId(book.BookId);
+    setSelectedBookStatus('Currently reading');
+    setSelectedBookPage(book.CurrentPage);
+    setSelectedBookStartDate(book.StartDate);
+    setSelectedBookEndDate(book.EndDate);
+    setIsBookStatusModalVisible(true);
+  };
+
+  const handleCloseBookStatusModal = () => {
+    setIsBookStatusModalVisible(false);
+    setSelectedBookId('');
+    setSelectedBookStatus('');
+    setSelectedBookPage(undefined);
+    setSelectedBookStartDate(undefined);
+    setSelectedBookEndDate(undefined);
+  };
+
+  const handleBookStatusUpdate = () => {
+    setRefreshData(prev => !prev);
+    checkActiveSession();
+    handleCloseBookStatusModal();
   };
 
   useEffect(() => {
@@ -230,16 +274,13 @@ const handleSessionPromptAction = () => {
               }}>
                 <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
               </TouchableOpacity>
-              <PageStatus 
-                id={book.BookId} 
-                page={book.CurrentPage} 
-                startDate={book.StartDate} 
-                onUpdate={() => {
-                  setRefreshData(prev => !prev);
-                  checkActiveSession();
-                }} 
-                status='Currently reading'
-            />
+              {/* Replace PageStatus with a TouchableOpacity to open modal */}
+              <TouchableOpacity 
+                style={styles.updateButton}
+                onPress={() => handleOpenBookStatusModal(book)}
+              >
+                <Text style={styles.updateButtonText}>Update Status</Text>
+              </TouchableOpacity>
             </View>
           ))}
         </ScrollView>
@@ -276,6 +317,18 @@ const handleSessionPromptAction = () => {
           Automatically updated from your reading progress. Update manually only if inaccurate.
         </Text>
       </View>
+
+      <BookStatusModal
+        visible={isBookStatusModalVisible}
+        onClose={handleCloseBookStatusModal}
+        bookId={selectedBookId}
+        initialStatus={selectedBookStatus}
+        initialPage={selectedBookPage}
+        initialStartDate={selectedBookStartDate}
+        initialEndDate={selectedBookEndDate}
+        onUpdate={handleBookStatusUpdate}
+      />
+
       <SessionPrompt
         visible={showSessionPrompt}
         message={promptMessage}
@@ -318,6 +371,20 @@ const styles = StyleSheet.create({
     width: 100,
     height: 150,
     borderRadius: 5,
+  },
+  // New style for the update button
+  updateButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    paddingVertical: SPACING.space_8,
+    paddingHorizontal: SPACING.space_12,
+    borderRadius: 5,
+    marginTop: SPACING.space_10,
+  },
+  updateButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_12,
+    fontFamily: FONTFAMILY.poppins_medium,
+    textAlign: 'center',
   },
   inputBox: {
     alignItems: 'center',

@@ -35,10 +35,12 @@ const BuddyReadsCreate = ({ route }: any) => {
   const handleSubmit = async () => {
     if (!bookId) {
       navigation.goBack();
+      return;
     }
 
     if (!accessToken) {
-      navigation.navigate('SignupLogin')
+      navigation.navigate('SignupLogin');
+      return;
     }
 
     const buddyReadData = {
@@ -56,8 +58,8 @@ const BuddyReadsCreate = ({ route }: any) => {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
-      });    
-      if (response.data.success) {
+      });
+      if (response.data.message == 'Created') {
         Toast.show({
           type: 'success', 
           text1: `Buddy Read Created`,

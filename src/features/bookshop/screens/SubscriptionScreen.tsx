@@ -34,8 +34,12 @@ const SubscriptionScreen = ({ navigation }) => {
   // Fetch active plan data
   const fetchActivePlan = async () => {
     try {
-      const response = await instance(requests.fetchActivePlan + userDetails[0].userId);
-      const data = response.data;
+      const response = await instance(requests.fetchActivePlan, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`,
+        },
+      });
+      const data = response.data.data;
       
       const hadActivePlan = activePlan.length > 0 && activePlan[0]?.PlanId;
       const hasActivePlan = data.length > 0 && data[0]?.PlanId;
@@ -56,7 +60,7 @@ const SubscriptionScreen = ({ navigation }) => {
   const fetchPlanList = async () => {
     try {
       const response = await instance(requests.fetchSubscriptionPlans);
-      const data = response.data;
+      const data = response.data.data;
       setPlans(data);
       setLoading(false);
     } catch (error) {

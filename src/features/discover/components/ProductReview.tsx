@@ -41,7 +41,8 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
       if (isGoogleBook) {
         const isbn = product.volumeInfo?.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13')?.identifier || '';
         if (isbn) {
-          const bookIdResponse = await instance.post(requests.fetchBookId, { ISBN: isbn });
+          const response = await instance.get(requests.fetchBookId(isbn));
+          const bookIdResponse = response.data;
           if (bookIdResponse.data.bookId) {
             bookIdToFetch = bookIdResponse.data.bookId;
           } else {
@@ -53,10 +54,11 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
       }
 
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const response = await instance(requests.fetchProductReviews + bookIdToFetch + `&offset=${offset}` + `&timezone=${userTimezone}`);
-      if (response.data && response.data.length > 0) {
-        setReviews(prevReviews => [...prevReviews, ...response.data]);
-        setOffset(prevOffset => prevOffset + response.data.length);
+      const response = await instance(requests.fetchProductReviews(bookIdToFetch) + `?offset=${offset}` + `&timezone=${userTimezone}`);
+      const reviewsResponse = response.data;
+      if (reviewsResponse.data && reviewsResponse.data.length > 0) {
+        setReviews(prevReviews => [...prevReviews, ...reviewsResponse.data]);
+        setOffset(prevOffset => prevOffset + reviewsResponse.data.length);
       } else {
         setHasMoreReviews(false); // No more reviews
       }
@@ -93,7 +95,9 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
           Image: product.volumeInfo?.imageLinks?.thumbnail || '',
         };
 
-        const bookResponse = await instance.post(requests.addBook, bookData);
+        const response = await instance.post(requests.addBook, bookData);
+
+        const bookResponse = response.data;
 
         if (bookResponse.data.message === 'Book added/updated successfully') {
           bookId = bookResponse.data.bookId;
@@ -110,15 +114,19 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
         };
       });
       const reviewData = {
-        userId: userId,
         productId: bookId,
         rating: rating,
         review: userReview,
         emotions: emotionsData,
       };
 
-      const response = await instance.post(requests.submitReview, reviewData);
-      if (response.data.message === 'Feedback submitted successfully') {
+      const response = await instance.post(requests.submitReview, reviewData,
+        {
+            headers: {
+                Authorization:  `Bearer ${userDetails[0].accessToken}`
+            },
+        });
+      if (response.data.data.status === 'success') {
         Alert.alert('Thanks!', 'Review added succesfully.');
         setUserReview('');
         setRating(0);

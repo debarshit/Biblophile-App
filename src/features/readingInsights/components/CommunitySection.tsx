@@ -11,7 +11,7 @@ const CommunitySection = ({ currentStreak = 0 }) => {
   const handleSharePress = async () => {
     try {
       const result = await Share.share({
-        message: `I've been on a reading streak for ${currentStreak} days! 📚✨ Join me and let's read together on Biblophile! https://biblophile.com/`,
+        message: `I've been on a reading streak for ${currentStreak} days! 📚✨ Join me and let's read together on Biblophile! https://onelink.to/dxjdkb`,
       });
       if (result.action === Share.sharedAction && result.activityType) {
         // Shared with activity type

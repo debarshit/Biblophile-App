@@ -10,11 +10,13 @@ import {
 } from 'react-native';
 import { useStore } from '../../../store/store';
 import requests from '../../../services/requests';
+import instance from '../../../services/axios';
+import { COLORS } from '../../../theme/theme';
 
 interface BookClub {
-  club_id: number;
+  clubId: number;
   about: string;
-  code_of_conduct: string;
+  codeOfConduct: string;
 }
 
 interface Props {
@@ -28,35 +30,43 @@ const BookClubAbout: React.FC<Props> = ({
 
 }) => {
   const [about, setAbout] = useState(bookClub.about || 'Such empty! Much wow!');
-  const [codeOfConduct, setCodeOfConduct] = useState(bookClub.code_of_conduct || 'Such empty! Much wow!');
+  const [codeOfConduct, setCodeOfConduct] = useState(bookClub.codeOfConduct || 'Such empty! Much wow!');
   const [editingField, setEditingField] = useState<'about' | 'code' | null>(null);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0].accessToken;
 
   const handleUpdate = async (field: 'about' | 'code') => {
-    const url = field === 'about' ? `https://biblophile.com/${requests.updateBookClubAbout}` : `https://biblophile.com/${requests.updateBookClubCode}`;
+    const url =
+    field === 'about'
+      ? requests.updateBookClubAbout(bookClub.clubId)
+      : requests.updateBookClubCode(bookClub.clubId);
     const body = {
-      bookClubId: bookClub.club_id,
       ...(field === 'about' ? { about } : { codeOfConduct })
     };
 
     try {
-      const response = await fetch(url, {
-        method: 'POST',
+      const response = await instance.put(url, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(body)
       });
 
-      const result = await response.json();
-      if (result.message === 'Updated') {
-        Alert.alert(`${field === 'about' ? 'About' : 'Code of Conduct'} updated successfully!`);
+      const successMessage =
+      field === 'about'
+        ? 'Book club "about" content updated successfully.'
+        : 'Book club Code of Conduct updated successfully.';
+
+      if (response.data?.message === successMessage) {
+        Alert.alert(
+          'Success',
+          field === 'about'
+            ? 'About updated successfully!'
+            : 'Code of Conduct updated successfully!'
+        );
         setEditingField(null);
       } else {
-        Alert.alert('Update failed', result.message || 'Unexpected error');
+        Alert.alert('Update failed', response.data?.message || 'Unexpected error');
       }
     } catch (error) {
       console.error(`Error updating ${field}:`, error);
@@ -77,13 +87,13 @@ const BookClubAbout: React.FC<Props> = ({
               onChangeText={setAbout}
               multiline
             />
-            <Button title="Save" onPress={() => handleUpdate('about')} />
+            <Button color={COLORS.primaryOrangeHex} title="Save" onPress={() => handleUpdate('about')} />
           </>
         ) : (
           <>
             <Text style={styles.text}>{about}</Text>
             {isHost && (
-              <Button title="Edit" onPress={() => setEditingField('about')} />
+              <Button color={COLORS.primaryOrangeHex} title="Edit" onPress={() => setEditingField('about')} />
             )}
           </>
         )}
@@ -100,13 +110,13 @@ const BookClubAbout: React.FC<Props> = ({
               onChangeText={setCodeOfConduct}
               multiline
             />
-            <Button title="Save" onPress={() => handleUpdate('code')} />
+            <Button color={COLORS.primaryOrangeHex} title="Save" onPress={() => handleUpdate('code')} />
           </>
         ) : (
           <>
             <Text style={styles.text}>{codeOfConduct}</Text>
             {isHost && (
-              <Button title="Edit" onPress={() => setEditingField('code')} />
+              <Button color={COLORS.primaryOrangeHex} title="Edit" onPress={() => setEditingField('code')} />
             )}
           </>
         )}

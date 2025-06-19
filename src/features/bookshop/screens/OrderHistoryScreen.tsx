@@ -48,11 +48,13 @@ const OrderHistoryScreen = ({navigation}: any) => {
 
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const response = await instance.post(`${requests.fetchOrders}&limit=${limit}&offset=${offset}&timezone=${userTimezone}`, {
-        userId: userDetails[0].userId,
+      const response = await instance.get(`${requests.fetchOrders}?limit=${limit}&offset=${offset}&timezone=${userTimezone}`, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`,
+        },
       });
 
-      const data = response.data;
+      const data = response.data.data;
       
       if (data.length > 0) {
         if (isLoadMore) {

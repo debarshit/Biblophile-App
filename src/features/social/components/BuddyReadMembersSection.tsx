@@ -8,15 +8,15 @@ interface Member {
 }
 
 interface BuddyRead {
-  buddy_read_id: number;
-  book_id: string;
+  buddyReadId: number;
+  bookId: string;
   book_title: string;
   book_photo: string;
   book_pages: number;
-  buddy_read_description: string;
-  start_date: string;
-  end_date: string;
-  max_members: number;
+  buddyReadDescription: string;
+  startDate: string;
+  endDate: string;
+  maxMembers: number;
   members: Member[];
   host: Member;
 }
@@ -35,7 +35,7 @@ const BuddyReadMembersSection: React.FC<BuddyReadMembersSectionProps> = ({ buddy
           {buddyRead.members.slice(0, memberDisplayCount).map((member) => (
             <MemberProgressCard
               key={member.name}
-              memberDetails={{ userId: member.userId, name: member.name, bookPages: buddyRead.book_pages, bookId: buddyRead.book_id }}
+              memberDetails={{ userId: member.userId, name: member.name, bookPages: buddyRead.book_pages, bookId: buddyRead.bookId }}
             />
           ))}
         </View>

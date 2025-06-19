@@ -36,16 +36,16 @@ const ReadAlongsIndex = () => {
     try {
       setLoading(true);
       // Fetch "My Readalongs"
-      const myReadalongsResponse = await instance.get(requests.fetchReadalongs, {
+      const myReadalongsResponse = await instance.get(requests.fetchMyReadalongs, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      setMyReadalongs(myReadalongsResponse.data);
+      setMyReadalongs(myReadalongsResponse.data.data);
 
       // Fetch "Active Readalongs"
       const activeReadalongsResponse = await instance.get(requests.fetchReadalongs);
-      setActiveReadalongs(activeReadalongsResponse.data);
+      setActiveReadalongs(activeReadalongsResponse.data.data);
     } catch (err) {
       setError('Failed to fetch Readalongs');
       Toast.show({
@@ -82,7 +82,7 @@ const ReadAlongsIndex = () => {
             <FlatList
               data={myReadalongs}
               renderItem={renderReadalongItem}
-              keyExtractor={(item) => item.readalong_id.toString()}
+              keyExtractor={(item) => item.readalongId.toString()}
               contentContainerStyle={styles.readalongsList}
             />
           ) : (
@@ -99,7 +99,7 @@ const ReadAlongsIndex = () => {
             <FlatList
               data={activeReadalongs}
               renderItem={renderReadalongItem}
-              keyExtractor={(item) => item.readalong_id.toString()}
+              keyExtractor={(item) => item.readalongId.toString()}
               contentContainerStyle={styles.readalongsList}
             />
           ) : (

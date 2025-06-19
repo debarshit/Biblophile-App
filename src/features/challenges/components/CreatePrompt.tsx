@@ -39,7 +39,7 @@ const CreatePrompt = ({ challengeId, IsHost, onBack, onSuccess }) => {
                   Authorization: `Bearer ${accessToken}`,
                 },
               });
-              if (response.data.success) {
+              if (response.data.message === 'Challenge prompt created successfully.') {
                 onSuccess();
               }
               else {

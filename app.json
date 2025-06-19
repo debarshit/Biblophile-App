@@ -2,7 +2,7 @@
   "expo": {
     "name": "Biblophile",
     "slug": "Biblophile-App",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -22,6 +22,7 @@
       "**/*"
     ],
     "ios": {
+      "buildNumber": "2",
       "supportsTablet": true,
       "infoPlist": {
         "UIBackgroundModes": [
@@ -40,7 +41,7 @@
         "backgroundColor": "#0C0F14"
       },
       "googleServicesFile": "./google-services.json",
-      "versionCode": 7,
+      "versionCode": 9,
       "package": "com.debar_shit.BiblophileApp",
       "permissions": [
         "NOTIFICATIONS"

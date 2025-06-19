@@ -1,10 +1,11 @@
-import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { Picker } from '@react-native-picker/picker';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 
 const ReadingGoals = () => {
     const [goalState, setGoalState] = useState({
@@ -20,6 +21,11 @@ const ReadingGoals = () => {
         isResetting: false,
         error: null,
     });
+
+    const goalTypeOptions: PickerOption[] = [
+      { label: 'Books', value: 'books', icon: 'menu-book' },
+      { label: 'Pages', value: 'pages', icon: 'menu' },
+    ];
 
   const userDetails = useStore((state: any) => state.userDetails);
   const userId = userDetails[0].userId;
@@ -62,33 +68,41 @@ const ReadingGoals = () => {
     
     try {
       const [goalsResponse, progressResponse] = await Promise.all([
-        instance.get(`${requests.fetchUserGoals}${userId}`),
-        instance.get(`${requests.fetchCurrentProgress}${userId}`)
+        instance.get(`${requests.fetchUserGoals}`, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`
+          },
+        }),
+        instance.get(`${requests.fetchCurrentProgress}`, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`
+          },
+        })
       ]);
   
       // Process data
-      const goalsData = goalsResponse.data?.goals || {};
-      const progressData = progressResponse.data || {};
+      const goalsData = goalsResponse.data.data?.goals || {};
+      const progressData = progressResponse.data.data || {};
       
       // Determine active goal type
       let activeType = 'books';
-      if (!goalsData.booksGoal?.Goal && goalsData.pagesGoal?.Goal) {
+      if (!goalsData.booksGoal?.goal && goalsData.pagesGoal?.goal) {
         activeType = 'pages';
-      } else if (goalsData.booksGoal?.Goal && goalsData.pagesGoal?.Goal) {
+      } else if (goalsData.booksGoal?.goal && goalsData.pagesGoal?.goal) {
         activeType = goalState.activeType;
       }
 
       setGoalState({
         books: { 
-          goal: goalsData.booksGoal?.Goal || '', 
+          goal: goalsData.booksGoal?.goal || '', 
           progress: progressData.progressBooks || 0 
         },
         pages: { 
-          goal: goalsData.pagesGoal?.Goal || '', 
-          progress: progressData.progressPages || 0 
+          goal: goalsData.pagesGoal?.goal || '', 
+          progress: Number(progressData.progressPages) || 0 
         },
         activeType,
-        isGoalSet: !!(goalsData.booksGoal?.Goal || goalsData.pagesGoal?.Goal)
+        isGoalSet: !!(goalsData.booksGoal?.goal || goalsData.pagesGoal?.goal) // FIXED
       });
     } catch (error) {
       setUiState(prev => ({ 
@@ -114,13 +128,18 @@ const ReadingGoals = () => {
     setUiState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      const response = await instance.post(requests.submitGoal, { 
-        userId, 
+      const submitGoalResponse = await instance.post(requests.submitGoal, { 
         goal: goalToSubmit, 
         goalType: goalState.activeType 
+      }, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`
+        },
       });
+
+      const response = submitGoalResponse.data;
       
-      if (response.data?.success) {
+      if (response.data?.message === 'Goal set successfully!' || response.data?.message === 'Goal updated successfully!') {
         setUiState(prev => ({ 
           ...prev, 
           isFormVisible: false, 
@@ -176,12 +195,13 @@ const ReadingGoals = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Reading Goals(2025)</Text>
       
-      {uiState.isLoading && (
+      {/* commented for now because this made the screen look a bit janky */}
+      {/* {uiState.isLoading && (
         <View style={styles.loadingIndicator}>
           <ActivityIndicator color={COLORS.primaryOrangeHex} />
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
-      )}
+      )} */}
       
       {uiState.error && (
         <View style={styles.errorMessage}>
@@ -206,16 +226,24 @@ const ReadingGoals = () => {
               <View style={styles.formRow}>
                 <Text style={styles.label}>Goal type:</Text>
                 <View style={styles.pickerContainer}>
-                  <Picker
-                    style={styles.picker}
-                    selectedValue={goalState.activeType}
-                    onValueChange={handleGoalTypeChange}
-                    dropdownIconColor={COLORS.primaryWhiteHex}
-                    mode="dropdown"
-                  >
-                    <Picker.Item label="Books" value="books" />
-                    <Picker.Item label="Pages" value="pages" />
-                  </Picker>
+                  {Platform.OS === 'ios' ? (
+                    <CustomPicker
+                      options={goalTypeOptions}
+                      selectedValue={goalState.activeType}
+                      onValueChange={handleGoalTypeChange}
+                    />
+                  ) : (
+                    <Picker
+                      style={styles.picker}
+                      selectedValue={goalState.activeType}
+                      onValueChange={handleGoalTypeChange}
+                      dropdownIconColor={COLORS.primaryWhiteHex}
+                      mode="dropdown"
+                    >
+                      <Picker.Item label="Books" value="books" />
+                      <Picker.Item label="Pages" value="pages" />
+                    </Picker>
+                  )}
                 </View>
               </View>
 
@@ -262,16 +290,24 @@ const ReadingGoals = () => {
           {showGoalTypeSelector && (
             <View style={styles.goalSelector}>
               <View style={styles.compactPickerContainer}>
-                <Picker
-                  style={styles.compactPicker}
-                  selectedValue={goalState.activeType}
-                  onValueChange={handleGoalTypeChange}
-                  dropdownIconColor={COLORS.primaryWhiteHex}
-                  mode="dropdown"
-                >
-                  {goalState.books.goal && <Picker.Item label="Books Goal" value="books" />}
-                  {goalState.pages.goal && <Picker.Item label="Pages Goal" value="pages" />}
-                </Picker>
+                {Platform.OS === 'ios' ? (
+                  <CustomPicker
+                    options={goalTypeOptions.filter(opt => goalState[opt.value].goal)}
+                    selectedValue={goalState.activeType}
+                    onValueChange={handleGoalTypeChange}
+                  />
+                ) : (
+                  <Picker
+                    style={styles.compactPicker}
+                    selectedValue={goalState.activeType}
+                    onValueChange={handleGoalTypeChange}
+                    dropdownIconColor={COLORS.primaryWhiteHex}
+                    mode="dropdown"
+                  >
+                    {goalState.books.goal && <Picker.Item label="Books Goal" value="books" />}
+                    {goalState.pages.goal && <Picker.Item label="Pages Goal" value="pages" />}
+                  </Picker>
+                )}
               </View>
             </View>
           )}
@@ -403,7 +439,6 @@ const styles = StyleSheet.create({
     borderRadius: BORDERRADIUS.radius_8,
     borderWidth: 1,
     borderColor: COLORS.primaryLightGreyHex,
-    overflow: 'hidden',
   },
   picker: {
     color: COLORS.primaryWhiteHex,
@@ -470,7 +505,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primaryLightGreyHex,
     width: 200,
-    overflow: 'hidden',
   },
   compactPicker: {
     color: COLORS.primaryWhiteHex,

@@ -34,7 +34,7 @@ export default function CreateBookClubScreen() {
         },
       });
 
-      if (response.data.success) {
+      if (response.data.status === 'success') {
         navigation.navigate('Social', { initialTab: 'Book Clubs' });
       } else {
         Alert.alert('Error', response.data.error || 'Failed to create book club.');
