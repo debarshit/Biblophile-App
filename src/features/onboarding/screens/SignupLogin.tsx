@@ -8,6 +8,7 @@ import {useStore} from '../../../store/store';
 import { COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
 import { Picker } from '@react-native-picker/picker';
+import CustomPicker from '../../../components/CustomPickerComponent';
 
 const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible, onPress }) => {
     return (
@@ -189,6 +190,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                     });
 
                     const response = signupResponse.data;
+                    console.log(response);
 
                     if (response.data.message === 1)
                     {
@@ -206,7 +208,8 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                         setSignupMessage({ text: response.data.message, color: COLORS.primaryRedHex });
                     }
                   } catch (error) {
-                    console.log(error);
+                    const errorMsg = error?.response?.data?.message || "Signup failed. Try again.";
+                    setSignupMessage({ text: errorMsg, color: COLORS.primaryRedHex });
                   } finally {
                     setIsLoading(false);
                 }
@@ -450,20 +453,36 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                         </View>
                         <Text style={styles.promptText}>How did you find us?</Text>
                         <View style={styles.inputBox}>
+                        {Platform.OS === 'ios' ? (
+                            <CustomPicker
+                            selectedValue={source}
+                            onValueChange={handleSourceChange}
+                            options={[
+                                { label: 'Social Media', value: 'Social Media', icon: 'share' },
+                                { label: 'Friends/Word of Mouth', value: 'Word of Mouth', icon: 'people' },
+                                { label: 'Online Ads', value: 'Online Ads', icon: 'campaign' },
+                                { label: 'App Store', value: 'App Store', icon: 'store' },
+                                { label: 'Influencer/Online Communities', value: 'Forums or Online Communities', icon: 'forum' },
+                                { label: 'Print Media', value: 'Print Media', icon: 'local-library' },
+                                { label: 'Other', value: 'Other', icon: 'more-horiz' },
+                            ]}
+                            />
+                        ) : (
                             <Picker
-                                selectedValue={source}
-                                style={styles.picker}
-                                onValueChange={handleSourceChange}
+                            selectedValue={source}
+                            style={styles.picker}
+                            onValueChange={handleSourceChange}
                             >
-                                <Picker.Item label="Select an option" value={null} />
-                                <Picker.Item label="Social Media" value="Social Media" />
-                                <Picker.Item label="Friends/Word of Mouth" value="Word of Mouth" />
-                                <Picker.Item label="Online Ads" value="Online Ads" />
-                                <Picker.Item label="App Store" value="App Store" />
-                                <Picker.Item label="Influencer/Online Communities" value="Forums or Online Communities" />
-                                <Picker.Item label="Print Media" value="Print Media" />
-                                <Picker.Item label="Other" value="Other" />
+                            <Picker.Item label="Select an option" value={null} />
+                            <Picker.Item label="Social Media" value="Social Media" />
+                            <Picker.Item label="Friends/Word of Mouth" value="Word of Mouth" />
+                            <Picker.Item label="Online Ads" value="Online Ads" />
+                            <Picker.Item label="App Store" value="App Store" />
+                            <Picker.Item label="Influencer/Online Communities" value="Forums or Online Communities" />
+                            <Picker.Item label="Print Media" value="Print Media" />
+                            <Picker.Item label="Other" value="Other" />
                             </Picker>
+                        )}
                         </View>
                         <TouchableOpacity onPress={handleSignup} style={styles.button} disabled={isLoading}>
                             {isLoading ? (
@@ -499,6 +518,7 @@ const styles = StyleSheet.create({
     contentContainer: {
         flexGrow: 1,
         justifyContent: 'center',
+        height: 'auto'
     },
     wrapper: {
         flex: 1,

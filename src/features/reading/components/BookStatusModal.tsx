@@ -181,7 +181,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
                     dropdownIconColor={COLORS.primaryOrangeHex}
                   >
                     {availableOptions.map((option) => (
-                      <Picker.Item key={option.value} label={option.label} value={option.value} color={COLORS.primaryWhiteHex} />
+                      <Picker.Item key={option.value} label={option.label} value={option.value} />
                     ))}
                   </Picker>
                 </View>

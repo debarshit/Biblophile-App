@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 
@@ -72,7 +72,7 @@ const CustomPicker: React.FC<CustomPickerProps> = ({
       </TouchableOpacity>
       
       {showOptions && !disabled && (
-        <View style={styles.optionsContainer}>
+        <ScrollView style={styles.optionsContainer}>
           {options.map((option, index) => (
             <TouchableOpacity
               key={option.value}
@@ -103,7 +103,7 @@ const CustomPicker: React.FC<CustomPickerProps> = ({
               )}
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
       )}
     </View>
   );
@@ -114,6 +114,7 @@ export default CustomPicker;
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
+    zIndex: 1000,
   },
   trigger: {
     backgroundColor: COLORS.secondaryDarkGreyHex,
@@ -147,6 +148,7 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     position: 'absolute',
+    maxHeight: 200,
     top: '100%',
     left: 0,
     right: 0,
