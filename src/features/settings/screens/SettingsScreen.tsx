@@ -193,6 +193,27 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           // bgColor: '#7209B7',
         },
         {
+          icon: <MaterialIcons color="#fff" name="delete" size={20} />,
+          label: 'Delete Account',
+          onPress: () =>
+            Alert.alert(
+              'Confirm Deletion',
+              'Are you sure you want to delete your account? This action cannot be undone.',
+              [
+                { text: 'No', style: 'cancel' },
+                {
+                  text: 'Yes, Delete',
+                  style: 'destructive',
+                  onPress: () => {
+                    // deleteUserAccount(); // Add your API call or logic here
+                    Alert.alert('Delete', 'You will receive a deletion confirmation email shortly.');
+                  },
+                },
+              ],
+              { cancelable: true }
+            ),
+        },
+        {
           icon: <MaterialIcons color="#fff" name="logout" size={20} />,
           label: 'Logout',
           onPress: () => logout(),
