@@ -87,11 +87,11 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
         const bookData = {
           ISBN: product.volumeInfo?.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13')?.identifier || '',
           Title: product.volumeInfo?.title || '',
-          Pages: product.volumeInfo?.pageCount || '',
+          Pages: product.volumeInfo?.pageCount || 0,
           Price: product.saleInfo?.listPrice?.amount || 0,
           Description: product.volumeInfo?.description || '',
-          Authors: JSON.stringify(product.volumeInfo?.authors || []),
-          Genres: JSON.stringify(product.volumeInfo?.categories || []),
+          Authors: product.volumeInfo?.authors || [],
+          Genres: product.volumeInfo?.categories || [],
           Image: product.volumeInfo?.imageLinks?.thumbnail || '',
         };
 
@@ -99,7 +99,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
 
         const bookResponse = response.data;
 
-        if (bookResponse.data.message === 'Book added/updated successfully') {
+        if (bookResponse.status == "success") {
           bookId = bookResponse.data.bookId;
         } else {
           console.log('Failed to add/update book');

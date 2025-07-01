@@ -18,17 +18,18 @@ const RequestBookButton = ({ id, isGoogleBook, product, userDetails, actualPrice
           const bookData = {
             ISBN: product['volumeInfo']['industryIdentifiers']?.find(id => id.type === 'ISBN_13')?.identifier || '',
             Title: product['volumeInfo']['title'] || '',
-            Pages: product['volumeInfo']['pageCount'] || '',
-            Price: actualPrice || 0,
+            Pages: parseInt(product['volumeInfo']['pageCount'], 10) || 0,
+            Price: parseFloat(actualPrice) || 0,
             Description: product['volumeInfo']['description'] || '',
-            Authors: JSON.stringify(product['volumeInfo']['authors'] || []),
-            Genres: JSON.stringify(product['volumeInfo']['categories'] || []),
-            Image: product['volumeInfo']['imageLinks']['thumbnail'] || ''
+            Authors: product['volumeInfo']['authors'] || [],
+            Genres: product['volumeInfo']['categories'] || [],
+            Image: product['volumeInfo']['imageLinks']?.['thumbnail'] || '',
           };
 
           const response = await instance.post(requests.addBook, bookData);
           const bookResponse = response.data;
-          if (bookResponse.data.message === "Book added/updated successfully") {
+          console.log(response.data);
+          if (bookResponse.status == "success") {
             bookId = bookResponse.data.bookId;
           } else {
             Alert.alert("Failed to add/update book");
