@@ -31,6 +31,7 @@ import {
 } from '../../../theme/theme';
 import { useCity } from '../../../contexts/CityContext';
 import SeasonalRecommendations from '../components/SeasonalRecommendations';
+import HeaderBar from '../../../components/HeaderBar';
 
 // Debounce search for better performance
 const useDebounce = (callback, delay) => {
@@ -185,6 +186,7 @@ const SearchScreen = ({ route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <HeaderBar showBackButton={true} title=' ' />
         {/* Search Input */}
         <View style={styles.inputContainer}>
           <TouchableOpacity onPress={() => performSearch(searchText)}>

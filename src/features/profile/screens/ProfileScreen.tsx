@@ -4,11 +4,21 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
+import GradientBGIcon from '../../../components/GradientBGIcon';
+import HeaderBar from '../../../components/HeaderBar';
 
 const ProfileScreen = ({navigation, route}: any) => {
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0].accessToken;
     const updateProfile = useStore((state: any) => state.updateProfile);
+
+    const BackHandler = () => {
+        if (navigation.canGoBack()) {
+        navigation.pop();
+        } else {
+        navigation.navigate('Tab');
+        }
+    };
 
     // Define field configuration
     const fieldConfig = {
@@ -227,50 +237,52 @@ const ProfileScreen = ({navigation, route}: any) => {
     }, []);
 
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-            <ScrollView>
-                <SafeAreaView style={styles.wrapper}>
-                    <Text style={styles.title}>Edit Profile</Text>
-                    <TouchableOpacity onPress={() => {}}>
-                        <Image
-                            source={{ uri: avatar }}
-                            style={{ width: 100, height: 100, borderRadius: 50, margin: 20 }}
-                        />
-                    </TouchableOpacity>
+        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}>
+<           KeyboardAvoidingView
+                style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
+                <ScrollView>
+                    <HeaderBar showBackButton={true} title='Edit Profile'/>
+                    <View style={styles.wrapper}>
+                        <TouchableOpacity onPress={() => {}}>
+                            <Image
+                                source={{ uri: avatar }}
+                                style={{ width: 100, height: 100, borderRadius: 50, margin: 20 }}
+                            />
+                        </TouchableOpacity>
 
-                    {Object.keys(fieldConfig).map(renderField)}
+                        {Object.keys(fieldConfig).map(renderField)}
 
-                    {/* Password Section */}
-                    <View style={styles.passwordSection}>
-                        <Text style={styles.sectionTitle}>Change Password</Text>
-                        
-                        {renderPasswordInput(password, setPassword, 'New Password', 'password')}
-                        {renderPasswordInput(passwordCnf, setPasswordCnf, 'Confirm New Password', 'passwordCnf')}
-                        
-                        {(password || passwordCnf) && (
-                            <TouchableOpacity
-                                onPress={handlePasswordUpdate}
-                                style={[styles.button, updatingFields.password && styles.disabledButton]}
-                                disabled={updatingFields.password}
-                            >
-                                <Text style={styles.buttonText}>
-                                    {updatingFields.password ? 'Updating Password...' : 'Update Password'}
+                        {/* Password Section */}
+                        <View style={styles.passwordSection}>
+                            <Text style={styles.sectionTitle}>Change Password</Text>
+                            
+                            {renderPasswordInput(password, setPassword, 'New Password', 'password')}
+                            {renderPasswordInput(passwordCnf, setPasswordCnf, 'Confirm New Password', 'passwordCnf')}
+                            
+                            {(password || passwordCnf) && (
+                                <TouchableOpacity
+                                    onPress={handlePasswordUpdate}
+                                    style={[styles.button, updatingFields.password && styles.disabledButton]}
+                                    disabled={updatingFields.password}
+                                >
+                                    <Text style={styles.buttonText}>
+                                        {updatingFields.password ? 'Updating Password...' : 'Update Password'}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                            
+                            {updateMessages.password && (
+                                <Text style={[styles.fieldMessage, { color: updateMessages.password.color }]}>
+                                    {updateMessages.password.text}
                                 </Text>
-                            </TouchableOpacity>
-                        )}
-                        
-                        {updateMessages.password && (
-                            <Text style={[styles.fieldMessage, { color: updateMessages.password.color }]}>
-                                {updateMessages.password.text}
-                            </Text>
-                        )}
+                            )}
+                        </View>
                     </View>
-                </SafeAreaView>
-            </ScrollView>
-        </KeyboardAvoidingView>
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 };
 
@@ -283,14 +295,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 20,
         backgroundColor: COLORS.primaryBlackHex,
-    },
-    title: {
-        fontSize: FONTSIZE.size_24,
-        fontFamily: FONTFAMILY.poppins_semibold,
-        marginTop: 20,
-        marginBottom: 20,
-        textAlign: 'center',
-        color: COLORS.secondaryLightGreyHex,
     },
     fieldContainer: {
         marginBottom: 15,

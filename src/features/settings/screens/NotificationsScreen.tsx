@@ -3,10 +3,12 @@ import React from 'react';
 import Mascot from '../../../components/Mascot';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import HeaderBar from '../../../components/HeaderBar';
 
 const NotificationsScreen = () => {
   return (
     <SafeAreaView style={styles.screenContainer}>
+      <HeaderBar showBackButton={true} title='Notifications' />
         <View style={styles.mascot}>
           <Mascot emotion="sleeping"/>
           <Text style={styles.infoMessage}>No new notifications</Text>

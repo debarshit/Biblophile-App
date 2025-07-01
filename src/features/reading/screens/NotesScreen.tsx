@@ -5,6 +5,7 @@ import requests from '../../../services/requests';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import Mascot from '../../../components/Mascot';
+import HeaderBar from '../../../components/HeaderBar';
 
 const NotesScreen: React.FC = ({navigation}: any) => {
     const [notes, setNotes] = useState([]);
@@ -154,6 +155,7 @@ const NotesScreen: React.FC = ({navigation}: any) => {
 
     return (
         <SafeAreaView style={styles.safeArea}>
+            <HeaderBar showBackButton={true} title='My notes' />
             <FlatList
                 data={notes}
                 keyExtractor={(item) => item.noteId.toString()}
@@ -161,7 +163,6 @@ const NotesScreen: React.FC = ({navigation}: any) => {
                 contentContainerStyle={styles.container}
                 onEndReached={() => fetchNotes(false)}
                 onEndReachedThreshold={0.5}  // Trigger when 50% of the list is visible
-                ListHeaderComponent={<Text style={styles.title}>My Notes</Text>}
                 ListFooterComponent={loading && <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />}
                 ListEmptyComponent={!loading && <Mascot emotion="reading" />}
             />
@@ -178,13 +179,6 @@ const styles = StyleSheet.create({
         padding: SPACING.space_20,
         backgroundColor: COLORS.primaryBlackHex,
         flexGrow: 1,
-    },
-    title: {
-        fontSize: FONTSIZE.size_24,
-        fontFamily: FONTFAMILY.poppins_bold,
-        color: COLORS.primaryWhiteHex,
-        marginBottom: SPACING.space_20,
-        textAlign: 'center',
     },
     noteCard: {
         padding: SPACING.space_20,

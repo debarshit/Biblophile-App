@@ -27,11 +27,11 @@ const SocialScreen = ({ route }) => {
         component: ReadAlongsIndex,
         props: {}, // (optional) additional props
     },
-    {
-      tabLabel: 'Book Clubs',
-      component: BookClubsIndex,
-      props: {}, // (optional) additional props
-    },
+    // {
+    //   tabLabel: 'Book Clubs',
+    //   component: BookClubsIndex,
+    //   props: {}, // (optional) additional props
+    // },
   ];
 
   const initialIndex = data.findIndex(item => item.tabLabel === initialTab);

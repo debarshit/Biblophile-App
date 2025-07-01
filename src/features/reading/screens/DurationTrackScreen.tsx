@@ -5,6 +5,7 @@ import requests from '../../../services/requests';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import Mascot from '../../../components/Mascot';
+import HeaderBar from '../../../components/HeaderBar';
 
 const DurationTrackScreen: React.FC = ({navigation}: any) => {
     const [durations, setDurations] = useState([]);
@@ -61,6 +62,7 @@ const DurationTrackScreen: React.FC = ({navigation}: any) => {
 
     return (
         <SafeAreaView style={styles.safeArea}>
+            <HeaderBar showBackButton={true} title='My Reading Sessions' />
             <FlatList
                 data={durations}
                 keyExtractor={(item) => item.readingDurationId.toString()}
@@ -68,7 +70,6 @@ const DurationTrackScreen: React.FC = ({navigation}: any) => {
                 contentContainerStyle={styles.container}
                 onEndReached={() => fetchDurations(false)}
                 onEndReachedThreshold={0.5}  // Trigger when 50% of the list is visible
-                ListHeaderComponent={<Text style={styles.title}>My Reading Sessions</Text>}
                 ListFooterComponent={loading && <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />}
                 ListEmptyComponent={!loading && <Mascot emotion="reading" />}
             />
@@ -85,13 +86,6 @@ const styles = StyleSheet.create({
         padding: SPACING.space_20,
         backgroundColor: COLORS.primaryBlackHex,
         flexGrow: 1,
-    },
-    title: {
-        fontSize: FONTSIZE.size_24,
-        fontFamily: FONTFAMILY.poppins_bold,
-        color: COLORS.primaryWhiteHex,
-        marginBottom: SPACING.space_20,
-        textAlign: 'center',
     },
     durationCard: {
         padding: SPACING.space_20,

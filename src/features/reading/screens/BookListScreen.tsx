@@ -6,6 +6,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import HeaderBar from '../../../components/HeaderBar';
 
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = SPACING.space_8;
@@ -122,6 +123,7 @@ const BookListScreen = ({ route, navigation }) => {
       
     return (
       <SafeAreaView style={styles.container}>
+        <HeaderBar showBackButton={true} title={status} />
           <FlatList
               data={books}
               numColumns={2}

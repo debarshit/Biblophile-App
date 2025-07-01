@@ -161,7 +161,7 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderBar title="" />
+      <HeaderBar showBackButton={true} title="" />
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
       >

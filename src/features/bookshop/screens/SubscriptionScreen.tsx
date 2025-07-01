@@ -18,6 +18,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { COLORS, FONTSIZE, FONTFAMILY, SPACING, BORDERRADIUS } from '../../../theme/theme';
+import HeaderBar from '../../../components/HeaderBar';
 
 const { width } = Dimensions.get("window");
 
@@ -170,6 +171,7 @@ const SubscriptionScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <HeaderBar showBackButton={true} title='Subscription Options'/>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Security Deposit */}
         <View style={styles.depositView}>

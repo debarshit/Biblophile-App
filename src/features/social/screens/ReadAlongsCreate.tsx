@@ -16,6 +16,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import HeaderBar from '../../../components/HeaderBar';
 
 const ReadAlongsCreate = ({ route }: any) => {
   const [description, setDescription] = useState('');
@@ -93,6 +94,7 @@ const ReadAlongsCreate = ({ route }: any) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <HeaderBar showBackButton={true} title='Readalong' />
       <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer}>
         <Text style={styles.header}>Create a New ReadAlong</Text>
 

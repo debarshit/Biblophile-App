@@ -19,6 +19,7 @@ import { useStore } from '../../../store/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ReadalongCheckpoints from '../components/ReadalongCheckpoints';
 import { useNavigation } from '@react-navigation/native';
+import HeaderBar from '../../../components/HeaderBar';
 
 // Define the Readalong interface
 interface Host {
@@ -242,6 +243,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container} >
+      <HeaderBar showBackButton={true} title='Readalong' />
       <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer}>
         <TouchableOpacity onPress={sharePage} style={styles.shareButton}>
           <FontAwesome name="share" size={25} color={COLORS.primaryOrangeHex} />
