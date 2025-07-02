@@ -6,12 +6,14 @@ import { useStore } from '../store/store';
 import instance from '../services/axios';
 import requests from '../services/requests';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import GradientBGIcon from './GradientBGIcon';
 
 interface HeaderBarProps {
   title?: string;
+  showBackButton?: boolean;
 }
 
-const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
+const HeaderBar: React.FC<HeaderBarProps> = ({ title, showBackButton }) => {
   const navigation = useNavigation<any>();
   const [streak, setStreak] = useState(null);
   
@@ -44,12 +46,30 @@ const HeaderBar: React.FC<HeaderBarProps> = ({title}) => {
     }, [])
   );
 
+  const BackHandler = () => {
+    if (navigation.canGoBack()) {
+      navigation.pop();
+    } else {
+      navigation.navigate('Tab');
+    }
+  };
+
   return (
     <View style={styles.HeaderContainer}>
-      <Image
-          source={{uri: "https://ik.imagekit.io/umjnzfgqh/biblophile/common_assets/logos/Biblophile%20logo%20-%20white.png"}}
+      {showBackButton ? (
+        <TouchableOpacity onPress={BackHandler} style={{marginTop: -20}}>
+          <GradientBGIcon 
+            name="left" 
+            color={COLORS.primaryLightGreyHex} 
+            size={FONTSIZE.size_16} 
+          />
+        </TouchableOpacity>
+      ) : (
+        <Image
+          source={{ uri: "https://ik.imagekit.io/umjnzfgqh/biblophile/common_assets/logos/Biblophile%20logo%20-%20white.png" }}
           style={styles.Image}
         />
+      )}
       <Text style={styles.HeaderText}>{title}</Text>
       {!title && <TouchableOpacity
         onPress={() => {

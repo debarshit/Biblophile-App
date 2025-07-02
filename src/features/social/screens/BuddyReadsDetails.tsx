@@ -19,6 +19,9 @@ import { useStore } from '../../../store/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BuddyReadMembersSection from '../components/BuddyReadMembersSection';
 import BuddyReadCommentsSection from '../components/BuddyReadCommentsSection';
+import { useNavigation } from '@react-navigation/native';
+import GradientBGIcon from '../../../components/GradientBGIcon';
+import HeaderBar from '../../../components/HeaderBar';
 
 // Define the BuddyRead interface
 interface Member {
@@ -68,6 +71,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
+  const navigation = useNavigation<any>();
 
   const fetchBuddyReadDetails = useCallback(async () => {
     setLoadingInitialData(true);
@@ -231,6 +235,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container} >
+      <HeaderBar showBackButton={true} title='Buddy read' />
       <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer}>
         <TouchableOpacity onPress={sharePage} style={styles.shareButton}>
           <FontAwesome name="share" size={25} color={COLORS.primaryOrangeHex} />

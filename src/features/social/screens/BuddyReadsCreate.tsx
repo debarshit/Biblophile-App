@@ -16,6 +16,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import HeaderBar from '../../../components/HeaderBar';
 
 const BuddyReadsCreate = ({ route }: any) => {
   const [description, setDescription] = useState('');
@@ -94,6 +95,7 @@ const BuddyReadsCreate = ({ route }: any) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <HeaderBar showBackButton={true} title='Buddy read' />
       <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer}>
         <Text style={styles.header}>Create a New Buddy Read</Text>
 

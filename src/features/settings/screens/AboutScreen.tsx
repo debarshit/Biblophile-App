@@ -4,8 +4,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { FontAwesome5 } from '@expo/vector-icons';
 import TeamInfoComponent from '../components/TeamInfoComponent';
+import { useNavigation } from '@react-navigation/native';
+import GradientBGIcon from '../../../components/GradientBGIcon';
 
 const AboutScreen = () => {
+  const navigation = useNavigation<any>();
+
+  const BackHandler = () => {
+    if (navigation.canGoBack()) {
+      navigation.pop();
+    } else {
+      navigation.navigate('Tab');
+    }
+  };
 
   const renderSectionHeading = (title) => (
     <View style={styles.sectionHeadingContainer}>
@@ -54,6 +65,13 @@ const AboutScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryBlackHex} />
+      <TouchableOpacity onPress={BackHandler} style={{ position: 'absolute', top: 64, left: 16, zIndex: 1 }}>
+        <GradientBGIcon 
+          name="left" 
+          color={COLORS.primaryLightGreyHex} 
+          size={FONTSIZE.size_16} 
+        />
+      </TouchableOpacity>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <View style={styles.banner}>
           <Text style={styles.bannerTitle}>Biblophile</Text>

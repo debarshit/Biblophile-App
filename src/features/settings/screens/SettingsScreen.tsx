@@ -16,6 +16,7 @@ import { Feather, FontAwesome, MaterialIcons, FontAwesome5, Entypo } from '@expo
 import { useStore } from '../../../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
 import Constants from 'expo-constants';
+import HeaderBar from '../../../components/HeaderBar';
 
 const SettingsScreen = ({navigation, route}: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
@@ -75,12 +76,12 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
     {
       title: 'My Reading Activity',
       items: [
-        {
-          icon: <FontAwesome name="book" size={20} color="#fff" />,
-          label: 'Reading Journal',
-          onPress: () => navigation.push('ProfileSummary', { username: username }),
-          // bgColor: '#4ECDC4',
-        },
+        // {
+        //   icon: <FontAwesome name="book" size={20} color="#fff" />,
+        //   label: 'Reading Journal',
+        //   onPress: () => navigation.push('ProfileSummary', { username: username }),
+        //   // bgColor: '#4ECDC4',
+        // },
         {
           icon: <Entypo name="bar-graph" size={20} color="#fff" />,
           label: 'My Stats',
@@ -249,6 +250,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryBlackHex} />
+      <HeaderBar showBackButton={true} title='Settings and activity' />
       
       {/* Header with profile info */}
       <View style={styles.header}>

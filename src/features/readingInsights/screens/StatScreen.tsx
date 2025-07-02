@@ -12,6 +12,7 @@ import requests from '../../../services/requests';
 import ReadingGoals from '../components/ReadingGoals';
 import { Ionicons } from '@expo/vector-icons';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
+import HeaderBar from '../../../components/HeaderBar';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -563,6 +564,7 @@ const StatScreen = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.ScrollViewFlex}>
+        <HeaderBar showBackButton={true} title='Stats' />
         <ReadingGoals />
         
         {/* Monthly Wrap Link */}

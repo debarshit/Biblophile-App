@@ -5,7 +5,7 @@ import LottieView from 'lottie-react-native';
 import { COLORS, FONTSIZE } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 const OnboardingScreen = ({ navigation }: any) => {
   return (
@@ -49,11 +49,10 @@ const OnboardingScreen = ({ navigation }: any) => {
                           autoPlay
                           loop
                       /> */}
-                      <View  style={styles.tempImage}>
+                      <View style={styles.tempImage}>
                         <Mascot emotion="reading" />
                       </View>
                   </View>
-
               </View>
             ),
         },
@@ -89,7 +88,7 @@ const OnboardingScreen = ({ navigation }: any) => {
                           autoPlay
                           loop
                       /> */}
-                      <View  style={styles.tempImage}>
+                      <View style={styles.tempImage}>
                         <Mascot emotion="pendingBooks" />
                       </View>
                   </View>
@@ -106,30 +105,41 @@ export default OnboardingScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
-        marginBottom: 100, // Adjust this value to your preference
+        paddingTop: 20,
+        marginBottom: height * 0.25,
     },
     lottieContainer: {
         justifyContent: 'center',
         alignItems: 'center',
+        height: height * 0.25,
+        width: width * 0.8,
     },
     lottie: {
-        width: width * 0.85,
-        height: width,
+        width: width * 0.6,
+        height: width * 0.6,
+        maxWidth: 250,
+        maxHeight: 250,
     },
     tempImage: {
-        marginBottom: 100,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: height * 0.25,
+        width: width * 0.8,
     },
     titleText: {
         color: COLORS.primaryOrangeHex,
         fontSize: FONTSIZE.size_30,
         fontWeight: 'bold',
         margin: 10,
+        textAlign: 'center',
     },
     subtitleText: {
         color: COLORS.primaryWhiteHex,
         fontSize: FONTSIZE.size_16,
         margin: 10,
+        textAlign: 'center',
+        paddingHorizontal: 20,
     },
 });
