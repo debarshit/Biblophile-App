@@ -33,7 +33,7 @@ const requests = {
     //orders requests
     fetchOrders: `${APIURL}orders/`,
     placeOrder: `${APIURL}orders/`,
-    placeSubscriptionOrder: `orders/subscription`,
+    placeSubscriptionOrder: `${APIURL}orders/subscription`,
     updateOrder: (orderId) => `${APIURL}orders/${orderId}`,
 
     //user requests
