@@ -280,8 +280,9 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                     });
 
                     const response = forgotPasswordResponse.data;
-
-                    setLoginMessage({ text: response.data.message, color: COLORS.primaryRedHex });
+                    if (forgotPasswordResponse.data.status === 'success') {
+                        setLoginMessage({ text: 'Reset link has been sent to this email id.', color: COLORS.primaryRedHex });
+                    }
                   } catch (error) {
                     setLoginMessage({ text: "There was an error! Please try again.", color: COLORS.primaryRedHex });
                   }
