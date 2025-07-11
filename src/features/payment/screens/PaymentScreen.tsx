@@ -54,7 +54,7 @@ const PaymentScreen = ({navigation, route}: any) => {
     setAmount(action);
   };
 
-  const placeOrder = async (paymentStatus) => {
+  const placeOrder = async (paymentStatus, securityDeposit) => {
     if (userDetails[0].userAddress === null) {
       navigation.push('Profile', {
         update: "Please fill your address",
@@ -73,6 +73,7 @@ const PaymentScreen = ({navigation, route}: any) => {
             orderMode: data.prices[0].size,
             custOrderDuration: data.prices[0].quantity, //duration for rent and qty for buy
             amount: (data.prices[0].price*data.prices[0].quantity),
+            securityDeposit: parseFloat(securityDeposit),
           }, {
             headers: {
               Authorization: `Bearer ${userDetails[0].accessToken}`,
@@ -143,7 +144,7 @@ const PaymentScreen = ({navigation, route}: any) => {
   }, [action]);
   
 
-  const handleOnlinePayment = async () => {
+  const handleOnlinePayment = async (depositAmount) => {
     if (userDetails[0].userAddress === null) {
       navigation.push('Profile', {
         update: 'Please fill your address',
@@ -187,7 +188,7 @@ const PaymentScreen = ({navigation, route}: any) => {
                     if (isSubscription) {
                       placeSubscriptionOrder();
                     } else {
-                      placeOrder(1);
+                      placeOrder(1, depositAmount);
                     }
                   }
                 }
@@ -213,20 +214,20 @@ const PaymentScreen = ({navigation, route}: any) => {
           console.error('Error occurred during payment:', error);
         }
       } else {
-        placeOrder(0);
+        placeOrder(0, depositAmount);
       }
     }
   };
 
-  const buttonPressHandler = () => {
+  const buttonPressHandler = (finalAmount, depositAmount) => {
     if (paymentMode === 'Online') {
-      handleOnlinePayment();
+      handleOnlinePayment(depositAmount);
     } else {
       if (!action) {
         if (isSubscription) {
           placeSubscriptionOrder();
         } else {
-          placeOrder(0);
+          placeOrder(0, depositAmount);
         }
       }
     }

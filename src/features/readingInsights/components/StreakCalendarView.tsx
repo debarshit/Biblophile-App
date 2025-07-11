@@ -85,6 +85,7 @@ const StreakCalendarView = () => {
         </View>
       ) : (
         <Calendar
+          minDate={'2025-06-01'}
           theme={{
             calendarBackground: COLORS.primaryGreyHex,
             textSectionTitleColor: COLORS.primaryWhiteHex,

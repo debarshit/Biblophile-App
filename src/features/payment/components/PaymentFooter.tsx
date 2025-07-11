@@ -32,6 +32,9 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [subscription, setSubscription] = useState(false);
+  const [deliveryFee, setDeliveryFee] = useState("0.00");
+  const [securityDeposit, setSecurityDeposit] = useState("0.00");
+  const [totalPrice, setTotalPrice] = useState("0.00");
   const navigation = useNavigation<any>();
 
   const userDetails = useStore((state: any) => state.userDetails);
@@ -56,16 +59,40 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
   
     fetchActivePlan();
   }, []);
+
+  useEffect(() => {
+    async function fetchPricingDetails() {
+      try {
+        const delivery = calculateDeliveryFee();
+        const deposit = await calculateSecurityDeposit();
+
+        setDeliveryFee(delivery);
+        setSecurityDeposit(deposit);
+
+        const total = (
+          parseFloat(price.price) +
+          parseFloat(delivery) +
+          parseFloat(deposit)
+        ).toFixed(2);
+
+        setTotalPrice(total);
+      } catch (error) {
+        console.error('Error calculating pricing details:', error);
+      }
+    }
+
+    fetchPricingDetails();
+  }, [price.price, CartList, subscription]);
   
   // Calculate delivery fee based on cart items
-  const calculateDeliveryFee = () => {
+  const calculateDeliveryFee = (): string => {
     if (subscription) {
       return "0.00";
     }
-    
+
     let deliveryFee = 0;
     const numericCartPrice = parseFloat(price.price);
-    
+
     if (numericCartPrice < 120 && CartList.length > 0) {
       CartList.forEach((item) => {
         if (item.type === "Book") {
@@ -74,24 +101,34 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
         }
       });
     }
-    
+
     return deliveryFee.toFixed(2);
   };
 
   // Calculate the security deposit if needed
-  const calculateSecurityDeposit = () => {
-    const hasRentItem = CartList.some((item) => item.type === 'Book' && item.prices[0].size !== 'Buy');
+  const calculateSecurityDeposit = async (): Promise<string> => {
+    const hasRentItem = CartList.some(
+      (item) => item.type === 'Book' && item.prices[0].size !== 'Buy'
+    );
+
     if (!hasRentItem) {
       return "0.00";
     }
 
-    const currentDeposit = userDetails[0].deposit || 0;
-    return currentDeposit < 300 ? (300 - currentDeposit).toFixed(2) : "0.00";
+    try {
+      const response = await instance.get(requests.fetchDeposit, {
+        headers: {
+          Authorization: `Bearer ${userDetails[0].accessToken}`,
+        },
+      });
+
+      const currentDeposit = response.data.data.deposit|| 0;
+      return currentDeposit < 300 ? (300 - currentDeposit).toFixed(2) : "0.00";
+    } catch (error) {
+      console.error("Failed to fetch deposit:", error);
+      return "0.00";
+    }
   };
-  
-  const deliveryFee = calculateDeliveryFee();
-  const securityDeposit = calculateSecurityDeposit();
-  const totalPrice = (parseFloat(price.price) + parseFloat(deliveryFee) + parseFloat(securityDeposit)).toFixed(2);
 
   const navigateToSubscription = () => {
     navigation.navigate('Subscription');
@@ -138,7 +175,7 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
         </View>
         <TouchableOpacity
           style={styles.payButton}
-          onPress={() => buttonPressHandler(totalPrice)}>
+          onPress={() => buttonPressHandler(totalPrice, securityDeposit)}>
           <Text style={styles.buttonText}>{buttonTitle}</Text>
         </TouchableOpacity>
       </View>
