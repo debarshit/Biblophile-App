@@ -33,10 +33,10 @@ const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
               name={order.OrderItem}
               photo={order.OrderImage}
               prices={[
-                { size: order.OrderType === '0' ? 'Rent' : 'Buy', price: order.OrderType === '0' ? order.OrderAmount/order.OrderDuration : order.OrderAmount/order.OrderQuantity, currency: '₹' },
+                { size: order.OrderType == '0' ? 'Rent' : 'Buy', price: order.OrderType == '0' ? order.OrderAmount/order.OrderDuration : order.OrderAmount/order.OrderQuantity, currency: '₹' },
               ]}
               ItemPrice={order.OrderAmount}
-              quantity={order.OrderType === '0' ? order.OrderDuration : order.OrderQuantity}
+              quantity={order.OrderType == '0' ? order.OrderDuration : order.OrderQuantity}
             />
       </View>
       <View style={styles.CardFooter}>
