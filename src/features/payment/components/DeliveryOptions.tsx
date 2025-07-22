@@ -42,8 +42,9 @@ const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
 
   const fetchPickupLocations = async () => {
     try {
-      const response = await instance.get("/api/v0/orders/pickup-locations", {
-        headers: { Authorization: `Bearer ${userToken}` },
+      const isDevelopment = __DEV__;
+      const APIURL = isDevelopment ? 'api/v0/' : 'backend/api/v0/';
+      const response = await instance.get(`${APIURL}orders/pickup-locations`, {
       });
       if (response.data?.data) {
         setPickupLocations(response.data.data);
