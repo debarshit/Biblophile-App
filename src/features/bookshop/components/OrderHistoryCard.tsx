@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
+  Linking,
   StyleSheet,
   Text,
-  Touchable,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -41,7 +41,7 @@ const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
       </View>
       <View style={styles.CardFooter}>
         {order.DeliveryDate !== "0000-00-00" && <View>
-            <Text style={styles.FooterTitle}>Delivery Date</Text>
+            <Text style={styles.FooterTitle}>{order.PickupDropOption === 'self-pickup' ? 'Pickup from': 'Delivery Date'}</Text>
             <Text style={styles.FooterSubtitle}>{order.DeliveryDate}</Text>
           </View>}
         {order.OrderStatus === '0' && <View>
@@ -52,6 +52,28 @@ const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
             <Text style={styles.FooterPrice}> {order.DueDate}</Text>
           </View>}
       </View>
+      {order.PickupDropOption === 'self-pickup' && order.pickupLocation && (
+        <View style={{ marginTop: SPACING.space_10 }}>
+          <Text style={styles.FooterTitle}>Pickup Type: Self Pickup</Text>
+          <Text style={styles.FooterSubtitle}>
+            {order.pickupLocation.locationName}, {order.pickupLocation.cityName}
+          </Text>
+          <Text style={styles.FooterSubtitle}>{order.pickupLocation.address}</Text>
+          <Text style={styles.FooterSubtitle}>Opening Hours: {order.pickupLocation.openingHours}</Text>
+          <Text style={styles.FooterSubtitle}>Contact: {order.pickupLocation.contactNumber}</Text>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(
+                `https://www.google.com/maps/search/?api=1&query=${order.pickupLocation.latitude},${order.pickupLocation.longitude}`
+              )
+            }
+          >
+            <Text style={[styles.FooterSubtitle, { color: COLORS.primaryOrangeHex }]}>
+              📍 Get Directions
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

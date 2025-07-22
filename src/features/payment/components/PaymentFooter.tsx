@@ -8,6 +8,8 @@ import {
   SPACING,
 } from '../../../theme/theme';
 import PriceBreakdownTable from './PriceBreakdownTable';
+import DeliveryOptions from './DeliveryOptions';
+import CouponSystem from './CouponSystem';
 import requests from '../../../services/requests';
 import instance from '../../../services/axios';
 import { useStore } from '../../../store/store';
@@ -19,9 +21,15 @@ interface PriceProps {
   currency: string;
 }
 
+interface DeliveryOptionsData {
+  deliveryOption: "delivery" | "self-pickup";
+  pickupLocationId: string | null;
+  appliedCoupon: string | null;
+}
+
 interface PaymentFooterProps {
   price: PriceProps;
-  buttonPressHandler: any;
+  buttonPressHandler: (totalPrice: string, securityDeposit: string, deliveryOptions: DeliveryOptionsData) => void;
   buttonTitle: string;
 }
 
@@ -36,9 +44,24 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
   const [securityDeposit, setSecurityDeposit] = useState("0.00");
   const [totalPrice, setTotalPrice] = useState("0.00");
   const navigation = useNavigation<any>();
+  
+  // Delivery and pickup states
+  const [pickupDropOption, setPickupDropOption] = useState<"delivery" | "self-pickup">("delivery");
+  const [selectedPickupLocation, setSelectedPickupLocation] = useState<string>("");
+  
+  // Coupon state
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const CartList = useStore((state: any) => state.CartList);
+
+  // Valid coupon codes
+  const VALID_COUPONS = {
+    'PINEAPPLE': {
+      type: 'delivery_waiver',
+      description: 'Free delivery & pickup'
+    }
+  };
 
   useEffect(() => {
     async function fetchActivePlan() {
@@ -82,11 +105,11 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
     }
 
     fetchPricingDetails();
-  }, [price.price, CartList, subscription]);
+  }, [price.price, CartList, subscription, pickupDropOption, appliedCoupon]);
   
-  // Calculate delivery fee based on cart items
+  // Calculate delivery fee based on cart items, pickup option, and coupon
   const calculateDeliveryFee = (): string => {
-    if (subscription) {
+    if (subscription || pickupDropOption === "self-pickup" || appliedCoupon === 'PINEAPPLE') {
       return "0.00";
     }
 
@@ -130,13 +153,69 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
     }
   };
 
+  // Handle coupon application
+  const handleCouponApplied = (couponCode: string) => {
+    setAppliedCoupon(couponCode);
+  };
+
+  // Handle coupon removal
+  const handleCouponRemoved = () => {
+    setAppliedCoupon(null);
+  };
+
+  // Handle delivery option change
+  const handleDeliveryOptionChange = (option: "delivery" | "self-pickup") => {
+    setPickupDropOption(option);
+    if (option === "delivery") {
+      setSelectedPickupLocation("");
+    }
+  };
+
+  // Handle pickup location selection
+  const handlePickupLocationSelect = (locationId: string) => {
+    setSelectedPickupLocation(locationId);
+  };
+
   const navigateToSubscription = () => {
     navigation.navigate('Subscription');
+  };
+
+  // Handle button press with delivery options
+  const handleButtonPress = () => {
+    if (pickupDropOption === "self-pickup" && !selectedPickupLocation) {
+      alert("Please select a pickup point for self-pickup.");
+      return;
+    }
+
+    const deliveryOptions: DeliveryOptionsData = {
+      deliveryOption: pickupDropOption,
+      pickupLocationId: pickupDropOption === "self-pickup" ? selectedPickupLocation : null,
+      appliedCoupon: appliedCoupon
+    };
+    
+    buttonPressHandler(totalPrice, securityDeposit, deliveryOptions);
   };
   
   return (
     <View style={styles.priceFooterContainer}>
       {buttonTitle === 'Pay' && <>
+        {/* Delivery Options Section */}
+        <DeliveryOptions
+          deliveryOption={pickupDropOption}
+          onDeliveryOptionChange={handleDeliveryOptionChange}
+          selectedPickupLocationId={selectedPickupLocation}
+          onPickupLocationSelect={handlePickupLocationSelect}
+          userToken={userDetails[0].accessToken}
+        />
+
+        {/* Coupon Section */}
+        <CouponSystem
+          appliedCoupon={appliedCoupon}
+          onCouponApplied={handleCouponApplied}
+          onCouponRemoved={handleCouponRemoved}
+          validCoupons={VALID_COUPONS}
+        />
+
         <TouchableOpacity 
           style={styles.expandButton}
           onPress={() => setExpanded(!expanded)}>
@@ -154,12 +233,12 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
           />
         )}
 
-        {!subscription && (
+        {!subscription && parseFloat(deliveryFee) > 0 && (
           <TouchableOpacity 
             style={styles.subscriptionPromo}
             onPress={navigateToSubscription}>
             <Text style={styles.promoText}>
-            <Text style={styles.subscribeNowText}> Subscribe now </Text>
+              <Text style={styles.subscribeNowText}> Subscribe now </Text>
               to get free delivery and save on rentals!
             </Text>
           </TouchableOpacity>
@@ -175,7 +254,7 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
         </View>
         <TouchableOpacity
           style={styles.payButton}
-          onPress={() => buttonPressHandler(totalPrice, securityDeposit)}>
+          onPress={handleButtonPress}>
           <Text style={styles.buttonText}>{buttonTitle}</Text>
         </TouchableOpacity>
       </View>

@@ -14,6 +14,12 @@ import EmptyListAnimation from '../../../components/EmptyListAnimation';
 import PaymentFooter from '../../payment/components/PaymentFooter';
 import CartItem from '../components/CartItem';
 
+interface DeliveryOptionsData {
+  deliveryOption: "delivery" | "self-pickup";
+  pickupLocationId: string | null;
+  appliedCoupon: string | null;
+}
+
 const CartScreen = ({navigation, route}: any) => {
   const CartList = useStore((state: any) => state.CartList);
   const CartPrice = useStore((state: any) => state.CartPrice);
@@ -25,12 +31,14 @@ const CartScreen = ({navigation, route}: any) => {
   );
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
 
-  const buttonPressHandler = (finalPrice: string) => {
+  const buttonPressHandler = (finalPrice: string, securityDeposit: string, deliveryOptions: DeliveryOptionsData) => {
     if (CartList.length != 0) {
       // Navigate directly to Payment with the calculated final price
       navigation.push('Payment', { 
         amount: finalPrice, 
-        cart: CartList 
+        cart: CartList,
+        securityDeposit: securityDeposit,
+        deliveryOptions: deliveryOptions
       });
     }
   };

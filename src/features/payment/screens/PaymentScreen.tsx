@@ -35,6 +35,12 @@ const PaymentList = [
   },
 ];
 
+interface DeliveryOptionsData {
+  deliveryOption: "delivery" | "self-pickup";
+  pickupLocationId: string | null;
+  appliedCoupon: string | null;
+}
+
 const PaymentScreen = ({navigation, route}: any) => {
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const clearCart = useStore(
@@ -46,6 +52,13 @@ const PaymentScreen = ({navigation, route}: any) => {
   const [showAnimation, setShowAnimation] = useState(false);
   const [isSubscription, setIsSubscription] = useState(false);
   const [amount, setAmount] = useState(route.params.amount);
+
+  // Get delivery options from route params (passed from CartScreen)
+  const deliveryOptions: DeliveryOptionsData = route.params?.deliveryOptions || {
+    deliveryOption: "delivery",
+    pickupLocationId: null,
+    appliedCoupon: null
+  };
 
   const { action } = route.params || {}; // Ensure params exist
 
@@ -74,6 +87,9 @@ const PaymentScreen = ({navigation, route}: any) => {
             custOrderDuration: data.prices[0].quantity, //duration for rent and qty for buy
             amount: (data.prices[0].price*data.prices[0].quantity),
             securityDeposit: parseFloat(securityDeposit),
+            deliveryOption: deliveryOptions.deliveryOption,
+            pickupLocationId: deliveryOptions.pickupLocationId,
+            appliedCoupon: deliveryOptions.appliedCoupon
           }, {
             headers: {
               Authorization: `Bearer ${userDetails[0].accessToken}`,
