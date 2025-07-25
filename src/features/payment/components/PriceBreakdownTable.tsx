@@ -34,7 +34,7 @@ const PriceBreakdownTable: React.FC<PriceBreakdownProps> = ({
       
       <View style={styles.breakdownRow}>
         <Text style={styles.breakdownLabel}>
-          Delivery {isDeliveryFree ? "(Free)" : "Fee"}
+          Delivery {isDeliveryFree ? "(Free)" : "& pickup fee"}
         </Text>
         <Text style={[
           styles.breakdownValue, 
