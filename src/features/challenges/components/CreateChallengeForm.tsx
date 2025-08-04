@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     StyleSheet, Text, TouchableOpacity, View, Modal, TextInput, 
-    Button, Platform, ScrollView
+    Button, Platform, ScrollView, Linking
 } from 'react-native';
 import {
     BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING
@@ -183,6 +183,10 @@ const CreateChallengeForm = ({ modalVisible, setModalVisible, fetchChallenges })
         }
     };
 
+    const handleGuidelinesPress = () => {
+        Linking.openURL('https://biblophile.com/challenges/guidelines');
+    };
+
     const renderKeywordButton = (keyword) => {
         const isSelected = formData.selectedKeywords.includes(keyword.keywordId);
         const isDisabled = !isSelected && formData.selectedKeywords.length >= 3;
@@ -272,6 +276,21 @@ const CreateChallengeForm = ({ modalVisible, setModalVisible, fetchChallenges })
                                 ))}
                             </View>
                         </View>
+
+                        {/* Community Guidelines Tip */}
+                        {formData.challengeType === 'public' && (
+                            <View style={styles.guidelinesTip}>
+                                <Text style={styles.guidelinesText}>
+                                    💡 Hosting a public challenge?{' '}
+                                    <Text 
+                                        style={styles.guidelinesLink}
+                                        onPress={handleGuidelinesPress}
+                                    >
+                                        Read our community guidelines
+                                    </Text>
+                                </Text>
+                            </View>
+                        )}
 
                         {renderFormField('Category', true)}
                         <CustomPicker
@@ -417,6 +436,25 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.space_8,
         flexShrink: 1,
         flexWrap: 'wrap',
+    },
+    guidelinesTip: {
+        backgroundColor: COLORS.primaryGreyHex + '80',
+        borderRadius: BORDERRADIUS.radius_8,
+        padding: SPACING.space_12,
+        marginBottom: SPACING.space_15,
+        borderLeftWidth: 4,
+        borderLeftColor: COLORS.primaryOrangeHex,
+    },
+    guidelinesText: {
+        color: COLORS.secondaryLightGreyHex,
+        fontSize: FONTSIZE.size_14,
+        fontFamily: FONTFAMILY.poppins_regular,
+        lineHeight: 20,
+    },
+    guidelinesLink: {
+        color: COLORS.primaryOrangeHex,
+        fontFamily: FONTFAMILY.poppins_medium,
+        textDecorationLine: 'underline',
     },
     customPickerContainer: {
         marginBottom: SPACING.space_15,
