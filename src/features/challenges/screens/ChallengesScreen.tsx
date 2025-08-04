@@ -43,12 +43,11 @@ const ChallengeScreen = ({navigation}: any) => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      setMyChallenges(myChallengesResponse.data.data);
+      setMyChallenges(myChallengesResponse.data.data.challenges);
 
       // Fetch "Active Challenges"
       const activeChallengesResponse = await instance.get(requests.fetchChallenges);
-      console.log(activeChallengesResponse.data.data);
-      setActiveChallenges(activeChallengesResponse.data.data);
+      setActiveChallenges(activeChallengesResponse.data.data.challenges);
     } catch (err) {
       setError('Failed to fetch challenges');
       Toast.show({
