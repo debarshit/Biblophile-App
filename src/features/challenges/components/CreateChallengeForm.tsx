@@ -12,7 +12,7 @@ import Toast from 'react-native-toast-message';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
-import { Picker } from '@react-native-picker/picker';
+import CustomPicker from '../../../components/CustomPickerComponent';
 
 const CreateChallengeForm = ({ modalVisible, setModalVisible, fetchChallenges }) => {
     const [formData, setFormData] = useState({
@@ -213,6 +213,13 @@ const CreateChallengeForm = ({ modalVisible, setModalVisible, fetchChallenges })
         <Text style={styles.label}>{label} {required && '*'}</Text>
     );
 
+    // Transform categories data for CustomPicker
+    const categoryOptions = dataState.categories.map(category => ({
+        label: category.categoryName,
+        value: category.categoryId,
+        icon: 'category' // placeholder icon
+    }));
+
     return (
         <Modal
             animationType="slide"
@@ -267,24 +274,14 @@ const CreateChallengeForm = ({ modalVisible, setModalVisible, fetchChallenges })
                         </View>
 
                         {renderFormField('Category', true)}
-                        <View style={styles.pickerContainer}>
-                            <Picker
-                                selectedValue={formData.selectedCategory}
-                                onValueChange={(value) => updateFormData('selectedCategory', value)}
-                                style={styles.picker}
-                                itemStyle={styles.pickerItem}
-                            >
-                                <Picker.Item label="Choose a category" value="" color={COLORS.secondaryLightGreyHex} />
-                                {dataState.categories.map((category) => (
-                                    <Picker.Item
-                                        key={category.categoryId}
-                                        label={category.categoryName}
-                                        value={category.categoryId}
-                                        color={COLORS.primaryWhiteHex}
-                                    />
-                                ))}
-                            </Picker>
-                        </View>
+                        <CustomPicker
+                            options={categoryOptions}
+                            selectedValue={formData.selectedCategory}
+                            onValueChange={(value) => updateFormData('selectedCategory', value)}
+                            placeholder="Choose a category"
+                            style={styles.customPickerContainer}
+                            disabled={dataState.loading}
+                        />
 
                         <View style={styles.keywordSection}>
                             <View style={styles.keywordHeader}>
@@ -421,20 +418,9 @@ const styles = StyleSheet.create({
         flexShrink: 1,
         flexWrap: 'wrap',
     },
-    pickerContainer: {
-        backgroundColor: COLORS.primaryGreyHex,
-        borderWidth: 2,
-        borderColor: COLORS.primaryLightGreyHex,
-        borderRadius: BORDERRADIUS.radius_8,
+    customPickerContainer: {
         marginBottom: SPACING.space_15,
-        overflow: 'hidden',
-    },
-    picker: {
-        color: COLORS.primaryWhiteHex,
-        backgroundColor: COLORS.primaryGreyHex,
-    },
-    pickerItem: {
-        color: COLORS.primaryWhiteHex,
+        zIndex: 1000,
     },
     keywordSection: {
         marginBottom: SPACING.space_15,
