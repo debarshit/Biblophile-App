@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -6,76 +6,71 @@ import {
   TouchableOpacity,
   View,
   TextInput,
-  Alert,
   ActivityIndicator,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import { ProgressChart } from 'react-native-chart-kit';
 import Toast from 'react-native-toast-message';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
-import {
-  BORDERRADIUS,
-  COLORS,
-  FONTFAMILY,
-  FONTSIZE,
-  SPACING,
-} from '../../../theme/theme';
+import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
 import ChallengePrompts from '../components/ChallengePrompts';
 import ChallengePromptDetails from '../components/ChallengePromptDetails';
 import CreatePrompt from '../components/CreatePrompt';
 
-const ChallengeDetailsScreen = ({ route, navigation }: any) => {
+const { width } = Dimensions.get('window');
+
+const ChallengeDetailsScreen = ({ route, navigation }) => {
   const { challengeId } = route.params;
-  const [challenge, setChallenge] = useState(null);
-  const [description, setDescription] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [isMember, setIsMember] = useState(false);
-  const [isHost, setIsHost] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [state, setState] = useState({
+    challenge: null,
+    description: '',
+    isEditing: false,
+    progress: 0,
+    isMember: false,
+    isHost: false,
+    loading: true,
+    updateLoading: false,
+    joinLeaveLoading: false,
+    error: '',
+    currentView: 'prompts',
+    selectedPrompt: null,
+  });
 
-  const [currentView, setCurrentView] = useState<'prompts' | 'create' | 'details'>('prompts');
-  const [selectedPrompt, setSelectedPrompt] = useState(null);
-
-  const userDetails = useStore((state: any) => state.userDetails);
+  const userDetails = useStore((state) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
+
+  const updateState = (updates) => setState(prev => ({ ...prev, ...updates }));
+
+  const showToast = (type, text1, text2) => Toast.show({ type, text1, text2 });
 
   const fetchChallengeDetails = async () => {
     try {
-      setLoading(true);
-      const response = await instance(`${requests.fetchChallengeDetails(challengeId)}`);
+      updateState({ loading: true });
+      const [challengeResponse, membershipResponse] = await Promise.all([
+        instance(`${requests.fetchChallengeDetails(challengeId)}`),
+        instance.post(requests.checkChallengeMembership, { challengeId }, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+      ]);
 
-      const challengeData = response.data.data;
-      console.log(challengeData);
-      setChallenge(challengeData);
-      setDescription(challengeData.challengeDescription || 'No description available.');
-      setIsHost(challengeData.Host.userId === userDetails[0]?.userId);
+      const challengeData = challengeResponse.data.data;
+      const membershipData = membershipResponse.data.data;
 
-      const progressResponse = await instance.post(requests.checkChallengeMembership, {
-        challengeId: challengeId,
-      }, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+      updateState({
+        challenge: challengeData,
+        description: challengeData.challengeDescription || 'Such empty! Much wow!',
+        isHost: challengeData.Host.userId === userDetails[0]?.userId,
+        isMember: membershipData.isMember,
+        progress: (membershipData.progress || 0) / 100,
+        loading: false,
       });
-
-      const membershipData = progressResponse.data.data;
-      setIsMember(membershipData.isMember);
-      setProgress((membershipData.progress || 0) / 100);
-
     } catch (error) {
-      setError('Failed to fetch challenge details');
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Failed to fetch challenge details.',
-      });
-    } finally {
-      setLoading(false);
+      updateState({ error: 'Failed to fetch challenge details', loading: false });
+      showToast('error', 'Error', 'Failed to fetch challenge details.');
     }
   };
 
@@ -84,173 +79,204 @@ const ChallengeDetailsScreen = ({ route, navigation }: any) => {
   }, [challengeId]);
 
   const toggleEditing = () => {
-    setIsEditing(!isEditing);
+    updateState({
+      isEditing: !state.isEditing,
+      description: !state.isEditing ? state.description : state.challenge?.challengeDescription || 'Such empty! Much wow!'
+    });
   };
 
   const updateDescription = async () => {
     try {
-      const response = await instance.put(requests.updateChallengeDescription(challenge.challengeId), {
-        description: description,
-      }, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      updateState({ updateLoading: true });
+      const response = await instance.put(
+        requests.updateChallengeDescription(state.challenge.challengeId),
+        { description: state.description },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
 
-      const result = response.data;
-      if (result.message === 'Challenge description updated successfully.') {
-        Toast.show({
-            type: 'success',
-            text1: 'Success',
-            text2: 'Description updated!',
-        });
-      } else {
-        Alert.alert('Error', 'Failed to update description: ' + result.message);
+      if (response.data.message === 'Challenge description updated successfully.') {
+        updateState({ isEditing: false, updateLoading: false });
+        showToast('success', 'Success', 'Description updated!');
       }
     } catch (error) {
-      Alert.alert('Error', 'An error occurred while updating the description.');
+      updateState({ updateLoading: false });
+      showToast('error', 'Error', 'Failed to update description.');
     }
   };
 
   const joinOrLeaveChallenge = async () => {
     try {
-      const response = await instance.post(requests.JoinLeaveChallenge, {
-        challengeId: challenge.challengeId,
-      }, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      updateState({ joinLeaveLoading: true });
+      const response = await instance.post(
+        requests.JoinLeaveChallenge,
+        { challengeId: state.challenge.challengeId },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
 
-      const data = response.data;
-      if (data.message === 'User successfully joined the challenge.') {
-        setIsMember(true);
-        Toast.show({
-          type: 'success',
-          text1: 'Success',
-          text2: 'You joined the challenge!',
-        });
-      } else if (data.message === 'User successfully left the challenge.') {
-        setIsMember(false);
-        Toast.show({
-          type: 'success',
-          text1: 'Success',
-          text2: 'You left the challenge.',
-        });
-      }
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Failed to join/leave the challenge.',
+      const { message } = response.data;
+      const isJoining = message === 'User successfully joined the challenge.';
+      
+      updateState({ 
+        isMember: isJoining, 
+        joinLeaveLoading: false 
       });
+      
+      showToast('success', 'Success', isJoining ? 'You joined the challenge!' : 'You left the challenge.');
+    } catch (error) {
+      updateState({ joinLeaveLoading: false });
+      showToast('error', 'Error', 'Failed to join/leave the challenge.');
     }
   };
 
-  if (loading) {
-    return <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />;
-  }
+  const LoadingButton = ({ loading, onPress, style, children, ...props }) => (
+    <TouchableOpacity onPress={onPress} style={style} disabled={loading} {...props}>
+      {loading ? (
+        <View style={styles.loadingButtonContent}>
+          <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
+          <Text style={styles.buttonText}>Loading...</Text>
+        </View>
+      ) : children}
+    </TouchableOpacity>
+  );
 
-  if (error) {
-    return <Text style={styles.errorText}>{error}</Text>;
-  }
+  const LoadingScreen = ({ message }) => (
+    <SafeAreaView style={styles.container}>
+      <HeaderBar showBackButton={true} title="" />
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />
+        <Text style={styles.loadingText}>{message}</Text>
+      </View>
+    </SafeAreaView>
+  );
 
-  if (!challenge) {
-    return <Text style={styles.errorText}>Challenge not found.</Text>;
-  }
+  if (state.loading) return <LoadingScreen message="Loading challenge..." />;
+  if (state.error) return <LoadingScreen message={state.error} />;
+  if (!state.challenge) return <LoadingScreen message="Challenge not found" />;
+
+  const { challenge, description, isEditing, progress, isMember, isHost } = state;
+  const isExpired = challenge.endDate < new Date().toISOString();
 
   return (
     <SafeAreaView style={styles.container}>
       <HeaderBar showBackButton={true} title="" />
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-      >
-      <Text style={styles.challengeTitle}>{challenge.challengeTitle}</Text>
-
-      {/* Join/Leave Challenge Button */}
-      <TouchableOpacity onPress={joinOrLeaveChallenge} style={styles.joinLeaveButton}>
-        <Text style={styles.joinLeaveButtonText}>{isMember ? 'Leave Challenge' : 'Join Challenge'}</Text>
-      </TouchableOpacity>
-
-      {/* Progress */}
-      {isMember && (
-        <View style={styles.progressContainer}>
-          <Text style={styles.progressText}>Your Progress</Text>
-          <ProgressChart
-            data={{ data: [progress] }}
-            width={300}
-            height={200}
-            strokeWidth={16}
-            radius={60}
-            chartConfig={{
-              backgroundColor: 'transparent',
-              backgroundGradientFrom: COLORS.primaryDarkGreyHex,
-              backgroundGradientTo: COLORS.primaryDarkGreyHex,
-              color: (opacity = 1) => COLORS.secondaryLightGreyHex,
-              labelColor: (opacity = 1) => COLORS.primaryOrangeHex,
-            }}
-            hideLegend={false}
-          />
-        </View>
-      )}
-
-      {/* Description Section */}
-      <View style={styles.descriptionContainer}>
-        <Text style={styles.descriptionTitle}>Description</Text>
-        {isEditing ? (
-          <View>
-            <TextInput
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              style={styles.descriptionInput}
-            />
-            <TouchableOpacity onPress={updateDescription} style={styles.saveButton}>
-              <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        
+        {/* Header Card */}
+        <View style={styles.card}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.challengeTitle}>{challenge.challengeTitle}</Text>
+            <View style={styles.hostBadge}>
+              <Text style={styles.hostBadgeText}>
+                Run by: <Text style={styles.hostName}>{challenge.Host.name}</Text>
+              </Text>
+            </View>
           </View>
-        ) : (
-          <Text style={styles.descriptionText}>{description}</Text>
-        )}
-        {isHost && !isEditing && (
-          <TouchableOpacity onPress={toggleEditing} style={styles.editButton}>
-            <Text style={styles.editButtonText}>Edit</Text>
-          </TouchableOpacity>
-        )}
-      </View>
 
-      {/* ChallengePromptlist, createprompt, or promptdetails component based on what user selects */}
-      {isMember && (
-        <View style={styles.promptsContainer}>
-            {currentView === 'prompts' && (
-            <ChallengePrompts 
+          {!isExpired && (
+            <View style={styles.actionButtonContainer}>
+              <LoadingButton 
+                loading={state.joinLeaveLoading}
+                onPress={joinOrLeaveChallenge}
+                style={[styles.joinLeaveButton, isMember ? styles.leaveButton : styles.joinButton]}
+              >
+                <Text style={styles.buttonText}>
+                  {isMember ? 'Leave Challenge' : 'Join Challenge'}
+                </Text>
+              </LoadingButton>
+            </View>
+          )}
+
+          {isMember && progress !== null && (
+            <View style={styles.progressCard}>
+              <Text style={styles.progressLabel}>Your Progress</Text>
+              <ProgressChart
+                data={{ data: [progress] }}
+                width={width - 120}
+                height={180}
+                strokeWidth={12}
+                radius={50}
+                chartConfig={{
+                  backgroundColor: 'transparent',
+                  backgroundGradientFrom: COLORS.primaryDarkGreyHex,
+                  backgroundGradientTo: COLORS.primaryDarkGreyHex,
+                  color: (opacity = 1) => `rgba(255, 138, 101, ${opacity})`,
+                  labelColor: (opacity = 1) => COLORS.primaryWhiteHex,
+                }}
+                hideLegend={false}
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Description Card */}
+        <View style={styles.card}>
+          <View style={styles.descriptionHeader}>
+            <Text style={styles.descriptionTitle}>Description</Text>
+            {isHost && !isEditing && (
+              <TouchableOpacity onPress={toggleEditing} style={styles.editButton}>
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {isEditing ? (
+            <View style={styles.editingContainer}>
+              <TextInput
+                value={description}
+                onChangeText={(text) => updateState({ description: text })}
+                multiline
+                style={styles.descriptionInput}
+                placeholder="Enter challenge description..."
+                placeholderTextColor={COLORS.secondaryLightGreyHex}
+                textAlignVertical="top"
+              />
+              <View style={styles.editButtonsContainer}>
+                <TouchableOpacity onPress={toggleEditing} style={styles.cancelButton}>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <LoadingButton 
+                  loading={state.updateLoading}
+                  onPress={updateDescription}
+                  style={styles.saveButton}
+                >
+                  <Text style={styles.saveButtonText}>Save</Text>
+                </LoadingButton>
+              </View>
+            </View>
+          ) : (
+            <Text style={styles.descriptionText}>{description}</Text>
+          )}
+        </View>
+
+        {/* Prompts Section */}
+        {isMember && (
+          <View style={styles.promptsContainer}>
+            {state.currentView === 'prompts' && (
+              <ChallengePrompts 
                 ChallengeId={challengeId} 
                 IsHost={isHost}
-                onCreatePrompt={() => setCurrentView('create')}
-                onViewPrompt={(prompt) => {
-                setSelectedPrompt(prompt);
-                setCurrentView('details');
-                }}
-            />
+                onCreatePrompt={() => updateState({ currentView: 'create' })}
+                onViewPrompt={(prompt) => updateState({ selectedPrompt: prompt, currentView: 'details' })}
+              />
             )}
-            {currentView === 'create' && (
-            <CreatePrompt
+            {state.currentView === 'create' && (
+              <CreatePrompt
                 IsHost={isHost}
                 challengeId={challengeId}
-                onBack={() => setCurrentView('prompts')}
+                onBack={() => updateState({ currentView: 'prompts' })}
                 onSuccess={() => {
-                setCurrentView('prompts');
-                fetchChallengeDetails(); // Refresh the data
+                  updateState({ currentView: 'prompts' });
+                  fetchChallengeDetails();
                 }}
-            />
+              />
             )}
-            {currentView === 'details' && selectedPrompt && (
-            <ChallengePromptDetails 
-                promptId={selectedPrompt.promptId}
-                onBack={() => setCurrentView('prompts')}
-            />
+            {state.currentView === 'details' && state.selectedPrompt && (
+              <ChallengePromptDetails 
+                promptId={state.selectedPrompt.promptId}
+                onBack={() => updateState({ currentView: 'prompts' })}
+              />
             )}
-        </View>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -261,96 +287,175 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
-    padding: SPACING.space_20,
   },
   scrollContainer: {
-    padding: SPACING.space_20,
+    padding: SPACING.space_16,
     paddingBottom: SPACING.space_30,
   },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_medium,
+    marginTop: SPACING.space_10,
+    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    borderRadius: BORDERRADIUS.radius_20,
+    padding: SPACING.space_24,
+    marginBottom: SPACING.space_16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: SPACING.space_20,
+  },
   challengeTitle: {
-    fontSize: FONTSIZE.size_24,
+    fontSize: FONTSIZE.size_28,
     fontFamily: FONTFAMILY.poppins_bold,
     color: COLORS.primaryWhiteHex,
-    marginBottom: SPACING.space_10,
+    textAlign: 'center',
+    marginBottom: SPACING.space_12,
+    lineHeight: 36,
   },
-  progressContainer: {
-    alignItems: 'center',
-    marginVertical: SPACING.space_20,
-    backgroundColor: COLORS.primaryDarkGreyHex
+  hostBadge: {
+    backgroundColor: COLORS.secondaryGreyHex,
+    paddingHorizontal: SPACING.space_16,
+    paddingVertical: SPACING.space_8,
+    borderRadius: BORDERRADIUS.radius_25,
   },
-  progressText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_18,
+  hostBadgeText: {
+    color: COLORS.secondaryLightGreyHex,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+  },
+  hostName: {
     fontFamily: FONTFAMILY.poppins_semibold,
-    marginTop: SPACING.space_10,
-    marginBottom: SPACING.space_10,
   },
-  descriptionContainer: {
-    marginTop: SPACING.space_30,
-    backgroundColor: COLORS.primaryDarkGreyHex,
-    padding: SPACING.space_20,
-    borderRadius: BORDERRADIUS.radius_10,
+  actionButtonContainer: {
+    alignItems: 'center',
+    marginBottom: SPACING.space_16,
+  },
+  joinLeaveButton: {
+    paddingVertical: SPACING.space_16,
+    paddingHorizontal: SPACING.space_32,
+    borderRadius: BORDERRADIUS.radius_15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    minWidth: 160,
+    alignItems: 'center',
+  },
+  joinButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+  },
+  leaveButton: {
+    backgroundColor: COLORS.primaryRedHex,
+  },
+  buttonText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_semibold,
+  },
+  loadingButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.space_8,
+  },
+  progressCard: {
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    borderRadius: BORDERRADIUS.radius_15,
+    padding: SPACING.space_16,
+    alignItems: 'center',
+  },
+  progressLabel: {
+    color: COLORS.secondaryLightGreyHex,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_medium,
+    marginBottom: SPACING.space_8,
+  },
+  descriptionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.space_16,
   },
   descriptionTitle: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_bold,
-    marginBottom: SPACING.space_10,
-  },
-  descriptionInput: {
-    height: 100,
-    borderColor: COLORS.primaryLightGreyHex,
-    borderWidth: 1,
-    borderRadius: BORDERRADIUS.radius_10,
-    padding: SPACING.space_10,
-    color: COLORS.primaryWhiteHex,
-    marginBottom: SPACING.space_10,
-  },
-  descriptionText: {
-    color: COLORS.primaryLightGreyHex,
-    fontSize: FONTSIZE.size_16,
-  },
-  saveButton: {
-    backgroundColor: COLORS.primaryOrangeHex,
-    paddingVertical: SPACING.space_10,
-    paddingHorizontal: SPACING.space_20,
-    borderRadius: BORDERRADIUS.radius_25,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.secondaryLightGreyHex,
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_semibold,
   },
   editButton: {
-    marginTop: SPACING.space_10,
-    alignItems: 'center',
+    paddingVertical: SPACING.space_4,
+    paddingHorizontal: SPACING.space_8,
   },
   editButtonText: {
     color: COLORS.primaryOrangeHex,
     fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_medium,
   },
-  joinLeaveButton: {
-    marginTop: SPACING.space_20,
+  editingContainer: {
+    gap: SPACING.space_16,
+  },
+  descriptionInput: {
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    borderColor: COLORS.primaryLightGreyHex,
+    borderWidth: 1,
+    borderRadius: BORDERRADIUS.radius_15,
+    padding: SPACING.space_16,
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    minHeight: 120,
+    textAlignVertical: 'top',
+  },
+  editButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: SPACING.space_12,
+  },
+  cancelButton: {
+    paddingVertical: SPACING.space_12,
+    paddingHorizontal: SPACING.space_20,
+  },
+  cancelButtonText: {
+    color: COLORS.secondaryLightGreyHex,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_medium,
+  },
+  saveButton: {
     backgroundColor: COLORS.primaryOrangeHex,
     paddingVertical: SPACING.space_12,
-    paddingHorizontal: SPACING.space_30,
-    borderRadius: BORDERRADIUS.radius_25,
-    alignSelf: 'flex-start',
+    paddingHorizontal: SPACING.space_24,
+    borderRadius: BORDERRADIUS.radius_10,
+    alignItems: 'center',
+    minWidth: 80,
   },
-  joinLeaveButtonText: {
+  saveButtonText: {
     color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_bold,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_semibold,
+  },
+  descriptionText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    lineHeight: 22,
   },
   promptsContainer: {
     flex: 1,
     minHeight: 300,
-  },
-  errorText: {
-    color: COLORS.primaryRedHex,
-    textAlign: 'center',
-    marginTop: SPACING.space_20,
   },
 });
 

@@ -205,7 +205,6 @@ const styles = StyleSheet.create({
     },
     radioGroup: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
         justifyContent: 'space-between',
         marginTop: SPACING.space_10,
     },

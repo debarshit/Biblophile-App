@@ -187,8 +187,9 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
                     </View>
                 ) : (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Completed</Text>
                         <View style={styles.checkboxContainer}>
+                            <Text style={styles.sectionTitle}>Completed: </Text>
+                            <Text style={styles.checkboxLabel}>{isCompleted ? 'Yes' : 'No'}</Text>
                             <BouncyCheckbox
                                 size={25}
                                 fillColor="#D17842"
@@ -196,7 +197,6 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
                                 isChecked={isCompleted}
                                 onPress={() => setIsCompleted(!isCompleted)}
                             />
-                            <Text style={styles.checkboxLabel}>{isCompleted ? 'Yes' : 'No'}</Text>
                         </View>
                     </View>
                 )}
@@ -293,15 +293,14 @@ const styles = StyleSheet.create({
         marginTop: SPACING.space_20,
     },
     checkboxContainer: {
+        display: 'flex',
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
         marginTop: SPACING.space_10,
     },
     checkboxLabel: {
         color: COLORS.primaryOrangeHex,
         fontSize: FONTSIZE.size_16,
-        marginLeft: SPACING.space_8,
+        marginHorizontal: SPACING.space_8,
     },
     recommendationsContainer: {
         marginTop: SPACING.space_20,
