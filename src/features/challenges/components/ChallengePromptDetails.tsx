@@ -36,6 +36,11 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0]?.accessToken;
 
+    const hasQuantifiableTarget = promptData?.promptValue !== null;
+    const progressPercentage = hasQuantifiableTarget 
+        ? Math.min((Number(progress) / Number(promptData?.promptValue || 1)) * 100, 100)
+        : isCompleted ? 100 : 0;
+
     const fetchPromptDetails = async () => {
         try {
           setIsLoading(true);
@@ -72,10 +77,14 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
         if (!promptData) return;
 
         try {
-            const response = await instance.patch(requests.updatePromptProgress(promptId), {
-                progress: promptData.promptValue ? progress : null,
-                isCompleted: !promptData.promptValue ? true : isCompleted,
-              }, {
+            const payload: any = {};
+            if (hasQuantifiableTarget) {
+                payload.progress = progress;
+            } else {
+                payload.isCompleted = isCompleted ? 1 : 0;
+            }
+            const response = await instance.patch(requests.updatePromptProgress(promptId),
+            payload, {
                 headers: {
                   'Content-Type': 'application/json',
                   Authorization: `Bearer ${accessToken}`,
