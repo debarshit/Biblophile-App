@@ -152,7 +152,8 @@ const requests = {
     fetchChallengePrompts: (challengeId) => `${APIURL}challenges/${challengeId}/prompts`,
     fetchPromptDetails: (promptId) => `${APIURL}challenges/prompts/${promptId}`,
     updatePromptProgress: (promptId) => `${APIURL}challenges/prompts/${promptId}/progress`,
-
+    fetchCategories:`${APIURL}challenges/categories`,
+    fetchKeywords:`${APIURL}challenges/keywords`,
 }
 
 export default requests;

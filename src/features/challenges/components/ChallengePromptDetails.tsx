@@ -36,6 +36,11 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0]?.accessToken;
 
+    const hasQuantifiableTarget = promptData?.promptValue !== null;
+    const progressPercentage = hasQuantifiableTarget 
+        ? Math.min((Number(progress) / Number(promptData?.promptValue || 1)) * 100, 100)
+        : isCompleted ? 100 : 0;
+
     const fetchPromptDetails = async () => {
         try {
           setIsLoading(true);
@@ -72,10 +77,14 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
         if (!promptData) return;
 
         try {
-            const response = await instance.patch(requests.updatePromptProgress(promptId), {
-                progress: promptData.promptValue ? progress : null,
-                isCompleted: !promptData.promptValue ? true : isCompleted,
-              }, {
+            const payload: any = {};
+            if (hasQuantifiableTarget) {
+                payload.progress = progress;
+            } else {
+                payload.isCompleted = isCompleted ? 1 : 0;
+            }
+            const response = await instance.patch(requests.updatePromptProgress(promptId),
+            payload, {
                 headers: {
                   'Content-Type': 'application/json',
                   Authorization: `Bearer ${accessToken}`,
@@ -187,8 +196,9 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
                     </View>
                 ) : (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Completed</Text>
                         <View style={styles.checkboxContainer}>
+                            <Text style={styles.sectionTitle}>Completed: </Text>
+                            <Text style={styles.checkboxLabel}>{isCompleted ? 'Yes' : 'No'}</Text>
                             <BouncyCheckbox
                                 size={25}
                                 fillColor="#D17842"
@@ -196,7 +206,6 @@ const ChallengePromptDetails: React.FC<ChallengePromptDetailsProps> = ({
                                 isChecked={isCompleted}
                                 onPress={() => setIsCompleted(!isCompleted)}
                             />
-                            <Text style={styles.checkboxLabel}>{isCompleted ? 'Yes' : 'No'}</Text>
                         </View>
                     </View>
                 )}
@@ -293,15 +302,14 @@ const styles = StyleSheet.create({
         marginTop: SPACING.space_20,
     },
     checkboxContainer: {
+        display: 'flex',
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
         marginTop: SPACING.space_10,
     },
     checkboxLabel: {
         color: COLORS.primaryOrangeHex,
         fontSize: FONTSIZE.size_16,
-        marginLeft: SPACING.space_8,
+        marginHorizontal: SPACING.space_8,
     },
     recommendationsContainer: {
         marginTop: SPACING.space_20,

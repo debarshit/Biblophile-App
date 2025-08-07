@@ -28,10 +28,11 @@ const CreatePrompt = ({ challengeId, IsHost, onBack, onSuccess }) => {
         try {
             const promptData = {
                 challengeId,
-                promptDescription,
-                promptType: promptType,
-                promptValue,
-                bookRecommendations
+                promptId: null,
+                promptDescription: promptDescription?.trim() || null,
+                promptType: promptType?.trim() || null,
+                promptValue: promptValue?.trim() || null,
+                bookRecommendations: bookRecommendations?.trim() || null,
             };
 
             const response = await instance.post(requests.createOrUpdateChallengePrompts, promptData, {
@@ -205,7 +206,6 @@ const styles = StyleSheet.create({
     },
     radioGroup: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
         justifyContent: 'space-between',
         marginTop: SPACING.space_10,
     },
