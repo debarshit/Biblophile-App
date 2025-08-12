@@ -20,7 +20,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import BuddyReadMembersSection from '../components/BuddyReadMembersSection';
 import BuddyReadCommentsSection from '../components/BuddyReadCommentsSection';
 import { useNavigation } from '@react-navigation/native';
-import GradientBGIcon from '../../../components/GradientBGIcon';
 import HeaderBar from '../../../components/HeaderBar';
 
 // Define the BuddyRead interface
@@ -86,7 +85,6 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
         }
       );
       const buddyReadData = buddyReadResponse.data.data;
-      console.log(buddyReadResponse.data.data)
       setBuddyRead(buddyReadData);
       setDescription(buddyReadData?.buddy_read_description || 'Such empty! Much wow!');
 
@@ -301,6 +299,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
               buddyRead={buddyRead}
               memberDisplayCount={memberDisplayCount}
               loadMoreMembers={loadMoreMembers}
+              currentUserId={currentUser.userId}
             />
 
             <BuddyReadCommentsSection
