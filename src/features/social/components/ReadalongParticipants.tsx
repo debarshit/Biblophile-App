@@ -3,10 +3,8 @@ import {
   StyleSheet,
   Text,
   View,
-  FlatList,
   ActivityIndicator,
   Alert,
-  RefreshControl,
   TouchableOpacity,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
@@ -14,6 +12,7 @@ import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../th
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
+import ReadalongMembersList from './ReadalongMembersList';
 
 interface Participant {
   userId: number;
@@ -56,31 +55,21 @@ interface Props {
 const ReadalongParticipants: React.FC<Props> = ({ readalongId }) => {
   const [participantsData, setParticipantsData] = useState<ParticipantsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [loadingMore, setLoadingMore] = useState<boolean>(false);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
 
-  const fetchParticipants = useCallback(async (page: number = 1, isRefresh: boolean = false) => {
+  const fetchStatistics = useCallback(async () => {
     if (!accessToken) return;
 
-    if (isRefresh) {
-      setRefreshing(true);
-      setCurrentPage(1);
-    } else if (page > 1) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-    }
-
+    setLoading(true);
     setError(null);
 
     try {
       const response = await instance.get(
-        `${requests.fetchReadalongParticipants(readalongId)}?page=${page}&limit=20`,
+        `${requests.fetchReadalongParticipants(readalongId)}?page=1&limit=1`, // Just fetch first page for statistics
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -88,64 +77,22 @@ const ReadalongParticipants: React.FC<Props> = ({ readalongId }) => {
         }
       );
 
-      const newData = response.data.data;
-
-      if (isRefresh || page === 1) {
-        setParticipantsData(newData);
-        setCurrentPage(1);
-      } else {
-        // Append new members to existing data
-        setParticipantsData(prev => {
-          if (!prev) return newData;
-          return {
-            ...newData,
-            members: {
-              ...newData.members,
-              data: [...prev.members.data, ...newData.members.data]
-            }
-          };
-        });
-      }
-
-      setCurrentPage(page);
+      setParticipantsData(response.data.data);
     } catch (err: any) {
-      setError('Failed to fetch participants');
-      console.error('Error fetching participants:', err);
-      Alert.alert('Error', 'Failed to load participants data');
+      setError('Failed to fetch reading statistics');
+      console.error('Error fetching statistics:', err);
+      Alert.alert('Error', 'Failed to load reading statistics');
     } finally {
       setLoading(false);
-      setLoadingMore(false);
-      setRefreshing(false);
     }
   }, [readalongId, accessToken]);
 
   useEffect(() => {
-    fetchParticipants(1);
-  }, [fetchParticipants]);
+    fetchStatistics();
+  }, [fetchStatistics]);
 
-  const onRefresh = useCallback(() => {
-    fetchParticipants(1, true);
-  }, [fetchParticipants]);
-
-  const loadMoreParticipants = useCallback(() => {
-    if (participantsData?.members.pagination.hasNextPage && !loadingMore) {
-      fetchParticipants(currentPage + 1);
-    }
-  }, [participantsData, currentPage, loadingMore, fetchParticipants]);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Read':
-        return COLORS.primaryGreenHex || '#4CAF50';
-      case 'Currently reading':
-        return COLORS.primaryOrangeHex;
-      case 'Paused':
-        return COLORS.primaryYellowHex || '#FFC107';
-      case 'Did not finish':
-        return COLORS.primaryRedHex;
-      default:
-        return COLORS.primaryLightGreyHex;
-    }
+  const handleViewAllMembers = () => {
+    setModalVisible(true);
   };
 
   const renderStatisticsCard = () => {
@@ -155,7 +102,17 @@ const ReadalongParticipants: React.FC<Props> = ({ readalongId }) => {
 
     return (
       <View style={styles.statisticsContainer}>
-        <Text style={styles.sectionTitle}>Reading Statistics</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.sectionTitle}>Reading Statistics</Text>
+          <TouchableOpacity 
+            style={styles.viewAllButton} 
+            onPress={handleViewAllMembers}
+          >
+            <Text style={styles.viewAllText}>View Members</Text>
+            <FontAwesome name="chevron-right" size={12} color={COLORS.primaryOrangeHex} />
+          </TouchableOpacity>
+        </View>
+        
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>{books_completed_percentage}%</Text>
@@ -181,68 +138,11 @@ const ReadalongParticipants: React.FC<Props> = ({ readalongId }) => {
     );
   };
 
-  const renderParticipant = ({ item }: { item: Participant }) => {
-    const progressWidth = Math.max(item.progressPercentage, 5); // Minimum width for visibility
-
-    return (
-      <View style={[styles.participantCard, item.isCurrentUser && styles.currentUserCard]}>
-        <View style={styles.participantHeader}>
-          <View style={styles.participantInfo}>
-            <Text style={[styles.participantName, item.isCurrentUser && styles.currentUserName]}>
-              {item.name} {item.isCurrentUser && '(You)'}
-            </Text>
-            <Text style={styles.participantUsername}>@{item.userName}</Text>
-          </View>
-          <View style={styles.participantMeta}>
-            {item.rating && (
-              <View style={styles.ratingBadge}>
-                <FontAwesome name="star" size={12} color={COLORS.primaryOrangeHex} />
-                <Text style={styles.ratingText}>{item.rating}</Text>
-              </View>
-            )}
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-              <Text style={styles.statusText}>{item.status}</Text>
-            </View>
-          </View>
-        </View>
-        
-        <View style={styles.progressSection}>
-          <View style={styles.progressInfo}>
-            <Text style={styles.progressText}>
-              {item.currentPage} / {item.totalPages} pages ({item.progressPercentage}%)
-            </Text>
-          </View>
-          <View style={styles.progressBarContainer}>
-            <View 
-              style={[
-                styles.progressBar, 
-                { 
-                  width: `${progressWidth}%`,
-                  backgroundColor: item.isCurrentUser ? COLORS.primaryOrangeHex : COLORS.secondaryLightGreyHex 
-                }
-              ]} 
-            />
-          </View>
-        </View>
-      </View>
-    );
-  };
-
-  const renderFooter = () => {
-    if (!loadingMore) return null;
-    return (
-      <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={COLORS.primaryOrangeHex} />
-        <Text style={styles.loadingText}>Loading more participants...</Text>
-      </View>
-    );
-  };
-
-  if (loading && !refreshing) {
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />
-        <Text style={styles.loadingText}>Loading participants...</Text>
+        <Text style={styles.loadingText}>Loading reading statistics...</Text>
       </View>
     );
   }
@@ -252,7 +152,7 @@ const ReadalongParticipants: React.FC<Props> = ({ readalongId }) => {
       <View style={styles.errorContainer}>
         <FontAwesome name="exclamation-triangle" size={48} color={COLORS.primaryRedHex} />
         <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => fetchParticipants(1)}>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchStatistics}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
       </View>
@@ -261,24 +161,13 @@ const ReadalongParticipants: React.FC<Props> = ({ readalongId }) => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={participantsData?.members.data || []}
-        keyExtractor={(item) => item.userId.toString()}
-        renderItem={renderParticipant}
-        ListHeaderComponent={renderStatisticsCard}
-        ListFooterComponent={renderFooter}
-        onEndReached={loadMoreParticipants}
-        onEndReachedThreshold={0.1}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[COLORS.primaryOrangeHex]}
-            tintColor={COLORS.primaryOrangeHex}
-          />
-        }
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContainer}
+      {renderStatisticsCard()}
+      
+      <ReadalongMembersList
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        readalongId={readalongId}
+        accessToken={accessToken}
       />
     </View>
   );
@@ -288,10 +177,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
-  },
-  listContainer: {
     paddingHorizontal: SPACING.space_15,
-    paddingBottom: SPACING.space_20,
+    paddingTop: SPACING.space_20,
   },
   loadingContainer: {
     flex: 1,
@@ -335,18 +222,33 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryDarkGreyHex,
     padding: SPACING.space_20,
     borderRadius: BORDERRADIUS.radius_15,
-    marginBottom: SPACING.space_20,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.space_15,
   },
   sectionTitle: {
     color: COLORS.primaryWhiteHex,
     fontSize: FONTSIZE.size_18,
     fontFamily: FONTFAMILY.poppins_semibold,
-    marginBottom: SPACING.space_15,
+  },
+  viewAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.space_4,
+  },
+  viewAllText: {
+    color: COLORS.primaryOrangeHex,
+    fontSize: FONTSIZE.size_12,
+    fontFamily: FONTFAMILY.poppins_medium,
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    marginBottom: SPACING.space_20,
   },
   statCard: {
     width: '48%',
@@ -372,98 +274,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.space_4,
-  },
-  participantCard: {
-    backgroundColor: COLORS.primaryDarkGreyHex,
-    padding: SPACING.space_15,
-    borderRadius: BORDERRADIUS.radius_10,
-    marginBottom: SPACING.space_10,
-  },
-  currentUserCard: {
-    borderWidth: 2,
-    borderColor: COLORS.primaryOrangeHex,
-  },
-  participantHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.space_10,
-  },
-  participantInfo: {
-    flex: 1,
-  },
-  participantName: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_16,
-    fontFamily: FONTFAMILY.poppins_medium,
-  },
-  currentUserName: {
-    color: COLORS.primaryOrangeHex,
-  },
-  participantUsername: {
-    color: COLORS.primaryLightGreyHex,
-    fontSize: FONTSIZE.size_12,
-    fontFamily: FONTFAMILY.poppins_regular,
-    marginTop: SPACING.space_2,
-  },
-  participantMeta: {
-    alignItems: 'flex-end',
-    gap: SPACING.space_8,
-  },
-  ratingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primaryBlackHex,
-    paddingHorizontal: SPACING.space_8,
-    paddingVertical: SPACING.space_4,
-    borderRadius: BORDERRADIUS.radius_8,
-    gap: SPACING.space_4,
-  },
-  ratingText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_12,
-    fontFamily: FONTFAMILY.poppins_medium,
-  },
-  statusBadge: {
-    paddingHorizontal: SPACING.space_8,
-    paddingVertical: SPACING.space_4,
-    borderRadius: BORDERRADIUS.radius_8,
-  },
-  statusText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_10,
-    fontFamily: FONTFAMILY.poppins_medium,
-    textAlign: 'center',
-  },
-  progressSection: {
-    gap: SPACING.space_8,
-  },
-  progressInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  progressText: {
-    color: COLORS.primaryLightGreyHex,
-    fontSize: FONTSIZE.size_12,
-    fontFamily: FONTFAMILY.poppins_regular,
-  },
-  progressBarContainer: {
-    height: 4,
-    backgroundColor: COLORS.primaryBlackHex,
-    borderRadius: BORDERRADIUS.radius_4,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: BORDERRADIUS.radius_4,
-  },
-  footerLoader: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: SPACING.space_20,
-    gap: SPACING.space_10,
   },
 });
 

@@ -308,12 +308,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
         </View>
 
         {isMember && (
-          <View style={{ marginTop: SPACING.space_20 }}>
-            <Text style={[styles.descriptionTitle, { marginBottom: SPACING.space_15 }]}>
-              Participants
-            </Text>
             <ReadalongParticipants readalongId={readalong.readalongId} />
-          </View>
         )}
 
           {/* update the text color; it is invisible currently */}
