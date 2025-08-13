@@ -41,14 +41,14 @@ const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) 
 
   return (
     <View style={styles.progressContainer}>
-      <View style={styles.progressText}>
-        <Text style={styles.infoText}>Progress for the week</Text>
+      <View style={styles.streakInfo}>
+        <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
         <TouchableOpacity onPress={() => setShowTooltip(!showTooltip)} style={styles.infoIconContainer}>
           <FontAwesome name="info-circle" style={styles.infoIcon} />
           {showTooltip && (
             <View style={styles.tooltip}>
               <Text style={styles.tooltipText}>
-                Use our nfc bookmarks to maintain reading streak
+                Use our nfc bookmarks for physical experience!
               </Text>
               <TouchableOpacity onPress={handleBuyNow}>
                 <Text style={styles.buyNowText}>Buy Now</Text>
@@ -56,9 +56,6 @@ const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) 
             </View>
           )}
         </TouchableOpacity>
-      </View>
-      <View style={styles.streakInfo}>
-        <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
       </View>
       <View style={styles.weekContainer}>
         {daysOfWeek.map((day, index) => (
@@ -74,7 +71,9 @@ const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) 
 
 const styles = StyleSheet.create({
   streakInfo: {
-    alignItems: 'center',
+    alignContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginVertical: SPACING.space_10,
     zIndex: -1,
   },
@@ -89,17 +88,6 @@ const styles = StyleSheet.create({
     padding: SPACING.space_12,
     margin: SPACING.space_12,
     zIndex: -1,
-  },
-  progressText: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.space_8,
-  },
-  infoText: {
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_14,
-    color: COLORS.primaryWhiteHex,
   },
   infoIconContainer: {
     marginLeft: SPACING.space_10,
@@ -133,6 +121,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: SPACING.space_8,
+    zIndex: -5,
   },
   dayContainer: {
     width: 30,
