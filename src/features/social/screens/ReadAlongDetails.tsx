@@ -20,6 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ReadalongCheckpoints from '../components/ReadalongCheckpoints';
 import { useNavigation } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
+import ReadalongParticipants from '../components/ReadalongParticipants';
 
 // Define the Readalong interface
 interface Host {
@@ -305,6 +306,15 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
             </TouchableOpacity>
           )}
         </View>
+
+        {isMember && (
+          <View style={{ marginTop: SPACING.space_20 }}>
+            <Text style={[styles.descriptionTitle, { marginBottom: SPACING.space_15 }]}>
+              Participants
+            </Text>
+            <ReadalongParticipants readalongId={readalong.readalongId} />
+          </View>
+        )}
 
           {/* update the text color; it is invisible currently */}
         {isHost && (

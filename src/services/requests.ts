@@ -118,6 +118,7 @@ const requests = {
     fetchMyReadalongs:`${APIURL}social/readalongs/my-readalongs`,
     fetchReadalongDetails: (readalongId) => `${APIURL}social/readalongs/${readalongId}`,
     checkReadalongMembership:`${APIURL}social/readalongs/check-membership`,
+    fetchReadalongParticipants:(readalongId) => `${APIURL}social/readalongs/${readalongId}/participants`,
     updateReadalongDescription: (readalongId) => `${APIURL}social/readalongs/${readalongId}/description`,
     JoinLeaveReadalongs:`${APIURL}social/readalongs/join-leave`,
     fetchReadalongComments: (checkpointId) => `${APIURL}social/readalongs/comments/${checkpointId}`,
