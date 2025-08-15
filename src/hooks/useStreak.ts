@@ -74,7 +74,7 @@ export const useStreak = (accessToken, initialAction = null, onCelebration = nul
     };
 
     initializeStreak();
-  }, [accessToken, initialAction, onCelebration]);
+  }, [accessToken, initialAction]);
 
   return {
     currentStreak,

@@ -1,13 +1,50 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { useStreak } from '../../../hooks/useStreak';
+import StreakCelebration from '../../../components/StreakCelebration';
 
-const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) => {
+const StreakWeeklyProgress = ({ userDetails }) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showStreakCelebration, setShowStreakCelebration] = useState(false);
+  const [celebrationData, setCelebrationData] = useState(null);
+
+  const {
+    currentStreak,
+    latestUpdateTime,
+    updateStreak,
+    loading,
+  } = useStreak(userDetails[0]?.accessToken, null, handleCelebration);
+
   const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
-  
-  const getDayClasses = (dayIndex) => {
+
+  // ✅ Check if the user has already logged for today
+  const hasLoggedToday = useMemo(() => {
+    if (!latestUpdateTime) return false;
+    const today = new Date();
+    const lastUpdate = new Date(latestUpdateTime);
+    return (
+      today.getFullYear() === lastUpdate.getFullYear() &&
+      today.getMonth() === lastUpdate.getMonth() &&
+      today.getDate() === lastUpdate.getDate()
+    );
+  }, [latestUpdateTime]);
+
+  function handleCelebration(streakData) {
+    setCelebrationData({
+      currentStreak: streakData.currentStreak,
+      isNewRecord: streakData.isNewRecord,
+    });
+    setShowStreakCelebration(true);
+  }
+
+  function handleCelebrationComplete() {
+    setShowStreakCelebration(false);
+    setCelebrationData(null);
+  }
+
+  function getDayClasses(dayIndex) {
     if (!latestUpdateTime) return styles.day;
 
     const today = new Date();
@@ -16,28 +53,33 @@ const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) 
     const lastUpdateDayIndex = lastUpdateDate.getDay();
 
     const weekStartIndex = 0;
-
-    const firstDayOfWeek = new Date(today);
-    firstDayOfWeek.setDate(today.getDate() - currentDayIndex + weekStartIndex);
-
     const streakEndDayIndex = lastUpdateDayIndex;
 
     const fillStartDayIndex = Math.max(weekStartIndex, streakEndDayIndex - (currentStreak - 1));
     const fillEndDayIndex = Math.min(currentDayIndex, streakEndDayIndex);
 
-    // Check if the current day index falls within the streak days
     if (dayIndex >= fillStartDayIndex && dayIndex <= fillEndDayIndex) {
       return styles.filledDay;
     }
 
     return styles.day;
-  };
+  }
 
-  const handleBuyNow = () => {
+  function handleBuyNow() {
     Linking.openURL("https://shop.biblophile.com/shop/1/Bookmarks").catch(err =>
       console.error('An error occurred while opening the URL', err)
     );
-  };
+  }
+
+  async function handleReadTodayPress() {
+    if (hasLoggedToday) return;
+
+    try {
+      await updateStreak(handleCelebration);
+    } catch (err) {
+      Alert.alert("Error", "Could not update streak");
+    }
+  }
 
   return (
     <View style={styles.progressContainer}>
@@ -48,7 +90,7 @@ const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) 
           {showTooltip && (
             <View style={styles.tooltip}>
               <Text style={styles.tooltipText}>
-                Use our nfc bookmarks for physical experience!
+                Use our NFC bookmarks for a physical experience!
               </Text>
               <TouchableOpacity onPress={handleBuyNow}>
                 <Text style={styles.buyNowText}>Buy Now</Text>
@@ -57,6 +99,7 @@ const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) 
           )}
         </TouchableOpacity>
       </View>
+
       <View style={styles.weekContainer}>
         {daysOfWeek.map((day, index) => (
           <View key={index} style={[styles.dayContainer, getDayClasses(index)]}>
@@ -64,7 +107,27 @@ const StreakWeeklyProgress = ({ currentStreak, latestUpdateTime, userDetails }) 
           </View>
         ))}
       </View>
-      <Text style={styles.greeting}>Hello, {userDetails[0].userName.split(' ')[0]}! Keep up the good work! 🎉</Text>
+
+      <Text style={styles.greeting}>
+        Hello, {userDetails[0].userName.split(' ')[0]}! Keep up the good work! 🎉
+      </Text>
+
+      <TouchableOpacity
+        style={[styles.readTodayButton, (hasLoggedToday || loading) && styles.readTodayButtonDisabled]}
+        onPress={handleReadTodayPress}
+        disabled={hasLoggedToday || loading}
+      >
+        <Text style={styles.readTodayText}>
+          {hasLoggedToday ? "Already logged" : loading ? "Updating..." : "I read today"}
+        </Text>
+      </TouchableOpacity>
+
+      <StreakCelebration
+        visible={showStreakCelebration}
+        streakCount={celebrationData?.currentStreak || 0}
+        isNewRecord={celebrationData?.isNewRecord || false}
+        onAnimationComplete={handleCelebrationComplete}
+      />
     </View>
   );
 };
@@ -148,6 +211,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: SPACING.space_10,
     marginBottom: SPACING.space_4,
+  },
+  readTodayButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    borderRadius: BORDERRADIUS.radius_10,
+    paddingVertical: SPACING.space_8,
+    paddingHorizontal: SPACING.space_16,
+    alignSelf: 'center',
+    marginTop: SPACING.space_8,
+  },
+  readTodayButtonDisabled: {
+    backgroundColor: COLORS.primaryGreyHex,
+  },
+  readTodayText: {
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryWhiteHex,
   },
 });
 
