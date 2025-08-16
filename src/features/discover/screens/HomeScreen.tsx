@@ -168,11 +168,7 @@ const HomeScreen = ({navigation}: any) => {
         {/* App Header */}
         <HeaderBar title=""/>
 
-        <StreakWeeklyProgress 
-          currentStreak={currentStreak}
-          latestUpdateTime={latestUpdateTime}
-          userDetails={userDetails}
-        />
+        <StreakWeeklyProgress userDetails={userDetails} />
 
         <Banner />
  
