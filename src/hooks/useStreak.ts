@@ -46,17 +46,26 @@ export const useStreak = (accessToken, initialAction = null, onCelebration = nul
       onSuccess: (data) => {
         updateStreakState(data);
 
-        const shouldCelebrate = data.isNewRecord || data.currentStreak % 5 === 0;
+        // Only trigger celebration for actual updates, not "already updated" cases
+        const shouldCelebrate = !data.isAlreadyUpdated && 
+          (data.isNewRecord || data.currentStreak % 5 === 0);
+        
         if (onCelebrationCallback && shouldCelebrate) {
           onCelebrationCallback(data);
         }
       },
       onError: setError,
+      silent: true, // Don't show alerts for streak updates from book status changes
     });
+
+    // Even if "already updated", we still want to refresh the state with current data
+    if (result && result.isAlreadyUpdated) {
+      updateStreakState(result);
+    }
 
     setLoading(false);
     return result;
-  }, [accessToken, currentStreak, updateStreakState]);
+  }, [accessToken, updateStreakState]);
 
   // Auto-fetch on mount + handle 'updateReadingStreak' if needed
   useEffect(() => {

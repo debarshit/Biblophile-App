@@ -49,12 +49,24 @@ export const updateReadingStreak = async ({
         // }
 
         return streakData;
+      } else if (response.data.message === "Already updated today" || 
+                 response.data.message.includes("already updated")) {
+        // Handle "already updated" case - fetch current streak data instead of showing error
+        const streakData = {
+          currentStreak: response.data.streak || response.data.currentStreak,
+          maxStreak: response.data.maxStreak,
+          latestUpdateTime: response.data.latestUpdateTime,
+          isAlreadyUpdated: true,
+        };
+
+        // Don't call onSuccess for already updated case, but return the data
+        return streakData;
       } else {
-        if (onError) {
+        if (onError && !silent) {
           onError(response.data.message);
         }
         
-        if (showAlert) {
+        if (showAlert && !silent) {
           Alert.alert('Error', response.data.message);
         }
         return null;
@@ -65,11 +77,11 @@ export const updateReadingStreak = async ({
     
     const errorMessage = 'Failed to update reading streak.';
     
-    if (onError) {
+    if (onError && !silent) {
       onError(errorMessage);
     }
     
-    if (showAlert) {
+    if (showAlert && !silent) {
       Alert.alert('Error', errorMessage);
     }
     

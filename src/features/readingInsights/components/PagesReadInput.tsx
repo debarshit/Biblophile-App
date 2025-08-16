@@ -10,6 +10,7 @@ import BookStatusModal from '../../reading/components/BookStatusModal'; // Chang
 import SourceReferralModal from '../../../components/SourceReferralModal';
 import SessionPrompt from './SessionPrompt';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useStreak } from '../../../hooks/useStreak';
 
 const PagesReadInput = ({navigation}: any) => {
   const [pagesRead, setPagesRead] = useState<string>('0');
@@ -41,6 +42,10 @@ const PagesReadInput = ({navigation}: any) => {
   );
   const clearSession = useStore(
     (state: any) => state.clearSession,
+  );
+
+  const { updateStreak } = useStreak(
+    userDetails[0]?.accessToken
   );
 
   const formatTime = (time) => {
@@ -180,6 +185,7 @@ const handleSessionPromptAction = () => {
           if (!startingTime) {
             Alert.alert('Success', 'Updated');
           }
+          await updateStreak(null);
           setRefreshData(prev => !prev);
         } else {
           Alert.alert('Error', response.data.message);
@@ -236,8 +242,16 @@ const handleSessionPromptAction = () => {
     setSelectedBookEndDate(undefined);
   };
 
-  const handleBookStatusUpdate = () => {
+  // Updated handleBookStatusUpdate to include streak update
+  const handleBookStatusUpdate = async () => {
     setRefreshData(prev => !prev);
+    
+    // Refresh pages read data first, then update streak
+    await fetchPagesRead();
+    
+    // Update streak after book status change (silently - no alerts for "already updated")
+    await updateStreak(null);
+    
     checkActiveSession();
     handleCloseBookStatusModal();
   };
