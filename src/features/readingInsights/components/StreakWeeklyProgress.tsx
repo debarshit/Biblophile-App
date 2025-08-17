@@ -127,7 +127,6 @@ const StreakWeeklyProgress = ({ userDetails }) => {
 
         <TouchableOpacity
           onPress={() => {navigation.navigate('Streaks')}}
-          disabled={hasLoggedToday || loading}
         >
           <Text style={styles.streakText}>
             View more &gt;

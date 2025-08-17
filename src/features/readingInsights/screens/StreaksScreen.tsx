@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { StyleSheet, ScrollView, SafeAreaView, View, TouchableOpacity, Text } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { useStore } from '../../../store/store';
 import { COLORS } from '../../../theme/theme';
@@ -86,11 +86,6 @@ const StreaksScreen = ({ navigation, route }) => {
 
   // Session timer logic (unchanged)
   useEffect(() => {
-    // if (!sessionStartTime) {
-    //   setPromptMessage('Would you like to start a reading session?');
-    //   setShowPrompt(true);
-    //   return;
-    // }
     let timerInterval;
     
     if (sessionStartTime) {
@@ -155,6 +150,19 @@ const StreaksScreen = ({ navigation, route }) => {
     });
   };
 
+  const StartSessionButton = () => (
+    <View style={styles.sessionButtonContainer}>
+      <TouchableOpacity 
+        style={styles.startSessionButton} 
+        onPress={() => {setPromptMessage('Would you like to start a reading session?');
+      setShowPrompt(true);}}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.startSessionButtonText}>Start Reading Session</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {celebration && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} />}
@@ -172,8 +180,10 @@ const StreaksScreen = ({ navigation, route }) => {
           message={promptMessage}
         />
 
-        {sessionStartTime && (
+        {sessionStartTime ? (
           <SessionTimer timer={timer} />
+        ) : (
+          <StartSessionButton />
         )}
         
         <TabSelector 
@@ -228,6 +238,31 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 20,
+  },
+   sessionButtonContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  startSessionButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  startSessionButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
 });
 

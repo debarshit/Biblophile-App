@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginVertical: SPACING.space_15,
+    zIndex: -1,
   },
   tabButton: {
     paddingHorizontal: SPACING.space_20,
