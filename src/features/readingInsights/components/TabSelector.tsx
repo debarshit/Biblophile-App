@@ -1,28 +1,50 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 
-const TabSelector = ({ activeTab, setActiveTab }) => {
+interface Tab {
+  key: string;
+  label: string;
+}
+
+interface TabSelectorProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  tabs?: Tab[];
+  containerStyle?: ViewStyle;
+  tabButtonStyle?: ViewStyle;
+  activeTabStyle?: ViewStyle;
+  tabTextStyle?: TextStyle;
+}
+
+const TabSelector: React.FC<TabSelectorProps> = ({ 
+  activeTab, 
+  setActiveTab, 
+  tabs = [
+    { key: 'streaks', label: 'Streaks' },
+    { key: 'pages', label: 'Pages' }
+  ],
+  containerStyle,
+  tabButtonStyle,
+  activeTabStyle,
+  tabTextStyle
+}) => {
   return (
-    <View style={styles.tabs}>
-      <TouchableOpacity
-        style={[
-          styles.tabButton,
-          activeTab === 'streaks' && styles.activeTab
-        ]}
-        onPress={() => setActiveTab('streaks')}
-      >
-        <Text style={styles.tabText}>Streaks</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[
-          styles.tabButton,
-          activeTab === 'pages' && styles.activeTab
-        ]}
-        onPress={() => setActiveTab('pages')}
-      >
-        <Text style={styles.tabText}>Pages</Text>
-      </TouchableOpacity>
+    <View style={[styles.tabs, containerStyle]}>
+      {tabs.map((tab) => (
+        <TouchableOpacity
+          key={tab.key}
+          style={[
+            styles.tabButton,
+            tabButtonStyle,
+            activeTab === tab.key && styles.activeTab,
+            activeTab === tab.key && activeTabStyle
+          ]}
+          onPress={() => setActiveTab(tab.key)}
+        >
+          <Text style={[styles.tabText, tabTextStyle]}>{tab.label}</Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 };
