@@ -4,8 +4,10 @@ import { FontAwesome } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useStreak } from '../../../hooks/useStreak';
 import StreakCelebration from '../../../components/StreakCelebration';
+import { useNavigation } from '@react-navigation/native';
 
 const StreakWeeklyProgress = ({ userDetails }) => {
+  const navigation = useNavigation<any>();
   const [showTooltip, setShowTooltip] = useState(false);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [celebrationData, setCelebrationData] = useState(null);
@@ -112,15 +114,26 @@ const StreakWeeklyProgress = ({ userDetails }) => {
         Hello, {userDetails[0].userName.split(' ')[0]}! Keep up the good work! 🎉
       </Text>
 
-      <TouchableOpacity
-        style={[styles.readTodayButton, (hasLoggedToday || loading) && styles.readTodayButtonDisabled]}
-        onPress={handleReadTodayPress}
-        disabled={hasLoggedToday || loading}
-      >
-        <Text style={styles.readTodayText}>
-          {hasLoggedToday ? "Already logged" : loading ? "Updating..." : "I read today"}
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.readTodayButton, (hasLoggedToday || loading) && styles.readTodayButtonDisabled]}
+          onPress={handleReadTodayPress}
+          disabled={hasLoggedToday || loading}
+        >
+          <Text style={styles.readTodayText}>
+            {hasLoggedToday ? "Already logged" : loading ? "Updating..." : "I read today"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {navigation.navigate('Streaks')}}
+          disabled={hasLoggedToday || loading}
+        >
+          <Text style={styles.streakText}>
+            View more &gt;
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <StreakCelebration
         visible={showStreakCelebration}
@@ -132,41 +145,43 @@ const StreakWeeklyProgress = ({ userDetails }) => {
   );
 };
 
+export default StreakWeeklyProgress;
+
 const styles = StyleSheet.create({
+  progressContainer: {
+    backgroundColor: COLORS.primaryGreyHex,
+    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_8,
+    margin: SPACING.space_8,
+    zIndex: -1,
+  },
   streakInfo: {
     alignContent: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    marginVertical: SPACING.space_10,
+    marginVertical: SPACING.space_4,
     zIndex: -1,
   },
   streakText: {
     fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_20,
+    fontSize: FONTSIZE.size_16,
     color: COLORS.primaryOrangeHex,
   },
-  progressContainer: {
-    backgroundColor: COLORS.primaryGreyHex,
-    borderRadius: BORDERRADIUS.radius_10,
-    padding: SPACING.space_12,
-    margin: SPACING.space_12,
-    zIndex: -1,
-  },
   infoIconContainer: {
-    marginLeft: SPACING.space_10,
+    marginLeft: SPACING.space_4,
   },
   infoIcon: {
-    fontSize: FONTSIZE.size_16,
+    fontSize: FONTSIZE.size_14,
     color: COLORS.primaryLightGreyHex,
   },
   tooltip: {
     position: 'absolute',
     right: 0,
-    top: 20,
+    top: 18,
     backgroundColor: COLORS.primaryBlackHex,
-    padding: 10,
-    borderRadius: 5,
-    width: 200,
+    padding: 8,
+    borderRadius: 4,
+    width: 180,
     zIndex: 5,
   },
   tooltipText: {
@@ -183,19 +198,19 @@ const styles = StyleSheet.create({
   weekContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: SPACING.space_8,
+    marginVertical: SPACING.space_4,
     zIndex: -5,
   },
   dayContainer: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dayText: {
     fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_12,
+    fontSize: FONTSIZE.size_10,
     color: COLORS.primaryWhiteHex,
   },
   day: {
@@ -206,28 +221,31 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_12,
+    fontSize: FONTSIZE.size_10,
     color: COLORS.primaryWhiteHex,
     textAlign: 'center',
-    marginTop: SPACING.space_10,
-    marginBottom: SPACING.space_4,
+    marginTop: SPACING.space_4,
+    marginBottom: SPACING.space_2,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   readTodayButton: {
     backgroundColor: COLORS.primaryOrangeHex,
     borderRadius: BORDERRADIUS.radius_10,
-    paddingVertical: SPACING.space_8,
-    paddingHorizontal: SPACING.space_16,
+    paddingVertical: SPACING.space_4,
+    paddingHorizontal: SPACING.space_12,
     alignSelf: 'center',
-    marginTop: SPACING.space_8,
+    marginTop: SPACING.space_4,
   },
   readTodayButtonDisabled: {
     backgroundColor: COLORS.primaryGreyHex,
   },
   readTodayText: {
     fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_14,
+    fontSize: FONTSIZE.size_12,
     color: COLORS.primaryWhiteHex,
   },
 });
-
-export default StreakWeeklyProgress;
