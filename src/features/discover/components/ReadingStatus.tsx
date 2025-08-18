@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform, ToastAndroid } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import Entypo from '@expo/vector-icons/Entypo';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -184,28 +183,11 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
             <View style={styles.statusDropdown}>
                 {/* <Text style={styles.label}>Status: </Text> */}
                 <View style={styles.pickerContainer}>
-                    {Platform.OS === 'ios' ? (
-                        <CustomPicker
-                          options={statusOptions}
-                          selectedValue={status}
-                          onValueChange={(value) => setStatus(value)}
-                        />
-                    ) : (
-                        <Picker
+                    <CustomPicker
+                        options={statusOptions}
                         selectedValue={status}
-                        style={styles.picker}
-                        onValueChange={(itemValue) => setStatus(itemValue)}
-                        >
-                        {(status === 'Currently reading' || status === 'Paused') && (
-                            <Picker.Item label="Paused" value="Paused" />
-                        )}
-                        <Picker.Item label="Read" value="Read" />
-                        <Picker.Item label="Currently reading" value="Currently reading" />
-                        <Picker.Item label="To be read" value="To be read" />
-                        <Picker.Item label="Did not finish" value="Did not finish" />
-                        <Picker.Item label="Remove" value="Remove" />
-                        </Picker>
-                    )}
+                        onValueChange={(value) => setStatus(value)}
+                    />
                 </View>
             </View>
             {status === 'Currently reading' && (
@@ -278,14 +260,6 @@ const styles = StyleSheet.create({
     pickerContainer: {
         borderRadius: BORDERRADIUS.radius_8,
         width: 250,
-    },
-    picker: {
-        width: '100%',
-        padding: SPACING.space_8,
-        borderColor: COLORS.secondaryLightGreyHex,
-        borderRadius: BORDERRADIUS.radius_10,
-        fontFamily: FONTFAMILY.poppins_regular,
-        color: COLORS.primaryWhiteHex,
     },
     pageNumberInput: {
         flexDirection: 'row',
