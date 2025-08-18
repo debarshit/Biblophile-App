@@ -90,9 +90,15 @@ const requests = {
     fetchBannerData:`${APIURL}ui/banners`,
     fetchEmotions:`${APIURL}?action=fetchEmotions`,
 
+    //notifications requests
+    fetchNotifications: `${APIURL}notifications/`,
+    markNotificationAsRead: (notificationId) => `${APIURL}notifications/${notificationId}/read`,
+    markAllNotificationsAsRead: `${APIURL}notifications/mark-all-read`,
+    getUnreadNotificationCount: `${APIURL}notifications/unread-count`,
+
     //user-relations requests
     fetchUserRelations: (pageOwnerId) => `${APIURL}social/user-relations/${pageOwnerId}/relations`,
-    fetchFriendRequests:`${APIURL}social/user-relations/incoming`,
+    fetchFriendRequests:`${APIURL}social/user-relations/friend-requests/incoming`,
     toggleFollow:`${APIURL}social/user-relations/toggle-follow`,
     toggleFriend:`${APIURL}social/user-relations/toggle-friend`,
     confirmRejectFriend:`${APIURL}social/user-relations/friend-request/action`,
