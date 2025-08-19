@@ -148,40 +148,36 @@ const App = () => {
   //check for OTA updates end
 
   //check for appstores update and implement accordingly start
-  // const checkForAppUpdate = async () => {
-  //   try {
-  //     // Fetch the latest version from own server
-  //     const response = await fetch('https://biblophile.com/apis/prod/appInfo/appVersion.php');
-  //     const data = await response.json();
-  //     const latestVersion = data.latestVersion;
+  const checkForAppUpdate = async () => {
+    try {
+      // Fetch the latest version from own server
+      const response = await fetch('https://biblophile.com/apis/prod/appInfo/appVersion.php');
+      const data = await response.json();
+      const latestVersion = data.latestVersion;
 
-  //     // Compare the latest version with the current app version
-  //     if (latestVersion !== currentVersion) {
-  //       Alert.alert(
-  //         'Update Available',
-  //         'A new version of the app is available. Please update to the latest version.',
-  //         [
-  //           { text: 'Update', onPress: openStore },
-  //           { text: 'Cancel', style: 'cancel' },
-  //         ]
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.error('Error checking for update:', error);
-  //   }
-  // };
+      // Compare the latest version with the current app version
+      if (latestVersion > currentVersion) {
+        Alert.alert(
+          'Update Available',
+          'A new version of the app is available. Please update to the latest version.',
+          [
+            { text: 'Update', onPress: openStore },
+            { text: 'Cancel', style: 'cancel' },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error checking for update:', error);
+    }
+  };
 
-  // const openStore = () => {
-  //   if (Platform.OS === 'ios') {
-  //     Linking.openURL('itms-apps://itunes.apple.com/app/idYOUR_APP_ID');
-  //   } else {
-  //     Linking.openURL('https://play.google.com/store/apps/details?id=com.debar_shit.BiblophileApp');
-  //   }
-  // };
+  const openStore = () => {
+    Linking.openURL('https://onelink.to/dxjdkb');
+  };
 
-  // useEffect(() => {
-  //   checkForAppUpdate();
-  // }, [currentVersion]);
+  useEffect(() => {
+    checkForAppUpdate();
+  }, [currentVersion]);
   //check for appstores update and implement accordingly end
 
   // for expo notifications start
