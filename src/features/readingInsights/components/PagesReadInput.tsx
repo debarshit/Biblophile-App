@@ -1,22 +1,46 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as Notifications from 'expo-notifications';
-import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons';
 import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
-import BookStatusModal from '../../reading/components/BookStatusModal'; // Changed import
-import SourceReferralModal from '../../../components/SourceReferralModal';
+import BookStatusModal from '../../reading/components/BookStatusModal';
 import SessionPrompt from './SessionPrompt';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useStreak } from '../../../hooks/useStreak';
+import { useNavigation } from '@react-navigation/native';
 
-const PagesReadInput = ({navigation}: any) => {
+// Memoized book item component
+const BookItem = React.memo(({ book, navigation, onUpdatePress }) => (
+  <View style={styles.book}>
+    <TouchableOpacity
+      onPress={() => {
+        navigation.push('Details', {
+          id: book.BookId,
+          type: "Book",
+        });
+    }}>
+      <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
+    </TouchableOpacity>
+    <TouchableOpacity 
+      style={styles.updateButton}
+      onPress={() => onUpdatePress(book)}
+    >
+      <Text style={styles.updateButtonText}>Update Status</Text>
+    </TouchableOpacity>
+  </View>
+));
+
+const PagesReadInput = ({ showDiscoverLink=true }) => {
+  const navigation = useNavigation<any>();
   const [pagesRead, setPagesRead] = useState<string>('0');
   const [currentReads, setCurrentReads] = useState<any[]>([]);
+  const [isLoadingCurrentReads, setIsLoadingCurrentReads] = useState(true);
   const [refreshData, setRefreshData] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // states for BookStatusModal
   const [selectedBookId, setSelectedBookId] = useState<string>('');
@@ -36,104 +60,43 @@ const PagesReadInput = ({navigation}: any) => {
 
   const startingTime = useStore((state: any) => state.sessionStartTime);
   const startingPage = useStore((state: any) => state.sessionStartPage);
-  const setStartPage = useStore(
-    (state: any) => state.setStartPage,
-  );
-  const clearSession = useStore(
-    (state: any) => state.clearSession,
-  );
+  const setStartPage = useStore((state: any) => state.setStartPage);
+  const clearSession = useStore((state: any) => state.clearSession);
 
-  const formatTime = (time) => {
+  const { updateStreak } = useStreak(userDetails[0]?.accessToken);
+
+  // Memoized values
+  const userTimezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
+  const authHeaders = useMemo(() => ({
+    Authorization: `Bearer ${userDetails[0]?.accessToken}`
+  }), [userDetails]);
+
+  // Memoized format time function
+  const formatTime = useCallback((time) => {
     return new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  }, []);
 
-  const fetchCurrentReads = async () => {
+  // Memoized fetch functions
+  const fetchCurrentReads = useCallback(async () => {
+    setIsLoadingCurrentReads(true);
     try {
       const currentReadsResponse = await instance(requests.fetchCurrentReads, {
-        headers: {
-            Authorization:  `Bearer ${userDetails[0].accessToken}`
-        },
+        headers: authHeaders,
       });
       const response = currentReadsResponse.data;
       setCurrentReads(response.data.currentReads);
     } catch (error) {
       console.error('Failed to fetch current reads:', error);
+      setCurrentReads([]);
+    } finally {
+      setIsLoadingCurrentReads(false);
     }
-  };
+  }, [authHeaders]);
 
-  const handleSaveSession = () => {
-    if (sessionData) {
-      const diffInPages = Number(pagesRead) - Number(startingPage);
-      console.log(`Saving session from ${sessionData.startTime} to ${new Date()} with ${diffInPages} pages read.`);   
-      
-      //send the data to backend
-      instance.post(requests.submitReadingDuration, sessionData, 
-        {
-            headers: {
-                Authorization:  `Bearer ${userDetails[0].accessToken}`
-            },
-        })
-        .then(response => {
-          console.log('Session saved:', response.data.data);
-          // Handle successful response
-        })
-        .catch(error => {
-          console.error('Error saving session:', error);
-          // Handle error
-      });
-
-      clearSession();
-      setSessionData(null);
-    }
-    setShowSessionPrompt(false);
-};
-
-const handleCancelSave = () => {
-  setShowSessionPrompt(false);
-
-  clearSession();
-  setSessionData(null);
-};
-
-const checkActiveSession = () => {
-  const sessionStartTime = startingTime;
-  if (sessionStartTime) {
-      const sessionMessage = "Do you wish to complete the session?";
-      setPromptMessage(sessionMessage);
-      setIsCompletingSession(true);
-      setShowSessionPrompt(true);
-  }
-};
-
-const handleCompleteSession = () => {
-  const diffInPages = (Number(startingPage) === 0 || startingPage == null) ? pagesRead : Number(pagesRead)-Number(startingPage);
-  const sessionStartTime = startingTime;
-  const message = `Your reading session was from ${formatTime(sessionStartTime)} to ${formatTime(new Date())}. You've read ${diffInPages} pages. Do you wish to save this session?`;
-  setSessionData({ startTime: new Date(sessionStartTime), endTime: new Date(), pageDiff: diffInPages });
-  setPromptMessage(message);
-  setIsCompletingSession(false);
-};
-
-const handleContinueSession = () => {
-  setShowSessionPrompt(false);
-  // Do nothing, just continue the session
-};
-
-const handleSessionPromptAction = () => {
-  if (isCompletingSession) {
-      handleCompleteSession();
-  } else {
-      handleSaveSession();
-  }
-};
-
-  const fetchPagesRead = async () => {
+  const fetchPagesRead = useCallback(async () => {
     try {
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const pagesReadResponse = await instance.get(`${requests.fetchPagesRead}?${userDetails[0].userId}&timezone=${userTimezone}`, {
-        headers: {
-          Authorization: `Bearer ${userDetails[0].accessToken}`
-        },
+        headers: authHeaders,
       });
       const response = pagesReadResponse.data;
       if (Array.isArray(response.data)) {
@@ -144,7 +107,7 @@ const handleSessionPromptAction = () => {
         });    
 
         const pages = todayPagesRead ? todayPagesRead.pagesRead : 0;
-        setPagesRead(String(pages));;
+        setPagesRead(String(pages));
 
         if (startingTime && (startingPage === null)) {
           setStartPage(pages);
@@ -155,31 +118,79 @@ const handleSessionPromptAction = () => {
     } catch (error) {
       console.error('Failed to fetch pages read:', error);
     }
-  };
+  }, [authHeaders, userDetails, userTimezone, startingTime, startingPage, setStartPage]);
 
-  useEffect(() => {
-    fetchCurrentReads();
-    fetchPagesRead();
-    // fetchSourceReferral();
-  }, [refreshData]);
+  // Memoized session handlers
+  const handleSaveSession = useCallback(() => {
+    if (sessionData) {
+      const diffInPages = Number(pagesRead) - Number(startingPage);
+      console.log(`Saving session from ${sessionData.startTime} to ${new Date()} with ${diffInPages} pages read.`);   
+      
+      instance.post(requests.submitReadingDuration, sessionData, { headers: authHeaders })
+        .then(response => {
+          console.log('Session saved:', response.data.data);
+        })
+        .catch(error => {
+          console.error('Error saving session:', error);
+      });
 
-  const updatePagesRead = async () => {
+      clearSession();
+      setSessionData(null);
+    }
+    setShowSessionPrompt(false);
+  }, [sessionData, pagesRead, startingPage, authHeaders, clearSession]);
+
+  const handleCancelSave = useCallback(() => {
+    setShowSessionPrompt(false);
+    clearSession();
+    setSessionData(null);
+  }, [clearSession]);
+
+  const checkActiveSession = useCallback(() => {
+    if (startingTime) {
+      const sessionMessage = "Do you wish to complete the session?";
+      setPromptMessage(sessionMessage);
+      setIsCompletingSession(true);
+      setShowSessionPrompt(true);
+    }
+  }, [startingTime]);
+
+  const handleCompleteSession = useCallback(() => {
+    const diffInPages = (Number(startingPage) === 0 || startingPage == null) ? pagesRead : Number(pagesRead)-Number(startingPage);
+    const sessionStartTime = startingTime;
+    const message = `Your reading session was from ${formatTime(sessionStartTime)} to ${formatTime(new Date())}. You've read ${diffInPages} pages. Do you wish to save this session?`;
+    setSessionData({ startTime: new Date(sessionStartTime), endTime: new Date(), pageDiff: diffInPages });
+    setPromptMessage(message);
+    setIsCompletingSession(false);
+  }, [startingPage, pagesRead, startingTime, formatTime]);
+
+  const handleContinueSession = useCallback(() => {
+    setShowSessionPrompt(false);
+  }, []);
+
+  const handleSessionPromptAction = useCallback(() => {
+    if (isCompletingSession) {
+      handleCompleteSession();
+    } else {
+      handleSaveSession();
+    }
+  }, [isCompletingSession, handleCompleteSession, handleSaveSession]);
+
+  const updatePagesRead = useCallback(async () => {
     if (pagesRead !== "" && pagesRead !== "0") {
       checkActiveSession();
       try {
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const updatePagesReadResponse = await instance.post(`${requests.updatePagesRead}?timezone=${userTimezone}`, {
           pageCount: pagesRead,
         }, {
-          headers: {
-            Authorization: `Bearer ${userDetails[0].accessToken}`
-          },
+          headers: authHeaders,
         });
         const response = updatePagesReadResponse.data;
         if (response.data.message === 'Updated') {
           if (!startingTime) {
             Alert.alert('Success', 'Updated');
           }
+          await updateStreak(null);
           setRefreshData(prev => !prev);
         } else {
           Alert.alert('Error', response.data.message);
@@ -191,56 +202,64 @@ const handleSessionPromptAction = () => {
     } else {
       Alert.alert('Page count is 0', 'Please enter number of pages read!');
     }
-  };
+  }, [pagesRead, checkActiveSession, userTimezone, authHeaders, startingTime, updateStreak]);
 
-  // const fetchSourceReferral = async () => {
-  //   try {
-  //     const response = await instance.post(requests.fetchUserData, {
-  //       userId: userDetails[0].userId,
-  //     });
-  //     if (response.data.sourceReferral === null) {
-  //       handleOpenModal();
-  //     }
-  //   } catch (error) {
-  //     console.error('Failed to fetch current reads:', error);
-  //   } 
-  // };
-
-  const toggleTooltip = () => {
+  // Memoized modal handlers
+  const toggleTooltip = useCallback(() => {
     setShowTooltip(prev => !prev);
-  };
+  }, []);
 
-  const handleOpenModal = () => {
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
-
-  const handleOpenBookStatusModal = (book: any) => {
+  const handleOpenBookStatusModal = useCallback((book: any) => {
     setSelectedBookId(book.BookId);
     setSelectedBookStatus('Currently reading');
     setSelectedBookPage(book.CurrentPage);
     setSelectedBookStartDate(book.StartDate);
     setSelectedBookEndDate(book.EndDate);
     setIsBookStatusModalVisible(true);
-  };
+  }, []);
 
-  const handleCloseBookStatusModal = () => {
+  const handleCloseBookStatusModal = useCallback(() => {
     setIsBookStatusModalVisible(false);
     setSelectedBookId('');
     setSelectedBookStatus('');
     setSelectedBookPage(undefined);
     setSelectedBookStartDate(undefined);
     setSelectedBookEndDate(undefined);
-  };
+  }, []);
 
-  const handleBookStatusUpdate = () => {
+  const handleBookStatusUpdate = useCallback(async () => {
     setRefreshData(prev => !prev);
+    await fetchPagesRead();
+    await updateStreak(null);
     checkActiveSession();
     handleCloseBookStatusModal();
-  };
+  }, [fetchPagesRead, updateStreak, checkActiveSession, handleCloseBookStatusModal]);
+
+  // Initialize data
+  const initializeData = useCallback(async () => {
+    if (!userDetails[0]?.accessToken || isInitialized) return;
+    
+    try {
+      await Promise.all([
+        fetchCurrentReads(),
+        fetchPagesRead()
+      ]);
+      setIsInitialized(true);
+    } catch (error) {
+      console.error('Error initializing data:', error);
+    }
+  }, [fetchCurrentReads, fetchPagesRead, userDetails, isInitialized]);
+
+  useEffect(() => {
+    initializeData();
+  }, [initializeData]);
+
+  useEffect(() => {
+    if (isInitialized && refreshData) {
+      fetchCurrentReads();
+      fetchPagesRead();
+    }
+  }, [refreshData, isInitialized]);
 
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
@@ -257,34 +276,70 @@ const handleSessionPromptAction = () => {
     });
   
     return () => subscription.remove();
-  }, []);
+  }, [clearSession]);
+
+  // Memoized rendered books list
+  const renderedBooks = useMemo(() => 
+    currentReads.map((book) => (
+      <BookItem 
+        key={book.BookId} 
+        book={book} 
+        navigation={navigation}
+        onUpdatePress={handleOpenBookStatusModal}
+      />
+    )), [currentReads, navigation, handleOpenBookStatusModal]
+  );
+
+  // Render current reads section
+  const renderCurrentReadsSection = () => {
+    return (
+      <View style={styles.currentReadsSection}>
+        {isLoadingCurrentReads ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />
+            <Text style={styles.loadingText}>Loading your books...</Text>
+          </View>
+        ) : currentReads.length > 0 ? (
+          <>
+          <Text style={styles.sectionHeading}>Currently Reading</Text>
+          <ScrollView horizontal contentContainerStyle={styles.currentReads}>
+            {renderedBooks}
+          </ScrollView>
+          </>
+        ) : (
+          <View style={styles.emptyStateContainer}>
+            <Text style={styles.emptyStateText}>
+              No books in your current reads yet
+            </Text>
+            {showDiscoverLink && <TouchableOpacity 
+              style={styles.discoverButton}
+              onPress={() => navigation.navigate('Discover')}
+            >
+              <Text style={styles.discoverButtonText}>
+                Discover Books to Add
+              </Text>
+              <FontAwesome name="arrow-right" style={styles.discoverButtonIcon} />
+            </TouchableOpacity>}
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  // Show loading until initialized
+  if (!isInitialized) {
+    return (
+      <View style={styles.pagesReadContainer}>
+        <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />
+        <Text style={styles.loadingText}>Initializing...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.pagesReadContainer}>
-      {currentReads.length > 0 && (
-        <ScrollView horizontal contentContainerStyle={styles.currentReads}>
-          {currentReads.map((book) => (
-            <View key={book.BookId} style={styles.book}>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.push('Details', {
-                    id: book.BookId,
-                    type: "Book",
-                  });
-              }}>
-                <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
-              </TouchableOpacity>
-              {/* Replace PageStatus with a TouchableOpacity to open modal */}
-              <TouchableOpacity 
-                style={styles.updateButton}
-                onPress={() => handleOpenBookStatusModal(book)}
-              >
-                <Text style={styles.updateButtonText}>Update Status</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-      )}
+      {renderCurrentReadsSection()}
+      
       <View style={styles.inputBox}>
         <View style={styles.inputLabelContainer}>
           <Text style={styles.inputLabel}>Pages read today</Text>
@@ -306,7 +361,7 @@ const handleSessionPromptAction = () => {
           autoCapitalize='none'
           keyboardType='numeric'
           value={pagesRead}
-          onChangeText={(text) => setPagesRead(text)}
+          onChangeText={setPagesRead}
           accessibilityLabel="Pages Read"
           accessibilityHint="Enter the number of pages read today"
         />
@@ -335,10 +390,6 @@ const handleSessionPromptAction = () => {
         onConfirm={handleSessionPromptAction}
         onCancel={isCompletingSession ? handleContinueSession : handleCancelSave}
       />
-      <SourceReferralModal 
-        isOpen={isModalOpen} 
-        onRequestClose={handleCloseModal} 
-      />
     </View>
   );
 };
@@ -350,10 +401,37 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.space_20,
     alignItems: 'center',
   },
+  currentReadsSection: {
+    width: '100%',
+    marginBottom: SPACING.space_20,
+    alignItems: 'center',
+  },
+  sectionHeading: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    textAlign: 'center',
+    marginBottom: SPACING.space_16,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.space_30,
+    gap: SPACING.space_10,
+  },
+  loadingText: {
+    color: COLORS.primaryLightGreyHex,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+  },
+  emptyStateContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.space_20,
+  },
   currentReads: {
     justifyContent: 'center',
     paddingHorizontal: SPACING.space_20,
-    marginBottom: SPACING.space_20,
   },
   book: {
     flexDirection: 'column',
@@ -372,7 +450,6 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 5,
   },
-  // New style for the update button
   updateButton: {
     backgroundColor: COLORS.primaryOrangeHex,
     paddingVertical: SPACING.space_8,
@@ -458,5 +535,30 @@ const styles = StyleSheet.create({
   infoIcon: {
     color: COLORS.primaryLightGreyHex,
     fontSize: FONTSIZE.size_18,
+  },
+  emptyStateText: {
+    color: COLORS.primaryLightGreyHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_regular,
+    textAlign: 'center',
+    marginBottom: SPACING.space_16,
+  },
+  discoverButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryOrangeHex,
+    paddingVertical: SPACING.space_12,
+    paddingHorizontal: SPACING.space_20,
+    borderRadius: 25,
+    gap: SPACING.space_8,
+  },
+  discoverButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_medium,
+  },
+  discoverButtonIcon: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_12,
   },
 });

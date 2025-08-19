@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Animated, Platform,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
@@ -34,12 +33,12 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
   const userDetails = useStore((state: any) => state.userDetails);
 
   const statusOptions: PickerOption[] = [
-    { label: 'Currently reading', value: 'Currently reading', icon: 'book-open' },
+    { label: 'Currently reading', value: 'Currently reading', icon: 'menu-book' },
     { label: 'Read', value: 'Read', icon: 'check-circle' },
-    { label: 'To be read', value: 'To be read', icon: 'bookmark' },
+    { label: 'To be read', value: 'To be read', icon: 'bookmark-border' },
     { label: 'Paused', value: 'Paused', icon: 'pause-circle' },
-    { label: 'Did not finish', value: 'Did not finish', icon: 'x-circle' },
-    { label: 'Remove', value: 'Remove', icon: 'trash-2' },
+    { label: 'Did not finish', value: 'Did not finish', icon: 'cancel' },
+    { label: 'Remove', value: 'Remove', icon: 'delete' },
   ];
 
   const availableOptions = statusOptions.filter(option => 
@@ -165,27 +164,12 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
             {/* Status Picker */}
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>Reading Status</Text>
-              {Platform.OS === 'ios' ? (
-                <CustomPicker
-                  options={availableOptions}
-                  selectedValue={localStatus}
-                  onValueChange={setLocalStatus}
-                  placeholder="Select reading status"
-                />
-              ) : (
-                <View style={styles.androidPickerContainer}>
-                  <Picker
-                    selectedValue={localStatus}
-                    style={styles.androidPicker}
-                    onValueChange={setLocalStatus}
-                    dropdownIconColor={COLORS.primaryOrangeHex}
-                  >
-                    {availableOptions.map((option) => (
-                      <Picker.Item key={option.value} label={option.label} value={option.value} />
-                    ))}
-                  </Picker>
-                </View>
-              )}
+              <CustomPicker
+                options={availableOptions}
+                selectedValue={localStatus}
+                onValueChange={setLocalStatus}
+                placeholder="Select reading status"
+              />
             </View>
             
             {/* Page Input */}
@@ -310,17 +294,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_14,
     marginBottom: SPACING.space_8,
-  },
-  androidPickerContainer: {
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    borderRadius: BORDERRADIUS.radius_10,
-    borderWidth: 1,
-    borderColor: COLORS.secondaryLightGreyHex,
-    overflow: 'hidden',
-  },
-  androidPicker: {
-    height: 50,
-    color: COLORS.primaryWhiteHex,
   },
   inputContainer: {
     flexDirection: 'row',

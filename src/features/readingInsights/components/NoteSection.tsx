@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Platform } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -74,30 +73,15 @@ const NoteSection = ({ userDetails }) => {
   };
 
   const renderBookPicker = () => {
-    if (Platform.OS === 'ios') {
-      return (
-        <CustomPicker
-          options={getPickerOptions()}
-          selectedValue={selectedBook}
-          onValueChange={setSelectedBook}
-          placeholder="Is it related to a specific book?"
-          style={styles.customPickerStyle}
-        />
-      );
-    } else {
-      return (
-        <Picker
-          selectedValue={selectedBook}
-          style={styles.bookDropdown}
-          onValueChange={(itemValue) => setSelectedBook(itemValue)}
-        >
-          <Picker.Item label="Is it related to a specific book?" value="" />
-          {readingBooks.map((book) => (
-            <Picker.Item key={book.BookId} label={book.BookName} value={book.BookId} />
-          ))}
-        </Picker>
-      );
-    }
+    return (
+      <CustomPicker
+        options={getPickerOptions()}
+        selectedValue={selectedBook}
+        onValueChange={setSelectedBook}
+        placeholder="Is it related to a specific book?"
+        style={styles.customPickerStyle}
+      />
+    );
   };
 
   const renderNotesInput = () => {
@@ -165,11 +149,6 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_14,
     height: 100,
     textAlignVertical: 'top',
-  },
-  bookDropdown: {
-    backgroundColor: COLORS.primaryBlackHex,
-    color: COLORS.primaryWhiteHex,
-    marginVertical: SPACING.space_10,
   },
   customPickerStyle: {
     marginVertical: SPACING.space_10,

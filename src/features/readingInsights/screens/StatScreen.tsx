@@ -4,7 +4,6 @@ import { StyleSheet, Text, View, Dimensions, TouchableWithoutFeedback,
          SafeAreaView,
          Platform} from 'react-native';
 import { LineChart, PieChart } from 'react-native-chart-kit';
-import { Picker } from '@react-native-picker/picker';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
@@ -588,23 +587,11 @@ const StatScreen = () => {
         <View style={styles.statusDropdown}>
           <Text style={styles.label}>Time frame: </Text>
           <View style={styles.pickerContainer}>
-            {Platform.OS === 'ios' ? (
-              <CustomPicker
-                options={timeFrameOptions}
-                selectedValue={timeFrame}
-                onValueChange={(value) => setTimeFrame(value)}
-              />
-            ) : (
-              <Picker
-                selectedValue={timeFrame}
-                style={styles.picker}
-                onValueChange={(itemValue) => setTimeFrame(itemValue)}
-                dropdownIconColor={COLORS.primaryWhiteHex}
-              >
-                <Picker.Item label="Last week" value="last-week" />
-                <Picker.Item label="Last month" value="last-month" />
-              </Picker>
-            )}
+            <CustomPicker
+              options={timeFrameOptions}
+              selectedValue={timeFrame}
+              onValueChange={(value) => setTimeFrame(value)}
+            />
           </View>
         </View>
 
@@ -752,11 +739,6 @@ const styles = StyleSheet.create({
   pickerContainer: {
     borderRadius: BORDERRADIUS.radius_8,
     width: 200,
-  },
-  picker: {
-    width: '100%',
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_regular,
   },
   labelsContainer: {
     marginTop: SPACING.space_16,

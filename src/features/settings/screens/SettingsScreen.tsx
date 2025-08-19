@@ -65,12 +65,12 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           onPress: () => navigation.push('Subscription'),
           // bgColor: '#FF8C42',
         },
-        // {
-        //   icon: <FontAwesome color="#fff" name="rupee" size={20} />,
-        //   label: 'Manage Notifications',
-        //   onPress: () => navigation.push('NotificationSettings'),
-        //   // bgColor: '#FF8C42',
-        // },
+        {
+          icon: <MaterialIcons color="#fff" name="notifications-none" size={20} />,
+          label: 'Manage Notifications',
+          onPress: () => navigation.push('NotificationSettings'),
+          // bgColor: '#FF8C42',
+        },
       ]
     },
     {

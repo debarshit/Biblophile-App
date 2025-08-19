@@ -7,7 +7,6 @@ import requests from '../../../services/requests';
 import {useStore} from '../../../store/store';
 import { COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
-import { Picker } from '@react-native-picker/picker';
 import CustomPicker from '../../../components/CustomPickerComponent';
 
 const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible, onPress }) => {
@@ -454,36 +453,20 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                         </View>
                         <Text style={styles.promptText}>How did you find us?</Text>
                         <View style={styles.inputBox}>
-                        {Platform.OS === 'ios' ? (
                             <CustomPicker
-                            selectedValue={source}
-                            onValueChange={handleSourceChange}
-                            options={[
-                                { label: 'Social Media', value: 'Social Media', icon: 'share' },
-                                { label: 'Friends/Word of Mouth', value: 'Word of Mouth', icon: 'people' },
-                                { label: 'Online Ads', value: 'Online Ads', icon: 'campaign' },
-                                { label: 'App Store', value: 'App Store', icon: 'store' },
-                                { label: 'Influencer/Online Communities', value: 'Forums or Online Communities', icon: 'forum' },
-                                { label: 'Print Media', value: 'Print Media', icon: 'local-library' },
-                                { label: 'Other', value: 'Other', icon: 'more-horiz' },
-                            ]}
+                                selectedValue={source}
+                                onValueChange={handleSourceChange}
+                                options={[
+                                    { label: 'Social Media', value: 'Social Media', icon: 'share' },
+                                    { label: 'Friends/Word of Mouth', value: 'Word of Mouth', icon: 'people' },
+                                    { label: 'Online Ads', value: 'Online Ads', icon: 'campaign' },
+                                    { label: 'App Store', value: 'App Store', icon: 'store' },
+                                    { label: 'Influencer/Online Communities', value: 'Forums or Online Communities', icon: 'forum' },
+                                    { label: 'Print Media', value: 'Print Media', icon: 'local-library' },
+                                    { label: 'Other', value: 'Other', icon: 'more-horiz' },
+                                ]}
                             />
-                        ) : (
-                            <Picker
-                            selectedValue={source}
-                            style={styles.picker}
-                            onValueChange={handleSourceChange}
-                            >
-                            <Picker.Item label="Select an option" value={null} />
-                            <Picker.Item label="Social Media" value="Social Media" />
-                            <Picker.Item label="Friends/Word of Mouth" value="Word of Mouth" />
-                            <Picker.Item label="Online Ads" value="Online Ads" />
-                            <Picker.Item label="App Store" value="App Store" />
-                            <Picker.Item label="Influencer/Online Communities" value="Forums or Online Communities" />
-                            <Picker.Item label="Print Media" value="Print Media" />
-                            <Picker.Item label="Other" value="Other" />
-                            </Picker>
-                        )}
+
                         </View>
                         <TouchableOpacity onPress={handleSignup} style={styles.button} disabled={isLoading}>
                             {isLoading ? (
@@ -621,13 +604,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: COLORS.primaryWhiteHex,
     },
-    picker: {
-        height: 50,
-        width: '100%',
-        marginBottom: 20,
-        color: COLORS.secondaryLightGreyHex,
-        backgroundColor: COLORS.secondaryDarkGreyHex,
-      },
 });
 
 export default SignupLogin;

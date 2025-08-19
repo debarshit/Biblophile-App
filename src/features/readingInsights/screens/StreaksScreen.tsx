@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert, SafeAreaView } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { StyleSheet, ScrollView, SafeAreaView, View, TouchableOpacity, Text } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import instance from '../../../services/axios';
-import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { COLORS } from '../../../theme/theme';
 import PagesReadInput from '../components/PagesReadInput';
@@ -18,6 +16,8 @@ import Footer from '../components/Footer';
 import SessionTimer from '../components/SessionTimer';
 import TimePicker from '../components/TimePicker';
 import StreakCalendarView from '../components/StreakCalendarView';
+import StreakCelebration from '../../../components/StreakCelebration';
+import { useStreak } from '../../../hooks/useStreak';
 
 const StreaksScreen = ({ navigation, route }) => {
   const userDetails = useStore((state) => state.userDetails);
@@ -25,9 +25,9 @@ const StreaksScreen = ({ navigation, route }) => {
   const startSession = useStore((state) => state.startSession);
   const clearSession = useStore((state) => state.clearSession);
 
-  const [currentStreak, setCurrentStreak] = useState(1);
-  const [maxStreak, setMaxStreak] = useState(1);
-  const [latestUpdateTime, setLatestUpdateTime] = useState("");
+  const { action } = route.params || {};
+
+  // Remaining local state (UI-only)
   const [celebration, setCelebration] = useState(false);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState(null);
@@ -35,82 +35,31 @@ const StreaksScreen = ({ navigation, route }) => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [promptMessage, setPromptMessage] = useState('');
   const [timer, setTimer] = useState(0);
+  const [showStreakCelebration, setShowStreakCelebration] = useState(false);
+  const [celebrationData, setCelebrationData] = useState(null);
 
-  const { action } = route.params || {};
+  // Handle celebration
+  const handleCelebration = useCallback((streakData) => {
+    setCelebrationData({
+      currentStreak: streakData.currentStreak,
+      isNewRecord: streakData.isNewRecord,
+    });
+    setShowStreakCelebration(true);
+  }, []);
 
-  // Handle the deep linked function
-  const handleAction = (action) => {
-    switch (action) {
-      case 'updateReadingStreak':
-        updateReadingStreak();
-        break;
-      default:
-        Alert.alert('Uh oh!', 'Please try again.');
-    }
-  };
+  const handleCelebrationComplete = useCallback(() => {
+    setShowStreakCelebration(false);
+    setCelebrationData(null);
+  }, []);
+  
+  const {
+    currentStreak,
+    maxStreak,
+    latestUpdateTime,
+  } = useStreak(userDetails[0]?.accessToken, action, handleCelebration);
 
-  const updateReadingStreak = () => {
-    if (!sessionStartTime) {
-      setPromptMessage('Would you like to start a reading session?');
-      setShowPrompt(true);
-    }
-    async function updateData() {
-      try {
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const updateReadingStreakResponse = await instance.post(requests.updateReadingStreak, {
-          currentStreak: currentStreak,
-          timezone: userTimezone,
-        }, {
-          headers: {
-            Authorization: `Bearer ${userDetails[0].accessToken}`
-          },
-        });
-        const response = updateReadingStreakResponse.data;
-        if (response.data.message) {
-          if (response.data.message === "Updated") {
-            setCurrentStreak(response.data.streak);
-            setMaxStreak(response.data.maxStreak);
-            setLatestUpdateTime(response.data.latestUpdateTime);
-          }
-          else {
-            Alert.alert('Error', response.data.message);
-          }
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to update reading streak.');
-        console.log(error);
-      }
-    }
-    updateData();
-  }
-
+  // Confetti logic (unchanged)
   useEffect(() => {
-    async function fetchReadingStreak() {
-      try {
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const response = await instance(`${requests.fetchReadingStreak}?timezone=${userTimezone}`, {
-          headers: {
-            Authorization: `Bearer ${userDetails[0].accessToken}`,
-          },
-        });
-        const data = response.data.data;
-        setCurrentStreak(data.currentStreak);
-        setMaxStreak(data.maxStreak);
-        setLatestUpdateTime(data.latestUpdateTime);
-        if (action) {
-          handleAction(action);
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to fetch reading streak.');
-        console.error('Error fetching plans:', error);
-      }
-    }
-
-    fetchReadingStreak();
-  }, [currentStreak]);
-
-  useEffect(() => {
-    // Check if all days are filled to trigger celebration
     const checkAllDaysFilled = () => {
       const today = new Date();
       const currentDayIndex = today.getDay();
@@ -119,44 +68,37 @@ const StreaksScreen = ({ navigation, route }) => {
 
       const weekStartIndex = 0;
       const streakEndDayIndex = lastUpdateDayIndex;
-
       const fillStartDayIndex = Math.max(weekStartIndex, streakEndDayIndex - (currentStreak - 1));
       const fillEndDayIndex = Math.min(currentDayIndex, streakEndDayIndex);
 
-      if (fillStartDayIndex === 0 && fillEndDayIndex === 6) {
-        setCelebration(true);
-      } else {
-        setCelebration(false);
-      }
+      setCelebration(fillStartDayIndex === 0 && fillEndDayIndex === 6);
     };
 
     checkAllDaysFilled();
   }, [currentStreak, latestUpdateTime]);
 
   useEffect(() => {
-    // Example of how you can handle the action param from route
-    if (action === 'updateReadingStreak') {
-      updateReadingStreak();
+    if (sessionStartTime) {
+      setActiveTab('pages');
+      setShowPrompt(false);
     }
-  }, [action]);
+  }, [sessionStartTime]);
 
-  // Handle session timer
+  // Session timer logic (unchanged)
   useEffect(() => {
     let timerInterval;
     
     if (sessionStartTime) {
       timerInterval = setInterval(() => {
         const currentTime = new Date();
-        const elapsedTime = Math.floor((currentTime.getTime() - new Date(sessionStartTime).getTime()) / 1000); // Timer in seconds
+        const elapsedTime = Math.floor((currentTime.getTime() - new Date(sessionStartTime).getTime()) / 1000);
         setTimer(elapsedTime);
         
-        // Update the notification every second
         const minutes = Math.floor(elapsedTime / 60);
         const seconds = elapsedTime % 60;
         updateTimerNotification(minutes, seconds);
       }, 1000);
     } else {
-      // Session ended, clear the interval and dismiss notification
       if (timerInterval) {
         clearInterval(timerInterval);
         dismissTimerNotification();
@@ -171,14 +113,6 @@ const StreaksScreen = ({ navigation, route }) => {
     };
   }, [sessionStartTime]);
   
-  // Handle session check when component loads
-  useEffect(() => {
-    if (sessionStartTime) {
-      setActiveTab('pages');
-      setShowPrompt(false);
-    }
-  }, []);
-
   const handleConfirmSessionStart = () => {
     startSession();
     setShowPrompt(false);
@@ -216,6 +150,19 @@ const StreaksScreen = ({ navigation, route }) => {
     });
   };
 
+  const StartSessionButton = () => (
+    <View style={styles.sessionButtonContainer}>
+      <TouchableOpacity 
+        style={styles.startSessionButton} 
+        onPress={() => {setPromptMessage('Would you like to start a reading session?');
+      setShowPrompt(true);}}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.startSessionButtonText}>Start Reading Session</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {celebration && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} />}
@@ -233,8 +180,10 @@ const StreaksScreen = ({ navigation, route }) => {
           message={promptMessage}
         />
 
-        {sessionStartTime && (
+        {sessionStartTime ? (
           <SessionTimer timer={timer} />
+        ) : (
+          <StartSessionButton />
         )}
         
         <TabSelector 
@@ -251,7 +200,7 @@ const StreaksScreen = ({ navigation, route }) => {
             <NoteSection userDetails={userDetails} />
           </>
         ) : (
-          <PagesReadInput navigation={navigation} />
+          <PagesReadInput showDiscoverLink={false} />
         )}
         
         {datePickerVisible && (
@@ -271,6 +220,13 @@ const StreaksScreen = ({ navigation, route }) => {
       </ScrollView>
       
       <Footer openWebView={openWebView} />
+
+      <StreakCelebration
+        visible={showStreakCelebration}
+        streakCount={celebrationData?.currentStreak || 0}
+        isNewRecord={celebrationData?.isNewRecord || false}
+        onAnimationComplete={handleCelebrationComplete}
+      />
     </SafeAreaView>
   );
 };
@@ -282,6 +238,31 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 20,
+  },
+   sessionButtonContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  startSessionButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  startSessionButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
 });
 

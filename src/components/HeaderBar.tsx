@@ -79,7 +79,6 @@ const HeaderBar: React.FC<HeaderBarProps> = ({ title, showBackButton }) => {
         <Text style={styles.StreakText}>{streak !== null && `Active Streak: ${streak} days`}</Text>
       </TouchableOpacity>}
       
-      {/* Update Settings to Notifications */}
       <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>  
         <Ionicons name="notifications" size={24} color={COLORS.primaryWhiteHex} />
       </TouchableOpacity>

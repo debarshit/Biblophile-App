@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Switch, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Switch, Alert, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { notificationService } from '../../../utils/notificationUtils';
 import Toast from 'react-native-toast-message';
+import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
+import HeaderBar from '../../../components/HeaderBar';
 
 const NotificationSettingsScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -137,13 +139,14 @@ const NotificationSettingsScreen = () => {
   };
 
   const getStatusColor = () => {
-    if (loading) return '#666';
-    if (notificationsEnabled) return '#4CAF50';
-    return '#FF6B6B';
+    if (loading) return COLORS.secondaryLightGreyHex;
+    if (notificationsEnabled) return COLORS.primaryOrangeHex;
+    return COLORS.primaryRedHex;
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <HeaderBar title='Notification Settings' showBackButton={true} />
       <View style={styles.header}>
         <Text style={styles.title}>Notification Settings</Text>
         <Text style={styles.subtitle}>
@@ -164,6 +167,8 @@ const NotificationSettingsScreen = () => {
             value={notificationsEnabled}
             onValueChange={handleNotificationToggle}
             disabled={loading}
+            trackColor={{ false: COLORS.primaryGreyHex, true: COLORS.primaryOrangeHex }}
+            thumbColor={notificationsEnabled ? COLORS.primaryWhiteHex : COLORS.secondaryLightGreyHex}
           />
         </View>
 
@@ -230,152 +235,143 @@ const NotificationSettingsScreen = () => {
           </Text>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.primaryBlackHex,
   },
   header: {
-    padding: 20,
-    backgroundColor: 'white',
+    padding: SPACING.space_20,
+    backgroundColor: COLORS.primaryDarkGreyHex,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: COLORS.primaryGreyHex,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    fontSize: FONTSIZE.size_24,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_8,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 22,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    lineHeight: SPACING.space_24,
   },
   settingsContainer: {
     flex: 1,
-    padding: 20,
+    padding: SPACING.space_20,
   },
   settingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    padding: SPACING.space_20,
+    borderRadius: BORDERRADIUS.radius_15,
+    marginBottom: SPACING.space_16,
+    borderWidth: 1,
+    borderColor: COLORS.primaryGreyHex,
   },
   settingInfo: {
     flex: 1,
   },
   settingTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    fontSize: FONTSIZE.size_18,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_4,
   },
   settingStatus: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_medium,
   },
   typesContainer: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    padding: SPACING.space_20,
+    borderRadius: BORDERRADIUS.radius_15,
+    marginBottom: SPACING.space_16,
+    borderWidth: 1,
+    borderColor: COLORS.primaryGreyHex,
   },
   typesTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_16,
   },
   typeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.space_12,
   },
   typeIcon: {
-    fontSize: 20,
-    marginRight: 12,
+    fontSize: FONTSIZE.size_20,
+    marginRight: SPACING.space_12,
   },
   typeText: {
-    fontSize: 16,
-    color: '#555',
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
     flex: 1,
   },
   troubleshootContainer: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    padding: SPACING.space_20,
+    borderRadius: BORDERRADIUS.radius_15,
+    marginBottom: SPACING.space_16,
+    borderWidth: 1,
+    borderColor: COLORS.primaryGreyHex,
   },
   troubleshootTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_12,
   },
   troubleshootButton: {
-    backgroundColor: '#007AFF',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: COLORS.primaryOrangeHex,
+    padding: SPACING.space_12,
+    borderRadius: BORDERRADIUS.radius_10,
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: SPACING.space_8,
   },
   troubleshootButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_semibold,
   },
   resetButton: {
-    padding: 12,
+    padding: SPACING.space_12,
     alignItems: 'center',
   },
   resetButtonText: {
-    color: '#FF6B6B',
-    fontSize: 16,
-    fontWeight: '500',
+    color: COLORS.primaryRedHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_medium,
   },
   infoContainer: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    padding: SPACING.space_20,
+    borderRadius: BORDERRADIUS.radius_15,
+    borderWidth: 1,
+    borderColor: COLORS.primaryGreyHex,
   },
   infoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_8,
   },
   infoText: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    lineHeight: SPACING.space_20,
   },
 });
 

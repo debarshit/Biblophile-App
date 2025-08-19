@@ -25,14 +25,21 @@ interface BuddyReadMembersSectionProps {
     buddyRead?: BuddyRead | null;
     memberDisplayCount: number;
     loadMoreMembers: () => void;
+    currentUserId?: string | null;
 }
-const BuddyReadMembersSection: React.FC<BuddyReadMembersSectionProps> = ({ buddyRead, memberDisplayCount, loadMoreMembers }) => {
+const BuddyReadMembersSection: React.FC<BuddyReadMembersSectionProps> = ({ buddyRead, memberDisplayCount, loadMoreMembers, currentUserId, }) => {
+  // Reorder: move current user to the top
+  const orderedMembers = [...buddyRead.members].sort((a, b) => {
+    if (a.userId === currentUserId) return -1;
+    if (b.userId === currentUserId) return 1;
+    return 0;
+  });
   return (
     buddyRead && (
       <View style={styles.membersContainer}>
         <Text style={styles.membersTitle}>Members:</Text>
         <View style={styles.membersGrid}>
-          {buddyRead.members.slice(0, memberDisplayCount).map((member) => (
+          {orderedMembers.slice(0, memberDisplayCount).map((member) => (
             <MemberProgressCard
               key={member.name}
               memberDetails={{ userId: member.userId, name: member.name, bookPages: buddyRead.book_pages, bookId: buddyRead.bookId }}
@@ -79,4 +86,3 @@ const styles = StyleSheet.create({
 });
 
 export default BuddyReadMembersSection;
-  
