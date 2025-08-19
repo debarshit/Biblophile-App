@@ -36,6 +36,7 @@ import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import SeasonalRecommendations from '../components/SeasonalRecommendations';
 import StreakWeeklyProgress from '../../readingInsights/components/StreakWeeklyProgress';
 import PagesReadInput from '../../readingInsights/components/PagesReadInput';
+import MerchShopBanner from '../../../components/MerchShopBanner';
 
 interface Spotlight {
   Id: string;
@@ -227,19 +228,7 @@ const HomeScreen = ({navigation}: any) => {
         <SeasonalRecommendations latitude={latitude} longitude={longitude} />
 
         {/* Checkout merch shop */}
-        <View style={styles.merchShopSection}>
-          <TouchableOpacity onPress={openShopLink} style={styles.bannerContainer}>
-            <Image
-              source={{ uri: 'https://ik.imagekit.io/umjnzfgqh/shop/common_assets/banners/banner-large.png' }}
-              style={styles.bannerImage}
-            />
-            <Text style={styles.merchShopTitle}>Check Out Our Exclusive Merch!</Text>
-            <Text style={styles.merchShopDescription}>Browse our latest merchandise, only for book lovers like you.</Text>
-            <View style={styles.buttonContainer}>
-              <Text style={styles.shopButton}>Visit Our Shop</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+        <MerchShopBanner title='Check Out Our Exclusive Merch!' description='Browse our latest merchandise, only for book lovers like you.' />
 
         {/* biblo jan and made with love in India */}
         <View style={styles.welcomeMascot}>
@@ -302,51 +291,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_regular,
     color: COLORS.primaryOrangeHex,
     paddingRight: SPACING.space_10,
-  },
-  merchShopSection: {
-    marginVertical: SPACING.space_24,
-    marginHorizontal: SPACING.space_4,
-    padding: SPACING.space_4,
-  },
-  bannerContainer: {
-    backgroundColor: COLORS.primaryDarkGreyHex,
-    padding: SPACING.space_8,
-    borderRadius: BORDERRADIUS.radius_15,
-    shadowColor: COLORS.primaryBlackHex,
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  bannerImage: {
-    width: '100%',
-    aspectRatio: 4.5,
-    borderRadius: BORDERRADIUS.radius_15,
-    marginBottom: SPACING.space_4,
-  },
-  merchShopTitle: {
-    fontSize: FONTSIZE.size_20,
-    fontFamily: FONTFAMILY.poppins_bold,
-    color: COLORS.primaryWhiteHex,
-    marginBottom: SPACING.space_2,
-  },
-  merchShopDescription: {
-    fontSize: FONTSIZE.size_14,
-    fontFamily: FONTFAMILY.poppins_regular,
-    color: COLORS.secondaryLightGreyHex,
-    marginBottom: SPACING.space_4,
-  },
-  buttonContainer: {
-    alignItems: 'center',
-  },
-  shopButton: {
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    color: COLORS.primaryWhiteHex,
-    paddingVertical: SPACING.space_2,
-    paddingHorizontal: SPACING.space_8,
-    borderRadius: BORDERRADIUS.radius_10,
-    textAlign: 'center',
-    fontSize: FONTSIZE.size_14,
-    fontFamily: FONTFAMILY.poppins_medium,
   },
   welcomeMascot: {
     opacity: 0.5,
