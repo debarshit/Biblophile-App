@@ -200,7 +200,7 @@ const StreaksScreen = ({ navigation, route }) => {
             <NoteSection userDetails={userDetails} />
           </>
         ) : (
-          <PagesReadInput />
+          <PagesReadInput showDiscoverLink={false} />
         )}
         
         {datePickerVisible && (

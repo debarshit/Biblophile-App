@@ -8,7 +8,6 @@ import requests from '../../../services/requests';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import BookStatusModal from '../../reading/components/BookStatusModal';
 import SessionPrompt from './SessionPrompt';
-import Mascot from '../../../components/Mascot';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useStreak } from '../../../hooks/useStreak';
 import { useNavigation } from '@react-navigation/native';
@@ -34,7 +33,7 @@ const BookItem = React.memo(({ book, navigation, onUpdatePress }) => (
   </View>
 ));
 
-const PagesReadInput = () => {
+const PagesReadInput = ({ showDiscoverLink=true }) => {
   const navigation = useNavigation<any>();
   const [pagesRead, setPagesRead] = useState<string>('0');
   const [currentReads, setCurrentReads] = useState<any[]>([]);
@@ -295,19 +294,32 @@ const PagesReadInput = () => {
   const renderCurrentReadsSection = () => {
     return (
       <View style={styles.currentReadsSection}>
-        <Text style={styles.sectionHeading}>Currently Reading</Text>
         {isLoadingCurrentReads ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />
             <Text style={styles.loadingText}>Loading your books...</Text>
           </View>
         ) : currentReads.length > 0 ? (
+          <>
+          <Text style={styles.sectionHeading}>Currently Reading</Text>
           <ScrollView horizontal contentContainerStyle={styles.currentReads}>
             {renderedBooks}
           </ScrollView>
+          </>
         ) : (
           <View style={styles.emptyStateContainer}>
-            <Mascot emotion="sleeping" />
+            <Text style={styles.emptyStateText}>
+              No books in your current reads yet
+            </Text>
+            {showDiscoverLink && <TouchableOpacity 
+              style={styles.discoverButton}
+              onPress={() => navigation.navigate('Discover')}
+            >
+              <Text style={styles.discoverButtonText}>
+                Discover Books to Add
+              </Text>
+              <FontAwesome name="arrow-right" style={styles.discoverButtonIcon} />
+            </TouchableOpacity>}
           </View>
         )}
       </View>
@@ -522,5 +534,30 @@ const styles = StyleSheet.create({
   infoIcon: {
     color: COLORS.primaryLightGreyHex,
     fontSize: FONTSIZE.size_18,
+  },
+  emptyStateText: {
+    color: COLORS.primaryLightGreyHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_regular,
+    textAlign: 'center',
+    marginBottom: SPACING.space_16,
+  },
+  discoverButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryOrangeHex,
+    paddingVertical: SPACING.space_12,
+    paddingHorizontal: SPACING.space_20,
+    borderRadius: 25,
+    gap: SPACING.space_8,
+  },
+  discoverButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_medium,
+  },
+  discoverButtonIcon: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_12,
   },
 });
