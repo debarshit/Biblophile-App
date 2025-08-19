@@ -404,6 +404,7 @@ const styles = StyleSheet.create({
   currentReadsSection: {
     width: '100%',
     marginBottom: SPACING.space_20,
+    alignItems: 'center',
   },
   sectionHeading: {
     color: COLORS.primaryWhiteHex,
