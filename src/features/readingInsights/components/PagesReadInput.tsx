@@ -41,6 +41,7 @@ const PagesReadInput = () => {
   const [isLoadingCurrentReads, setIsLoadingCurrentReads] = useState(true);
   const [refreshData, setRefreshData] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // states for BookStatusModal
   const [selectedBookId, setSelectedBookId] = useState<string>('');
@@ -235,10 +236,31 @@ const PagesReadInput = () => {
     handleCloseBookStatusModal();
   }, [fetchPagesRead, updateStreak, checkActiveSession, handleCloseBookStatusModal]);
 
+  // Initialize data
+  const initializeData = useCallback(async () => {
+    if (!userDetails[0]?.accessToken || isInitialized) return;
+    
+    try {
+      await Promise.all([
+        fetchCurrentReads(),
+        fetchPagesRead()
+      ]);
+      setIsInitialized(true);
+    } catch (error) {
+      console.error('Error initializing data:', error);
+    }
+  }, [fetchCurrentReads, fetchPagesRead, userDetails, isInitialized]);
+
   useEffect(() => {
-    fetchCurrentReads();
-    fetchPagesRead();
-  }, [refreshData]);
+    initializeData();
+  }, [initializeData]);
+
+  useEffect(() => {
+    if (isInitialized && refreshData) {
+      fetchCurrentReads();
+      fetchPagesRead();
+    }
+  }, [refreshData, isInitialized]);
 
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
@@ -273,7 +295,7 @@ const PagesReadInput = () => {
   const renderCurrentReadsSection = () => {
     return (
       <View style={styles.currentReadsSection}>
-        <Text style={styles.sectionHeading}>Current Reads</Text>
+        <Text style={styles.sectionHeading}>Currently Reading</Text>
         {isLoadingCurrentReads ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />
@@ -291,6 +313,16 @@ const PagesReadInput = () => {
       </View>
     );
   };
+
+  // Show loading until initialized
+  if (!isInitialized) {
+    return (
+      <View style={styles.pagesReadContainer}>
+        <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />
+        <Text style={styles.loadingText}>Initializing...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.pagesReadContainer}>

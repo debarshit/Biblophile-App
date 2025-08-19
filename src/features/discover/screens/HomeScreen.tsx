@@ -35,6 +35,7 @@ import { useCity } from '../../../contexts/CityContext';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import SeasonalRecommendations from '../components/SeasonalRecommendations';
 import StreakWeeklyProgress from '../../readingInsights/components/StreakWeeklyProgress';
+import PagesReadInput from '../../readingInsights/components/PagesReadInput';
 
 interface Spotlight {
   Id: string;
@@ -171,6 +172,8 @@ const HomeScreen = ({navigation}: any) => {
         <StreakWeeklyProgress userDetails={userDetails} />
 
         <Banner />
+
+        <PagesReadInput />
  
         {/* Spotlight Section */}
         <Spotlights spotlights={spotlights} />
