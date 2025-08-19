@@ -34,11 +34,10 @@ const OnboardingScreen = ({ navigation }: any) => {
           ),
         },
         {   
-            title: (<Text style={styles.titleText}>Rent, Read, Return, Repeat!</Text>),
-            subtitle: (<Text style={styles.subtitleText}>Experience the joy of reading without the commitment. 
-              With Biblophile, you can easily rent books, immerse yourself in captivating stories, and 
-              return them when you're ready for your next adventure. {"\n"}Start your reading journey today!
-              We deliver books right at your doorstep.</Text>),
+            title: (<Text style={styles.titleText}>Turn Reading Into a Habit!</Text>),
+            subtitle: (<Text style={styles.subtitleText}>Stay motivated with daily and weekly streaks. 
+              Biblophile rewards your consistency and helps you make reading part of your lifestyle. 
+              {"\n"}{"\n"}Start your reading journey today!</Text>),
             backgroundColor: COLORS.primaryBlackHex,
             image: (
               <View style={styles.container}>
@@ -57,27 +56,30 @@ const OnboardingScreen = ({ navigation }: any) => {
             ),
         },
         {
-            title: (<Text style={styles.titleText}>Choose Your Plan</Text>),
-            subtitle: (<Text style={styles.subtitleText}>Tailor your reading experience to fit your lifestyle. Select a 
-              subscription plan for unlimited access to our vast library of books, or opt to rent without commitment.{"\n\n"} 
-              Whether you're a casual reader or a bookworm, we have the perfect option for you. Dive into your next story now!</Text>),
+            title: (<Text style={styles.titleText}>Challenge Yourself & Friends</Text>),
+            subtitle: (<Text style={styles.subtitleText}>Take part in themed reading challenges, track your milestones, 
+              and even invite friends to join. Reading is more fun together!</Text>),
             backgroundColor: COLORS.primaryBlackHex,
             image: (
               <View style={styles.container}>
                   <View style={styles.lottieContainer}>
-                      <LottieView
+                      {/* <LottieView
                           style={styles.lottie}
                           source={require("../../../lottie/onboarding/card.json")}
                           autoPlay
                           loop
-                      />
+                      /> */}
+                      <View style={styles.tempImage}>
+                        <Mascot emotion="welcome" />
+                      </View>
                   </View>
               </View>
             ),
         },
         {
             title: (<Text style={styles.titleText}>Start Exploring</Text>),
-            subtitle: (<Text style={styles.subtitleText}>Your literary journey awaits! Begin exploring our collection and embark on an adventure through the pages. Happy reading! Sign up to discover your next read.</Text>),
+            subtitle: (<Text style={styles.subtitleText}>Discover new reads, share your progress, and see what your friends are reading. Biblophile makes reading a shared adventure.
+              {"\n\n"}Happy reading! Sign up to discover your next read.</Text>),
             backgroundColor: COLORS.primaryBlackHex,
             image: (
               <View style={styles.container}>
@@ -89,7 +91,7 @@ const OnboardingScreen = ({ navigation }: any) => {
                           loop
                       /> */}
                       <View style={styles.tempImage}>
-                        <Mascot emotion="pendingBooks" />
+                        <Mascot emotion="eyesPeeping" />
                       </View>
                   </View>
               </View>
