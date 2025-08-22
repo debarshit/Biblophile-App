@@ -9,8 +9,11 @@ import {
   View,
   ActivityIndicator,
   ScrollView,
-  Alert
+  Alert,
+  ToastAndroid,
+  Platform
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { useFocusEffect } from '@react-navigation/native';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,6 +22,7 @@ import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { COLORS, FONTSIZE, FONTFAMILY, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get("window");
 
@@ -29,10 +33,11 @@ const SubscriptionScreen = ({ navigation }) => {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [newSubscription, setNewSubscription] = useState(false);
+  const [loadingRefund, setLoadingRefund] = useState(false);
+  const [refundRequested, setRefundRequested] = useState(false);
 
   const userDetails = useStore((state) => state.userDetails);
 
-  // Fetch active plan data
   const fetchActivePlan = async () => {
     try {
       const response = await instance(requests.fetchActivePlan, {
@@ -68,6 +73,63 @@ const SubscriptionScreen = ({ navigation }) => {
       console.error('Error fetching plans:', error);
     }
   };
+
+  const handleRefundRequest = async () => {
+    try {
+      setLoadingRefund(true);
+      const res = await instance.post(requests.requestDepositRefund,
+        { amount: userDetails[0].deposit },
+        {
+          headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
+        }
+      );
+      
+      if (res.status === 200) {
+        setRefundRequested(true);
+        // Show toast notification
+        if (Platform.OS === 'android') {
+          ToastAndroid.showWithGravity(
+            'Refund request submitted successfully',
+            ToastAndroid.SHORT,
+            ToastAndroid.CENTER,
+          );
+        } else {
+          Toast.show({
+            type: 'success',
+            text1: 'Refund Request Sent',
+            text2: 'Your deposit refund request has been submitted',
+            visibilityTime: 2000,
+            autoHide: true,
+            position: 'bottom',
+            bottomOffset: 100,
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error requesting deposit refund", err.response.data.message);
+      // Show error toast
+      if (Platform.OS === 'android') {
+        ToastAndroid.showWithGravity(
+          err.response.data.message || 'Something went wrong. Try again later.',
+          ToastAndroid.SHORT,
+          ToastAndroid.CENTER,
+        );
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Request Failed',
+          text2: err.response.data.message || 'Something went wrong while requesting refund',
+          visibilityTime: 2000,
+          autoHide: true,
+          position: 'bottom',
+          bottomOffset: 100,
+        });
+      }
+    } finally {
+      setLoadingRefund(false);
+    }
+  };
+
 
   // Initial data loading
   useEffect(() => {
@@ -175,9 +237,35 @@ const SubscriptionScreen = ({ navigation }) => {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Security Deposit */}
         <View style={styles.depositView}>
-          <Text style={styles.depositLabel}>Security deposit: </Text>
-          <Text style={styles.depositValue}>₹ {userDetails[0].deposit}</Text>
+          <View style={styles.depositInfo}>
+            <Text style={styles.depositLabel}>Security deposit: </Text>
+            <Text style={styles.depositValue}>₹ {userDetails[0].deposit}</Text>
+          </View>
+          
+          {/* Deposit Refund Button */}
+          {userDetails[0].deposit !== "0" && !refundRequested && (
+            <TouchableOpacity
+              style={styles.refundButton}
+              onPress={handleRefundRequest}
+              disabled={loadingRefund}
+              activeOpacity={0.7}
+            >
+              {loadingRefund ? (
+                <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
+              ) : (
+                <MaterialIcons name="money-off" size={18} color={COLORS.primaryWhiteHex} />
+              )}
+            </TouchableOpacity>
+          )}
         </View>
+
+        {/* Refund Request Status */}
+        {refundRequested && (
+          <View style={styles.refundStatusContainer}>
+            <MaterialIcons name="check-circle" size={20} color="#00c853" />
+            <Text style={styles.refundStatusText}>Your refund request has been submitted.</Text>
+          </View>
+        )}
 
         {/* Success Message */}
         {showSuccessMessage && (
@@ -288,13 +376,18 @@ const styles = StyleSheet.create({
   depositView: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     padding: SPACING.space_12,
     borderRadius: BORDERRADIUS.radius_10,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.primaryOrangeHex,
-    marginBottom: SPACING.space_24,
+    marginBottom: SPACING.space_12,
+  },
+  depositInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   depositLabel: {
     fontSize: FONTSIZE.size_16,
@@ -306,6 +399,32 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_16,
     fontFamily: FONTFAMILY.poppins_bold,
     color: COLORS.primaryWhiteHex,
+  },
+  refundButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    borderRadius: BORDERRADIUS.radius_8,
+    padding: SPACING.space_8,
+    marginLeft: SPACING.space_12,
+    minWidth: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  refundStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 200, 83, 0.15)',
+    borderWidth: 1,
+    borderColor: '#00c853',
+    borderRadius: BORDERRADIUS.radius_8,
+    padding: SPACING.space_12,
+    marginBottom: SPACING.space_12,
+  },
+  refundStatusText: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_medium,
+    color: '#00c853',
+    marginLeft: SPACING.space_8,
+    flex: 1,
   },
   subscriptionItem: {
     backgroundColor: COLORS.primaryDarkGreyHex,

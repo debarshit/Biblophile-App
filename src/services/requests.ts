@@ -34,13 +34,14 @@ const requests = {
     fetchOrders: `${APIURL}orders/`,
     placeOrder: `${APIURL}orders/`,
     placeSubscriptionOrder: `${APIURL}orders/subscription`,
-    updateOrder: (orderId) => `${APIURL}orders/${orderId}`,
+    updateOrder: (orderId: number) => `${APIURL}orders/${orderId}`,
 
     //user requests
     fetchUserData: `${APIURL}?action=fetchUserData`,
     fetchUserDataFromUsername: (username) => `${APIURL}users/username/${username}`,
     updateUserData: `${APIURL}users/update`,
     fetchDeposit: `${APIURL}users/deposit`,
+    requestDepositRefund: `${APIURL}users/deposit/request-refund`,
     registerNotificationToken: `${APIURL}users/notification-token`,
     fetchUserGoals: `${APIURL}users/goals`,
     fetchCurrentProgress: `${APIURL}users/progress`,
