@@ -1,5 +1,5 @@
 const IS_DEV = process.env.APP_VARIANT === 'development';
-const IS_PREVIEW = APP_VARIANT === 'preview';
+const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
 export default {
   "name": IS_DEV ? "Biblophile Dev" : IS_PREVIEW ? "Biblophile Preview" : "Biblophile",
   "slug": IS_DEV ? "Biblophile-App-Dev" : IS_PREVIEW ? "Biblophile-App-Preview" : "Biblophile-App",
