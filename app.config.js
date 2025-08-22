@@ -34,9 +34,9 @@ export default {
       ],
       "ITSAppUsesNonExemptEncryption": false
     },
-    "bundleIdentifier": isDev
+    "bundleIdentifier": IS_DEV
       ? "com.biblophile.biblophile.dev"
-      : isPreview
+      : IS_PREVIEW
       ? "com.biblophile.biblophile.preview"
       : "com.biblophile.biblophile"
   },
@@ -47,9 +47,9 @@ export default {
     },
     "googleServicesFile": "./google-services.json",
     "versionCode": 10,
-    package: isDev
+    package: IS_DEV
       ? "com.debar_shit.BiblophileApp.dev"
-      : isPreview
+      : IS_PREVIEW
       ? "com.debar_shit.BiblophileApp.preview"
       : "com.debar_shit.BiblophileApp",
     "permissions": [
