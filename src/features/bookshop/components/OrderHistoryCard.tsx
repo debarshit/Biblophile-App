@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Alert,
   Linking,
   StyleSheet,
   Text,
@@ -8,6 +9,9 @@ import {
 } from 'react-native';
 import {COLORS, FONTFAMILY, FONTSIZE, SPACING} from '../../../theme/theme';
 import OrderItemCard from './OrderItemCard';
+import instance from '../../../services/axios';
+import requests from '../../../services/requests';
+import { useStore } from '../../../store/store';
 
 interface OrderHistoryCardProps {
   order: any;
@@ -15,6 +19,57 @@ interface OrderHistoryCardProps {
 const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
   order,
 }) => {
+  const [orderStatus, setOrderStatus] = useState(order.OrderStatus);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [showPickupDetails, setShowPickupDetails] = useState(false);
+  const userDetails = useStore((state: any) => state.userDetails);
+
+  const handleReturnRequest = async () => {
+    setButtonDisabled(true);
+    try {
+      const response = await instance.put(
+        requests.updateOrder(order.OrderId), 
+        {}, 
+        {
+          headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
+        }
+      );
+
+      const result = await response.data.data;
+      if (result.success) {
+        setOrderStatus("5");
+        Alert.alert("Success", "Return request submitted successfully!");
+      } else {
+        Alert.alert("Error", result.message || "Failed to request return.");
+        setButtonDisabled(false);
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "An error occurred while processing your request.");
+      setButtonDisabled(false);
+    }
+  };
+
+  // Check if return button should be shown
+  const showReturnButton =
+    order.OrderType == "0" && 
+    order.DeliveryDate &&
+    order.DeliveryDate !== "0000-00-00" &&
+    orderStatus == "3";
+
+  const getReturnButtonText = () => {
+    if (orderStatus == "5") {
+      return "Return Scheduled";
+    }
+    return "Ready to Return";
+  };
+
+  const getReturnButtonStyle = () => {
+    if (orderStatus === "5") {
+      return [styles.returnButton, styles.returnButtonScheduled];
+    }
+    return styles.returnButton;
+  };
   return (
     <View style={styles.CardContainer}>
       <View style={styles.CardHeader}>
@@ -52,26 +107,58 @@ const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
             <Text style={styles.FooterPrice}> {order.DueDate}</Text>
           </View>}
       </View>
-      {order.PickupDropOption === 'self-pickup' && order.pickupLocation && (
-        <View style={{ marginTop: SPACING.space_10 }}>
-          <Text style={styles.FooterTitle}>Pickup Type: Self Pickup</Text>
-          <Text style={styles.FooterSubtitle}>
-            {order.pickupLocation.locationName}, {order.pickupLocation.cityName}
-          </Text>
-          <Text style={styles.FooterSubtitle}>{order.pickupLocation.address}</Text>
-          <Text style={styles.FooterSubtitle}>Opening Hours: {order.pickupLocation.openingHours}</Text>
-          <Text style={styles.FooterSubtitle}>Contact: {order.pickupLocation.contactNumber}</Text>
+      {/* Return Button */}
+      {(showReturnButton || orderStatus == "5") && (
+        <View style={styles.returnButtonContainer}>
           <TouchableOpacity
-            onPress={() =>
-              Linking.openURL(
-                `https://www.google.com/maps/search/?api=1&query=${order.pickupLocation.latitude},${order.pickupLocation.longitude}`
-              )
-            }
+            style={getReturnButtonStyle()}
+            onPress={handleReturnRequest}
+            disabled={buttonDisabled || orderStatus == "5"}
           >
-            <Text style={[styles.FooterSubtitle, { color: COLORS.primaryOrangeHex }]}>
-              📍 Get Directions
+            <Text style={styles.returnButtonText}>
+              {getReturnButtonText()}
             </Text>
           </TouchableOpacity>
+        </View>
+      )}
+      {order.PickupDropOption === 'self-pickup' && order.pickupLocation && (
+        <View style={styles.pickupContainer}>
+          <TouchableOpacity 
+            style={styles.pickupHeader}
+            onPress={() => setShowPickupDetails(!showPickupDetails)}
+          >
+            <Text style={styles.FooterTitle}>Pickup Type: Self Pickup</Text>
+            <Text style={styles.expandIcon}>
+              {showPickupDetails ? '▼' : '▶'}
+            </Text>
+          </TouchableOpacity>
+          
+          {showPickupDetails && (
+            <View style={styles.pickupDetails}>
+              <Text style={styles.FooterSubtitle}>
+                {order.pickupLocation.locationName}, {order.pickupLocation.cityName}
+              </Text>
+              <Text style={styles.FooterSubtitle}>{order.pickupLocation.address}</Text>
+              <Text style={styles.FooterSubtitle}>
+                Opening Hours: {order.pickupLocation.openingHours}
+              </Text>
+              <Text style={styles.FooterSubtitle}>
+                Contact: {order.pickupLocation.contactNumber}
+              </Text>
+              <TouchableOpacity
+                style={styles.directionsButton}
+                onPress={() =>
+                  Linking.openURL(
+                    `https://www.google.com/maps/search/?api=1&query=${order.pickupLocation.latitude},${order.pickupLocation.longitude}`
+                  )
+                }
+              >
+                <Text style={styles.directionsText}>
+                  📍 Get Directions
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       )}
     </View>
@@ -131,6 +218,65 @@ const styles = StyleSheet.create({
   FooterPrice: {
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_18,
+    color: COLORS.primaryOrangeHex,
+  },
+  returnButtonContainer: {
+    marginTop: SPACING.space_15,
+    alignItems: 'center',
+  },
+  returnButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    paddingHorizontal: SPACING.space_24,
+    paddingVertical: SPACING.space_12,
+    borderRadius: SPACING.space_8,
+    minWidth: 150,
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  returnButtonScheduled: {
+    backgroundColor: COLORS.primaryGreyHex || '#666',
+    opacity: 0.7,
+  },
+  returnButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_14,
+  },
+  pickupContainer: {
+    marginTop: SPACING.space_10,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.primaryGreyHex || '#333',
+    paddingTop: SPACING.space_10,
+  },
+  pickupHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: SPACING.space_8,
+  },
+  expandIcon: {
+    color: COLORS.primaryOrangeHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_medium,
+  },
+  pickupDetails: {
+    paddingLeft: SPACING.space_16,
+    paddingTop: SPACING.space_8,
+    gap: SPACING.space_4,
+  },
+  directionsButton: {
+    marginTop: SPACING.space_8,
+  },
+  directionsText: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_16,
     color: COLORS.primaryOrangeHex,
   },
 });
