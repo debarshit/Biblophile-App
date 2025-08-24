@@ -3,7 +3,7 @@ import {StyleSheet, Image} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import { MaterialIcons, FontAwesome5, FontAwesome, Entypo } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import {COLORS} from '../theme/theme';
+import {COLORS, SPACING} from '../theme/theme';
 import HomeScreen from '../features/discover/screens/HomeScreen';
 import LibraryScreen from '../features/bookshop/screens/LibraryScreen';
 import SocialScreen from '../features/social/screens/SocialScreen';
@@ -25,8 +25,9 @@ const TabNavigator = () => {
       screenOptions={{
         tabBarHideOnKeyboard: true,
         headerShown: false,
-        tabBarShowLabel: false,
+        tabBarShowLabel: true,
         tabBarStyle: styles.tabBarStyle,
+        tabBarLabelStyle: styles.tabBarLabelStyle,
         tabBarBackground: () => (
           <BlurView
             intensity={15}
@@ -137,6 +138,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     elevation: 0,
     borderTopColor: 'transparent',
+  },
+  tabBarLabelStyle: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: SPACING.space_4,
+    color: COLORS.primaryWhiteHex,
   },
   BlurViewStyles: {
     position: 'absolute',
