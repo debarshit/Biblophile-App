@@ -6,6 +6,8 @@ import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import StarRating from 'react-native-star-rating-widget';
+import { WysiwygEditor } from '../../../components/WysiwygEditor';
+import { WysiwygRender } from '../../../components/WysiwygRender';
 
 interface ProductReviewProps {
   id: string;
@@ -186,15 +188,13 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
             enableSwiping={true}
             onChange={(rating) => onStarRatingPress(rating)}
           />
-          <TextInput
-            style={styles.textInput}
-            multiline
-            numberOfLines={5}
+          <View style={styles.editorContainer}>
+          <WysiwygEditor
             value={userReview}
-            onChangeText={setUserReview}
-            placeholder="Write your review here..."
-            placeholderTextColor="#AAAAAA"
+            onChange={(html) => setUserReview(html)}
+            maxChars={5000}
           />
+          </View>
           <View style={styles.emotionSection}>
             <Text style={styles.label}>Select Emotions:</Text>
             <View style={styles.checkboxGrid}>
@@ -226,17 +226,18 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
             <Text style={styles.reviewAuthor}>By {item.userName}</Text>
             <Text style={styles.reviewDate}>{item.ratingDate}</Text>
             <View style={styles.reviewRating}>
-            <StarRating 
-              maxStars={5}
-              starSize={30}
-              color={COLORS.primaryOrangeHex}
-              rating={item.rating}
-              enableHalfStar={true}
-              onChange={(rating) => null}
-            />
-              {/* <Text>{item.rating}</Text> */}
+              <StarRating 
+                maxStars={5}
+                starSize={30}
+                color={COLORS.primaryOrangeHex}
+                rating={item.rating}
+                enableHalfStar={true}
+                onChange={(rating) => null}
+              />
             </View>
-            <Text style={styles.reviewText}>{item.review}</Text>
+            <View style={{ marginTop: SPACING.space_8 }}>
+              <WysiwygRender html={item.review} maxWidth={300} />
+            </View>
           </View>
         )}
         onEndReached={loadMoreReviews}
@@ -264,15 +265,6 @@ const styles = StyleSheet.create({
   label: {
     color: COLORS.primaryWhiteHex,
     marginBottom: 10,
-  },
-  textInput: {
-    backgroundColor: COLORS.primaryGreyHex,
-    color: COLORS.primaryWhiteHex,
-    padding: SPACING.space_12,
-    marginTop: SPACING.space_10,
-    marginBottom: SPACING.space_10,
-    borderRadius: BORDERRADIUS.radius_10,
-    textAlignVertical: 'top',
   },
   loginPrompt: {
     color: COLORS.primaryWhiteHex,
@@ -312,6 +304,14 @@ const styles = StyleSheet.create({
     padding: SPACING.space_24,
     marginBottom: SPACING.space_10,
   },
+  editorContainer: {
+    height: 200,
+    borderWidth: 1,
+    borderColor: COLORS.primaryGreyHex,
+    borderRadius: BORDERRADIUS.radius_8,
+    marginBottom: SPACING.space_12,
+    overflow: 'hidden',
+  },
   reviewAuthor: {
     fontSize: FONTSIZE.size_16,
     fontFamily: FONTFAMILY.poppins_semibold,
@@ -324,9 +324,6 @@ const styles = StyleSheet.create({
   reviewRating: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  reviewText: {
-    color: COLORS.primaryWhiteHex,
   },
 });
 
