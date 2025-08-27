@@ -45,7 +45,8 @@ const GeneralNotificationsComponent: React.FC<NotificationsComponentProps> = ({
 
   const fetchNotifications = async (page: number = 1, refresh: boolean = false) => {
     try {
-      const response = await instance.get(`${requests.fetchNotifications}?page=${page}&limit=20&includeRead=true`, { headers: authHeaders });
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const response = await instance.get(`${requests.fetchNotifications}?page=${page}&limit=20&includeRead=true&timezone=${userTimezone}`, { headers: authHeaders });
       
       if (response.status === 200) {
         const { notifications: newNotifications, pagination } = response.data.data;
