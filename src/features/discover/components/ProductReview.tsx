@@ -103,9 +103,9 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
                 onChange={(rating) => null}
               />
             </View>
-            <View style={{ marginTop: SPACING.space_8 }}>
+            {item.review && <View style={{ marginTop: SPACING.space_8 }}>
               <WysiwygRender html={item.review} maxWidth={300} />
-            </View>
+            </View>}
           </View>
         )}
         onEndReached={loadMoreReviews}
