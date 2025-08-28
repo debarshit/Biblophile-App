@@ -49,6 +49,7 @@ import SearchScreen from './src/features/discover/screens/SearchScreen';
 import CreateBookClubScreen from './src/features/social/screens/BookClubsCreate';
 import BookClubDetailsScreen from './src/features/social/screens/BookClubDetails';
 import NotificationSettingsScreen from './src/features/settings/screens/NotificationSettingsScreen';
+import SubmitReviewScreen from './src/features/discover/screens/SubmitReviewScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -382,6 +383,10 @@ const App = () => {
               <Stack.Screen
               name="BookClubDetails"
               component={BookClubDetailsScreen}
+              options={{animation: 'slide_from_right'}}></Stack.Screen>
+              <Stack.Screen
+              name="SubmitReview"
+              component={SubmitReviewScreen}
               options={{animation: 'slide_from_right'}}></Stack.Screen>
           </Stack.Navigator>
           <Toast />
