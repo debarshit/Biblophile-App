@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import StarRating from 'react-native-star-rating-widget';
@@ -23,24 +24,29 @@ interface SubmitReviewScreenProps {
   navigation: any;
 }
 
-const EMOTIONS = [
-  { emotionId: 1, emotion: "Joy" },
-  { emotionId: 2, emotion: "Sadness" },
-  { emotionId: 3, emotion: "Fear" },
-  { emotionId: 4, emotion: "Anger" },
-  { emotionId: 5, emotion: "Surprise" },
-  { emotionId: 6, emotion: "Anticipation" },
-  { emotionId: 7, emotion: "Nostalgia" },
-  { emotionId: 8, emotion: "Empathy" },
-];
+interface Tag {
+  tagId: number;
+  tagName: string;
+}
 
-const TAG_CATEGORIES = {
-  characters: ['believable', 'change and grow', 'diverse representation', 'feel distant', 'flat', 'formulaic', 'inconsistent', 'lack of diversity', 'likeable', 'limited character growth', 'memorable', 'minor characters stand out', 'morally ambiguous', 'multilayered', 'one-dimensional', 'original', 'relatable', 'strong relationships', 'strong villain', 'unengaging', 'unforgettable protagonist', 'unlikable'],
-  plot: ['action-packed', 'addictive', 'clever plotting', 'clichéd', 'confusing', 'disjointed', 'epic scope', 'fast-paced', 'gripping/exciting', 'loose ends', 'nonlinear narrative', 'plot holes', 'predictable', 'predictable but satisfying', 'repetitive', 'rushed', 'satisfying conclusion', 'slow-paced', 'slow start, strong finish', 'steady pacing', 'suspenseful', 'twisty', 'uneven pacing', 'unpredictable', 'unrealistic', 'unsatisfying conclusion', 'well-structured'],
-  setting: ['ancient', 'atmospheric', 'beautiful', 'bland/generic', 'bleak', 'dark', 'dystopian', 'eerie', 'enchanted', 'ethereal', 'evocative imagery', 'expansive', 'forgettable', 'futuristic', 'gritty', 'harsh', 'historical', 'idyllic', 'immersive world-building', 'innovative', 'lack of depth', 'lush', 'magical', 'majestic', 'mysterious', 'mystical', 'nostalgic', 'opulent', 'otherworldly', 'picturesque', 'realistic', 'rustic', 'setting fits the story', 'surreal', 'unique location', 'vivid descriptions'],
-  writingStyle: ['bad writing', 'beautifully-written', 'boring prose', 'clear but uninspired', 'clunky', 'dense', 'descriptive', 'easy to read', 'flowery/lush', 'funny', 'hard to follow', 'original', 'repetitive', 'simplistic', 'straightforward', 'takes getting used to', 'whimsical tone', 'witty'],
-  contentWarnings: ['ableism', 'abuse', 'animal abuse', 'bigotry', 'child abuse', 'child loss', 'death', 'domestic violence', 'eating disorders', 'explicit sexual content', 'fat phobia', 'grief', 'homophobia', 'misogyny', 'murder', 'racism', 'religious intolerance', 'self-harm', 'sexual assault', 'substance abuse', 'transphobia', 'violence', 'war violence']
-};
+interface TagCategories {
+  characters: Tag[];
+  plot: Tag[];
+  setting: Tag[];
+  writingStyle: Tag[];
+  contentWarnings: Tag[];
+}
+
+const EMOTIONS = [
+  { emotionId: 1, emotion: "Joy", isChecked: false },
+  { emotionId: 2, emotion: "Sadness", isChecked: false },
+  { emotionId: 3, emotion: "Fear", isChecked: false },
+  { emotionId: 4, emotion: "Anger", isChecked: false },
+  { emotionId: 5, emotion: "Surprise", isChecked: false },
+  { emotionId: 6, emotion: "Anticipation", isChecked: false },
+  { emotionId: 7, emotion: "Nostalgia", isChecked: false },
+  { emotionId: 8, emotion: "Empathy", isChecked: false },
+];
 
 const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigation }) => {
   const { id, isGoogleBook, product } = route.params;
@@ -49,8 +55,15 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
   const [currentStep, setCurrentStep] = useState(1);
   const [rating, setRating] = useState(0);
   const [reviewHtml, setReviewHtml] = useState('');
-  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
-  const [tags, setTags] = useState<Record<keyof typeof TAG_CATEGORIES, string[]>>({
+  const [emotionsList, setEmotionsList] = useState(EMOTIONS);
+  const [tagCategories, setTagCategories] = useState<TagCategories>({
+    characters: [],
+    plot: [],
+    setting: [],
+    writingStyle: [],
+    contentWarnings: []
+  });
+  const [tags, setTags] = useState<Record<keyof TagCategories, number[]>>({
     characters: [],
     plot: [],
     setting: [],
@@ -58,24 +71,48 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
     contentWarnings: []
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingTags, setIsLoadingTags] = useState(true);
 
   const totalSteps = 4;
   const progress = (currentStep / totalSteps) * 100;
 
-  const handleEmotionToggle = (emotion: string) => {
-    setSelectedEmotions(prev => 
-      prev.includes(emotion) 
-        ? prev.filter(e => e !== emotion)
-        : [...prev, emotion]
+  // Fetch tags from API on component mount
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        setIsLoadingTags(true);
+        const response = await instance.get(requests.fetchReviewTags);
+        
+        if (response.data.status === 'success') {
+          setTagCategories(response.data.data);
+        } else {
+          throw new Error('Failed to fetch tags');
+        }
+      } catch (error) {
+        console.error('Error fetching tags:', error);
+        Alert.alert('Error', 'Failed to load review tags. Please try again.');
+      } finally {
+        setIsLoadingTags(false);
+      }
+    };
+
+    fetchTags();
+  }, []);
+
+  const handleEmotionToggle = (emotionId: number, isChecked: boolean) => {
+    setEmotionsList(prev => 
+      prev.map(emotion => 
+        emotion.emotionId === emotionId ? { ...emotion, isChecked } : emotion
+      )
     );
   };
 
-  const handleTagToggle = (category: keyof typeof TAG_CATEGORIES, tag: string) => {
+  const handleTagToggle = (category: keyof TagCategories, tagId: number) => {
     setTags(prev => ({
       ...prev,
-      [category]: prev[category].includes(tag)
-        ? prev[category].filter(t => t !== tag)
-        : [...prev[category], tag]
+      [category]: prev[category].includes(tagId)
+        ? prev[category].filter(t => t !== tagId)
+        : [...prev[category], tagId]
     }));
   };
 
@@ -118,16 +155,11 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
         }
       }
 
-      const emotionsData = EMOTIONS.map(emotion => ({
-        emotionId: emotion.emotionId,
-        isChecked: selectedEmotions.includes(emotion.emotion)
-      }));
-
       const reviewData = {
         productId: bookId,
         rating: rating,
         review: reviewHtml,
-        emotions: emotionsData,
+        emotions: emotionsList,
         tags: tags
       };
 
@@ -182,11 +214,11 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
           <View style={styles.stepContent}>
             <Text style={styles.stepTitle}>How did this book make you feel?</Text>
             <View style={styles.emotionsGrid}>
-              {EMOTIONS.map(emotion => (
+              {emotionsList.map(emotion => (
                 <View key={emotion.emotionId} style={styles.emotionItem}>
                   <BouncyCheckbox
-                    isChecked={selectedEmotions.includes(emotion.emotion)}
-                    onPress={() => handleEmotionToggle(emotion.emotion)}
+                    isChecked={emotion.isChecked}
+                    onPress={(isChecked) => handleEmotionToggle(emotion.emotionId, isChecked)}
                     fillColor={COLORS.primaryOrangeHex}
                     unFillColor={COLORS.primaryGreyHex}
                   />
@@ -198,27 +230,36 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
         );
 
       case 3:
+        if (isLoadingTags) {
+          return (
+            <View style={[styles.stepContent, styles.loadingContainer]}>
+              <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />
+              <Text style={styles.loadingText}>Loading tags...</Text>
+            </View>
+          );
+        }
+
         return (
           <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
             <Text style={styles.stepTitle}>How would you describe this book?</Text>
-            {Object.entries(TAG_CATEGORIES).map(([category, categoryTags]) => (
+            {Object.entries(tagCategories).map(([category, categoryTags]) => (
               <View key={category} style={styles.categoryContainer}>
                 <Text style={styles.categoryTitle}>{formatCategoryName(category)}</Text>
                 <View style={styles.tagsContainer}>
                   {categoryTags.map(tag => (
                     <TouchableOpacity
-                      key={tag}
-                      onPress={() => handleTagToggle(category as keyof typeof TAG_CATEGORIES, tag)}
+                      key={tag.tagId}
+                      onPress={() => handleTagToggle(category as keyof TagCategories, tag.tagId)}
                       style={[
                         styles.tagButton,
-                        tags[category as keyof typeof TAG_CATEGORIES].includes(tag) && styles.tagButtonSelected
+                        tags[category as keyof TagCategories].includes(tag.tagId) && styles.tagButtonSelected
                       ]}
                     >
                       <Text style={[
                         styles.tagText,
-                        tags[category as keyof typeof TAG_CATEGORIES].includes(tag) && styles.tagTextSelected
+                        tags[category as keyof TagCategories].includes(tag.tagId) && styles.tagTextSelected
                       ]}>
-                        {tag}
+                        {tag.tagName}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -398,6 +439,16 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_medium,
     color: COLORS.primaryWhiteHex,
     marginLeft: SPACING.space_12,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_medium,
+    color: COLORS.secondaryLightGreyHex,
+    marginTop: SPACING.space_12,
   },
   categoryContainer: {
     marginBottom: SPACING.space_20,
