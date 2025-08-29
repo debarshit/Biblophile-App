@@ -47,6 +47,7 @@ const DetailsScreen = ({navigation, route}: any) => {
         { size: 'Buy', price: product['ProductPrice'] || null, currency: '₹' }
       ];
   
+      //display rent price only for Bengaluru and only for Books
       if (type === 'Book' && selectedCity == 'Bengaluru') {
         const rentPrice = product['ProductRentPrice'] || (product['ProductPrice'] * 0.10);
         const adjustedRentPrice = Math.max(25, Math.min(35, rentPrice));
@@ -168,7 +169,7 @@ const DetailsScreen = ({navigation, route}: any) => {
         const data = response.data.data;
         setProduct(data);
         setActualPrice(data.ProductPrice || data.saleInfo?.listPrice?.amount);
-        const updatedPrices = getPrices();
+        const updatedPrices = calculatePricesFromData(data);
         setPrices(updatedPrices);
         setPrice(updatedPrices[0] || { size: '', price: 0, currency: '₹' });
       } catch (error) {
@@ -178,6 +179,27 @@ const DetailsScreen = ({navigation, route}: any) => {
 
     fetchProductDetails();
   }, [actualPrice, selectedCity]);
+
+  const calculatePricesFromData = (productData) => {
+    if (type === 'Book' || type === 'ExternalBook') {
+      const prices = [
+        { size: 'Buy', price: productData['ProductPrice'] || null, currency: '₹' }
+      ];
+
+      // Display rent price only for Bengaluru and only for Books
+      if (type === 'Book' && selectedCity === 'Bengaluru') {
+        const rentPrice = productData['ProductRentPrice'] || (productData['ProductPrice'] * 0.10);
+        const adjustedRentPrice = Math.max(25, Math.min(35, rentPrice));
+        prices.push({
+          size: 'Rent',
+          price: subscription === true ? '0' : adjustedRentPrice,
+          currency: '₹',
+        });
+      }
+      return prices;
+    }
+    return [];
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -266,7 +288,7 @@ const DetailsScreen = ({navigation, route}: any) => {
         onClose={() => setBuyModalVisible(false)}
         onOptionSelect={handleBuyOptionSelect}
         bookPrice={isGoogleBook ? product.saleInfo?.listPrice?.amount : product['ProductPrice']}
-        showDirectOption={!isGoogleBook && product['ProductAvailability'] === '1'}
+        showDirectOption={!isGoogleBook && product['ProductAvailability'] == '1' && product['ProductPrice'] != null}
         bookTitle={isGoogleBook ? product['volumeInfo']?.title : product['ProductName']}
       />
     </SafeAreaView>
