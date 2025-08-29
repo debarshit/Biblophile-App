@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../theme/theme';
+import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme/theme';
 import { WysiwygRender } from './WysiwygRender';
 
 type WysiwygTriggerProps = {

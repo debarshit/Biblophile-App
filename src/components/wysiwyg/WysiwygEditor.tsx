@@ -1,8 +1,8 @@
 import React, { useRef, useState, useMemo } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../theme/theme';
-import { sanitizeHTML } from '../utils/wysiwyg/sanitize';
+import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme/theme';
+import { sanitizeHTML } from '../../utils/wysiwyg/sanitize';
 
 type WysiwygEditorProps = {
   value?: string;

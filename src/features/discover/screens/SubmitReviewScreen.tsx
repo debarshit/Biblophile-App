@@ -13,7 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import StarRating from 'react-native-star-rating-widget';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
-import { useWysiwygEditor } from '../../../components/WysiwygModal';
+import { useWysiwygEditor } from '../../../components/wysiwyg/WysiwygModal';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';

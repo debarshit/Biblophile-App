@@ -5,7 +5,7 @@ import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import StarRating from 'react-native-star-rating-widget';
-import { WysiwygRender } from '../../../components/WysiwygRender';
+import { WysiwygRender } from '../../../components/wysiwyg/WysiwygRender';
 import { useNavigation } from '@react-navigation/native';
 
 interface ProductReviewProps {

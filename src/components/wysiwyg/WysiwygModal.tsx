@@ -10,7 +10,7 @@ import {
   Platform 
 } from 'react-native';
 import { WysiwygEditor } from './WysiwygEditor';
-import { COLORS, SPACING, FONTFAMILY, FONTSIZE } from '../theme/theme';
+import { COLORS, SPACING, FONTFAMILY, FONTSIZE } from '../../theme/theme';
 import { WysiwygTrigger } from './WysiwygTrigger';
 
 type WysiwygModalProps = {
