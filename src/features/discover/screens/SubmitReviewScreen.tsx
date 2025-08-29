@@ -13,7 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import StarRating from 'react-native-star-rating-widget';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
-import { WysiwygEditor } from '../../../components/WysiwygEditor';
+import { useWysiwygEditor } from '../../../components/WysiwygModal';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -72,6 +72,8 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingTags, setIsLoadingTags] = useState(true);
+
+  const reviewEditor = useWysiwygEditor();
 
   const totalSteps = 4;
   const progress = (currentStep / totalSteps) * 100;
@@ -158,7 +160,7 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
       const reviewData = {
         productId: bookId,
         rating: rating,
-        review: reviewHtml,
+        review: reviewEditor.value,
         emotions: emotionsList,
         tags: tags
       };
@@ -274,13 +276,15 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
           <View style={styles.stepContent}>
             <Text style={styles.stepTitle}>Got more to say?</Text>
             <Text style={styles.stepSubtitle}>Your detailed review:</Text>
-            <View style={styles.editorContainer}>
-              <WysiwygEditor
-                value={reviewHtml}
-                onChange={setReviewHtml}
-                maxChars={5000}
-              />
-            </View>
+            <reviewEditor.EditorTrigger 
+              placeholder="Share your detailed thoughts about this book... What did you love? What could have been better? Would you recommend it?"
+              maxLines={6}
+            />
+
+            {/* Add some helpful text */}
+            <Text style={styles.editorHint}>
+              💡 Tap to open the full editor where you can format your review with bold text, headers, lists, and more!
+            </Text>
           </View>
         );
 
@@ -348,6 +352,10 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
           </TouchableOpacity>
         )}
       </View>
+      <reviewEditor.EditorModal 
+        title="Write Your Review"
+        maxChars={5000}
+      />
     </SafeAreaView>
   );
 };
@@ -484,12 +492,14 @@ const styles = StyleSheet.create({
   tagTextSelected: {
     color: COLORS.primaryWhiteHex,
   },
-  editorContainer: {
-    height: 200,
-    borderWidth: 1,
-    borderColor: COLORS.primaryGreyHex,
-    borderRadius: BORDERRADIUS.radius_8,
-    overflow: 'hidden',
+  editorHint: {
+    fontSize: FONTSIZE.size_12,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
+    marginTop: SPACING.space_16,
+    paddingHorizontal: SPACING.space_20,
+    lineHeight: 18,
   },
   navigationContainer: {
     flexDirection: 'row',

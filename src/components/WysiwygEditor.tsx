@@ -8,6 +8,7 @@ type WysiwygEditorProps = {
   value?: string;
   onChange?: (html: string) => void;
   maxChars?: number;
+  style?: any;
 };
 
 export function WysiwygEditor({ value = '', onChange, maxChars = 5000 }: WysiwygEditorProps) {
