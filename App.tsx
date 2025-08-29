@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { Alert, Platform } from 'react-native';
+import { Alert } from 'react-native';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
 import * as SplashScreen from 'expo-splash-screen';
@@ -50,6 +50,9 @@ import CreateBookClubScreen from './src/features/social/screens/BookClubsCreate'
 import BookClubDetailsScreen from './src/features/social/screens/BookClubDetails';
 import NotificationSettingsScreen from './src/features/settings/screens/NotificationSettingsScreen';
 import SubmitReviewScreen from './src/features/discover/screens/SubmitReviewScreen';
+import { linking } from './src/utils/deepLinking/linking';
+import { navigationRef } from './src/utils/deepLinking/navigationRef';
+import { navigateFromUrl } from './src/utils/deepLinking/deepLinking';
 
 const Stack = createNativeStackNavigator();
 
@@ -63,34 +66,6 @@ const poppins = {
   'Poppins-SemiBold': require('./src/assets/fonts/Poppins-SemiBold.ttf'),
   'Poppins-Regular': require('./src/assets/fonts/Poppins-Regular.ttf'),
   'Poppins-Thin': require('./src/assets/fonts/Poppins-Thin.ttf'),
-};
-
-const linking = {
-  prefixes: [Linking.createURL('/')],
-  config: {
-    screens: {
-      Streaks: {
-        path: 'streak/:action',
-        parse: {
-          action: (action) => `${action}`,
-        },
-      },
-      Details: {
-        path: 'details/:action',
-        parse: {
-          action: (action) => `${action}`,
-          productId: (id) => `${id}`,
-          productType: (type) => `${type}`,
-        },
-      },
-      Payment: {
-        path: 'payment/:action',
-        parse: {
-          action: (action) => `${action}`,
-        },
-      },
-    },
-  },
 };
 
 const App = () => {
@@ -201,7 +176,7 @@ const App = () => {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       const url = response.notification.request.content.data.urlScheme;
       if (url) {
-        Linking.openURL(url);
+        navigateFromUrl(url);
       }
     });
   
@@ -242,7 +217,7 @@ const App = () => {
   else {
     return (
       <CityProvider>
-        <NavigationContainer linking={linking}>
+        <NavigationContainer ref={navigationRef} linking={linking}>
           <Stack.Navigator screenOptions={{headerShown: false}}>
             <Stack.Screen
               name="Tab"
