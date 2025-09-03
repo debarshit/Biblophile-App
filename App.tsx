@@ -204,12 +204,12 @@ const App = () => {
   };
 
   return (
-    <PostHogProvider
-      apiKey="phc_FSNgN6xgRp56gSFZVhNVr0PWaPthNY3VjRRc8H6IUFo"
-      options={posthogOptions}
-    >
-      <CityProvider>
-        <NavigationContainer ref={navigationRef} linking={linking}>
+    <NavigationContainer ref={navigationRef} linking={linking}>
+      <PostHogProvider
+        apiKey="phc_FSNgN6xgRp56gSFZVhNVr0PWaPthNY3VjRRc8H6IUFo"
+        options={posthogOptions}
+      >
+        <CityProvider>
           {isAuthenticated ? (
             <Stack.Navigator screenOptions={{ headerShown: false }}>
               <Stack.Screen name="Tab" component={TabNavigator} options={{animation: 'slide_from_bottom'}} />
@@ -257,9 +257,9 @@ const App = () => {
             </Stack.Navigator>
           )}
           <Toast />
-        </NavigationContainer>
-      </CityProvider>
-    </PostHogProvider>
+        </CityProvider>
+      </PostHogProvider>
+    </NavigationContainer>
   );
 };
 

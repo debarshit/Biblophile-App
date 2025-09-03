@@ -21,6 +21,7 @@ import GradientBGIcon from '../../../components/GradientBGIcon';
 import PaymentMethod from '../components/PaymentMethod';
 import PaymentFooter from '../components/PaymentFooter';
 import PopUpAnimation from '../../../components/PopUpAnimation';
+import { useAnalytics } from '../../../utils/analytics';
 
 const PaymentList = [
   {
@@ -42,6 +43,7 @@ interface DeliveryOptionsData {
 }
 
 const PaymentScreen = ({navigation, route}: any) => {
+  const analytics = useAnalytics();
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const clearCart = useStore(
     (state: any) => state.clearCart,
@@ -99,6 +101,20 @@ const PaymentScreen = ({navigation, route}: any) => {
           const response  = placeOrderResponse.data;
           
           if (response.data.message === 1) {
+            analytics.purchase({
+              transaction_id: response.data.orderId || Date.now().toString(), // fallback if API doesn’t return orderId
+              value: (data.prices[0].price * data.prices[0].quantity),
+              currency: 'INR',
+              items: [
+                {
+                  item_id: data.id,
+                  item_name: data.name,
+                  item_category: data.prices[0].size, // rent/buy
+                  price: data.prices[0].price,
+                  quantity: data.prices[0].quantity,
+                }
+              ],
+            });
             setShowAnimation(true);
             clearCart();
             calculateCartPrice();
@@ -130,6 +146,20 @@ const PaymentScreen = ({navigation, route}: any) => {
         const response = placeSubscriptionOrderResponse.data;
         
         if (response.data.message === 1) {
+           analytics.purchase({
+            transaction_id: Date.now().toString(),
+            value: amount,
+            currency: 'INR',
+            items: [
+              {
+                item_id: route.params.subscription,
+                item_name: `Subscription Plan ${route.params.subscription}`,
+                item_category: 'subscription',
+                price: amount,
+                quantity: 1,
+              },
+            ],
+          });
           //navigate to subscription page or just do navigation.back
           setShowAnimation(true);
             setTimeout(() => {
