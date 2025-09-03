@@ -25,6 +25,7 @@ const requests = {
     fetchProductReviews: (id) => `${APIURL}books/${id}/reviews`,
     searchBooks: `${APIURL}books/search?searchQuery=`,
     searchExternalBooks: `${APIURL}books/search-external?searchQuery=`,
+    fetchReviewTags: `${APIURL}books/reviews/tags`,
 
     //subscription requests
     fetchSubscriptionPlans: `${APIURL}subscriptions/plans`,

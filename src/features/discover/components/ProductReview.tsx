@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import BouncyCheckbox from "react-native-bouncy-checkbox";
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import StarRating from 'react-native-star-rating-widget';
+import { WysiwygRender } from '../../../components/wysiwyg/WysiwygRender';
+import { useNavigation } from '@react-navigation/native';
 
 interface ProductReviewProps {
   id: string;
@@ -22,10 +23,8 @@ interface Review {
 }
 
 const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product }) => {
+  const navigation = useNavigation<any>();
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [userReview, setUserReview] = useState<string>('');
-  const [rating, setRating] = useState<number>(0);
-  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
   const [offset, setOffset] = useState<number>(0);
   const [hasMoreReviews, setHasMoreReviews] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -73,147 +72,16 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
     fetchReviews();
   }, [product]);
 
-  const handleReviewSubmit = async () => {
-    if (!userReview || rating === 0) {
-      Alert.alert('Error', 'Please provide a review and rating.');
-      return;
-    }
-
-    try {
-      const userId = userDetails[0].userId;
-      let bookId = id;
-
-      if (isGoogleBook) {
-        const bookData = {
-          ISBN: product.volumeInfo?.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13')?.identifier || '',
-          Title: product.volumeInfo?.title || '',
-          Pages: product.volumeInfo?.pageCount || 0,
-          Price: product.saleInfo?.listPrice?.amount || 0,
-          Description: product.volumeInfo?.description || '',
-          Authors: product.volumeInfo?.authors || [],
-          Genres: product.volumeInfo?.categories || [],
-          Image: product.volumeInfo?.imageLinks?.thumbnail || '',
-        };
-
-        const response = await instance.post(requests.addBook, bookData);
-
-        const bookResponse = response.data;
-
-        if (bookResponse.status == "success") {
-          bookId = bookResponse.data.bookId;
-        } else {
-          console.log('Failed to add/update book');
-          return;
-        }
-      }
-      const emotionsData = emotionsList.map((emotion) => {
-        const isChecked = selectedEmotions.includes(emotion.emotion);
-        return { 
-          emotionId: emotion.emotionId, 
-          isChecked 
-        };
-      });
-      const reviewData = {
-        productId: bookId,
-        rating: rating,
-        review: userReview,
-        emotions: emotionsData,
-      };
-
-      const response = await instance.post(requests.submitReview, reviewData,
-        {
-            headers: {
-                Authorization:  `Bearer ${userDetails[0].accessToken}`
-            },
-        });
-      if (response.data.data.status === 'success') {
-        Alert.alert('Thanks!', 'Review added succesfully.');
-        setUserReview('');
-        setRating(0);
-        setSelectedEmotions([]);
-        setReviews([]);
-        setOffset(0);
-        setHasMoreReviews(true);
-        fetchReviews(); // Refresh reviews after submitting
-      }
-    } catch (error) {
-      console.error('Error submitting review:', error);
-    }
-  };
-
-  const onStarRatingPress = (rating) => {
-    setRating(rating);
-  };
-
   const loadMoreReviews = () => {
     if (!isLoading && hasMoreReviews) {
       fetchReviews();
     }
   };
 
-  const emotionsList = [
-    { emotionId: 1, emotion: "Joy" },
-    { emotionId: 2, emotion: "Sadness" },
-    { emotionId: 3, emotion: "Fear" },
-    { emotionId: 4, emotion: "Anger" },
-    { emotionId: 5, emotion: "Surprise" },
-    { emotionId: 6, emotion: "Anticipation" },
-    { emotionId: 7, emotion: "Nostalgia" },
-    { emotionId: 8, emotion: "Empathy" },
-];
-
-  const toggleEmotionSelection = (emotion: string) => {
-    setSelectedEmotions(prevEmotions => {
-      if (prevEmotions.includes(emotion)) {
-        return prevEmotions.filter(e => e !== emotion);
-      } else {
-        return [...prevEmotions, emotion];
-      }
-    });
-  };
-
   return (
     <View style={styles.container}>
       {userDetails[0].userId ? (
-        <View style={styles.reviewForm}>
-          {/* <Text style={styles.label}>Rating:</Text> */}
-          <StarRating 
-            maxStars={5}
-            starSize={30}
-            color={COLORS.primaryOrangeHex}
-            rating={rating}
-            enableHalfStar={true}
-            enableSwiping={true}
-            onChange={(rating) => onStarRatingPress(rating)}
-          />
-          <TextInput
-            style={styles.textInput}
-            multiline
-            numberOfLines={5}
-            value={userReview}
-            onChangeText={setUserReview}
-            placeholder="Write your review here..."
-            placeholderTextColor="#AAAAAA"
-          />
-          <View style={styles.emotionSection}>
-            <Text style={styles.label}>Select Emotions:</Text>
-            <View style={styles.checkboxGrid}>
-              {emotionsList.map((emotion) => (
-                <View key={emotion.emotionId} style={styles.checkboxContainer}>
-                  <BouncyCheckbox
-                    isChecked={selectedEmotions.includes(emotion.emotion)}
-                    onPress={() => toggleEmotionSelection(emotion.emotion)}
-                    fillColor="#D17842"
-                    unFillColor="#52555A"
-                    style={styles.checkbox}
-                  />
-                  <Text style={styles.checkboxLabel}>{emotion.emotion}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-          <Button title="Submit Review" onPress={handleReviewSubmit} color={COLORS.primaryOrangeHex} />
-        </View>
+         <Button title="Submit Review" onPress={() => navigation.navigate('SubmitReview', { id, isGoogleBook, product })} color={COLORS.primaryOrangeHex} />
       ) : (
         <Text style={styles.loginPrompt}>Login to put a review.</Text>
       )}
@@ -226,17 +94,18 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
             <Text style={styles.reviewAuthor}>By {item.userName}</Text>
             <Text style={styles.reviewDate}>{item.ratingDate}</Text>
             <View style={styles.reviewRating}>
-            <StarRating 
-              maxStars={5}
-              starSize={30}
-              color={COLORS.primaryOrangeHex}
-              rating={item.rating}
-              enableHalfStar={true}
-              onChange={(rating) => null}
-            />
-              {/* <Text>{item.rating}</Text> */}
+              <StarRating 
+                maxStars={5}
+                starSize={30}
+                color={COLORS.primaryOrangeHex}
+                rating={item.rating}
+                enableHalfStar={true}
+                onChange={(rating) => null}
+              />
             </View>
-            <Text style={styles.reviewText}>{item.review}</Text>
+            {item.review && <View style={{ marginTop: SPACING.space_8 }}>
+              <WysiwygRender html={item.review} maxWidth={300} />
+            </View>}
           </View>
         )}
         onEndReached={loadMoreReviews}
@@ -255,56 +124,9 @@ const styles = StyleSheet.create({
     margin: 10,
     color: COLORS.primaryWhiteHex,
   },
-  reviewForm: {
-    marginBottom: SPACING.space_20,
-    backgroundColor: COLORS.primaryBlackRGBA,
-    borderRadius: BORDERRADIUS.radius_8,
-    padding: SPACING.space_18,
-  },
-  label: {
-    color: COLORS.primaryWhiteHex,
-    marginBottom: 10,
-  },
-  textInput: {
-    backgroundColor: COLORS.primaryGreyHex,
-    color: COLORS.primaryWhiteHex,
-    padding: SPACING.space_12,
-    marginTop: SPACING.space_10,
-    marginBottom: SPACING.space_10,
-    borderRadius: BORDERRADIUS.radius_10,
-    textAlignVertical: 'top',
-  },
   loginPrompt: {
     color: COLORS.primaryWhiteHex,
     marginBottom: SPACING.space_20,
-  },
-  emotionSection: {
-    marginVertical: SPACING.space_12,
-  },
-  checkboxGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: SPACING.space_10,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.space_10,
-    width: '48%',
-    flexWrap: 'wrap',
-  },
-  checkbox: {
-    marginRight: SPACING.space_8,
-  },
-  checkboxLabel: {
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_10,
-    paddingRight: SPACING.space_10,
-    flexShrink: 1,
-    flexWrap: 'wrap',
-    maxWidth: '80%',
   },
   review: {
     backgroundColor: COLORS.primaryBlackRGBA,
@@ -324,9 +146,6 @@ const styles = StyleSheet.create({
   reviewRating: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  reviewText: {
-    color: COLORS.primaryWhiteHex,
   },
 });
 

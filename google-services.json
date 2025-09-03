@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "120371317823",
     "project_id": "biblophile-ae9a2",
-    "storage_bucket": "biblophile-ae9a2.appspot.com"
+    "storage_bucket": "biblophile-ae9a2.firebasestorage.app"
   },
   "client": [
     {
@@ -12,7 +12,12 @@
           "package_name": "com.debar_shit.BiblophileApp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "120371317823-k590u4vq9u16bpa59e4at5mahjqjvvug.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyA8kwoXXvoW_bJ9UFEvX2n1_cM8bh6l6mI"
@@ -20,7 +25,70 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "120371317823-k590u4vq9u16bpa59e4at5mahjqjvvug.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:120371317823:android:0b2764a4d0b14397e33c8a",
+        "android_client_info": {
+          "package_name": "com.debar_shit.BiblophileApp.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "120371317823-k590u4vq9u16bpa59e4at5mahjqjvvug.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8kwoXXvoW_bJ9UFEvX2n1_cM8bh6l6mI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "120371317823-k590u4vq9u16bpa59e4at5mahjqjvvug.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:120371317823:android:4d52a3db98635ab2e33c8a",
+        "android_client_info": {
+          "package_name": "com.debar_shit.BiblophileApp.preview"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "120371317823-k590u4vq9u16bpa59e4at5mahjqjvvug.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8kwoXXvoW_bJ9UFEvX2n1_cM8bh6l6mI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "120371317823-k590u4vq9u16bpa59e4at5mahjqjvvug.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

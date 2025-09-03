@@ -4,9 +4,11 @@ import { View, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
 import { useStore } from "../../../store/store";
 import { useNavigation } from "@react-navigation/native";
+import { useAnalytics } from "../../../utils/analytics";
 
 const CommonWebViewScreen = ({ route, navigation }: any) => {
   const { url } = route.params;
+  const analytics = useAnalytics();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [canGoBack, setCanGoBack] = useState(false);
@@ -25,6 +27,13 @@ const CommonWebViewScreen = ({ route, navigation }: any) => {
       } else {
         const logoutAndNavigate = async () => {
           try {
+            analytics.track("auto_logout", {
+              reason: "missing_tokens",
+              userId: userDetails?.[0]?.userId,
+              email: userDetails?.[0]?.userEmail,
+            });
+
+            analytics.resetUser();
             await logout();
             navigation.navigate("SignupLogin");
           } catch (error) {

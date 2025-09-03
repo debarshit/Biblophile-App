@@ -4,7 +4,7 @@ import { useStore } from "../store/store";
 
 const isDevelopment = __DEV__;
 
-const baseURL = isDevelopment ? "http://192.168.10.185:3000/" : "https://biblophile.com/";
+const baseURL = isDevelopment ? "http://172.20.10.8:3000/" : "https://biblophile.com/";
 
 // Main axios instance
 const instance = axios.create({

@@ -17,11 +17,13 @@ import { useStore } from '../../../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
 import Constants from 'expo-constants';
 import HeaderBar from '../../../components/HeaderBar';
+import { useAnalytics } from '../../../utils/analytics';
 
 const SettingsScreen = ({navigation, route}: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
   const logout = useStore((state: any) => state.logout); 
   const username = userDetails[0].userUniqueUserName;
+  const analytics = useAnalytics();
 
   const openWebView = (url: string) => {
     navigation.push('Resources', {
@@ -217,7 +219,16 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
         {
           icon: <MaterialIcons color="#fff" name="logout" size={20} />,
           label: 'Logout',
-          onPress: () => logout(),
+          onPress: async () => {
+            analytics.track("logout", {
+              userId: userDetails?.[0]?.userId,
+              email: userDetails?.[0]?.userEmail,
+            });
+
+            analytics.resetUser();
+
+            logout();
+          },
           // bgColor: '#E71D36',
         },
       ]

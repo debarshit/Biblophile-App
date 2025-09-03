@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
+import { useAnalytics } from '../../../utils/analytics';
 
 const BuyOptionsModal = ({
   isVisible,
@@ -19,12 +20,17 @@ const BuyOptionsModal = ({
   showDirectOption,
   bookTitle,
 }) => {
+  const analytics = useAnalytics();
   // Handle opening Amazon with affiliate link
   const handleAmazonPurchase = () => {
     const encodedTitle = encodeURIComponent(bookTitle || "");
     // Amazon affiliate link with tag
     const amazonLink = `https://www.amazon.in/s?k=${encodedTitle}&tag=abhi1302-21`;
-    
+    analytics.track('amazon_redirect', {
+      book_title: bookTitle,
+      price: bookPrice,
+      affiliate_link: amazonLink,
+    });
     Linking.openURL(amazonLink)
       .catch(err => console.error('Error opening Amazon link:', err));
     

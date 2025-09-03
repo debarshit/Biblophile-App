@@ -38,7 +38,8 @@ export default {
       ? "com.biblophile.biblophile.dev"
       : IS_PREVIEW
       ? "com.biblophile.biblophile.preview"
-      : "com.biblophile.biblophile"
+      : "com.biblophile.biblophile",
+    "associatedDomains": ["applinks:biblophile.com"]
   },
   "android": {
     "adaptiveIcon": {
@@ -54,13 +55,28 @@ export default {
       : "com.debar_shit.BiblophileApp",
     "permissions": [
       "NOTIFICATIONS"
+    ],
+    "intentFilters": [
+      {
+        "action": "VIEW",
+        "autoVerify": true,
+        "data": [
+          {
+            "scheme": "https",
+            "host": "biblophile.com",
+            "pathPrefix": "/"
+          }
+        ],
+        "category": ["BROWSABLE", "DEFAULT"]
+      }
     ]
   },
   "web": {
     "favicon": "./assets/favicon.png"
   },
   "plugins": [
-    "expo-font"
+    "expo-font",
+    "expo-localization"
   ],
   "extra": {
     "eas": {

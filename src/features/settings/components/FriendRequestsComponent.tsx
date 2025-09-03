@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
@@ -16,27 +16,63 @@ interface FriendRequestsComponentProps {
   initialCount?: number;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 const FriendRequestsComponent: React.FC<FriendRequestsComponentProps> = ({ onRequestCountChange, initialCount = 0 }) => {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [processingRequests, setProcessingRequests] = useState<Set<number>>(new Set());
+  const [hasMoreData, setHasMoreData] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
   const userDetails = useStore((state: any) => state.userDetails);
 
-  const fetchFriendRequests = async () => {
+  const fetchFriendRequests = async (page: number = 0, isLoadMore: boolean = false) => {
+    if (isLoadMore && !hasMoreData) return;
+    
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
+      const offset = page * ITEMS_PER_PAGE;
       const response = await instance.get(requests.fetchFriendRequests, {
         headers: { 'Authorization': `Bearer ${userDetails[0].accessToken}` },
+        params: {
+          limit: ITEMS_PER_PAGE,
+          offset: offset
+        }
       });
 
       if (response.status === 200) {
         const incomingRequests = response.data.data?.incomingRequests || [];
-        setFriendRequests(incomingRequests);
-        if (incomingRequests.length !== initialCount) onRequestCountChange?.(incomingRequests.length);
+        
+        if (isLoadMore) {
+          // Append new requests to existing ones
+          setFriendRequests(prev => [...prev, ...incomingRequests]);
+        } else {
+          // Replace existing requests (initial load or refresh)
+          setFriendRequests(incomingRequests);
+        }
+
+        // Check if we have more data
+        setHasMoreData(incomingRequests.length === ITEMS_PER_PAGE);
+        
+        // Update total count only on initial load
+        if (!isLoadMore) {
+          onRequestCountChange?.(response.data.data?.totalCount || incomingRequests.length);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch friend requests:', error);
+      if (!isLoadMore) {
+        Alert.alert('Error', 'Failed to load friend requests. Please try again.');
+      }
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -44,10 +80,26 @@ const FriendRequestsComponent: React.FC<FriendRequestsComponentProps> = ({ onReq
     if (initialCount === 0) {
       setLoading(false);
       setFriendRequests([]);
+      setHasMoreData(false);
       return;
     }
-    fetchFriendRequests();
+    fetchFriendRequests(0, false);
+    setCurrentPage(0);
   }, [initialCount]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!loadingMore && hasMoreData && friendRequests.length > 0) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      fetchFriendRequests(nextPage, true);
+    }
+  }, [loadingMore, hasMoreData, currentPage, friendRequests.length]);
+
+  const handleRefresh = useCallback(() => {
+    setCurrentPage(0);
+    setHasMoreData(true);
+    fetchFriendRequests(0, false);
+  }, []);
 
   const handleFriendRequestAction = async (senderUserId: number, action: 'confirm' | 'reject') => {
     if (processingRequests.has(senderUserId)) return;
@@ -126,7 +178,18 @@ const FriendRequestsComponent: React.FC<FriendRequestsComponentProps> = ({ onReq
     );
   };
 
-  if (loading) {
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    
+    return (
+      <View style={styles.loadingMoreContainer}>
+        <ActivityIndicator size="small" color={COLORS.primaryOrangeHex} />
+        <Text style={styles.loadingMoreText}>Loading more...</Text>
+      </View>
+    );
+  };
+
+  if (loading && friendRequests.length === 0) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />
@@ -135,7 +198,7 @@ const FriendRequestsComponent: React.FC<FriendRequestsComponentProps> = ({ onReq
     );
   }
 
-  if (friendRequests.length === 0) {
+  if (friendRequests.length === 0 && !loading) {
     return (
       <View style={styles.emptyContainer}>
         <Mascot emotion="sleeping" />
@@ -152,6 +215,11 @@ const FriendRequestsComponent: React.FC<FriendRequestsComponentProps> = ({ onReq
         renderItem={renderFriendRequest}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.1}
+        ListFooterComponent={renderFooter}
+        refreshing={loading && friendRequests.length > 0}
+        onRefresh={handleRefresh}
       />
     </View>
   );
@@ -173,6 +241,16 @@ const styles = StyleSheet.create({
     color: COLORS.primaryGreyHex,
     marginTop: SPACING.space_12,
   },
+  loadingMoreContainer: {
+    paddingVertical: SPACING.space_16,
+    alignItems: 'center',
+  },
+  loadingMoreText: {
+    fontSize: FONTSIZE.size_12,
+    fontFamily: FONTFAMILY.poppins_medium,
+    color: COLORS.primaryGreyHex,
+    marginTop: SPACING.space_8,
+  },
   emptyContainer: {
     marginTop: SPACING.space_32,
     marginBottom: SPACING.space_36,
@@ -185,6 +263,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingTop: SPACING.space_16,
+    paddingBottom: SPACING.space_16,
   },
   requestCard: {
     backgroundColor: COLORS.primaryDarkGreyHex,

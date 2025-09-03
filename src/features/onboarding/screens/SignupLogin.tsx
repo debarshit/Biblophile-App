@@ -8,6 +8,7 @@ import {useStore} from '../../../store/store';
 import { COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
 import CustomPicker from '../../../components/CustomPickerComponent';
+import { useAnalytics } from '../../../utils/analytics';
 
 const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible, onPress }) => {
     return (
@@ -23,6 +24,7 @@ const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible,
 
 const SignupLogin: React.FC = ({ navigation }: any) => {
     const login = useStore((state: any) => state.login);
+    const analytics = useAnalytics();
 
     const [isRegistration, setIsRegistration] = useState<boolean>(false);
     const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -201,6 +203,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                         setSignupPass("");
                         setSignupPassCnf("");
                         setSource(null);
+                        analytics.signup('email');
                     }
                     else
                     {
@@ -251,6 +254,8 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
 
                         // Show notification permission dialog after successful login
                         await handleNotificationPermission(userData);
+                        analytics.login('email');
+                        analytics.identifyUser(userData.userId, {});
                     }
                     else
                     {
