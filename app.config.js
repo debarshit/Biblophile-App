@@ -75,7 +75,8 @@ export default {
     "favicon": "./assets/favicon.png"
   },
   "plugins": [
-    "expo-font"
+    "expo-font",
+    "expo-localization"
   ],
   "extra": {
     "eas": {

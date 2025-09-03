@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import { PostHogProvider } from 'posthog-react-native'
 import { Alert } from 'react-native';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
@@ -194,181 +195,72 @@ const App = () => {
     return null;
   }
 
-  if (!isAuthenticated) {
-    return (
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{headerShown: false}}>
-          <Stack.Screen
-            name="Onboarding"
-            component={OnboardingScreen}
-            options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-          <Stack.Screen
-            name="SignupLogin"
-            component={SignupLogin}
-            options={{animation: 'slide_from_right'}}></Stack.Screen>
-          <Stack.Screen
-            name="Resources"
-            component={ResourceScreen}
-            options={{animation: 'slide_from_right'}}></Stack.Screen>
-        </Stack.Navigator>
-      </NavigationContainer>
-    );
-  }
-  else {
-    return (
+  const posthogOptions = {
+    host: "https://us.i.posthog.com",
+    captureApplicationLifecycleEvents: true,
+    captureInAppPurchases: false,
+    captureDeepLinks: true,
+    captureScreenViews: true,
+  };
+
+  return (
+    <PostHogProvider
+      apiKey="phc_FSNgN6xgRp56gSFZVhNVr0PWaPthNY3VjRRc8H6IUFo"
+      options={posthogOptions}
+    >
       <CityProvider>
         <NavigationContainer ref={navigationRef} linking={linking}>
-          <Stack.Navigator screenOptions={{headerShown: false}}>
-            <Stack.Screen
-              name="Tab"
-              component={TabNavigator}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
-              name="Streaks"
-              component={StreaksScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
-              name="Stats"
-              component={StatScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="Library"
-              component={LibraryScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-              <Stack.Screen
-              name="Discover"
-              component={DiscoverScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-              <Stack.Screen
-              name="SearchScreen"
-              component={SearchScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-              <Stack.Screen
-              name="Shop"
-              component={LibraryScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
-              name="Details"
-              component={DetailsScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
-              name="Payment"
-              component={PaymentScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
-              name="PaymentGateway"
-              component={PaymentGatewayScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="Settings"
-              component={SettingsScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="NotificationSettings"
-              component={NotificationSettingsScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="Resources"
-              component={ResourceScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="About"
-              component={AboutScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="Profile"
-              component={ProfileScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="Review"
-              component={ReviewScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="Note"
-              component={NotesScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="Durations"
-              component={DurationTrackScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="ProfileSummary"
-              component={ProfileSummaryScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="Subscription"
-              component={SubscriptionScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="Social"
-              component={SocialScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
-              name="Cart"
-              component={CartScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="History"
-              component={OrderHistoryScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="CommonWebView"
-              component={CommonWebViewScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
-              name="BookListScreen"
-              component={BookListScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
-              name="GenreScreen"
-              component={GenreScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
-              name="Notifications"
-              component={NotificationsScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-            <Stack.Screen
-              name="ChallengeDetails"
-              component={ChallengeDetailsScreen}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
-              name="BuddyReadsDetails"
-              component={BuddyReadsDetails}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-            <Stack.Screen
-              name="BuddyReadsCreate"
-              component={BuddyReadsCreate}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-              <Stack.Screen
-              name="ReadAlongsCreate"
-              component={ReadAlongsCreate}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-              <Stack.Screen
-              name="ReadalongDetails"
-              component={ReadAlongDetails}
-              options={{animation: 'slide_from_bottom'}}></Stack.Screen>
-              <Stack.Screen
-              name="CreateReadalongCheckpoint"
-              component={CreateReadalongCheckpoint}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-              <Stack.Screen
-              name="CreateBookClub"
-              component={CreateBookClubScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-              <Stack.Screen
-              name="BookClubDetails"
-              component={BookClubDetailsScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-              <Stack.Screen
-              name="SubmitReview"
-              component={SubmitReviewScreen}
-              options={{animation: 'slide_from_right'}}></Stack.Screen>
-          </Stack.Navigator>
+          {isAuthenticated ? (
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="Tab" component={TabNavigator} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="Streaks" component={StreaksScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="Stats" component={StatScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="Library" component={LibraryScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="Discover" component={DiscoverScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="SearchScreen" component={SearchScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="Shop" component={LibraryScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="Details" component={DetailsScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="Payment" component={PaymentScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="PaymentGateway" component={PaymentGatewayScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="Settings" component={SettingsScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="Resources" component={ResourceScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="About" component={AboutScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="Profile" component={ProfileScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="Review" component={ReviewScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="Note" component={NotesScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="Durations" component={DurationTrackScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="ProfileSummary" component={ProfileSummaryScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="Subscription" component={SubscriptionScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="Social" component={SocialScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="Cart" component={CartScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="History" component={OrderHistoryScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="CommonWebView" component={CommonWebViewScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="BookListScreen" component={BookListScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="GenreScreen" component={GenreScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="Notifications" component={NotificationsScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="ChallengeDetails" component={ChallengeDetailsScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="BuddyReadsDetails" component={BuddyReadsDetails} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="BuddyReadsCreate" component={BuddyReadsCreate} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="ReadAlongsCreate" component={ReadAlongsCreate} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="ReadalongDetails" component={ReadAlongDetails} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="CreateReadalongCheckpoint" component={CreateReadalongCheckpoint} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="CreateBookClub" component={CreateBookClubScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="BookClubDetails" component={BookClubDetailsScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="SubmitReview" component={SubmitReviewScreen} options={{animation: 'slide_from_right'}} />
+            </Stack.Navigator>
+          ) : (
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="SignupLogin" component={SignupLogin} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="Resources" component={ResourceScreen} options={{animation: 'slide_from_right'}} />
+            </Stack.Navigator>
+          )}
           <Toast />
         </NavigationContainer>
       </CityProvider>
-    );
-  }
+    </PostHogProvider>
+  );
 };
 
 export default App;

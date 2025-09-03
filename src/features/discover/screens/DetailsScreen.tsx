@@ -25,12 +25,14 @@ import DescriptionTab from '../components/DescriptionTab';
 import TabNavigator from '../components/TabNavigator';
 import BuyOptionsModal from '../../bookshop/components/BuyOptionsModal';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useAnalytics } from '../../../utils/analytics';
 
 const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const userDetails = useStore((state: any) => state.userDetails);
   const { selectedCity } = useCity();
+  const analytics = useAnalytics();
 
   const [id, setId] = useState(route.params.id);
   const [type, setType] = useState(route.params.type);
@@ -172,6 +174,10 @@ const DetailsScreen = ({navigation, route}: any) => {
         const updatedPrices = calculatePricesFromData(data);
         setPrices(updatedPrices);
         setPrice(updatedPrices[0] || { size: '', price: 0, currency: '₹' });
+        analytics.track('view_item', {
+          item_id: id,
+          is_google_book: isGoogleBook,
+          item_name: data['ProductName'] || data['volumeInfo']?.title || ''});
       } catch (error) {
         console.error('Error fetching items:', error);
       }
