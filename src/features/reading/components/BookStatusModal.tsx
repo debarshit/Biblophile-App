@@ -8,6 +8,7 @@ import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
+import { useAnalytics } from '../../../utils/analytics';
 
 interface BookStatusModalProps {
   visible: boolean;
@@ -31,6 +32,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
   const [fadeAnimation] = useState(new Animated.Value(0));
 
   const userDetails = useStore((state: any) => state.userDetails);
+  const analytics = useAnalytics();
 
   const statusOptions: PickerOption[] = [
     { label: 'Currently reading', value: 'Currently reading', icon: 'menu-book' },
@@ -111,6 +113,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
       const submitReadingStatusResponse = response.data;
       setUpdateMessage(submitReadingStatusResponse.data.message === "Updated" ? "Updated successfully!" : submitReadingStatusResponse.data.message);
       if (submitReadingStatusResponse.data.message === "Updated") onUpdate();
+      analytics.track('reading_status_updated');
     } catch (error) {
       setUpdateMessage("Uh oh! Please try again");
     }

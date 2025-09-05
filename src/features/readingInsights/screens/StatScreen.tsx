@@ -12,6 +12,7 @@ import ReadingGoals from '../components/ReadingGoals';
 import { Ionicons } from '@expo/vector-icons';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 import HeaderBar from '../../../components/HeaderBar';
+import { useAnalytics } from '../../../utils/analytics';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -28,6 +29,7 @@ const StatScreen = () => {
   const [activeStat, setActiveStat] = useState('page-stats');
 
   const userDetails = useStore((state) => state.userDetails);
+  const analytics = useAnalytics();
 
   const screenWidth = Dimensions.get('window').width;
 
@@ -141,6 +143,7 @@ const StatScreen = () => {
         setIsEditing(false);
         setTooltipPos({ ...tooltipPos, visible: false });
         fetchPagesRead();
+        analytics.track('pages_read_updated');
       } else {
         console.error('Error updating page count:', response.data.message);
       }

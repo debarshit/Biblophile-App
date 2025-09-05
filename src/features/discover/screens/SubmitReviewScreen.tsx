@@ -18,6 +18,7 @@ import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../th
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
+import { useAnalytics } from '../../../utils/analytics';
 
 interface SubmitReviewScreenProps {
   route: any;
@@ -51,6 +52,7 @@ const EMOTIONS = [
 const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigation }) => {
   const { id, isGoogleBook, product } = route.params;
   const userDetails = useStore((state: any) => state.userDetails);
+  const analytics = useAnalytics();
   
   const [currentStep, setCurrentStep] = useState(1);
   const [rating, setRating] = useState(0);
@@ -168,6 +170,7 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
       });
 
       if (response.data.data.status === 'success') {
+        analytics.track('review_submitted');
         Alert.alert('Thanks!', 'Review added successfully.', [
           { text: 'OK', onPress: () => navigation.goBack() }
         ]);

@@ -14,6 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
+import { useAnalytics } from '../../../utils/analytics';
 
 
 const ReadingStatus = ({ id, isGoogleBook, product }) => {
@@ -22,6 +23,7 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
     const [updateMessage, setUpdateMessage] = useState(null);
 
     const userDetails = useStore((state: any) => state.userDetails);
+    const analytics = useAnalytics();
 
     const statusOptions: PickerOption[] = [
         ...(status === 'Currently reading' || status === 'Paused'
@@ -131,6 +133,7 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
 
                 if (submitReadingStatusResponse.data.message === "Updated") {
                     setUpdateMessage("Updated successfully!");
+                    analytics.track('reading_status_updated');
                     if (Platform.OS == 'android') {
                         ToastAndroid.showWithGravity(
                           `Updated successfully!`,

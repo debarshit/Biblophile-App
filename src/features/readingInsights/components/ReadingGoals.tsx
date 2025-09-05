@@ -5,8 +5,10 @@ import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
+import { useAnalytics } from '../../../utils/analytics';
 
 const ReadingGoals = () => {
+    const analytics = useAnalytics();
     const [goalState, setGoalState] = useState({
         books: { goal: '', progress: 0 },
         pages: { goal: '', progress: 0 },
@@ -145,6 +147,7 @@ const ReadingGoals = () => {
           isResetting: false 
         }));
         await fetchGoalData();
+        analytics.track('goal_set');
       } else {
         throw new Error(response.data?.message || 'Failed to submit goal');
       }

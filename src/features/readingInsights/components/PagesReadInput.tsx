@@ -11,6 +11,7 @@ import SessionPrompt from './SessionPrompt';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useStreak } from '../../../hooks/useStreak';
 import { useNavigation } from '@react-navigation/native';
+import { useAnalytics } from '../../../utils/analytics';
 
 // Memoized book item component
 const BookItem = React.memo(({ book, navigation, onUpdatePress }) => (
@@ -35,6 +36,7 @@ const BookItem = React.memo(({ book, navigation, onUpdatePress }) => (
 
 const PagesReadInput = ({ showDiscoverLink=true }) => {
   const navigation = useNavigation<any>();
+  const analytics = useAnalytics();
   const [pagesRead, setPagesRead] = useState<string>('0');
   const [currentReads, setCurrentReads] = useState<any[]>([]);
   const [isLoadingCurrentReads, setIsLoadingCurrentReads] = useState(true);
@@ -129,6 +131,7 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
       instance.post(requests.submitReadingDuration, sessionData, { headers: authHeaders })
         .then(response => {
           console.log('Session saved:', response.data.data);
+          analytics.track('reading_session_saved');
         })
         .catch(error => {
           console.error('Error saving session:', error);
@@ -187,6 +190,7 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
         });
         const response = updatePagesReadResponse.data;
         if (response.data.message === 'Updated') {
+          analytics.track('pages_read_updated');
           if (!startingTime) {
             Alert.alert('Success', 'Updated');
           }
