@@ -28,8 +28,6 @@ export default {
     "infoPlist": {
       "UIBackgroundModes": [
         "fetch",
-        "remote-notification",
-        "fetch",
         "remote-notification"
       ],
       "ITSAppUsesNonExemptEncryption": false
@@ -56,6 +54,8 @@ export default {
     "permissions": [
       "NOTIFICATIONS"
     ],
+    "compileSdkVersion": 35,
+    "targetSdkVersion": 35,
     "intentFilters": [
       {
         "action": "VIEW",
