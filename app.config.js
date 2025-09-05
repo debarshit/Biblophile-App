@@ -23,7 +23,7 @@ export default {
     "**/*"
   ],
   "ios": {
-    "buildNumber": "5",
+    "buildNumber": "6",
     "supportsTablet": true,
     "infoPlist": {
       "UIBackgroundModes": [
@@ -47,7 +47,7 @@ export default {
       "backgroundColor": "#0C0F14"
     },
     "googleServicesFile": "./google-services.json",
-    "versionCode": 10,
+    "versionCode": 11,
     package: IS_DEV
       ? "com.debar_shit.BiblophileApp.dev"
       : IS_PREVIEW
