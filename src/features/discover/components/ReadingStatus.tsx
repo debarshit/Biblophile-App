@@ -120,7 +120,7 @@ const ReadingStatus = ({ id, isGoogleBook, product }) => {
                 };
 
                 if (status === "Currently reading") {
-                    requestData.currentPage = currentPage;
+                    requestData.currentPage = (currentPage && !isNaN(Number(currentPage)) && currentPage.trim() !== '') ? currentPage : '0';
                 }
 
                 const response = await instance.post(requests.submitReadingStatus, requestData, {
