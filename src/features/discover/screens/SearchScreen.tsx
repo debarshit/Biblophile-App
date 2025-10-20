@@ -55,7 +55,6 @@ const SearchScreen = ({ route }) => {
   // State variables
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [books, setBooks] = useState([]);
   const [externalBooks, setExternalBooks] = useState([]);
   const [booksLoading, setBooksLoading] = useState(false);
   
@@ -73,7 +72,6 @@ const SearchScreen = ({ route }) => {
   // Search books function (will be debounced)
   const performSearch = async (query) => {
     if (!query) {
-      setBooks([]);
       setExternalBooks([]);
       return;
     }
@@ -81,13 +79,8 @@ const SearchScreen = ({ route }) => {
     setBooksLoading(true);
     
     try {
-      // Fetch local books
-      const localSearchResponse = await instance(requests.searchBooks + query);
-      const localResponse = localSearchResponse.data;
-      setBooks(localResponse.data || []);
-      
-      // Fetch external books
-      const externalSearchResponse = await instance.get(requests.searchExternalBooks + query);
+      // Fetch internal+external books
+      const externalSearchResponse = await instance.get(`${requests.searchExternalBooks}${query}&userCity=${selectedCity}`);
       const externalResponse = externalSearchResponse.data;
       setExternalBooks(externalResponse.data || []);
     } catch (error) {
@@ -108,7 +101,6 @@ const SearchScreen = ({ route }) => {
   
   // Reset search results and search text
   const resetSearch = () => {
-    setBooks([]);
     setExternalBooks([]);
     setSearchText('');
   };
@@ -138,8 +130,8 @@ const SearchScreen = ({ route }) => {
 
   // Render book item
   const renderBookItem = (type) => ({ item }) => {
-    const id = type === 'local' ? item.BookId : item.GoogleBookId;
-    const bookType = type === 'local' ? 'Book' : 'ExternalBook';
+    const id = item.BookId ? item.BookId : item.GoogleBookId;
+    const bookType = item.BookId ? 'Book' : 'ExternalBook';
     
     return (
       <TouchableOpacity onPress={() => navigateToDetails(id, bookType)}>
@@ -149,6 +141,7 @@ const SearchScreen = ({ route }) => {
           photo={convertToHttps(item.BookPhoto)}
           type={bookType}
           price={item.BookPrice}
+          rentPrice={item.RentPrice}
           averageRating={item.BookAverageRating}
           ratingCount={item.BookRatingCount}
           buttonPressHandler={CoffeeCardAddToCart}
@@ -222,41 +215,21 @@ const SearchScreen = ({ route }) => {
         {/* Search Results */}
         {searchText ? (
           <>
-            {selectedCity === 'Bengaluru' && books.length > 0 && <>
-              {/* Local Books */}
-              <Text style={styles.sectionTitle}>Available for Renting</Text>
-                
-              {booksLoading ? renderShimmer() : (
-                <FlatList
-                  ref={localBooksListRef}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  data={books}
-                  keyExtractor={item => `local-${item.BookId}`}
-                  renderItem={renderBookItem('local')}
-                  contentContainerStyle={styles.flatListContainer}
-                  ListEmptyComponent={renderEmptyList}
-                />
-              )}
-            </>}
-
-            <>
-              {/* External Books */}
-              <Text style={styles.sectionTitle}>Search Results</Text>
-              
-              {booksLoading ? renderShimmer() : (
-                <FlatList
-                  ref={externalBooksListRef}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  data={externalBooks}
-                  keyExtractor={item => `external-${item.GoogleBookId}`}
-                  renderItem={renderBookItem('external')}
-                  contentContainerStyle={styles.flatListContainer}
-                  ListEmptyComponent={renderEmptyList}
-                />
-              )}
-            </>
+            {/* External Books */}
+            <Text style={styles.sectionTitle}>Search Results</Text>
+            
+            {booksLoading ? renderShimmer() : (
+              <FlatList
+                ref={externalBooksListRef}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={externalBooks}
+                keyExtractor={item => item.BookId ? `local-${item.BookId}` : `external-${item.GoogleBookId}`}
+                renderItem={renderBookItem('external')}
+                contentContainerStyle={styles.flatListContainer}
+                ListEmptyComponent={renderEmptyList}
+              />
+            )}
           </>
         ) : (
         <SeasonalRecommendations /> 

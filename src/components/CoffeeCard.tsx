@@ -28,6 +28,7 @@ interface CoffeeCardProps {
   name: string;
   averageRating: number;
   price: any;
+  rentPrice?: number;
   buttonPressHandler: any;
 }
 
@@ -39,6 +40,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
   averageRating,
   ratingCount,
   price,
+  rentPrice,
   buttonPressHandler,
 }) => {
   return (
@@ -59,12 +61,18 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
           />
           <Text style={styles.CardRatingText}>{averageRating}</Text>
         </View>} */}
+        {/* Rent Badge */}
+        {rentPrice && (
+          <View style={styles.RentBadge}>
+            <Text style={styles.RentBadgeText}>Rent</Text>
+          </View>
+        )}
       </ImageBackground>
       <Text style={styles.CardTitle}>
         {name.length > 20 ? name.substring(0, 20) + '...' : name}
       </Text>
       {/* <Text style={styles.CardSubtitle}>{special_ingredient}</Text> */}
-      <View style={styles.CardFooterRow}>
+      {/* <View style={styles.CardFooterRow}>
         {typeof Number(price) === 'number' && !isNaN(price) ? (
           <Text style={styles.CardPriceCurrency}>
             ₹ <Text style={styles.CardPrice}>{price}</Text>
@@ -89,7 +97,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
             size={FONTSIZE.size_10}
           />
         </TouchableOpacity>}
-      </View>
+      </View> */}
     </LinearGradient>
   );
 };
@@ -106,6 +114,24 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.space_15,
     overflow: 'hidden',
     alignSelf: 'center',
+  },
+  RentBadge: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: 'rgba(216, 102, 31, 0.8)',
+    color: 'white',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    fontSize: FONTSIZE.size_12,
+    fontWeight: 'bold',
+    borderRadius: 5,
+    zIndex: 10,
+  },
+  RentBadgeText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_12,
+    fontWeight: 'bold',
   },
   CardRatingContainer: {
     flexDirection: 'row',
