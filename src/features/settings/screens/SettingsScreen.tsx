@@ -18,8 +18,10 @@ import { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
 import Constants from 'expo-constants';
 import HeaderBar from '../../../components/HeaderBar';
 import { useAnalytics } from '../../../utils/analytics';
+import CityModal from '../../bookshop/components/CityModal';
 
 const SettingsScreen = ({navigation, route}: any) => {
+  const [cityModalVisible, setCityModalVisible] = React.useState(false);
   const userDetails = useStore((state: any) => state.userDetails);
   const logout = useStore((state: any) => state.logout); 
   const username = userDetails[0].userUniqueUserName;
@@ -71,6 +73,12 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           icon: <MaterialIcons color="#fff" name="notifications-none" size={20} />,
           label: 'Manage Notifications',
           onPress: () => navigation.push('NotificationSettings'),
+          // bgColor: '#FF8C42',
+        },
+        {
+          icon: <FontAwesome5 color="#fff" name="city" size={20} />,
+          label: 'Manage City',
+          onPress: () => setCityModalVisible(true),
           // bgColor: '#FF8C42',
         },
       ]
@@ -316,6 +324,11 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           <Text style={styles.footerText}>Biblophile {Constants.manifest2?.extra?.expoClient?.version}</Text>
         </View>
       </ScrollView>
+      <CityModal
+        visibility={cityModalVisible}
+        onClose={() => setCityModalVisible(false)}
+        modalType={null}
+      />
     </SafeAreaView>
   );
 };

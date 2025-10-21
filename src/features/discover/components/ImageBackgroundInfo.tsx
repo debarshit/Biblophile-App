@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert, Share } from 'react-native';
-import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
 import GradientBGIcon from '../../../components/GradientBGIcon';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import ReadingStatus from './ReadingStatus';
-import CityModal from '../../bookshop/components/CityModal';
-import { useStore } from '../../../store/store';
 
 interface ImageBackgroundInfoProps {
   EnableBackHandler: boolean;
@@ -44,8 +42,6 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     ratingsCount: null as number | null,
     topEmotions: [] as Emotion[]
   });
-  const [cityModalVisible, setCityModalVisible] = useState(false);
-  const { selectedCity } = useStore();
 
   // Get actual book ID (handling Google Books)
   const getBookId = async () => {
@@ -116,15 +112,6 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
           </TouchableOpacity>
         )}
         
-        <TouchableOpacity onPress={() => setCityModalVisible(true)}>
-          <View style={styles.location}>
-            <FontAwesome5 name="map-marker" size={20} color="#D17842" />
-            <Text style={styles.locationText}>
-              {selectedCity || 'location'}
-            </Text>
-          </View>
-        </TouchableOpacity>
-        
         <TouchableOpacity onPress={handleSharePress}>
           <GradientBGIcon 
             name="sharealt" 
@@ -186,12 +173,6 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
           <ReadingStatus id={id} isGoogleBook={isGoogleBook} product={product} />
         )}
       </View>
-      
-      {/* City Modal */}
-      <CityModal 
-        visibility={cityModalVisible} 
-        onClose={() => setCityModalVisible(false)}
-      />
     </View>
   );
 };
@@ -206,16 +187,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  location: {
-    flexDirection: 'row',
-    marginTop: SPACING.space_10,
-  },
-  locationText: {
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_16,
-    color: COLORS.primaryWhiteHex,
-    marginLeft: SPACING.space_8,
   },
   bookInfoContainer: {
     padding: SPACING.space_24,

@@ -56,7 +56,7 @@ const CityModal = ({ visibility, onClose, modalType=null }: CityModalProps) => {
           </View>
           <View style={styles.body}>
             <Text style={styles.instructionText}>
-              Choose a location to continue:
+              Can be updated in settings.
             </Text>
             <View style={styles.cityList}>
               {displayCities.map((city) => (
@@ -130,7 +130,8 @@ const styles = StyleSheet.create({
     width: '48%',
   },
   selectedCityItem: {
-    backgroundColor: '#21262E',
+    borderWidth: 1,
+    borderColor: '#D17842',
   },
   cityItemContent: {
     flexDirection: 'row',
