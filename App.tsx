@@ -209,8 +209,8 @@ const App = () => {
         apiKey="phc_FSNgN6xgRp56gSFZVhNVr0PWaPthNY3VjRRc8H6IUFo"
         options={posthogOptions}
       >
-        <CityProvider>
-          {isAuthenticated ? (
+        {isAuthenticated ? (
+          <CityProvider>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
               <Stack.Screen name="Tab" component={TabNavigator} options={{animation: 'slide_from_bottom'}} />
               <Stack.Screen name="Streaks" component={StreaksScreen} options={{animation: 'slide_from_bottom'}} />
@@ -249,15 +249,15 @@ const App = () => {
               <Stack.Screen name="BookClubDetails" component={BookClubDetailsScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="SubmitReview" component={SubmitReviewScreen} options={{animation: 'slide_from_right'}} />
             </Stack.Navigator>
-          ) : (
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{animation: 'slide_from_bottom'}} />
-              <Stack.Screen name="SignupLogin" component={SignupLogin} options={{animation: 'slide_from_right'}} />
-              <Stack.Screen name="Resources" component={ResourceScreen} options={{animation: 'slide_from_right'}} />
-            </Stack.Navigator>
-          )}
-          <Toast />
-        </CityProvider>
+          </CityProvider>
+        ) : (
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{animation: 'slide_from_bottom'}} />
+            <Stack.Screen name="SignupLogin" component={SignupLogin} options={{animation: 'slide_from_right'}} />
+            <Stack.Screen name="Resources" component={ResourceScreen} options={{animation: 'slide_from_right'}} />
+          </Stack.Navigator>
+        )}
+        <Toast />
       </PostHogProvider>
     </NavigationContainer>
   );
