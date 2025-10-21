@@ -4,25 +4,43 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useStore } from '../../../store/store';
 
 const cities = [
-  { name: "Delhi", icon: <FontAwesome5 name="city" size={20} color="#D17842" /> },
-  { name: "Mumbai", icon: <FontAwesome5 name="city" size={20} color="#D17842" /> },
-  { name: "Bengaluru", icon: <FontAwesome5 name="city" size={20} color="#D17842" /> },
-  { name: "Other", icon: <FontAwesome5 name="city" size={20} color="#D17842" /> },
+  { value: "Bengaluru", label: "Bengaluru", icon: <FontAwesome5 name="city" size={20} color="#D17842" /> },
+  { value: "Other", label: "Elsewhere", icon: <FontAwesome5 name="city" size={20} color="#D17842" /> },
 ];
 
 interface CityModalProps {
   visibility: boolean;
   onClose: () => void;
+  modalType: 'firstLaunch' | 'bangaloreDetected' | null;
 }
 
-const CityModal = ({ visibility, onClose }: CityModalProps) => {
+const CityModal = ({ visibility, onClose, modalType=null }: CityModalProps) => {
   const { selectedCity, setSelectedCity } = useStore();
   
   const handleCitySelect = (cityName: string) => {
     setSelectedCity(cityName);
     onClose();
   };
-  
+
+  // Determine modal title
+  let title = 'Choose your city';
+  if (modalType === 'firstLaunch') {
+    title = 'We’re piloting book rentals in Bangalore — do you live here?';
+  } else if (modalType === 'bangaloreDetected') {
+    title = 'Looks like you’re in Bangalore — want to unlock local rentals?';
+  }
+
+  // Map cities to displayCities with contextual names
+  const displayCities = cities.map((city) => {
+    if (modalType === 'firstLaunch') {
+      if (city.value === 'Bengaluru') return { ...city, label: "Yes, I’m in Bangalore" };
+      if (city.value === 'Other') return { ...city, label: "Not now" };
+    } else if (modalType === 'bangaloreDetected') {
+      if (city.value === 'Bengaluru') return { ...city, label: "Yes" };
+      if (city.value === 'Other') return { ...city, label: "Not now" };
+    }
+    return city;
+  });
 
   return (
     <Modal
@@ -34,25 +52,25 @@ const CityModal = ({ visibility, onClose }: CityModalProps) => {
       <View style={styles.modalBackdrop}>
         <View style={styles.modalContainer}>
           <View style={styles.header}>
-            <Text style={styles.headerText}>Choose your city</Text>
+            <Text style={styles.headerText}>{title}</Text>
           </View>
           <View style={styles.body}>
             <Text style={styles.instructionText}>
-              Choose a city from India to continue:
+              Choose a location to continue:
             </Text>
             <View style={styles.cityList}>
-              {cities.map((city) => (
+              {displayCities.map((city) => (
                 <TouchableOpacity
-                  key={city.name}
+                  key={city.value}
                   style={[
                     styles.cityItem,
-                    selectedCity === city.name && styles.selectedCityItem,
+                    selectedCity === city.value && styles.selectedCityItem,
                   ]}
-                  onPress={() => handleCitySelect(city.name)}
+                  onPress={() => handleCitySelect(city.value)}
                 >
                   <View style={styles.cityItemContent}>
                     <Text style={styles.cityIcon}>{city.icon}</Text>
-                    <Text style={styles.cityName}>{city.name}</Text>
+                    <Text style={styles.cityName}>{city.label}</Text>
                   </View>
                 </TouchableOpacity>
               ))}
