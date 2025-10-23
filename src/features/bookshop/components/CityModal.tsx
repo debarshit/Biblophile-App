@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useStore } from '../../../store/store';
+import { useAnalytics } from '../../../utils/analytics';
 
 const cities = [
   { value: "Bengaluru", label: "Bengaluru", icon: <FontAwesome5 name="city" size={20} color="#D17842" /> },
@@ -16,8 +17,20 @@ interface CityModalProps {
 
 const CityModal = ({ visibility, onClose, modalType=null }: CityModalProps) => {
   const { selectedCity, setSelectedCity } = useStore();
+  const analytics = useAnalytics();
   
   const handleCitySelect = (cityName: string) => {
+    // Track if user was detected in Bangalore and responded
+    if (modalType === 'bangaloreDetected') {
+      analytics.track('city_choice_after_bangalore_detected', {
+        user_choice: cityName,
+        detected_city: 'Bangalore',
+      });
+    }
+    // Track if user confirms they are in Bangalore during first launch
+    if (modalType === 'firstLaunch' && cityName === 'Bengaluru') {
+      analytics.track('user_confirmed_bangalore_on_first_launch');
+    }
     setSelectedCity(cityName);
     onClose();
   };
