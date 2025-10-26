@@ -67,7 +67,7 @@ const SeasonalRecommendations: React.FC<SeasonalRecommendationsProps> = ({
       onPress={() => {
         navigation.push('Details', {
           id: item.id,
-          type: 'ExternalBook',
+          type: 'Book',
         });
       }}
       key={item.id}

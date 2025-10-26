@@ -12,6 +12,7 @@ import {
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from "../../../theme/theme";
 import instance from "../../../services/axios";
 import requests from "../../../services/requests";
+import { useNavigation } from "@react-navigation/native";
 
 interface FilteredDiscoveryModalProps {
   visible: boolean;
@@ -49,6 +50,8 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
   const [matchMode, setMatchMode] = useState<"any" | "all">("any");
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const navigation = useNavigation<any>();
 
   const handleDiscover = async () => {
     setLoading(true);
@@ -190,13 +193,22 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
                 <View style={styles.bookGrid}>
                   {books.map((b) => (
                     <View key={b.id} style={styles.bookCard}>
-                      <Image
-                        source={{ uri: b.imagelink_square }}
-                        style={styles.bookImage}
-                      />
-                      <Text numberOfLines={1} style={styles.bookTitle}>
-                        {b.name}
-                      </Text>
+                      <TouchableOpacity
+                        onPress={() => {
+                          onClose();
+                          navigation.push('Details', {
+                            id: b.id,
+                            type: 'Book',
+                          });
+                        }}>
+                        <Image
+                          source={{ uri: b.imagelink_square }}
+                          style={styles.bookImage}
+                        />
+                        <Text numberOfLines={1} style={styles.bookTitle}>
+                          {b.name}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   ))}
                 </View>

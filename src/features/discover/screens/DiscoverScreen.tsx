@@ -153,34 +153,56 @@ const DiscoverScreen = ({ navigation }) => {
           </View>
         </TouchableOpacity>
 
-        {/* Filtered Recommendations */}
-        <Text style={styles.headerTitle}>Let us help you discover your next read</Text>
-        <TouchableOpacity
-          onPress={() => setIsFilterModalVisible(true)}
-          style={{
-            marginHorizontal: SPACING.space_30,
-            backgroundColor: COLORS.primaryOrangeHex,
-            paddingVertical: SPACING.space_12,
-            borderRadius: BORDERRADIUS.radius_15,
-            alignItems: "center",
-          }}
-        >
-          <Text
-            style={{
-              color: COLORS.primaryWhiteHex,
-              fontFamily: FONTFAMILY.poppins_medium,
-              fontSize: FONTSIZE.size_14,
-            }}
-          >
-            🔍 Filter Recommendations
-          </Text>
-        </TouchableOpacity>
-
         {/* Book giveaway */}
         {/* <BookGiveaway /> */}
 
         {/* Spotlight Section */}
         <Spotlights spotlights={spotlights} />
+
+        {/* Filtered Recommendations */}
+        <View
+          style={{
+            marginHorizontal: SPACING.space_20,
+            backgroundColor: COLORS.primaryDarkGreyHex,
+            borderRadius: BORDERRADIUS.radius_20,
+            padding: SPACING.space_20,
+            marginBottom: SPACING.space_20,
+          }}
+        >
+          <Text style={[styles.headerTitle, { marginHorizontal: 0, marginTop: 0 }]}>
+            Let us help you discover your next read
+          </Text>
+          <Text
+          style={{
+            color: COLORS.primaryLightGreyHex,
+            fontFamily: FONTFAMILY.poppins_regular,
+            fontSize: FONTSIZE.size_12,
+            marginTop: SPACING.space_8,
+          }}
+        >
+          Choose your favorite moods or styles to personalize suggestions
+        </Text>
+          <TouchableOpacity
+            onPress={() => setIsFilterModalVisible(true)}
+            style={{
+              backgroundColor: COLORS.primaryOrangeHex,
+              paddingVertical: SPACING.space_12,
+              borderRadius: BORDERRADIUS.radius_15,
+              alignItems: "center",
+              marginTop: SPACING.space_12,
+            }}
+          >
+            <Text
+              style={{
+                color: COLORS.primaryWhiteHex,
+                fontFamily: FONTFAMILY.poppins_medium,
+                fontSize: FONTSIZE.size_14,
+              }}
+            >
+              🔍 Filter Recommendations
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Seasonal reccos */}
         <SeasonalRecommendations />
