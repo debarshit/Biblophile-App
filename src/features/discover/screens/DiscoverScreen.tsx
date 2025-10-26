@@ -38,6 +38,7 @@ import HotRecommendations from '../components/HotRecommendations';
 import CulturalRecommendations from '../components/CulturalRecommendations';
 import MerchShopBanner from '../../../components/MerchShopBanner';
 import FilteredRecommendationsModal from '../components/FilteredRecommendationsModal';
+import { useAnalytics } from '../../../utils/analytics';
 
 const DiscoverScreen = ({ navigation }) => {
   // Global state from store
@@ -55,6 +56,7 @@ const DiscoverScreen = ({ navigation }) => {
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [reviewTags, setReviewTags] = useState({});
 
+  const analytics = useAnalytics();
   const tabBarHeight = useBottomTabBarHeight();
 
   // Add to cart handler
@@ -183,7 +185,10 @@ const DiscoverScreen = ({ navigation }) => {
           Choose your favorite moods or styles to personalize suggestions
         </Text>
           <TouchableOpacity
-            onPress={() => setIsFilterModalVisible(true)}
+            onPress={() => {
+              analytics.track('discover_filter_opened');
+              setIsFilterModalVisible(true);
+            }}
             style={{
               backgroundColor: COLORS.primaryOrangeHex,
               paddingVertical: SPACING.space_12,

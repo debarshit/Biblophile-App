@@ -13,6 +13,7 @@ import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from "../../../th
 import instance from "../../../services/axios";
 import requests from "../../../services/requests";
 import { useNavigation } from "@react-navigation/native";
+import { useAnalytics } from "../../../utils/analytics";
 
 interface FilteredDiscoveryModalProps {
   visible: boolean;
@@ -51,9 +52,15 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const analytics = useAnalytics();
   const navigation = useNavigation<any>();
 
   const handleDiscover = async () => {
+    analytics.track('discover_filter_applied', {
+      moods_selected: selectedMoods.length,
+      tags_selected: selectedTags.length,
+      match_mode: matchMode,
+    });
     setLoading(true);
     try {
       const { data } = await instance.get(requests.getFilteredRecommendations, {
@@ -64,6 +71,9 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
         },
       });
       setBooks(data.data.items || []);
+      analytics.track('discover_filter_results_viewed', {
+        results_count: data.data.items.length,
+    });
     } catch (error) {
       console.error("Error fetching filtered recommendations:", error);
     }
@@ -195,6 +205,10 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
                     <View key={b.id} style={styles.bookCard}>
                       <TouchableOpacity
                         onPress={() => {
+                          analytics.track('discover_filter_book_clicked', {
+                            book_id: b.id,
+                            book_name: b.name,
+                          });
                           onClose();
                           navigation.push('Details', {
                             id: b.id,
