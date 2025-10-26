@@ -90,7 +90,7 @@ const SeasonalRecommendations: React.FC<SeasonalRecommendationsProps> = ({
         </View>
       </View>
       <Text numberOfLines={1} style={styles.titleText}>{item.name}</Text>
-      <Text numberOfLines={1} style={styles.authorText}>{item.author}</Text>
+      {/* <Text numberOfLines={1} style={styles.authorText}>{item.author}</Text> */}
       {/* <View style={styles.priceContainer}>
         <Text style={styles.priceText}>${parseFloat(item.price).toFixed(2)}</Text>
       </View> */}

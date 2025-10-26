@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Text,
   Platform,
   ToastAndroid,
   Animated,
@@ -36,6 +37,7 @@ import BookGiveaway from '../components/BookGiveaway';
 import HotRecommendations from '../components/HotRecommendations';
 import CulturalRecommendations from '../components/CulturalRecommendations';
 import MerchShopBanner from '../../../components/MerchShopBanner';
+import FilteredRecommendationsModal from '../components/FilteredRecommendationsModal';
 
 const DiscoverScreen = ({ navigation }) => {
   // Global state from store
@@ -50,6 +52,9 @@ const DiscoverScreen = ({ navigation }) => {
   // Local state
   const [spotlights, setSpotlights] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  const [reviewTags, setReviewTags] = useState({});
+
   const tabBarHeight = useBottomTabBarHeight();
 
   // Add to cart handler
@@ -96,6 +101,18 @@ const DiscoverScreen = ({ navigation }) => {
     getSpotlights();
   }, []);
 
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const { data } = await instance.get(requests.fetchReviewTags);
+        setReviewTags(data.data || {});
+      } catch (err) {
+        console.error("Error fetching tags:", err);
+      }
+    };
+    fetchTags();
+  }, []);
+
   return (
     <SafeAreaView style={styles.screenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
@@ -136,6 +153,29 @@ const DiscoverScreen = ({ navigation }) => {
           </View>
         </TouchableOpacity>
 
+        {/* Filtered Recommendations */}
+        <Text style={styles.headerTitle}>Let us help you discover your next read</Text>
+        <TouchableOpacity
+          onPress={() => setIsFilterModalVisible(true)}
+          style={{
+            marginHorizontal: SPACING.space_30,
+            backgroundColor: COLORS.primaryOrangeHex,
+            paddingVertical: SPACING.space_12,
+            borderRadius: BORDERRADIUS.radius_15,
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={{
+              color: COLORS.primaryWhiteHex,
+              fontFamily: FONTFAMILY.poppins_medium,
+              fontSize: FONTSIZE.size_14,
+            }}
+          >
+            🔍 Filter Recommendations
+          </Text>
+        </TouchableOpacity>
+
         {/* Book giveaway */}
         {/* <BookGiveaway /> */}
 
@@ -163,6 +203,12 @@ const DiscoverScreen = ({ navigation }) => {
       </Animated.ScrollView>
       
       {CartList.length > 0 && <FloatingIcon />}
+
+      <FilteredRecommendationsModal
+        visible={isFilterModalVisible}
+        onClose={() => setIsFilterModalVisible(false)}
+        tags={reviewTags}
+      />
     </SafeAreaView>
   );
 };
@@ -190,6 +236,14 @@ const styles = StyleSheet.create({
     height: SPACING.space_20 * 3,
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryWhiteHex,
+  },
+  headerTitle: {
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_18,
+    marginHorizontal: SPACING.space_30,
+    marginTop: SPACING.space_30,
+    marginBottom: SPACING.space_15,
     color: COLORS.primaryWhiteHex,
   },
 });

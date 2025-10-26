@@ -61,6 +61,7 @@ const requests = {
     fetchSeasonalRecommendations: `${APIURL}recommendations/seasonal`,
     fetchHotRecommendations: `${APIURL}recommendations/hot`,
     fetchCulturalRecommendations: `${APIURL}recommendations/cultural`,
+    getFilteredRecommendations: `${APIURL}recommendations/filtered`,
 
     //reading activity requests
     submitReadingDuration: `${APIURL}reading/reading-activity/reading-duration`,
