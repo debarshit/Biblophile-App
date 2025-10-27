@@ -70,7 +70,7 @@ const TabNavigator = () => {
           ),
         }}></Tab.Screen>
       {/* <Tab.Screen
-          name="Shop"
+          name="Library"
           component={LibraryScreen}
           options={{
             tabBarIcon: ({focused, color, size}) => (
@@ -83,7 +83,7 @@ const TabNavigator = () => {
               />
             ),
           }}></Tab.Screen> */}
-        <Tab.Screen
+        {/* <Tab.Screen
           name="Challenges"
           component={ChallengesScreen}
           options={{
@@ -96,8 +96,8 @@ const TabNavigator = () => {
                 }
               />
             ),
-          }}></Tab.Screen>
-        <Tab.Screen
+          }}></Tab.Screen> */}
+        {/* <Tab.Screen
           name="Social"
           component={SocialScreen}
           options={{
@@ -110,7 +110,7 @@ const TabNavigator = () => {
                 }
               />
             ),
-          }}></Tab.Screen>
+          }}></Tab.Screen> */}
           <Tab.Screen
         name="Bookshelf"
         component={ProfileSummaryScreen}
