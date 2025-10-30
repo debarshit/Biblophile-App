@@ -70,10 +70,8 @@ const LibraryScreen = ({navigation}: any) => {
     index: 0,
     genre: genres[0],
   });
-  const [bookList, setBookList] = useState<any>(getBookList(genreIndex.genre));
-  const [sortedCoffee, setSortedCoffee] = useState<any>(
-    getBookList(genreIndex.genre),
-  );
+  const [bookList, setBookList] = useState<any>([]);
+  const [sortedCoffee, setSortedCoffee] = useState<any>([]);
   const [booksLoading, setBooksLoading] = useState(true);
   const [cityPlaces, setCityPlaces] = useState([]);
   const [cityEvents, setCityEvents] = useState([]);
