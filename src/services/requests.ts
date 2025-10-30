@@ -63,6 +63,11 @@ const requests = {
     fetchCulturalRecommendations: `${APIURL}recommendations/cultural`,
     getFilteredRecommendations: `${APIURL}recommendations/filtered`,
 
+    //city-discovery requests
+    getCityEvents: (id: string) => `${APIURL}city-discover/${id}/events`,
+    getCityPlaces: (id: string) => `${APIURL}city-discover/${id}/places`,
+    submitEventStatus: `${APIURL}city-discover/submit/event`,
+
     //reading activity requests
     submitReadingDuration: `${APIURL}reading/reading-activity/reading-duration`,
     submitReview: `${APIURL}reading/reading-activity/reviews`,
