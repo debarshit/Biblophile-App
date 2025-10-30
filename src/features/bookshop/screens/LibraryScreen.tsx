@@ -10,7 +10,6 @@ import {
   View,
   Platform,
   ToastAndroid,
-  Image,
   Linking,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -33,6 +32,9 @@ import HeaderBar from '../../../components/HeaderBar';
 import CoffeeCard from '../../../components/CoffeeCard';
 import FloatingIcon from '../components/FloatingIcon';
 import MerchShopBanner from '../../../components/MerchShopBanner';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import CityPlacesSection from '../components/CityPlacesSection';
+import CityEventCard from '../components/CityEventCard';
 
 const getGenresFromData = (data: any) => {
   const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
@@ -56,6 +58,8 @@ const LibraryScreen = ({navigation}: any) => {
   const fetchGenres = useStore((state: any) => state.fetchGenres);  //this function should run on mount
   const GenreList = useStore((state: any) => state.GenreList);
   const CartList = useStore((state: any) => state.CartList);
+  const userDetails = useStore((state: any) => state.userDetails);
+  const accessToken = userDetails[0]?.accessToken;
 
   //useState variables
   const [genres, setGenres] = useState(
@@ -66,11 +70,12 @@ const LibraryScreen = ({navigation}: any) => {
     index: 0,
     genre: genres[0],
   });
-  const [bookList, setBookList] = useState<any>(getBookList(genreIndex.genre));
-  const [sortedCoffee, setSortedCoffee] = useState<any>(
-    getBookList(genreIndex.genre),
-  );
+  const [bookList, setBookList] = useState<any>([]);
+  const [sortedCoffee, setSortedCoffee] = useState<any>([]);
   const [booksLoading, setBooksLoading] = useState(true);
+  const [cityPlaces, setCityPlaces] = useState([]);
+  const [cityEvents, setCityEvents] = useState([]);
+  const [cityDataLoading, setCityDataLoading] = useState(true);
 
   const ListRef: any = useRef<FlatList>();
 
@@ -156,23 +161,45 @@ const LibraryScreen = ({navigation}: any) => {
     }
   };
 
-  const convertHttpToHttps = (url) => {
-    if (url && url.startsWith('http://')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
-  };
+  // Fetch city data
+  useEffect(() => {
+    if (!accessToken) return;
 
-  const openShopLink = () => {
-    Linking.openURL('https://shop.biblophile.com/shop/1/Bookmarks').catch((err) =>
-      console.error('An error occurred while opening the URL', err)
-    );
+    async function fetchCityData() {
+      try {
+        setCityDataLoading(true);
+        const headers = accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : {};
+
+        const [placesRes, eventsRes] = await Promise.all([
+          instance.get(requests.getCityPlaces('1')),
+          instance.get(requests.getCityEvents('1'), { headers })
+        ]);
+        setCityPlaces(placesRes.data.data.items || []);
+        setCityEvents(eventsRes.data.data.items || []);
+      } catch (error) {
+        console.warn('Error fetching city data:', error);
+      } finally {
+        setCityDataLoading(false);
+      }
+    }
+
+    fetchCityData();
+  }, [accessToken]);
+
+  // Group events by type
+  const eventGroups = {
+    bookFairs: cityEvents.filter(e => ["book_fair", "expo", "lit_fest"].includes(e.type)),
+    launches: cityEvents.filter(e => ["book_launch", "author_talk", "panel_discussion"].includes(e.type)),
+    meetups: cityEvents.filter(e => ["reading_circle", "meetup"].includes(e.type)),
+    workshops: cityEvents.filter(e => e.type === "workshop"),
   };
 
   useEffect(() => {
     // Fetch genres when component mounts
     fetchGenres();
-  }, []);
+  }, [accessToken]);
 
   useEffect(() => {
     // Update genres state when GenreList changes
@@ -208,7 +235,6 @@ const LibraryScreen = ({navigation}: any) => {
         </Text>
 
         {/* Search Input */}
-
         <View style={styles.InputContainerComponent}>
           <TouchableOpacity
             onPress={() => {
@@ -354,9 +380,44 @@ const LibraryScreen = ({navigation}: any) => {
           />
         )}
 
-        <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
+        {/* Cafes & Reading Spots */}
+        {!cityDataLoading && cityPlaces.length > 0 && (
+          <CityPlacesSection cityPlaces={cityPlaces} />
+        )}
+
+        {/* City Events Section */}
+        {!cityDataLoading && Object.entries(eventGroups).map(([key, events]) => {
+          if (events.length === 0) return null;
+
+          const titles: Record<string, string> = {
+            bookFairs: "Book Fairs, Expos & Lit Fests",
+            launches: "Book Launches & Author Talks",
+            meetups: "Reading Circles & Meetups",
+            workshops: "Workshops",
+          };
+
+          return (
+            <View key={key} style={styles.eventSection}>
+              <Text style={styles.eventSectionTitle}>
+                {titles[key] || key}
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.eventScrollContainer}
+              >
+                {events.map(event => (
+                  <View key={event.id} style={styles.eventCardWrapper}>
+                    <CityEventCard event={event} accessToken={accessToken} />
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          );
+        })}
 
         {/* Checkout Bookmarks shop */}
+        <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
         <MerchShopBanner />
 
       </ScrollView>
@@ -442,6 +503,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: SPACING.space_36 * 3.6,
+  },
+    eventSection: {
+    marginTop: SPACING.space_24,
+    paddingHorizontal: SPACING.space_20,
+  },
+  eventSectionTitle: {
+    fontSize: FONTSIZE.size_18,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_12,
+  },
+  eventScrollContainer: {
+    gap: SPACING.space_16,
+    paddingRight: SPACING.space_20,
+  },
+  eventCardWrapper: {
+    width: Dimensions.get('window').width * 0.85,
   },
   CoffeeBeansTitle: {
     fontSize: FONTSIZE.size_18,
