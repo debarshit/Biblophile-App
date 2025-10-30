@@ -201,7 +201,7 @@ const LibraryScreen = ({navigation}: any) => {
   useEffect(() => {
     // Fetch genres when component mounts
     fetchGenres();
-  }, []);
+  }, [accessToken]);
 
   useEffect(() => {
     // Update genres state when GenreList changes
@@ -410,7 +410,7 @@ const LibraryScreen = ({navigation}: any) => {
               >
                 {events.map(event => (
                   <View key={event.id} style={styles.eventCardWrapper}>
-                    {/* <CityEventCard event={event} accessToken={accessToken} /> */}
+                    <CityEventCard event={event} accessToken={accessToken} />
                   </View>
                 ))}
               </ScrollView>
