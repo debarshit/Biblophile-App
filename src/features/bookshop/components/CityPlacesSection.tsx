@@ -12,6 +12,7 @@ import {
   NativeSyntheticEvent,
 } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
+import { useAnalytics } from '../../../utils/analytics';
 
 interface CityPlace {
   id: string;
@@ -32,6 +33,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.85;
 
 export default function CityPlacesSection({ cityPlaces }: CityPlacesSectionProps) {
+  const analytics = useAnalytics();
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
 
@@ -44,8 +46,14 @@ export default function CityPlacesSection({ cityPlaces }: CityPlacesSectionProps
     setScrollProgress(progress);
   };
 
-  const openMap = (latitude?: number, longitude?: number) => {
+  const openMap = (latitude?: number, longitude?: number, place?: CityPlace) => {
     if (latitude && longitude) {
+      analytics.track('view_place_on_map', {
+        place_id: place?.id,
+        name: place?.name,
+        type: place?.type,
+        address: place?.address,
+      });
       const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
       Linking.openURL(url).catch(err =>
         console.error('Error opening maps:', err)
@@ -113,7 +121,7 @@ export default function CityPlacesSection({ cityPlaces }: CityPlacesSectionProps
                           ⭐ {place.rating?.toFixed(1) || '0.0'}
                         </Text>
                         <TouchableOpacity
-                          onPress={() => openMap(place.latitude, place.longitude)}
+                          onPress={() => openMap(place.latitude, place.longitude, place)}
                         >
                           <Text style={styles.mapLink}>View Map →</Text>
                         </TouchableOpacity>

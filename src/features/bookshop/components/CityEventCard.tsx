@@ -14,6 +14,7 @@ import Toast from 'react-native-toast-message';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
+import { useAnalytics } from '../../../utils/analytics';
 
 interface CityEvent {
   id: string;
@@ -36,6 +37,7 @@ interface CityEventCardProps {
 }
 
 export default function CityEventCard({ event, accessToken }: CityEventCardProps) {
+  const analytics = useAnalytics();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [interested, setInterested] = useState(event.interested || 0);
   const [going, setGoing] = useState(event.going || 0);
@@ -48,6 +50,13 @@ export default function CityEventCard({ event, accessToken }: CityEventCardProps
       Alert.alert('Sign In Required', 'Please sign in to RSVP for events.');
       return;
     }
+
+    analytics.track(status === 'interested' ? 'event_marked_interested' : 'event_marked_going', {
+      event_id: event.id,
+      title: event.title,
+      type: event.type,
+      location: event.location,
+    });
 
     try {
       setIsSubmitting(true);
@@ -86,6 +95,12 @@ export default function CityEventCard({ event, accessToken }: CityEventCardProps
 
   const openRegistration = () => {
     if (event.registrationLink) {
+      analytics.track('view_event_details', {
+        event_id: event.id,
+        title: event.title,
+        type: event.type,
+        location: event.location,
+      });
       Linking.openURL(event.registrationLink).catch(err =>
         console.error('Error opening link:', err)
       );
