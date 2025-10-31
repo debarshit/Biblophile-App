@@ -49,6 +49,7 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
   const [selectedMoods, setSelectedMoods] = useState<number[]>([]);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [matchMode, setMatchMode] = useState<"any" | "all">("any");
+  const [excludedWarnings, setExcludedWarnings] = useState<number[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -60,6 +61,7 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
       moods_selected: selectedMoods.length,
       tags_selected: selectedTags.length,
       match_mode: matchMode,
+      excluded_warnings: excludedWarnings.length,
     });
     setLoading(true);
     try {
@@ -68,6 +70,7 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
           moods: selectedMoods.join(","),
           tags: selectedTags.join(","),
           match: matchMode,
+          excludeWarnings: excludedWarnings.join(","),
         },
       });
       setBooks(data.data.items || []);
@@ -124,36 +127,12 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
               ))}
             </View>
 
-            {/* Match Mode */}
-            <View style={styles.matchModeContainer}>
-              <TouchableOpacity onPress={() => setMatchMode("any")}>
-                <Text
-                  style={[
-                    styles.matchModeText,
-                    matchMode === "any" && styles.matchModeSelected,
-                  ]}
-                >
-                  Match ANY
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setMatchMode("all")}>
-                <Text
-                  style={[
-                    styles.matchModeText,
-                    matchMode === "all" && styles.matchModeSelected,
-                  ]}
-                >
-                  Match ALL
-                </Text>
-              </TouchableOpacity>
-            </View>
-
             {/* Tags Section */}
             <Text style={[styles.sectionTitle, { marginTop: SPACING.space_24 }]}>
               Filter by book qualities
             </Text>
 
-            {Object.entries(tags).map(([category, list]) => (
+            {Object.entries(tags).filter(([category]) => category !== "contentWarnings").map(([category, list]) => (
               <View key={category} style={styles.categoryContainer}>
                 <Text style={styles.categoryTitle}>
                   {category.replace(/([A-Z])/g, " $1")}
@@ -183,6 +162,66 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
                 </View>
               </View>
             ))}
+
+            {/* Match Mode */}
+            <View style={styles.matchModeContainer}>
+              <TouchableOpacity onPress={() => setMatchMode("any")}>
+                <Text
+                  style={[
+                    styles.matchModeText,
+                    matchMode === "any" && styles.matchModeSelected,
+                  ]}
+                >
+                  Match ANY
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setMatchMode("all")}>
+                <Text
+                  style={[
+                    styles.matchModeText,
+                    matchMode === "all" && styles.matchModeSelected,
+                  ]}
+                >
+                  Match ALL
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Exclude Content Warnings Section */}
+            {tags.contentWarnings?.length > 0 && (
+              <View style={[styles.categoryContainer, { borderColor: COLORS.primaryRedHex, borderWidth: 1 }]}>
+                <Text style={[styles.categoryTitle, { color: COLORS.primaryRedHex }]}>
+                  Exclude books containing...
+                </Text>
+                <View style={styles.flexWrap}>
+                  {tags.contentWarnings.map((tag) => (
+                    <TouchableOpacity
+                      key={tag.tagId}
+                      style={[
+                        styles.chip,
+                        excludedWarnings.includes(tag.tagId)
+                          ? { backgroundColor: COLORS.primaryRedHex }
+                          : {},
+                      ]}
+                      onPress={() =>
+                        toggleSelect(excludedWarnings, setExcludedWarnings, tag.tagId)
+                      }
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          excludedWarnings.includes(tag.tagId)
+                            ? styles.chipTextSelected
+                            : {},
+                        ]}
+                      >
+                        {tag.tagName}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
 
             {/* Discover Button */}
             <TouchableOpacity
