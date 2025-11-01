@@ -154,46 +154,60 @@ const DetailsScreen = ({navigation, route}: any) => {
   }, []);
 
   useEffect(() => {
+    const currentId = route.params?.id;
+    const currentType = route.params?.type;
+
+    if (!currentId || !currentType) return;
+
+    setId(currentId);
+    setType(currentType);
+
     async function fetchProductDetails() {
       try {
+        // Handle deep link action if present
         if (action) {
           handleAction(action);
         }
+
         let response;
-        if (type === 'ExternalBook') {
-            response = await instance(`${requests.fetchExternalBookDetails(id)}`);
-            setIsGoogleBook(true);
+        if (currentType === 'ExternalBook') {
+          response = await instance(`${requests.fetchExternalBookDetails(currentId)}`);
+          setIsGoogleBook(true);
         } else {
-            response = await instance(`${requests.fetchProductDetails(id)}?type=${type}&userCity=${selectedCity}`);
-            setIsGoogleBook(false);
+          response = await instance(`${requests.fetchProductDetails(currentId)}?type=${currentType}&userCity=${selectedCity}`);
+          setIsGoogleBook(false);
         }
 
         const data = response.data.data;
         setProduct(data);
-        setActualPrice(data.ProductPrice || data.saleInfo?.listPrice?.amount);
-        const updatedPrices = calculatePricesFromData(data);
+        
+        const fetchedPrice = data.ProductPrice || data.saleInfo?.listPrice?.amount;
+        setActualPrice(fetchedPrice);
+
+        const updatedPrices = calculatePricesFromData(data, currentType);
         setPrices(updatedPrices);
         setPrice(updatedPrices[0] || { size: '', price: 0, currency: '₹' });
+
         analytics.track('view_item', {
-          item_id: id,
-          is_google_book: isGoogleBook,
-          item_name: data['ProductName'] || data['volumeInfo']?.title || ''});
+          item_id: currentId,
+          is_google_book: currentType === 'ExternalBook',
+          item_name: data['ProductName'] || data['volumeInfo']?.title || '',
+        });
       } catch (error) {
         console.error('Error fetching items:', error);
       }
     }
 
     fetchProductDetails();
-  }, [actualPrice, selectedCity]);
+  }, [route.params?.id, route.params?.type, selectedCity, subscription]);
 
-  const calculatePricesFromData = (productData) => {
-    if (type === 'Book' || type === 'ExternalBook') {
+  const calculatePricesFromData = (productData, productType) => {
+    if (productType === 'Book' || productType === 'ExternalBook') {
       const prices = [
         { size: 'Buy', price: productData['ProductPrice'] || null, currency: '₹' }
       ];
-
       // Display rent price only for Bengaluru and only for Books
-      if (type === 'Book' && selectedCity === 'Bengaluru') {
+      if (productType === 'Book' && selectedCity === 'Bengaluru') {
         const rentPrice = productData['ProductRentPrice'] || (productData['ProductPrice'] * 0.10);
         const adjustedRentPrice = Math.max(25, Math.min(35, rentPrice));
         prices.push({
