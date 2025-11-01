@@ -182,7 +182,7 @@ const HomeScreen = ({navigation}: any) => {
         {/* Checkout bookshop only for Bengaluru users */}
         {selectedCity === 'Bengaluru' && <View style={styles.bookshopSection}>
           <View style={styles.headerContainer}>
-            <Text style={styles.bookshopText}>Bookshop</Text>
+            <Text style={styles.bookshopText}>Library</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Shop')}>
               <Text style={styles.seeMoreText}>See More</Text>
             </TouchableOpacity>
