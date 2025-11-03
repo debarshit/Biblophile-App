@@ -107,6 +107,21 @@ export default function CityEventCard({ event, accessToken }: CityEventCardProps
     }
   };
 
+  const getGoogleCalendarUrl = (event: CityEvent) => {
+    const start = new Date(event.startDate).toISOString().replace(/-|:|\.\d+/g, '');
+    const end = new Date(event.endDate || event.startDate).toISOString().replace(/-|:|\.\d+/g, '');
+
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: event.title,
+      dates: `${start}/${end}`,
+      details: event.description || '',
+      location: event.location || '',
+    });
+
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -130,11 +145,28 @@ export default function CityEventCard({ event, accessToken }: CityEventCardProps
             {event.location}
           </Text>
         )}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Text style={styles.date}>
           {formatDate(event.startDate)}
           {event.endDate && ` – ${formatDate(event.endDate)}`}
         </Text>
 
+        <TouchableOpacity
+          onPress={() => {
+            const calendarUrl = getGoogleCalendarUrl(event);
+            analytics.track('add_to_calendar', {
+              event_id: event.id,
+              title: event.title,
+              type: event.type,
+              location: event.location,
+            });
+            Linking.openURL(calendarUrl).catch(err => console.error('Error opening calendar:', err));
+          }}
+        >
+          <Text style={styles.addToCalendar}>📅</Text>
+        </TouchableOpacity>
+        </View>
+ 
         {event.description && (
           <Text style={styles.description} numberOfLines={3}>
             {event.description}
@@ -219,6 +251,12 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_12,
     fontFamily: FONTFAMILY.poppins_regular,
     color: COLORS.secondaryLightGreyHex,
+    marginBottom: SPACING.space_12,
+  },
+  addToCalendar: {
+    fontSize: FONTSIZE.size_12,
+    color: COLORS.primaryOrangeHex,
+    fontFamily: FONTFAMILY.poppins_medium,
     marginBottom: SPACING.space_12,
   },
   description: {

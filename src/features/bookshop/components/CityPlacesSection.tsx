@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { useAnalytics } from '../../../utils/analytics';
+import CityPlaceModal from './CityPlaceModal';
 
 interface CityPlace {
   id: string;
@@ -36,6 +37,18 @@ export default function CityPlacesSection({ cityPlaces }: CityPlacesSectionProps
   const analytics = useAnalytics();
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [selectedPlace, setSelectedPlace] = useState<CityPlace | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const openModal = (place: CityPlace) => {
+    setSelectedPlace(place);
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+    setSelectedPlace(null);
+  };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollX = event.nativeEvent.contentOffset.x;
@@ -90,50 +103,57 @@ export default function CityPlacesSection({ cityPlaces }: CityPlacesSectionProps
                 const imageTransform = groupProgress + cardOffset;
 
                 return (
-                  <View key={place.id} style={styles.card}>
-                    <View style={styles.imageContainer}>
-                      <Image
-                        source={{ uri: place.photo || '/placeholder.jpg' }}
-                        style={[
-                          styles.image,
-                          {
-                            transform: [
-                              { translateX: imageTransform },
-                              { scale: 1.15 },
-                            ],
-                          },
-                        ]}
-                        resizeMode="cover"
-                      />
-                    </View>
-                    <View style={styles.cardContent}>
-                      <Text style={styles.placeName} numberOfLines={1}>
-                        {place.name}
-                      </Text>
-                      <Text style={styles.placeType}>
-                        {place.type.replace(/_/g, ' ')}
-                      </Text>
-                      <Text style={styles.address} numberOfLines={2}>
-                        {place.address}
-                      </Text>
-                      <View style={styles.footer}>
-                        <Text style={styles.rating}>
-                          ⭐ {place.rating?.toFixed(1) || '0.0'}
+                  <TouchableOpacity onPress={() => openModal(place)} activeOpacity={0.8}>
+                    <View key={place.id} style={styles.card}>
+                      <View style={styles.imageContainer}>
+                        <Image
+                          source={{ uri: place.photo || '/placeholder.jpg' }}
+                          style={[
+                            styles.image,
+                            {
+                              transform: [
+                                { translateX: imageTransform },
+                                { scale: 1.15 },
+                              ],
+                            },
+                          ]}
+                          resizeMode="cover"
+                        />
+                      </View>
+                      <View style={styles.cardContent}>
+                        <Text style={styles.placeName} numberOfLines={1}>
+                          {place.name}
                         </Text>
-                        <TouchableOpacity
-                          onPress={() => openMap(place.latitude, place.longitude, place)}
-                        >
-                          <Text style={styles.mapLink}>View Map →</Text>
-                        </TouchableOpacity>
+                        <Text style={styles.placeType}>
+                          {place.type.replace(/_/g, ' ')}
+                        </Text>
+                        <Text style={styles.address} numberOfLines={2}>
+                          {place.address}
+                        </Text>
+                        <View style={styles.footer}>
+                          <Text style={styles.rating}>
+                            ⭐ {place.rating?.toFixed(1) || '0.0'}
+                          </Text>
+                          <TouchableOpacity
+                            onPress={() => openMap(place.latitude, place.longitude, place)}
+                          >
+                            <Text style={styles.mapLink}>View Map →</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 );
               })}
             </View>
           );
         })}
       </ScrollView>
+      <CityPlaceModal
+        visible={isModalVisible}
+        onClose={closeModal}
+        place={selectedPlace}
+      />
     </View>
   );
 }
