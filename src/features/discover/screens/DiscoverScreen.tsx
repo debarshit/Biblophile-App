@@ -128,7 +128,7 @@ const DiscoverScreen = ({ navigation }) => {
         scrollEventThrottle={16}
       >
         {/* App Header */}
-        <HeaderBar title="" />
+        <HeaderBar showLogo showNotifications />
 
         {/* Search Input */}
         <TouchableOpacity

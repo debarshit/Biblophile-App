@@ -269,7 +269,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryBlackHex} />
-      <HeaderBar showBackButton={true} title='Settings and activity' />
+      <HeaderBar showBackButton title='Settings and activity' />
       
       {/* Header with profile info */}
       <View style={styles.header}>

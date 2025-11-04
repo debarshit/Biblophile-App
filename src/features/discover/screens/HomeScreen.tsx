@@ -168,7 +168,7 @@ const HomeScreen = ({navigation}: any) => {
         contentOffset={{ x: 0, y: scrollOffset }}
         scrollEventThrottle={16}>
         {/* App Header */}
-        <HeaderBar title=""/>
+        <HeaderBar showLogo showNotifications />
 
         <StreakWeeklyProgress userDetails={userDetails} />
 
