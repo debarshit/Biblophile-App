@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Platform, KeyboardAvoidingView, ScrollView, Alert, SafeAreaView } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+import { ActivityIndicator } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
-import GradientBGIcon from '../../../components/GradientBGIcon';
 import HeaderBar from '../../../components/HeaderBar';
 
 const ProfileScreen = ({navigation, route}: any) => {
@@ -12,11 +14,91 @@ const ProfileScreen = ({navigation, route}: any) => {
     const accessToken = userDetails[0].accessToken;
     const updateProfile = useStore((state: any) => state.updateProfile);
 
-    const BackHandler = () => {
-        if (navigation.canGoBack()) {
-        navigation.pop();
+    const [avatar, setAvatar] = useState<string>(userDetails[0].profilePic);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+    const pickImage = async () => {
+        // Ask for permission
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+        Alert.alert('Permission required', 'Please allow access to your photos.');
+        return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.9,
+        });
+
+        if (result.canceled) return;
+
+        const selected = result.assets[0];
+        if (selected.fileSize && selected.fileSize > 2 * 1024 * 1024) {
+            Alert.alert('File too large', 'Please choose an image smaller than 2MB.');
+            return;
+        }
+
+        const manipResult = await ImageManipulator.manipulateAsync(
+            selected.uri,
+            [{ resize: { width: 512, height: 512 } }],
+            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+        );
+
+        setAvatar(manipResult.uri);
+        confirmUpload(manipResult);
+    };
+
+    const confirmUpload = async (image: any) => {
+        Alert.alert(
+        'Upload this photo?',
+        '',
+        [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Upload', onPress: () => uploadPhoto(image) },
+        ]
+        );
+    };
+
+    const uploadPhoto = async (image: any) => {
+        try {
+        setUploading(true);
+        setUploadProgress(0);
+
+        const formData = new FormData();
+        formData.append('photo', {
+            uri: image.uri,
+            name: `profile.jpg`,
+            type: 'image/jpeg',
+        } as any);
+
+        const response = await instance.post(requests.uploadUserPhoto, formData, {
+            headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${accessToken}`,
+            },
+            onUploadProgress: (progressEvent: any) => {
+            const progress = progressEvent.loaded / progressEvent.total;
+            setUploadProgress(progress);
+            },
+        });
+
+        if (response.data?.success) {
+            const newUrl = response.data.data?.UserPhoto;
+            setAvatar(newUrl);
+            updateProfile('profilePic', newUrl);
+            Alert.alert('Success', 'Profile photo updated!');
         } else {
-        navigation.navigate('Tab');
+            Alert.alert('Upload Failed', response.data?.message || 'Try again later.');
+        }
+        } catch (error) {
+        console.log('Upload Error:', error);
+        Alert.alert('Error', 'Could not upload the image.');
+        } finally {
+        setUploading(false);
+        setUploadProgress(0);
         }
     };
 
@@ -63,7 +145,6 @@ const ProfileScreen = ({navigation, route}: any) => {
     const [originalValues] = useState(formData);
     const [password, setPassword] = useState<string>('');
     const [passwordCnf, setPasswordCnf] = useState<string>('');
-    const [avatar, setAvatar] = useState<string>(userDetails[0].profilePic);
     const [updateMessages, setUpdateMessages] = useState<{ [key: string]: { text: string; color: string } }>({});
     const [updatingFields, setUpdatingFields] = useState<{ [key: string]: boolean }>({});
     const [focusedInput, setFocusedInput] = useState<string>('');
@@ -245,11 +326,25 @@ const ProfileScreen = ({navigation, route}: any) => {
                 <ScrollView>
                     <HeaderBar showBackButton={true} title='Edit Profile'/>
                     <View style={styles.wrapper}>
-                        <TouchableOpacity onPress={() => {}}>
-                            <Image
+                        <TouchableOpacity onPress={pickImage} style={{ alignItems: 'center' }}>
+                            <View style={styles.avatarWrapper}>
+                                <Image
                                 source={{ uri: avatar }}
-                                style={{ width: 100, height: 100, borderRadius: 50, margin: 20 }}
-                            />
+                                style={styles.avatarImage}
+                                />
+                                <View style={styles.overlay}>
+                                <Text style={styles.overlayText}>Change</Text>
+                                </View>
+                            </View>
+
+                            {uploading && (
+                                <View style={styles.uploadProgress}>
+                                <ActivityIndicator color={COLORS.primaryOrangeHex} size="small" />
+                                <Text style={{ color: COLORS.primaryWhiteHex, marginLeft: 8 }}>
+                                    Uploading... {Math.round(uploadProgress * 100)}%
+                                </Text>
+                                </View>
+                            )}
                         </TouchableOpacity>
 
                         {Object.keys(fieldConfig).map(renderField)}
@@ -295,6 +390,41 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 20,
         backgroundColor: COLORS.primaryBlackHex,
+    },
+    avatarWrapper: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        overflow: 'hidden',
+        position: 'relative',
+        borderWidth: 2,
+        borderColor: COLORS.primaryOrangeHex,
+        marginBottom: 20,
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 60,
+    },
+    overlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 40,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    overlayText: {
+        color: COLORS.primaryWhiteHex,
+        fontSize: FONTSIZE.size_14,
+        fontFamily: FONTFAMILY.poppins_medium,
+    },
+    uploadProgress: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 10,
     },
     fieldContainer: {
         marginBottom: 15,
