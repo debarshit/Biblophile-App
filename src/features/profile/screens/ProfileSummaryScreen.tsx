@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -7,6 +7,7 @@ import { useStore } from '../../../store/store';
 import BookshelfComponent from '../components/BookshelfComponent';
 import UserReviews from '../../reading/components/UserReviews';
 import GradientBGIcon from '../../../components/GradientBGIcon';
+import { Feather } from '@expo/vector-icons';
 
 const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const [userData, setUserData] = useState(null);
@@ -195,7 +196,25 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
         <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>{username}'s Reading Journal</Text>
+          <TouchableOpacity
+            onPress={() => navigation.push('Profile')}
+            style={styles.profileContainer}>
+            <View style={styles.profileImageContainer}>
+              <Image
+                source={{ uri: userDetails[0].profilePic }}
+                style={styles.profileImage}
+              />
+              <View style={styles.editBadge}>
+                <Feather name="edit-3" size={12} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>{userDetails[0].userName}</Text>
+            <Text style={styles.profileUsername}>
+              {username}
+            </Text>
+          </View>
           {isPageOwner && (
             <TouchableOpacity style={styles.headerIcon} onPress={() => navigation.navigate('Settings')}>
               <GradientBGIcon 
@@ -268,17 +287,52 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryBlackHex,
     flex: 1,
   },
+  profileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  profileImageContainer: {
+    position: 'relative',
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: COLORS.primaryOrangeHex,
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: COLORS.primaryOrangeHex,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.primaryBlackHex,
+  },
+  profileInfo: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  profileName: {
+    fontSize: FONTSIZE.size_18,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+  },
+  profileUsername: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+  },
    headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: SPACING.space_20,
-  },
-  headerTitle: {
-    fontSize: FONTSIZE.size_20,
-    fontFamily: FONTFAMILY.poppins_bold,
-    color: COLORS.primaryWhiteHex,
-    flex: 1,
   },
   headerIcon: {
     paddingBottom: SPACING.space_20,

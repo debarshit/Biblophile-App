@@ -270,32 +270,6 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryBlackHex} />
       <HeaderBar showBackButton title='Settings and activity' />
-      
-      {/* Header with profile info */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.push('Profile')}
-          style={styles.profileContainer}>
-          <View style={styles.profileImageContainer}>
-            <Image
-              source={{ uri: userDetails[0].profilePic }}
-              style={styles.profileImage}
-            />
-            <View style={styles.editBadge}>
-              <Feather name="edit-3" size={12} color="#fff" />
-            </View>
-          </View>
-          
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{userDetails[0].userName}</Text>
-            <Text style={styles.profileAddress}>
-              {userDetails[0].userAddress !== null && userDetails[0].userAddress.length > 20 
-                ? userDetails[0].userAddress.substring(0, 20) + '...' 
-                : userDetails[0].userAddress}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
 
       {/* Settings content */}
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
@@ -339,54 +313,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#161616',
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  profileContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  profileImageContainer: {
-    position: 'relative',
-  },
-  profileImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: COLORS.primaryOrangeHex,
-  },
-  editBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: COLORS.primaryOrangeHex,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.primaryBlackHex,
-  },
-  profileInfo: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  profileName: {
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_semibold,
-    color: COLORS.primaryWhiteHex,
-  },
-  profileAddress: {
-    fontSize: FONTSIZE.size_14,
-    fontFamily: FONTFAMILY.poppins_regular,
-    color: COLORS.primaryLightGreyHex,
   },
   scrollContainer: {
     flex: 1,
