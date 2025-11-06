@@ -74,7 +74,7 @@ const ProfileScreen = ({navigation, route}: any) => {
             type: 'image/jpeg',
         } as any);
 
-        const response = await instance.post(requests.uploadUserPhoto, formData, {
+        const response = await instance.post(requests.uploadUserDp, formData, {
             headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${accessToken}`,
@@ -84,8 +84,7 @@ const ProfileScreen = ({navigation, route}: any) => {
             setUploadProgress(progress);
             },
         });
-
-        if (response.data?.success) {
+        if (response.data?.status === 'success') {
             const newUrl = response.data.data?.UserPhoto;
             setAvatar(newUrl);
             updateProfile('profilePic', newUrl);

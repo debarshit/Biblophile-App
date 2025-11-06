@@ -41,7 +41,7 @@ const requests = {
     fetchUserData: `${APIURL}?action=fetchUserData`,
     fetchUserDataFromUsername: (username) => `${APIURL}users/username/${username}`,
     updateUserData: `${APIURL}users/update`,
-    uploadUserPhoto: `${APIURL}users/upload-photo`,
+    uploadUserDp: `${APIURL}users/upload-dp`,
     fetchDeposit: `${APIURL}users/deposit`,
     requestDepositRefund: `${APIURL}users/deposit/request-refund`,
     registerNotificationToken: `${APIURL}users/notification-token`,

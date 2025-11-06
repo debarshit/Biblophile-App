@@ -26,10 +26,9 @@ export default {
     "buildNumber": "6",
     "supportsTablet": true,
     "infoPlist": {
-      "UIBackgroundModes": [
-        "fetch",
-        "remote-notification"
-      ],
+      "NSCameraUsageDescription": "We need camera access to let you take a profile photo.",
+      "NSPhotoLibraryUsageDescription": "We need photo library access so you can choose a profile picture.",
+      "UIBackgroundModes": ["fetch", "remote-notification"],
       "ITSAppUsesNonExemptEncryption": false
     },
     "bundleIdentifier": IS_DEV
@@ -52,7 +51,10 @@ export default {
       ? "com.debar_shit.BiblophileApp.preview"
       : "com.debar_shit.BiblophileApp",
     "permissions": [
-      "NOTIFICATIONS"
+      "NOTIFICATIONS",
+      "READ_EXTERNAL_STORAGE",
+      "WRITE_EXTERNAL_STORAGE",
+      "CAMERA"
     ],
     "compileSdkVersion": 35,
     "targetSdkVersion": 35,
