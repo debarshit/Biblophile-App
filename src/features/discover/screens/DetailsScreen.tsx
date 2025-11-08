@@ -50,12 +50,11 @@ const DetailsScreen = ({navigation, route}: any) => {
       ];
   
       //display rent price only for Bengaluru and only for Books
-      if (type === 'Book' && selectedCity == 'Bengaluru') {
-        const rentPrice = product['ProductRentPrice'] || (product['ProductPrice'] * 0.10);
-        const adjustedRentPrice = Math.max(25, Math.min(35, rentPrice));
+      if (type === 'Book' && selectedCity == 'Bengaluru' && product['ProductRentPrice']) {
+        const rentPrice = product['ProductRentPrice'];
         prices.push({
           size: 'Rent',
-          price: subscription === true ? '0' : adjustedRentPrice,
+          price: subscription === true ? '0' : rentPrice,
           currency: '₹',
         });
       }
@@ -207,12 +206,11 @@ const DetailsScreen = ({navigation, route}: any) => {
         { size: 'Buy', price: productData['ProductPrice'] || null, currency: '₹' }
       ];
       // Display rent price only for Bengaluru and only for Books
-      if (productType === 'Book' && selectedCity === 'Bengaluru') {
-        const rentPrice = productData['ProductRentPrice'] || (productData['ProductPrice'] * 0.10);
-        const adjustedRentPrice = Math.max(25, Math.min(35, rentPrice));
+      if (productType === 'Book' && selectedCity === 'Bengaluru' && productData['ProductRentPrice']) {
+        const rentPrice = productData['ProductRentPrice'];
         prices.push({
           size: 'Rent',
-          price: subscription === true ? '0' : adjustedRentPrice,
+          price: subscription === true ? '0' : rentPrice,
           currency: '₹',
         });
       }
