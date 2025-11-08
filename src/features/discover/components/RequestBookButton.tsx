@@ -9,68 +9,80 @@ import { useCity } from '../../../contexts/CityContext';
 const RequestBookButton = ({ id, isGoogleBook, product, userDetails, actualPrice }) => {
   const { selectedCity } = useCity();
   
-  const submitBookRequest = async () => {
-    if (userDetails) {
-      try {
-        let bookId = id;
+const submitBookRequest = async () => {
+  if (userDetails) {
+    try {
+      let bookId = id;
 
-        if (isGoogleBook) {
-          const bookData = {
-            ISBN: product['volumeInfo']['industryIdentifiers']?.find(id => id.type === 'ISBN_13')?.identifier || '',
-            Title: product['volumeInfo']['title'] || '',
-            Pages: parseInt(product['volumeInfo']['pageCount'], 10) || 0,
-            Price: parseFloat(actualPrice) || 0,
-            Description: product['volumeInfo']['description'] || '',
-            Authors: product['volumeInfo']['authors'] || [],
-            Genres: product['volumeInfo']['categories'] || [],
-            Image: product['volumeInfo']['imageLinks']?.['thumbnail'] || '',
-          };
-
-          const response = await instance.post(requests.addBook, bookData);
-          const bookResponse = response.data;
-          console.log(response.data);
-          if (bookResponse.status == "success") {
-            bookId = bookResponse.data.bookId;
-          } else {
-            Alert.alert("Failed to add/update book");
-            return;
-          }
-        }
-
-        const requestData = {
-          userId: userDetails[0].userId,
-          bookId: bookId,
+      if (isGoogleBook) {
+        const bookData = {
+          ISBN: product['volumeInfo']['industryIdentifiers']?.find(id => id.type === 'ISBN_13')?.identifier || '',
+          Title: product['volumeInfo']['title'] || '',
+          Pages: parseInt(product['volumeInfo']['pageCount'], 10) || 0,
+          Price: parseFloat(actualPrice) || 0,
+          Description: product['volumeInfo']['description'] || '',
+          Authors: product['volumeInfo']['authors'] || [],
+          Genres: product['volumeInfo']['categories'] || [],
+          Image: product['volumeInfo']['imageLinks']?.['thumbnail'] || '',
         };
 
-        const response = await instance.post(requests.submitBookRequest, requestData);
-        const submitBookRequestResponse = response.data;
+        const response = await instance.post(requests.addBook, bookData);
+        const bookResponse = response.data;
 
-        if (submitBookRequestResponse.data.message === "Updated" || submitBookRequestResponse.data.message) {
-          if (Platform.OS === 'android') {
-            ToastAndroid.showWithGravity(
-              `Request Updated successfully!`,
-              ToastAndroid.SHORT,
-              ToastAndroid.CENTER,
-            );
-          } else {
-            Toast.show({
-              type: 'info', 
-              text1: `Request Updated successfully!`,
-              visibilityTime: 2000, 
-              autoHide: true, 
-              position: 'bottom',
-              bottomOffset: 100, 
-            });
-          }
+        if (bookResponse.status === "success") {
+          bookId = bookResponse.data.bookId;
+        } else {
+          Alert.alert("Failed to add/update book");
+          return;
         }
-      } catch (error) {
-        console.error('Error submitting request:', error);
-        Alert.alert("Uh oh! Please try again");
       }
-    } else {
-      Alert.alert("Login to update reading status");
+
+      const requestData = {
+        userId: userDetails[0].userId,
+        bookId: bookId,
+      };
+
+      const response = await instance.post(requests.submitBookRequest, requestData);
+      const submitBookRequestResponse = response.data;
+
+      if (
+        submitBookRequestResponse?.data?.message === "Updated" || 
+        submitBookRequestResponse?.data?.message
+      ) {
+        const successMessage = submitBookRequestResponse.data.message || "Request submitted successfully!";
+        
+        if (Platform.OS === 'android') {
+          ToastAndroid.showWithGravity(
+            successMessage,
+            ToastAndroid.SHORT,
+            ToastAndroid.CENTER,
+          );
+        } else {
+          Toast.show({
+            type: 'success',
+            text1: successMessage,
+            visibilityTime: 2000,
+            autoHide: true,
+            position: 'bottom',
+            bottomOffset: 100,
+          });
+        }
+      } else {
+        Alert.alert(submitBookRequestResponse?.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Uh oh! Please try again";
+
+      Alert.alert("Error", errorMessage);
     }
-  };
+  } else {
+    Alert.alert("Login to update reading status");
+  }
+};
 
   if (selectedCity == 'Bengaluru') {
     return (
