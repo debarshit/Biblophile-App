@@ -7,6 +7,7 @@ import { useStore } from '../../../store/store';
 import Mascot from '../../../components/Mascot';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useNavigation } from '@react-navigation/native';
+import { WysiwygRender } from '../../../components/wysiwyg/WysiwygRender';
 
 interface ReviewScreenProps {
     userData: {
@@ -100,68 +101,19 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
         );
     };
 
-    const handleSave = (ratingId: number, productId: number) => {
-        instance.put(requests.updateUserReview(productId), {
-            rating: currentReview.rating,
-            review: currentReview.review,
-            actionType: 'update'
-        }, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
-        })
-            .then(response => {
-                setReviews(reviews.map(review =>
-                    review.ratingId === ratingId ? { ...review, rating: currentReview.rating, review: currentReview.review } : review
-                ));
-                setEditing(null);
-                Alert.alert(response.data.data.message);
-            })
-            .catch(error => console.error("Error updating review:", error));
-    };
-
-    const handleChange = (name: string, value: string) => {
-        setCurrentReview(prev => ({ ...prev, [name]: value }));
-    };
-
     const renderReview = ({ item }: any) => (
         <View key={item.ratingId} style={styles.reviewCard}>
             <Image source={{ uri: convertHttpToHttps(item.bookImage) }} style={styles.bookImage} />
-            {editing === item.ratingId ? (
-                <>
-                    <TextInput
-                        style={styles.input}
-                        keyboardType="numeric"
-                        value={currentReview.rating}
-                        onChangeText={(value) => handleChange('rating', value)}
-                        placeholder="Rating (1-5)"
-                        maxLength={1}
-                    />
-                    <TextInput
-                        style={[styles.input, styles.textArea]}
-                        value={currentReview.review}
-                        onChangeText={(value) => handleChange('review', value)}
-                        placeholder="Your review"
-                        multiline
-                    />
-                    <TouchableOpacity onPress={() => handleSave(item.ratingId, item.productId)} style={styles.saveBtn}>
-                        <Text style={styles.btnText}>Save</Text>
-                    </TouchableOpacity>
-                </>
-            ) : (
-                <>
-                    <Text style={styles.rating}>Rating: {item.rating} / 5</Text>
-                    <Text style={styles.reviewText}>{item.review}</Text>
-                    {userData.isPageOwner && <View style={styles.btnGroup}>
-                        <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
-                            <Text style={styles.btnText}>Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleDelete(item.ratingId)} style={styles.deleteBtn}>
-                            <Text style={styles.btnText}>Delete</Text>
-                        </TouchableOpacity>
-                    </View>}
-                </>
-            )}
+            <Text style={styles.rating}>Rating: {item.rating} / 5</Text>
+            {item.review && <WysiwygRender html={item.review} maxWidth={300} />}
+            {userData.isPageOwner && <View style={styles.btnGroup}>
+                <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
+                    <Text style={styles.btnText}>Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item.ratingId)} style={styles.deleteBtn}>
+                    <Text style={styles.btnText}>Delete</Text>
+                </TouchableOpacity>
+            </View>}
         </View>
     );
 
@@ -211,12 +163,6 @@ const styles = StyleSheet.create({
         color: COLORS.primaryOrangeHex,
         marginBottom: SPACING.space_8,
         textAlign: 'center',
-    },
-    reviewText: {
-        fontSize: FONTSIZE.size_14,
-        fontFamily: FONTFAMILY.poppins_regular,
-        color: COLORS.primaryWhiteHex,
-        marginBottom: SPACING.space_12,
     },
     input: {
         width: '100%',
