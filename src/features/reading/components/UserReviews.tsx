@@ -6,6 +6,7 @@ import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../th
 import { useStore } from '../../../store/store';
 import Mascot from '../../../components/Mascot';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useNavigation } from '@react-navigation/native';
 
 interface ReviewScreenProps {
     userData: {
@@ -22,6 +23,7 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
 
+    const navigation = useNavigation<any>();
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0].accessToken;
 
@@ -53,11 +55,23 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
     }, [reviews]);
 
     const handleEdit = (review: any) => {
-        setEditing(review.ratingId);
-        setCurrentReview({ rating: review.rating, review: review.review });
+        navigation.navigate('SubmitReview', {
+            id: review.productId,
+            ratingId: review.ratingId,
+            isGoogleBook: false,
+            isEditing: true,
+            product: {
+                title: review.bookTitle,
+                image: review.bookImage,
+                rating: review.rating,
+                review: review.review,
+                emotions: review.emotions,
+                tags: review.tags,
+            },
+        });
     };
 
-    const handleDelete = (ratingId: number, productId: number) => {
+    const handleDelete = (ratingId: number) => {
         Alert.alert(
             "Delete Review",
             "Are you sure you want to delete this review?",
@@ -68,7 +82,7 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
                 },
                 {
                     text: "OK", onPress: () => {
-                        instance.put(requests.updateUserReview(productId), {
+                        instance.put(requests.updateUserReview(ratingId), {
                             actionType: 'delete'
                         },{
                             headers: {
@@ -142,7 +156,7 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
                         <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
                             <Text style={styles.btnText}>Edit</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleDelete(item.ratingId, item.productId)} style={styles.deleteBtn}>
+                        <TouchableOpacity onPress={() => handleDelete(item.ratingId)} style={styles.deleteBtn}>
                             <Text style={styles.btnText}>Delete</Text>
                         </TouchableOpacity>
                     </View>}

@@ -52,7 +52,7 @@ const requests = {
     fetchAverageEmotionsByUser:`${APIURL}users/emotions?userId=`,
     fetchAverageDaystoFinish: `${APIURL}users/days-to-finish?userId=`,
     fetchUserReviews: `${APIURL}users/reviews?userId=`,
-    updateUserReview: (id) => `${APIURL}users/reviews/${id}`,
+    updateUserReview: (ratingId) => `${APIURL}users/reviews/${ratingId}`,
     fetchBookShelf: `${APIURL}users/bookshelf`,
     fetchUserNotes: `${APIURL}users/notes`,
     updateUserNote: (id) => `${APIURL}users/notes/${id}`,

@@ -51,6 +51,8 @@ const EMOTIONS = [
 
 const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigation }) => {
   const { id, isGoogleBook, product } = route.params;
+  const isEditing = route.params?.isEditing || false;
+  const ratingId = route.params?.ratingId || null;
   const userDetails = useStore((state: any) => state.userDetails);
   const analytics = useAnalytics();
   
@@ -77,6 +79,46 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
 
   const totalSteps = 4;
   const progress = (currentStep / totalSteps) * 100;
+
+  useEffect(() => {
+  if (!product) return;
+
+  // rating: coerce to number safely
+  const preRating = product.rating != null ? Number(product.rating) : 0;
+  setRating(Number.isFinite(preRating) ? preRating : 0);
+
+  // review HTML/body
+  setReviewHtml(product.review || '');
+
+  // prefill emotions
+  if (Array.isArray(product.emotions)) {
+    setEmotionsList(prev =>
+      prev.map(e => ({ ...e, isChecked: product.emotions.includes(e.emotionId) }))
+    );
+  } else {
+    // ensure emotionsList default unchanged
+    setEmotionsList(prev => prev);
+  }
+
+  // tags prefill - we'll map tag IDs into respective categories after tagCategories are loaded
+  if (Array.isArray(product.tags) && tagCategories && Object.keys(tagCategories).length > 0) {
+    const newTags: Record<keyof TagCategories, number[]> = {
+      characters: [],
+      plot: [],
+      setting: [],
+      writingStyle: [],
+      contentWarnings: []
+    };
+
+    Object.entries(tagCategories).forEach(([category, categoryTags]) => {
+      newTags[category as keyof TagCategories] = categoryTags
+        .filter((t: Tag) => product.tags.includes(t.tagId))
+        .map((t: Tag) => t.tagId);
+    });
+
+    setTags(newTags);
+  }
+}, [product, tagCategories]);
 
   // Fetch tags from API on component mount
   useEffect(() => {
@@ -165,12 +207,22 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
         tags: tags
       };
 
-      const response = await instance.post(requests.submitReview, reviewData, {
-        headers: { Authorization: `Bearer ${userDetails[0].accessToken}` }
-      });
+      let response;
+      if (isEditing) {
+        response = await instance.put(requests.updateUserReview(ratingId), {
+          ...reviewData,
+          actionType: 'update'
+        }, {
+          headers: { Authorization: `Bearer ${userDetails[0].accessToken}` }
+        });
+      } else {
+        response = await instance.post(requests.submitReview, reviewData, {
+          headers: { Authorization: `Bearer ${userDetails[0].accessToken}` }
+        });
+      }
 
       if (response.data.data.status === 'success') {
-        analytics.track('review_submitted');
+        analytics.track(isEditing ? 'review_updated' : 'review_submitted');
         Alert.alert('Thanks!', 'Review added successfully.', [
           { text: 'OK', onPress: () => navigation.goBack() }
         ]);
@@ -207,7 +259,9 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
                 enableSwiping={true}
                 onChange={setRating}
               />
-              <Text style={styles.ratingText}>{rating.toFixed(1)} / 5.0</Text>
+              <Text style={styles.ratingText}>
+                {typeof rating === 'number' && Number.isFinite(rating) ? rating.toFixed(1) : '0.0'} / 5.0
+              </Text>
             </View>
           </View>
         );
