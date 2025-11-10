@@ -18,8 +18,6 @@ interface ReviewScreenProps {
 
 const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
     const [reviews, setReviews] = useState([]);
-    const [editing, setEditing] = useState<number | null>(null);
-    const [currentReview, setCurrentReview] = useState({ rating: '', review: '' });
     const [offset, setOffset] = useState(0);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
