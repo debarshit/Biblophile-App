@@ -99,12 +99,6 @@ const HomeScreen = ({navigation}: any) => {
     }
   };
 
-  const openShopLink = () => {
-    Linking.openURL('https://shop.biblophile.com').catch((err) =>
-      console.error('An error occurred while opening the URL', err)
-    );
-  };
-
   useEffect(() => {
     async function fetchBookList() {
       try {

@@ -7,7 +7,8 @@ import { useStore } from '../../../store/store';
 import BookshelfComponent from '../components/BookshelfComponent';
 import UserReviews from '../../reading/components/UserReviews';
 import GradientBGIcon from '../../../components/GradientBGIcon';
-import { Feather } from '@expo/vector-icons';
+import { AntDesign, Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useStreak } from '../../../hooks/useStreak';
 
 const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const [userData, setUserData] = useState(null);
@@ -23,6 +24,8 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0].accessToken;
   const username = route.params.username;
+
+  const { currentStreak } = useStreak(userDetails[0]?.accessToken);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -250,13 +253,28 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
             )}
           </View>
           <View style={styles.section}>
-            <View style={styles.summaryItem}>
-              <Text style={styles.sectionTitle}>Average Days to Finish a Book</Text>
-              <Text style={styles.descriptionText}><Text style={styles.highlightText}>{averageReadingDays}</Text> days</Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.sectionTitle}>Average Rating</Text>
-              <Text style={styles.descriptionText}><Text style={styles.highlightText}>{userAverageRating}</Text> / 5</Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={styles.statIcon}><MaterialCommunityIcons name="bookshelf" size={22} color={COLORS.primaryWhiteHex} /></Text>
+                <Text style={styles.statValue}>{averageReadingDays || 0}d</Text>
+                <Text style={styles.statLabel}>per book</Text>
+              </View>
+
+              <View style={styles.statDivider} />
+
+              <View style={styles.statItem}>
+                <Text style={styles.statIcon}><AntDesign name="star" size={22} color={COLORS.primaryWhiteHex} /></Text>
+                <Text style={styles.statValue}>{userAverageRating ? userAverageRating : '0.0'}</Text>
+                <Text style={styles.statLabel}>avg rating</Text>
+              </View>
+
+              <View style={styles.statDivider} />
+
+              <View style={styles.statItem}>
+                <Text style={styles.statIcon}><FontAwesome5 name="fire" size={20} color={COLORS.primaryWhiteHex} /></Text>
+                <Text style={styles.statValue}>{currentStreak || 0}</Text>
+                <Text style={styles.statLabel}>day streak</Text>
+              </View>
             </View>
           </View>
         </View>
@@ -348,7 +366,7 @@ const styles = StyleSheet.create({
   },
   infoSection: {
     flexDirection: 'column',
-    gap: SPACING.space_20,
+    gap: SPACING.space_12,
   },
   buttonsSection: {
     flexDirection: 'row',
@@ -420,18 +438,51 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_bold,
     fontSize: FONTSIZE.size_18,
   },
-  summaryItem: {
-    backgroundColor: COLORS.primaryDarkGreyHex,
+  statsRow: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.secondaryDarkGreyHex,
     borderRadius: BORDERRADIUS.radius_10,
-    padding: SPACING.space_16,
-    textAlign: 'center',
-    shadowColor: COLORS.primaryBlackRGBA,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 15,
-    margin: SPACING.space_10,
+    paddingHorizontal: SPACING.space_10,
+    justifyContent: 'space-around',
     alignItems: 'center',
+    shadowColor: COLORS.primaryBlackRGBA,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
+
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  statIcon: {
+    fontSize: FONTSIZE.size_24,
+    marginBottom: SPACING.space_4,
+  },
+
+  statValue: {
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryOrangeHex,
+    marginBottom: SPACING.space_2,
+  },
+
+  statLabel: {
+    fontSize: FONTSIZE.size_10,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
+  },
+
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: COLORS.secondaryLightGreyHex,
+    opacity: 0.3,
+  },
+
   TabBar: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
