@@ -79,6 +79,13 @@ const requests = {
     updateReadingStreak: `${APIURL}reading/reading-activity/streak`,
     updatePagesRead: `${APIURL}reading/reading-activity/pages-read`,
 
+    //reading tag requests
+    fetchUserTags: `${APIURL}reading/tags`,
+    createTag: `${APIURL}reading/tags`,
+    fetchBookTags: (bookId) => `${APIURL}reading/tags/${bookId}`,
+    assignTagToBook: (bookId, tagId) => `${APIURL}reading/tags/${bookId}/${tagId}`,
+    removeTagFromBook: (bookId, tagId) => `${APIURL}reading/tags/${bookId}/${tagId}`,
+
     //reading insights requests
     fetchReadingStreak: `${APIURL}reading/reading-insights/streak`,
     fetchReadingStreakLogs: `${APIURL}reading/reading-insights/streak-logs`,
