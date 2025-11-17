@@ -12,7 +12,7 @@ const { width } = Dimensions.get('window');
 const CARD_MARGIN = SPACING.space_8;
 const CONTAINER_PADDING = SPACING.space_16;
 const AVAILABLE_WIDTH = width - (CONTAINER_PADDING * 2);
-const CARD_WIDTH = (AVAILABLE_WIDTH - CARD_MARGIN) / 2;
+const CARD_WIDTH = (AVAILABLE_WIDTH - (CARD_MARGIN * 2)) / 3;
 
 interface Book {
     bookId: number;
@@ -80,8 +80,8 @@ const BookListScreen = ({ route, navigation }) => {
         <View style={[
             styles.cardContainer,
             {
-                marginLeft: index % 2 === 0 ? 0 : CARD_MARGIN / 2,
-                marginRight: index % 2 === 1 ? 0 : CARD_MARGIN / 2,
+                marginLeft: index % 3 === 0 ? 0 : CARD_MARGIN / 2,
+                marginRight: index % 3 === 2 ? 0 : CARD_MARGIN / 2,
             }
         ]}>
             <BookshelfCard
@@ -126,7 +126,7 @@ const BookListScreen = ({ route, navigation }) => {
         <HeaderBar showBackButton={true} title={status} />
           <FlatList
               data={books}
-              numColumns={2}
+              numColumns={3}
               keyExtractor={(item) => item.bookId.toString()}
               renderItem={renderBookItem}
               onEndReached={loadMoreBooks}
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     },
     row: {
         justifyContent: 'space-between',
-        marginBottom: SPACING.space_16,
+        marginBottom: SPACING.space_12,
     },
     cardContainer: {
         width: CARD_WIDTH,

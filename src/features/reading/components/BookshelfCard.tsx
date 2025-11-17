@@ -17,13 +17,6 @@ import {
 } from '../../../theme/theme';
 import BookStatusModal from './BookStatusModal';
 
-const { width } = Dimensions.get('window');
-const CONTAINER_PADDING = SPACING.space_16;
-const CARD_MARGIN = SPACING.space_8;
-const AVAILABLE_WIDTH = width - (CONTAINER_PADDING * 2);
-const CARD_WIDTH = (AVAILABLE_WIDTH - CARD_MARGIN) / 2;
-const IMAGE_HEIGHT = CARD_WIDTH * 1.4; // Book aspect ratio
-
 interface BookshelfCardProps {
   id: string;
   isPageOwner: boolean;
@@ -144,7 +137,7 @@ export default BookshelfCard;
 
 const styles = StyleSheet.create({
   cardWrapper: {
-    width: CARD_WIDTH,
+    width: '100%',
   },
   cardContainer: {
     borderRadius: BORDERRADIUS.radius_15,
@@ -155,7 +148,7 @@ const styles = StyleSheet.create({
   },
   bookImage: {
     width: '100%',
-    height: IMAGE_HEIGHT,
+    aspectRatio: 0.66,
     justifyContent: 'space-between',
   },
   statusBadge: {
