@@ -82,9 +82,10 @@ const requests = {
     //reading tag requests
     fetchUserTags: `${APIURL}reading/tags`,
     createTag: `${APIURL}reading/tags`,
-    fetchBookTags: (bookId) => `${APIURL}reading/tags/${bookId}`,
-    assignTagToBook: (bookId, tagId) => `${APIURL}reading/tags/${bookId}/${tagId}`,
-    removeTagFromBook: (bookId, tagId) => `${APIURL}reading/tags/${bookId}/${tagId}`,
+    fetchBookTags: (bookId) => `${APIURL}reading/tags/book/${bookId}`,
+    fetchBooksByTag: (tagId) => `${APIURL}reading/tags/${tagId}/books`,
+    assignTagToBook: (bookId, tagId) => `${APIURL}reading/tags/book/${bookId}/${tagId}`,
+    removeTagFromBook: (bookId, tagId) => `${APIURL}reading/tags/book/${bookId}/${tagId}`,
 
     //reading insights requests
     fetchReadingStreak: `${APIURL}reading/reading-insights/streak`,

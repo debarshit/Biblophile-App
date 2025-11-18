@@ -6,6 +6,7 @@ import {
   View,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -18,6 +19,7 @@ import {
 } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
 import { useNavigation } from '@react-navigation/native';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 interface BookshelfScreenProps {
   userData:{
@@ -25,10 +27,53 @@ interface BookshelfScreenProps {
     isPageOwner: boolean;
   };
 }
+
+const TAGS_PER_PAGE = 5;
+
 const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
   const [userBooks, setUserBooks] = useState([]);
+  const [userTags, setUserTags] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMoreTags, setLoadingMoreTags] = useState(false);
+  const [tagOffset, setTagOffset] = useState(0);
+  const [hasMoreTags, setHasMoreTags] = useState(true);
   const navigation:any = useNavigation();
+
+  const fetchTags = async (offset: number = 0, append: boolean = false) => {
+    if (offset === 0) {
+      setLoading(true);
+    } else {
+      setLoadingMoreTags(true);
+    }
+
+    try {
+      const response = await instance.get(requests.fetchUserTags, {
+        params: {
+          limit: TAGS_PER_PAGE,
+          offset: offset,
+        },
+      });
+      const newTags = response.data.data.tags || [];
+      
+      if (append) {
+        setUserTags(prev => [...prev, ...newTags]);
+      } else {
+        setUserTags(newTags);
+      }
+
+      // If we got fewer tags than requested, there are no more to load
+      setHasMoreTags(newTags.length === TAGS_PER_PAGE);
+      setTagOffset(offset + newTags.length);
+    } catch (e) {
+      console.error("Failed to fetch tags", e);
+    } finally {
+      if (offset === 0) {
+        setLoading(false);
+      } else {
+        setLoadingMoreTags(false);
+      }
+    }
+  };
 
   const fetchUserBooks = async () => {
     setLoading(true);
@@ -48,15 +93,37 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
   };
 
   useEffect(() => {
-    fetchUserBooks();
+    const loadInitialData = async () => {
+      setLoading(true);
+      await Promise.all([
+        fetchUserBooks(),
+        fetchTags(0, false)
+      ]);
+      setLoading(false);
+    };
+    
+    loadInitialData();
   }, []);
 
-  const convertHttpToHttps = (url) => {
-    if (url && url.startsWith('http://')) {
-      return url.replace('http://', 'https://');
+   const handleScroll = (event: any) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const paddingToBottom = 20;
+    
+    // Check if user has scrolled to bottom
+    const isCloseToBottom = 
+      layoutMeasurement.height + contentOffset.y >= 
+      contentSize.height - paddingToBottom;
+
+    if (isCloseToBottom && hasMoreTags && !loadingMoreTags) {
+      fetchTags(tagOffset, true);
     }
-    return url;
   };
+
+  const Separator = () => (
+    <View style={styles.separator}>
+      <Text style={styles.separatorText}>Your Tags</Text>
+    </View>
+  );
 
   const renderBooksByStatus = (status) => {
     const books = userBooks.filter((book) => book.Status === status);
@@ -107,10 +174,54 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
     );
   };
 
+  const renderTagCard = (tag) => {
+    const bookImages = tag.books
+      .map(img => convertHttpToHttps(img))
+      .slice(0, 5);
+
+    return (
+      <View style={styles.sectionContainer} key={tag.tagId}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("BookListScreen", {
+              tagId: tag.tagId,
+              tagName: tag.tagName,
+              userData,
+            })
+          }
+          style={styles.card}
+        >
+          <View style={styles.imageContainer}>
+            {bookImages.length > 0 ? (
+              <>
+                <Image source={{ uri: bookImages[0] }} style={styles.coverImage} />
+                <View style={styles.collageImages}>
+                  {bookImages.slice(1).map((img, i) => (
+                    <Image key={i} source={{ uri: img }} style={styles.collageImage} />
+                  ))}
+                </View>
+              </>
+            ) : (
+              <View style={styles.emptyTagCover}>
+                <Text style={styles.emptyTagText}>No Books</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.footer}>
+            <Text style={styles.statusText}>{tag.tagName}</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollViewFlex}
+        onScroll={handleScroll}
+        scrollEventThrottle={400}
       >
 
         {userBooks.length === 0 && <Mascot emotion="sleeping"/>}
@@ -124,6 +235,16 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
             {renderBooksByStatus('Paused')}
             {renderBooksByStatus('To be read')}
             {renderBooksByStatus('Did not finish')}
+            
+            {userTags.length > 0 && <Separator />}
+            {userTags.map((tag) => renderTagCard(tag))}
+
+            {loadingMoreTags && (
+              <View style={styles.loadingMoreContainer}>
+                <ActivityIndicator size="small" color={COLORS.primaryOrangeHex} />
+                <Text style={styles.loadingMoreText}>Loading more tags...</Text>
+              </View>
+            )}
           </>
         )}
       </ScrollView>
@@ -219,6 +340,41 @@ const styles = StyleSheet.create({
     color: COLORS.primaryLightGreyHex,
     textAlign: 'center',
     marginTop: SPACING.space_36,
+  },
+  separator: {
+    paddingVertical: SPACING.space_20,
+    borderTopWidth: 1,
+    borderColor: COLORS.secondaryLightGreyHex,
+    paddingHorizontal: SPACING.space_20,
+  },
+  separatorText: {
+    color: COLORS.secondaryLightGreyHex,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_14,
+  },
+  emptyTagCover: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: COLORS.primaryGreyHex,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyTagText: {
+    color: COLORS.secondaryLightGreyHex,
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_14,
+  },
+  loadingMoreContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: SPACING.space_20,
+    gap: SPACING.space_8,
+  },
+  loadingMoreText: {
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryLightGreyHex,
   },
 });
 

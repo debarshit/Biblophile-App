@@ -24,7 +24,7 @@ interface Book {
 }
 
 const BookListScreen = ({ route, navigation }) => {
-    const { status, userData } = route.params;
+    const { status, tagId, tagName, userData } = route.params;
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -33,40 +33,55 @@ const BookListScreen = ({ route, navigation }) => {
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0].accessToken;
 
-    const fetchBookShelf = async (page: number) => {
+    const updateBookList = (newBooks, limit) => {
+        setBooks((prev) => {
+            const ids = new Set(prev.map((b) => b.bookId));
+            const filtered = newBooks.filter((b) => !ids.has(b.bookId));
+            return [...prev, ...filtered];
+        });
+
+        if (newBooks.length < limit) setHasMore(false);
+    };
+
+    const fetchBooks = async (page) => {
         setLoading(true);
         try {
-            const offset = page * 10;
             const limit = 10;
+            const offset = page * limit;
 
+            let response;
+
+            if (tagId) {
+            // Fetch books for tag
+            response = await instance.get(
+                `${requests.fetchBooksByTag(tagId)}?limit=${limit}&offset=${offset}`
+            );
+            const newBooks = response.data.data.books || [];
+            updateBookList(newBooks, limit);
+            
+            } else {
+            // Fetch status-based bookshelf
             const query = new URLSearchParams({
                 userId: userData.userId,
                 status,
                 limit: limit.toString(),
-                offset: offset.toString()
+                offset: offset.toString(),
             });
 
-            const response = await instance(`${requests.fetchBookShelf}?${query.toString()}`);
-            const newBooks: Book[] = Array.isArray(response.data?.data?.userBooks) ? response.data.data.userBooks : [];
-
-            setBooks((prevBooks) => {
-                const bookIds = new Set(prevBooks.map((book) => book.bookId));
-                const filteredNewBooks = newBooks.filter((book) => !bookIds.has(book.bookId));
-                return [...prevBooks, ...filteredNewBooks];
-            });
-
-            if (newBooks.length < limit) {
-                setHasMore(false); // No more books to load
+            response = await instance(`${requests.fetchBookShelf}?${query}`);
+            const newBooks = response.data.data.userBooks || [];
+            updateBookList(newBooks, limit);
             }
+
         } catch (error) {
-            console.error('Failed to fetch user books:', error);
+            console.error("Failed to fetch books:", error);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchBookShelf(page);
+        fetchBooks(page);
     }, [page, status]);
 
 
@@ -123,7 +138,7 @@ const BookListScreen = ({ route, navigation }) => {
       
     return (
       <SafeAreaView style={styles.container}>
-        <HeaderBar showBackButton={true} title={status} />
+        <HeaderBar showBackButton={true} title={tagId ? tagName : status} />
           <FlatList
               data={books}
               numColumns={3}
