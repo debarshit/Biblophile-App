@@ -46,6 +46,7 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
   const [newTagName, setNewTagName] = useState("");
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const fetchData = async (endpoint: string, setter?: (data: any) => void) => {
     try {
@@ -92,6 +93,7 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
 
   const save = async () => {
     try {
+      setSaving(true);
       const currentTagIds = await fetchData(requests.fetchBookTags(bookId))
         .then(tags => tags.map((t: Tag) => t.tagId));
 
@@ -111,6 +113,8 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
       close();
     } catch (error) {
       console.log("Error saving tags:", error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -179,8 +183,12 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
             </View>
           )}
 
-          <TouchableOpacity style={styles.saveBtn} onPress={save}>
-            <Text style={styles.saveBtnText}>Save Tags</Text>
+          <TouchableOpacity style={[styles.saveBtn, saving && { opacity: 0.5 }]} onPress={save} disabled={saving}>
+            {saving ? (
+              <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
+            ) : (
+              <Text style={styles.saveBtnText}>Save Tags</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>

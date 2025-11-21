@@ -48,6 +48,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [bookTags, setBookTags] = useState(initialTags);
   const [tagSelectorVisible, setTagSelectorVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const analytics = useAnalytics();
@@ -100,8 +101,9 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
     }
 
     try {
+      setLoading(true);
+      
       let bookId = id;
-
       if (isGoogleBook) {
         const bookData = {
           ISBN: product.volumeInfo?.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13')?.identifier || '',
@@ -139,6 +141,8 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
     } catch (error) {
       console.error('Error submitting status:', error);
       showToast('Uh oh! Please try again', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -204,8 +208,8 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
             </View>
           </ScrollView>
 
-          <TouchableOpacity style={styles.button} onPress={submitReadingStatus}>
-            <Text style={styles.buttonText}>Save Changes</Text>
+          <TouchableOpacity style={[styles.button, loading && { opacity: 0.5 }]} onPress={submitReadingStatus} disabled={loading}>
+            <Text style={styles.buttonText}> {loading ? "Saving..." : "Save Changes"}</Text>
           </TouchableOpacity>
         </View>
       </View>

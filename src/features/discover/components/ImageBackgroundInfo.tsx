@@ -153,9 +153,9 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             </View>
           )}
 
-          <View style={styles.section}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.genreScrollView}>
             <Text style={styles.genreText}>{genre}</Text>
-          </View>
+          </ScrollView>
 
           <Text style={styles.authorText}>{author}</Text>
           <View style={styles.ratingContainer}>{renderRating()}</View>
@@ -224,6 +224,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: SPACING.space_12, paddingVertical: SPACING.space_8, borderRadius: BORDERRADIUS.radius_15, marginRight: SPACING.space_8 },
   chipText: { fontFamily: FONTFAMILY.poppins_medium, color: COLORS.primaryWhiteHex, fontSize: FONTSIZE.size_12 },
   emotionChip: { backgroundColor: COLORS.primaryDarkGreyHex, paddingHorizontal: SPACING.space_10, paddingVertical: SPACING.space_4 },
+  genreScrollView: { marginBottom: SPACING.space_12, maxHeight: FONTSIZE.size_16 + SPACING.space_8 },
   genreText: { fontFamily: FONTFAMILY.poppins_semibold, fontSize: FONTSIZE.size_14, color: COLORS.primaryWhiteHex },
   authorText: { fontFamily: FONTFAMILY.poppins_regular, fontSize: FONTSIZE.size_14, color: COLORS.secondaryLightGreyHex },
   ratingContainer: { flexDirection: 'row', alignItems: 'center' },
