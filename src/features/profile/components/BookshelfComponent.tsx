@@ -47,7 +47,7 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
     }
 
     try {
-      const response = await instance.get(requests.fetchUserTags, {
+      const response = await instance.get(requests.fetchUserBookshelfTags, {
         params: {
           limit: TAGS_PER_PAGE,
           offset: offset,

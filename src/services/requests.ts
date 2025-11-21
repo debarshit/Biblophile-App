@@ -81,6 +81,7 @@ const requests = {
 
     //reading tag requests
     fetchUserTags: `${APIURL}reading/tags`,
+    fetchUserBookshelfTags: `${APIURL}reading/tags/bookshelf`,
     createTag: `${APIURL}reading/tags`,
     fetchBookTags: (bookId) => `${APIURL}reading/tags/book/${bookId}`,
     fetchBooksByTag: (tagId) => `${APIURL}reading/tags/${tagId}/books`,

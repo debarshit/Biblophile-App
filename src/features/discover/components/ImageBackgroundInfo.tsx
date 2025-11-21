@@ -5,7 +5,8 @@ import GradientBGIcon from '../../../components/GradientBGIcon';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import ReadingStatus from './ReadingStatus';
+import ReadingStatusModal from './ReadingStatusModal';
+import { useStore } from '../../../store/store';
 
 interface ImageBackgroundInfoProps {
   EnableBackHandler: boolean;
@@ -21,9 +22,12 @@ interface ImageBackgroundInfoProps {
   isGoogleBook: boolean;
 }
 
-interface Emotion {
-  emotion: string;
-}
+// Extracted chip component for reusability
+const Chip: React.FC<{ text: string; style?: any }> = ({ text, style }) => (
+  <View style={[styles.chip, style]}>
+    <Text style={styles.chipText}>{text}</Text>
+  </View>
+);
 
 const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   EnableBackHandler,
@@ -37,65 +41,86 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   product,
   isGoogleBook,
 }) => {
-  const [bookData, setBookData] = useState({
-    averageRating: null as number | null,
-    ratingsCount: null as number | null,
-    topEmotions: [] as Emotion[]
-  });
+  const [bookData, setBookData] = useState({ averageRating: null, ratingsCount: null, topEmotions: [] });
+  const [readingStatus, setReadingStatus] = useState({ status: 'To be read', currentPage: '', tags: [] });
+  const [modalVisible, setModalVisible] = useState(false);
+  const userDetails = useStore((state: any) => state.userDetails);
 
-  // Get actual book ID (handling Google Books)
   const getBookId = async () => {
     if (type !== 'ExternalBook') return id;
     
-    const isbn = product.volumeInfo?.industryIdentifiers?.find(
-      (id: any) => id.type === 'ISBN_13'
-    )?.identifier || '';
-    
+    const isbn = product.volumeInfo?.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13')?.identifier;
     if (!isbn) return id;
     
     try {
       const response = await instance.get(requests.fetchBookId(isbn));
-      const bookIdResponse = response.data;
-      return bookIdResponse.data.bookId || id;
-    } catch (error) {
-      console.error('Failed to fetch BookId', error);
+      return response.data.data.bookId || id;
+    } catch {
       return id;
     }
   };
 
-  // Fetch book data
   useEffect(() => {
-    const fetchBookData = async () => {
+    const fetchAllData = async () => {
       try {
         const bookId = await getBookId();
         
-        // Fetch ratings
-        const ratingResponse = await instance(`${requests.fetchAverageRating(bookId)}`);
-        
-        // Fetch emotions
-        const emotionsResponse = await instance(`${requests.fetchAverageEmotions(bookId)}`);
+        // Parallel API calls
+        const promises = [
+          instance.get(requests.fetchAverageRating(bookId)),
+          instance.get(requests.fetchAverageEmotions(bookId))
+        ];
+
+        if (userDetails) {
+          const headers = { Authorization: `Bearer ${userDetails[0].accessToken}` };
+          promises.push(
+            instance.get(requests.fetchReadingStatus(bookId), { headers }),
+            instance.get(requests.fetchBookTags(bookId), { headers })
+          );
+        }
+
+        const [ratingRes, emotionsRes, statusRes, tagsRes] = await Promise.all(promises);
         
         setBookData({
-          averageRating: ratingResponse.data.data.averageRating,
-          ratingsCount: ratingResponse.data.data.totalRatings,
-          topEmotions: emotionsResponse.data.data.topEmotions || []
+          averageRating: ratingRes.data.data.averageRating,
+          ratingsCount: ratingRes.data.data.totalRatings,
+          topEmotions: emotionsRes.data.data.topEmotions || []
         });
+
+        if (statusRes && tagsRes) {
+          setReadingStatus({
+            status: statusRes.data.data.status || 'To be read',
+            currentPage: statusRes.data.data.currentPage || '',
+            tags: tagsRes.data.data.tags || []
+          });
+        }
       } catch (error) {
-        console.error('Error fetching book data:', error);
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchBookData();
+    fetchAllData();
   }, [id, type, product]);
 
-  const handleSharePress = async () => {
+  const handleShare = async () => {
     try {
-      await Share.share({
-        message: `Checkout this book at https://biblophile.com/books/${type}/${id}/${name}`,
-      });
-    } catch (error) {
+      await Share.share({ message: `Checkout this book at https://biblophile.com/books/${type}/${id}/${name}` });
+    } catch {
       Alert.alert('Error', 'Failed to share.');
     }
+  };
+
+  const renderRating = () => {
+    if (!bookData.averageRating) {
+      return <Text style={styles.noRatingsText}>No ratings yet</Text>;
+    }
+    return (
+      <>
+        <AntDesign name="star" color={COLORS.primaryOrangeHex} size={FONTSIZE.size_18} />
+        <Text style={styles.ratingText}>{bookData.averageRating}</Text>
+        <Text style={styles.ratingCountText}>({Number(bookData.ratingsCount).toLocaleString()})</Text>
+      </>
+    );
   };
 
   return (
@@ -104,171 +129,118 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
       <View style={styles.header}>
         {EnableBackHandler && (
           <TouchableOpacity onPress={BackHandler}>
-            <GradientBGIcon 
-              name="left" 
-              color={COLORS.primaryLightGreyHex} 
-              size={FONTSIZE.size_16} 
-            />
+            <GradientBGIcon name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
           </TouchableOpacity>
         )}
-        
-        <TouchableOpacity onPress={handleSharePress}>
-          <GradientBGIcon 
-            name="sharealt" 
-            color={COLORS.primaryLightGreyHex} 
-            size={FONTSIZE.size_16} 
-          />
+        <TouchableOpacity onPress={handleShare}>
+          <GradientBGIcon name="sharealt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
         </TouchableOpacity>
       </View>
 
-      {/* Book Info */}
-      <View style={styles.bookInfoContainer}>
+      {/* Book Info Card */}
+      <View style={styles.bookCard}>
         <Image source={{ uri: imagelink_portrait }} style={styles.bookCover} />
 
-        <View style={styles.textContainer}>
-          {/* Emotions */}
-          <ScrollView horizontal style={styles.emotionContainer}>
-            {bookData.topEmotions.map((emotion, index) => (
-              <Text key={index} style={styles.emotionText}>
-                {emotion.emotion}
-              </Text>
-            ))}
-          </ScrollView>
+        <View style={styles.bookInfoRight}>
+          {bookData.topEmotions.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Mood</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {bookData.topEmotions.map((emotion: any, i) => (
+                  <Chip key={i} text={emotion.emotion} style={styles.emotionChip} />
+                ))}
+              </ScrollView>
+            </View>
+          )}
 
-          {/* Genre */}
-          <ScrollView horizontal style={styles.genreScrollView}>
+          <View style={styles.section}>
             <Text style={styles.genreText}>{genre}</Text>
-          </ScrollView>
-
-          {/* Author */}
-          <Text style={styles.authorText}>{author}</Text>
-
-          {/* Ratings */}
-          <View style={styles.ratingContainer}>
-            {bookData.averageRating ? (
-              <>
-                <AntDesign 
-                  name="star" 
-                  color={COLORS.primaryOrangeHex} 
-                  size={FONTSIZE.size_20} 
-                />
-                <Text style={styles.ratingText}>{bookData.averageRating}</Text>
-                <Text style={styles.ratingCountText}>
-                  ({Number(bookData.ratingsCount).toLocaleString()})
-                </Text>
-              </>
-            ) : (
-              <Text style={styles.noRatingsText}>No ratings yet</Text>
-            )}
           </View>
+
+          <Text style={styles.authorText}>{author}</Text>
+          <View style={styles.ratingContainer}>{renderRating()}</View>
         </View>
       </View>
 
       {/* Book Title */}
       <Text style={styles.bookTitle}>{name}</Text>
 
-      {/* Reading Status */}
-      <View style={styles.readingStatusContainer}>
-        {type !== 'Bookmark' && (
-          <ReadingStatus id={id} isGoogleBook={isGoogleBook} product={product} />
-        )}
-      </View>
+      {/* User's Reading Info Card */}
+      {type !== 'Bookmark' && (
+        <View style={styles.readingInfoCard}>
+          <View style={styles.readingInfoHeader}>
+            <Text style={styles.readingInfoTitle}>My Reading Info</Text>
+            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.editButton}>
+              <AntDesign name="edit" size={FONTSIZE.size_14} color={COLORS.primaryWhiteHex} />
+              <Text style={styles.editButtonText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.statusDisplay}>
+            <View style={styles.statusBadge}>
+              <Text style={styles.statusText}>{readingStatus.status}</Text>
+            </View>
+            {readingStatus.status === 'Currently reading' && readingStatus.currentPage && (
+              <Text style={styles.pageInfo}>Page {readingStatus.currentPage}</Text>
+            )}
+          </View>
+
+          {readingStatus.tags.length > 0 && (
+            <View style={styles.tagsSection}>
+              <Text style={styles.sectionLabel}>Tags</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {readingStatus.tags.map((tag: any) => (
+                  <Chip key={tag.tagId} text={tag.tagName} style={{ backgroundColor: tag.tagColor || COLORS.primaryGreyHex }} />
+                ))}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+      )}
+
+      <ReadingStatusModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        id={id}
+        isGoogleBook={isGoogleBook}
+        product={product}
+        onUpdate={setReadingStatus}
+        initialStatus={readingStatus.status}
+        initialPage={readingStatus.currentPage}
+        initialTags={readingStatus.tags}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.primaryBlackHex,
-  },
-  header: {
-    padding: SPACING.space_20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  bookInfoContainer: {
-    padding: SPACING.space_24,
-    backgroundColor: COLORS.primaryBlackRGBA,
-    borderTopLeftRadius: BORDERRADIUS.radius_20 * 2,
-    borderTopRightRadius: BORDERRADIUS.radius_20 * 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.space_20,
-  },
-  bookCover: {
-    width: 120,
-    height: 180,
-    borderRadius: BORDERRADIUS.radius_10,
-    marginRight: SPACING.space_20,
-    borderWidth: 1,
-    borderColor: COLORS.primaryLightGreyHex,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  bookTitle: {
-    fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_24,
-    color: COLORS.primaryWhiteHex,
-    marginBottom: SPACING.space_10,
-    textAlign: 'center',
-  },
-  emotionContainer: {
-    flexDirection: 'row',
-    marginBottom: SPACING.space_12,
-  },
-  emotionText: {
-    fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_12,
-    color: COLORS.primaryWhiteHex,
-    marginRight: SPACING.space_10,
-    backgroundColor: COLORS.primaryDarkGreyHex,
-    paddingHorizontal: SPACING.space_8,
-    paddingVertical: SPACING.space_4,
-    borderRadius: BORDERRADIUS.radius_10,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.space_12,
-  },
-  ratingText: {
-    fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_18,
-    color: COLORS.primaryWhiteHex,
-    marginLeft: SPACING.space_8,
-  },
-  ratingCountText: {
-    fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_12,
-    color: COLORS.primaryWhiteHex,
-    marginLeft: SPACING.space_4,
-  },
-  noRatingsText: {
-    fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_12,
-    color: COLORS.primaryWhiteHex,
-  },
-  genreScrollView: {
-    marginBottom: SPACING.space_12,
-  },
-  genreText: {
-    fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_14,
-    color: COLORS.primaryWhiteHex,
-    marginRight: SPACING.space_12,
-  },
-  authorText: {
-    fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_14,
-    color: COLORS.primaryWhiteHex,
-    marginBottom: SPACING.space_10,
-  },
-  readingStatusContainer: {
-    alignSelf: 'center',
-  },
+  container: { flex: 1, backgroundColor: COLORS.primaryBlackHex },
+  header: { padding: SPACING.space_20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  bookCard: { marginHorizontal: SPACING.space_20, marginBottom: SPACING.space_20, padding: SPACING.space_20, backgroundColor: COLORS.primaryGreyHex, borderRadius: BORDERRADIUS.radius_20, flexDirection: 'row' },
+  bookCover: { width: 110, height: 165, borderRadius: BORDERRADIUS.radius_10, marginRight: SPACING.space_16, borderWidth: 1, borderColor: COLORS.primaryLightGreyHex },
+  bookInfoRight: { flex: 1, justifyContent: 'space-between' },
+  section: { marginBottom: SPACING.space_8 },
+  sectionLabel: { fontFamily: FONTFAMILY.poppins_medium, fontSize: FONTSIZE.size_10, color: COLORS.secondaryLightGreyHex, marginBottom: SPACING.space_4, textTransform: 'uppercase', letterSpacing: 0.5 },
+  chip: { paddingHorizontal: SPACING.space_12, paddingVertical: SPACING.space_8, borderRadius: BORDERRADIUS.radius_15, marginRight: SPACING.space_8 },
+  chipText: { fontFamily: FONTFAMILY.poppins_medium, color: COLORS.primaryWhiteHex, fontSize: FONTSIZE.size_12 },
+  emotionChip: { backgroundColor: COLORS.primaryDarkGreyHex, paddingHorizontal: SPACING.space_10, paddingVertical: SPACING.space_4 },
+  genreText: { fontFamily: FONTFAMILY.poppins_semibold, fontSize: FONTSIZE.size_14, color: COLORS.primaryWhiteHex },
+  authorText: { fontFamily: FONTFAMILY.poppins_regular, fontSize: FONTSIZE.size_14, color: COLORS.secondaryLightGreyHex },
+  ratingContainer: { flexDirection: 'row', alignItems: 'center' },
+  ratingText: { fontFamily: FONTFAMILY.poppins_semibold, fontSize: FONTSIZE.size_16, color: COLORS.primaryWhiteHex, marginLeft: SPACING.space_4 },
+  ratingCountText: { fontFamily: FONTFAMILY.poppins_regular, fontSize: FONTSIZE.size_12, color: COLORS.secondaryLightGreyHex, marginLeft: SPACING.space_4 },
+  noRatingsText: { fontFamily: FONTFAMILY.poppins_regular, fontSize: FONTSIZE.size_12, color: COLORS.secondaryLightGreyHex },
+  bookTitle: { fontFamily: FONTFAMILY.poppins_semibold, fontSize: FONTSIZE.size_24, color: COLORS.primaryWhiteHex, marginBottom: SPACING.space_20, paddingHorizontal: SPACING.space_20, textAlign: 'center' },
+  readingInfoCard: { marginHorizontal: SPACING.space_20, padding: SPACING.space_16, backgroundColor: COLORS.primaryGreyHex, borderRadius: BORDERRADIUS.radius_15, borderWidth: 1, borderColor: COLORS.primaryDarkGreyHex },
+  readingInfoHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.space_12 },
+  readingInfoTitle: { fontFamily: FONTFAMILY.poppins_semibold, fontSize: FONTSIZE.size_16, color: COLORS.primaryWhiteHex },
+  editButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.primaryDarkGreyHex, paddingHorizontal: SPACING.space_12, paddingVertical: SPACING.space_8, borderRadius: BORDERRADIUS.radius_10, gap: SPACING.space_4 },
+  editButtonText: { fontFamily: FONTFAMILY.poppins_medium, color: COLORS.primaryWhiteHex, fontSize: FONTSIZE.size_14 },
+  statusDisplay: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.space_12 },
+  statusBadge: { backgroundColor: COLORS.primaryOrangeHex, paddingHorizontal: SPACING.space_12, paddingVertical: SPACING.space_8, borderRadius: BORDERRADIUS.radius_10 },
+  statusText: { fontFamily: FONTFAMILY.poppins_semibold, color: COLORS.primaryWhiteHex, fontSize: FONTSIZE.size_14 },
+  pageInfo: { fontFamily: FONTFAMILY.poppins_regular, color: COLORS.secondaryLightGreyHex, fontSize: FONTSIZE.size_14, marginLeft: SPACING.space_12 },
+  tagsSection: { paddingTop: SPACING.space_12, borderTopWidth: 1, borderTopColor: COLORS.primaryDarkGreyHex },
 });
 
 export default ImageBackgroundInfo;
