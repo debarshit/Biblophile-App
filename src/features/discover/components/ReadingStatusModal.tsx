@@ -218,6 +218,8 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
         visible={tagSelectorVisible}
         close={() => setTagSelectorVisible(false)}
         bookId={id}
+        isGoogleBook={isGoogleBook}
+        product={product}
         refreshTags={fetchBookTagsList}
       />
     </Modal>

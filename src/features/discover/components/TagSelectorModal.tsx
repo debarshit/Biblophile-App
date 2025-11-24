@@ -31,16 +31,21 @@ interface TagSelectorModalProps {
   visible: boolean;
   close: () => void;
   bookId: string;
+  isGoogleBook?: boolean;
+  product?: any;
   refreshTags: () => void;
 }
 
 const TagSelectorModal: React.FC<TagSelectorModalProps> = ({ 
   visible, 
   close, 
-  bookId, 
+  bookId,
+  isGoogleBook = false,
+  product = null,
   refreshTags 
 }) => {
   const token = useStore((state: any) => state.userDetails)[0]?.accessToken;
+  const [actualBookId, setActualBookId] = useState(bookId);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [bookTags, setBookTags] = useState<number[]>([]);
   const [newTagName, setNewTagName] = useState("");
@@ -66,12 +71,12 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
       setLoading(true);
       Promise.all([
         fetchData(requests.fetchUserTags, setAllTags),
-        fetchData(requests.fetchBookTags(bookId)).then(tags => 
+        fetchData(requests.fetchBookTags(actualBookId)).then(tags => 
           setBookTags(tags.map((t: Tag) => t.tagId))
         )
       ]).finally(() => setLoading(false));
     }
-  }, [visible]);
+  }, [visible, actualBookId]);
 
   const createNewTag = async () => {
     if (!newTagName.trim()) return;
@@ -79,7 +84,7 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
     try {
       await instance.post(
         requests.createTag,
-        { newTagName },
+        { tagName: newTagName },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNewTagName("");
@@ -91,20 +96,52 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
     }
   };
 
+  const ensureRealBookId = async () => {
+    if (!isGoogleBook || !product) return actualBookId;
+    try {
+      const bookData = {
+        ISBN: product.volumeInfo?.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13')?.identifier || '',
+        Title: product.volumeInfo?.title || '',
+        Pages: product.volumeInfo?.pageCount || 0,
+        Price: product.saleInfo?.listPrice?.amount || 0,
+        Description: product.volumeInfo?.description || '',
+        Authors: product.volumeInfo?.authors || [],
+        Genres: product.volumeInfo?.categories || [],
+        Image: product.volumeInfo?.imageLinks?.thumbnail || '',
+      };
+
+      const res = await instance.post(requests.addBook, bookData);
+
+      if (res.data.status === "success") {
+        return res.data.data.bookId;
+      }
+    } catch (err) {
+      console.log("Error creating google book:", err);
+    }
+    return actualBookId; // fallback
+  };
+
   const save = async () => {
     try {
       setSaving(true);
-      const currentTagIds = await fetchData(requests.fetchBookTags(bookId))
+      let resolvedBookId = actualBookId;
+
+      if (isGoogleBook) {
+        resolvedBookId = await ensureRealBookId();
+        setActualBookId(resolvedBookId);
+      }
+
+      const currentTagIds = await fetchData(requests.fetchBookTags(resolvedBookId))
         .then(tags => tags.map((t: Tag) => t.tagId));
 
       const operations = [
         ...bookTags
           .filter(id => !currentTagIds.includes(id))
-          .map(id => instance.post(requests.assignTagToBook(bookId, id), {}, 
+          .map(id => instance.post(requests.assignTagToBook(resolvedBookId, id), {}, 
             { headers: { Authorization: `Bearer ${token}` } })),
         ...currentTagIds
           .filter((id: number) => !bookTags.includes(id))
-          .map((id: number) => instance.delete(requests.removeTagFromBook(bookId, id), 
+          .map((id: number) => instance.delete(requests.removeTagFromBook(resolvedBookId, id), 
             { headers: { Authorization: `Bearer ${token}` } }))
       ];
 
