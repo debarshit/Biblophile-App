@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HeaderBar from '../../../components/HeaderBar';
-import TabSelector from '../../readingInsights/components/TabSelector';
+import TabSelector from '../../../components/TabSelector';
 import FriendRequestsComponent from '../components/FriendRequestsComponent';
 import GeneralNotificationsComponent from '../components/GeneralNotificationsComponent';
 import instance from '../../../services/axios';

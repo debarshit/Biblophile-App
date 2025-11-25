@@ -7,7 +7,7 @@ import PagesReadInput from '../components/PagesReadInput';
 import SessionPrompt from '../components/SessionPrompt';
 import { dismissTimerNotification, updateTimerNotification } from '../../../utils/notificationUtils';
 import Header from '../components/Header';
-import TabSelector from '../components/TabSelector';
+import TabSelector from '../../../components/TabSelector';
 import StreakAchievements from '../components/StreakAchievements';
 import NoteSection from '../components/NoteSection';
 import ReminderSection from '../components/ReminderSection';

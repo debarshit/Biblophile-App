@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
-import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 
 interface Tab {
   key: string;

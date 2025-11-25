@@ -13,6 +13,12 @@ import { Ionicons } from '@expo/vector-icons';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 import HeaderBar from '../../../components/HeaderBar';
 import { useAnalytics } from '../../../utils/analytics';
+import StreakCalendarView from '../components/StreakCalendarView';
+import StreakAchievements from '../components/StreakAchievements';
+import { useStreak } from '../../../hooks/useStreak';
+import ReminderSection from '../components/ReminderSection';
+import TimePicker from '../components/TimePicker';
+import CommunitySection from '../components/CommunitySection';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -27,8 +33,11 @@ const StatScreen = () => {
   const [editPageCount, setEditPageCount] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [activeStat, setActiveStat] = useState('page-stats');
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [reminderTime, setReminderTime] = useState(null);
 
   const userDetails = useStore((state) => state.userDetails);
+  const { currentStreak, maxStreak } = useStreak(userDetails[0]?.accessToken);
   const analytics = useAnalytics();
 
   const screenWidth = Dimensions.get('window').width;
@@ -513,6 +522,10 @@ const StatScreen = () => {
     );
   };
 
+  const handleReminderPress = () => {
+    setDatePickerVisible(true);
+  };
+
   // const navigateToMonthlyWrap = () => {
   //   // Navigation logic would go here
   //   console.log("Navigate to monthly wrap");
@@ -585,6 +598,9 @@ const StatScreen = () => {
           keyExtractor={(item) => item.Rank.toString()}
           contentContainerStyle={styles.listContainer}
         /> */}
+
+        <StreakAchievements maxStreak={maxStreak} />
+        <StreakCalendarView />
         
         {/* Time Frame Picker */}
         <View style={styles.statusDropdown}>
@@ -631,6 +647,21 @@ const StatScreen = () => {
             {renderReadingStatusChart()}
           </View>
         )}
+
+        {datePickerVisible && (
+          <TimePicker
+            visible={datePickerVisible}
+            reminderTime={reminderTime}
+            setReminderTime={setReminderTime}
+            setDatePickerVisible={setDatePickerVisible}
+          />
+        )}
+
+        <ReminderSection 
+          onReminderPress={handleReminderPress} 
+        />
+
+        <CommunitySection currentStreak={currentStreak} />
       </ScrollView>
     </SafeAreaView>
   );
