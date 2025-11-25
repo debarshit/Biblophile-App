@@ -99,12 +99,6 @@ const HomeScreen = ({navigation}: any) => {
     }
   };
 
-  const openShopLink = () => {
-    Linking.openURL('https://shop.biblophile.com').catch((err) =>
-      console.error('An error occurred while opening the URL', err)
-    );
-  };
-
   useEffect(() => {
     async function fetchBookList() {
       try {
@@ -168,7 +162,7 @@ const HomeScreen = ({navigation}: any) => {
         contentOffset={{ x: 0, y: scrollOffset }}
         scrollEventThrottle={16}>
         {/* App Header */}
-        <HeaderBar title=""/>
+        <HeaderBar showLogo showNotifications />
 
         <StreakWeeklyProgress userDetails={userDetails} />
 

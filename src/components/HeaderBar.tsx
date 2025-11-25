@@ -3,48 +3,26 @@ import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {COLORS, FONTFAMILY, FONTSIZE, SPACING} from '../theme/theme';
 import { useStore } from '../store/store';
-import instance from '../services/axios';
-import requests from '../services/requests';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import GradientBGIcon from './GradientBGIcon';
 
 interface HeaderBarProps {
   title?: string;
   showBackButton?: boolean;
+  showLogo?: boolean;
+  showNotifications?: boolean;
+  showUsername?: boolean;
 }
 
-const HeaderBar: React.FC<HeaderBarProps> = ({ title, showBackButton }) => {
-  const navigation = useNavigation<any>();
-  const [streak, setStreak] = useState(null);
-  
+const HeaderBar: React.FC<HeaderBarProps> = ({
+  title,
+  showBackButton,
+  showLogo = false,
+  showNotifications = false,
+  showUsername = false,
+}) => {
+  const navigation = useNavigation<any>();  
   const userDetails = useStore((state: any) => state.userDetails);
-
-  const fetchCurrentStreak = async () => {
-    try {
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const response = await instance(`${requests.fetchReadingStreak}?timezone=${userTimezone}`, {
-        headers: {
-          Authorization: `Bearer ${userDetails[0].accessToken}`,
-        },
-      });
-      const data = response.data.data;
-      if (data) {
-        setStreak(data.currentStreak);
-      }
-    } catch (error) {
-      console.error('Error fetching streak:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchCurrentStreak();
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchCurrentStreak();
-    }, [])
-  );
 
   const BackHandler = () => {
     if (navigation.canGoBack()) {
@@ -57,31 +35,39 @@ const HeaderBar: React.FC<HeaderBarProps> = ({ title, showBackButton }) => {
   return (
     <View style={styles.HeaderContainer}>
       {showBackButton ? (
-        <TouchableOpacity onPress={BackHandler} style={{marginTop: -20}}>
-          <GradientBGIcon 
-            name="left" 
-            color={COLORS.primaryLightGreyHex} 
-            size={FONTSIZE.size_16} 
+        <TouchableOpacity onPress={BackHandler} style={{ marginTop: -20 }}>
+          <GradientBGIcon
+            name="left"
+            color={COLORS.primaryLightGreyHex}
+            size={FONTSIZE.size_16}
           />
         </TouchableOpacity>
-      ) : (
+      ) : showLogo ? (
         <Image
-          source={{ uri: "https://ik.imagekit.io/umjnzfgqh/biblophile/common_assets/logos/Biblophile%20logo%20-%20white.png" }}
+          source={{
+            uri: "https://ik.imagekit.io/umjnzfgqh/biblophile/common_assets/logos/Biblophile%20logo%20-%20white.png",
+          }}
           style={styles.Image}
         />
+      ) : (
+        <View style={{ width: SPACING.space_36 }} /> // placeholder to balance layout
       )}
-      <Text style={styles.HeaderText}>{title}</Text>
-      {!title && <TouchableOpacity
-        onPress={() => {
-          navigation.navigate('Streaks');
-        }}
-      >
-        <Text style={styles.StreakText}>{streak !== null && `Active Streak: ${streak} days`}</Text>
-      </TouchableOpacity>}
-      
-      <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>  
-        <Ionicons name="notifications" size={24} color={COLORS.primaryWhiteHex} />
-      </TouchableOpacity>
+
+      {title ? (
+        <Text style={styles.HeaderText}>{title}</Text>
+      ) : showUsername && userDetails?.[0]?.userName ? (
+        <Text style={styles.HeaderText}>{userDetails[0].userName}</Text>
+      ) : (
+        <View />
+      )}
+
+      {showNotifications ? (
+        <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
+          <Ionicons name="notifications" size={24} color={COLORS.primaryWhiteHex} />
+        </TouchableOpacity>
+      ) : (
+        <View style={{ width: 24 }} /> // placeholder for layout balance
+      )}
     </View>
   );
 };
@@ -98,11 +84,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_20,
     color: COLORS.primaryWhiteHex,
-  },
-  StreakText: {
-    fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_16,
-    color: COLORS.primaryOrangeHex,
   },
   Image: {
     height: SPACING.space_36,

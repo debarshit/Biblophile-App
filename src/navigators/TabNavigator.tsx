@@ -112,7 +112,7 @@ const TabNavigator = () => {
             ),
           }}></Tab.Screen> */}
           <Tab.Screen
-        name="Bookshelf"
+        name="Profile"
         component={ProfileSummaryScreen}
         initialParams={{ username: username }}
         options={{

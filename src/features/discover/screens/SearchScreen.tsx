@@ -179,7 +179,7 @@ const SearchScreen = ({ route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-        <HeaderBar showBackButton={true} title=' ' />
+        <HeaderBar showBackButton title='Search books' />
         {/* Search Input */}
         <View style={styles.inputContainer}>
           <TouchableOpacity onPress={() => performSearch(searchText)}>

@@ -41,6 +41,7 @@ const requests = {
     fetchUserData: `${APIURL}?action=fetchUserData`,
     fetchUserDataFromUsername: (username) => `${APIURL}users/username/${username}`,
     updateUserData: `${APIURL}users/update`,
+    uploadUserDp: `${APIURL}users/upload-dp`,
     fetchDeposit: `${APIURL}users/deposit`,
     requestDepositRefund: `${APIURL}users/deposit/request-refund`,
     registerNotificationToken: `${APIURL}users/notification-token`,
@@ -51,7 +52,7 @@ const requests = {
     fetchAverageEmotionsByUser:`${APIURL}users/emotions?userId=`,
     fetchAverageDaystoFinish: `${APIURL}users/days-to-finish?userId=`,
     fetchUserReviews: `${APIURL}users/reviews?userId=`,
-    updateUserReview: (id) => `${APIURL}users/reviews/${id}`,
+    updateUserReview: (ratingId) => `${APIURL}users/reviews/${ratingId}`,
     fetchBookShelf: `${APIURL}users/bookshelf`,
     fetchUserNotes: `${APIURL}users/notes`,
     updateUserNote: (id) => `${APIURL}users/notes/${id}`,
@@ -77,6 +78,15 @@ const requests = {
     updateBookDates: `${APIURL}reading/reading-activity/book-dates`,
     updateReadingStreak: `${APIURL}reading/reading-activity/streak`,
     updatePagesRead: `${APIURL}reading/reading-activity/pages-read`,
+
+    //reading tag requests
+    fetchUserTags: `${APIURL}reading/tags`,
+    fetchUserBookshelfTags: `${APIURL}reading/tags/bookshelf`,
+    createTag: `${APIURL}reading/tags`,
+    fetchBookTags: (bookId) => `${APIURL}reading/tags/book/${bookId}`,
+    fetchBooksByTag: (tagId) => `${APIURL}reading/tags/${tagId}/books`,
+    assignTagToBook: (bookId, tagId) => `${APIURL}reading/tags/book/${bookId}/${tagId}`,
+    removeTagFromBook: (bookId, tagId) => `${APIURL}reading/tags/book/${bookId}/${tagId}`,
 
     //reading insights requests
     fetchReadingStreak: `${APIURL}reading/reading-insights/streak`,
