@@ -13,6 +13,8 @@ import { useStreak } from '../../../hooks/useStreak';
 import { useNavigation } from '@react-navigation/native';
 import { useAnalytics } from '../../../utils/analytics';
 import NoteSection from './NoteSection';
+import { dismissTimerNotification, updateTimerNotification } from '../../../utils/notificationUtils';
+import SessionTimer from './SessionTimer';
 
 // Memoized book item component
 const BookItem = React.memo(({ book, navigation, onUpdatePress }) => (
@@ -56,6 +58,8 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
   const userDetails = useStore((state: any) => state.userDetails);
 
   //  states for reading sessions
+  const [timer, setTimer] = useState(0);
+  const startSession = useStore((state) => state.startSession);
   const [showSessionPrompt, setShowSessionPrompt] = useState(false);
   const [sessionData, setSessionData] = useState(null);
   const [promptMessage, setPromptMessage] = useState("");
@@ -122,6 +126,15 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
       console.error('Failed to fetch pages read:', error);
     }
   }, [authHeaders, userDetails, userTimezone, startingTime, startingPage, setStartPage]);
+
+  const handleConfirmStartSession = () => {
+    startSession();
+    setShowSessionPrompt(false);
+  };
+
+  const handleCancelStartSession = () => {
+    setShowSessionPrompt(false);
+  };
 
   // Memoized session handlers
   const handleSaveSession = useCallback(() => {
@@ -283,6 +296,35 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
     return () => subscription.remove();
   }, [clearSession]);
 
+   // Session timer logic
+    useEffect(() => {
+      let timerInterval;
+      
+      if (startingTime) {
+        timerInterval = setInterval(() => {
+          const currentTime = new Date();
+          const elapsedTime = Math.floor((currentTime.getTime() - new Date(startingTime).getTime()) / 1000);
+          setTimer(elapsedTime);
+          
+          const minutes = Math.floor(elapsedTime / 60);
+          const seconds = elapsedTime % 60;
+          updateTimerNotification(minutes, seconds);
+        }, 1000);
+      } else {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          dismissTimerNotification();
+        }
+      }
+      
+      return () => {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          dismissTimerNotification();
+        }
+      };
+    }, [startingTime]);
+
   // Memoized rendered books list
   const renderedBooks = useMemo(() => 
     currentReads.map((book) => (
@@ -378,6 +420,25 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
         </Text>
       </View>
 
+      {!startingTime && (
+        <View style={styles.sessionButtonContainer}>
+        <TouchableOpacity
+          style={styles.startSessionButton}
+          onPress={() => {
+            setPromptMessage('Would you like to start a reading session?');
+            setShowSessionPrompt(true);
+            setIsCompletingSession(false);
+          }}
+        >
+          <Text style={styles.startSessionButtonText}>Start Reading Session</Text>
+        </TouchableOpacity>
+        </View>
+      )}
+
+      {startingTime && (
+        <SessionTimer timer={timer} />
+      )}
+
       <NoteSection userDetails={userDetails} />
 
       <BookStatusModal
@@ -394,8 +455,8 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
       <SessionPrompt
         visible={showSessionPrompt}
         message={promptMessage}
-        onConfirm={handleSessionPromptAction}
-        onCancel={isCompletingSession ? handleContinueSession : handleCancelSave}
+        onConfirm={isCompletingSession ? handleSessionPromptAction : handleConfirmStartSession}
+        onCancel={isCompletingSession ? handleContinueSession : handleCancelStartSession}
       />
     </View>
   );
@@ -567,5 +628,30 @@ const styles = StyleSheet.create({
   discoverButtonIcon: {
     color: COLORS.primaryWhiteHex,
     fontSize: FONTSIZE.size_12,
+  },
+  sessionButtonContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  startSessionButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  startSessionButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
 });
