@@ -1,11 +1,11 @@
 import { Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
-import instance from '../../../services/axios';
-import requests from '../../../services/requests';
-import { useStore } from '../../../store/store';
-import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
-import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
-import { useAnalytics } from '../../../utils/analytics';
+import instance from '../../../../services/axios';
+import requests from '../../../../services/requests';
+import { useStore } from '../../../../store/store';
+import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
+import CustomPicker, { PickerOption } from '../../../../components/CustomPickerComponent';
+import { useAnalytics } from '../../../../utils/analytics';
 
 const goalTypeOptions: PickerOption[] = [
   { label: 'Books', value: 'books', icon: 'menu-book' },

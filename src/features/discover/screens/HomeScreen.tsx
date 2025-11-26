@@ -36,7 +36,7 @@ import { useCity } from '../../../contexts/CityContext';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import SeasonalRecommendations from '../components/SeasonalRecommendations';
 import StreakWeeklyProgress from '../../readingInsights/components/StreakWeeklyProgress';
-import PagesReadInput from '../../readingInsights/components/PagesReadInput';
+import CurrentReadsSection from '../../readingInsights/components/currentReads/CurrentReadsSection';
 import MerchShopBanner from '../../../components/MerchShopBanner';
 
 interface Spotlight {
@@ -171,7 +171,7 @@ const HomeScreen = ({navigation}: any) => {
 
         <Banner />
 
-        <PagesReadInput />
+        <CurrentReadsSection />
  
         {/* Spotlight Section */}
         <Spotlights spotlights={spotlights} />

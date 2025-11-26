@@ -1,50 +1,28 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as Notifications from 'expo-notifications';
-import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native'
-import { FontAwesome } from '@expo/vector-icons';
-import { useStore } from '../../../store/store';
-import instance from '../../../services/axios';
-import requests from '../../../services/requests';
-import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
-import BookStatusModal from '../../reading/components/BookStatusModal';
+import { Alert, Linking, StyleSheet, View, ActivityIndicator, Text } from 'react-native'
+import { useStore } from '../../../../store/store';
+import instance from '../../../../services/axios';
+import requests from '../../../../services/requests';
+import { COLORS, SPACING, FONTSIZE, FONTFAMILY } from '../../../../theme/theme';
+import BookStatusModal from '../../../reading/components/BookStatusModal';
 import SessionPrompt from './SessionPrompt';
-import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
-import { useStreak } from '../../../hooks/useStreak';
+import { useStreak } from '../../../../hooks/useStreak';
 import { useNavigation } from '@react-navigation/native';
-import { useAnalytics } from '../../../utils/analytics';
+import { useAnalytics } from '../../../../utils/analytics';
 import NoteSection from './NoteSection';
-import { dismissTimerNotification, updateTimerNotification } from '../../../utils/notificationUtils';
-import SessionTimer from './SessionTimer';
+import { dismissTimerNotification, updateTimerNotification } from '../../../../utils/notificationUtils';
+import CurrentlyReadingBooks from './CurrentlyReadingBooks';
+import PagesReadInputForm from './PagesReadInputForm';
+import SessionControls from './SessionControls';
 
-// Memoized book item component
-const BookItem = React.memo(({ book, navigation, onUpdatePress }) => (
-  <View style={styles.book}>
-    <TouchableOpacity
-      onPress={() => {
-        navigation.push('Details', {
-          id: book.BookId,
-          type: "Book",
-        });
-    }}>
-      <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
-    </TouchableOpacity>
-    <TouchableOpacity 
-      style={styles.updateButton}
-      onPress={() => onUpdatePress(book)}
-    >
-      <Text style={styles.updateButtonText}>Update Status</Text>
-    </TouchableOpacity>
-  </View>
-));
-
-const PagesReadInput = ({ showDiscoverLink=true }) => {
+const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const navigation = useNavigation<any>();
   const analytics = useAnalytics();
   const [pagesRead, setPagesRead] = useState<string>('0');
   const [currentReads, setCurrentReads] = useState<any[]>([]);
   const [isLoadingCurrentReads, setIsLoadingCurrentReads] = useState(true);
   const [refreshData, setRefreshData] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // states for BookStatusModal
@@ -223,10 +201,6 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
   }, [pagesRead, checkActiveSession, userTimezone, authHeaders, startingTime, updateStreak]);
 
   // Memoized modal handlers
-  const toggleTooltip = useCallback(() => {
-    setShowTooltip(prev => !prev);
-  }, []);
-
   const handleOpenBookStatusModal = useCallback((book: any) => {
     setSelectedBookId(book.BookId);
     setSelectedBookStatus('Currently reading');
@@ -252,6 +226,12 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
     checkActiveSession();
     handleCloseBookStatusModal();
   }, [fetchPagesRead, updateStreak, checkActiveSession, handleCloseBookStatusModal]);
+
+  const handleStartSessionPress = useCallback(() => {
+    setPromptMessage('Would you like to start a reading session?');
+    setShowSessionPrompt(true);
+    setIsCompletingSession(false);
+  }, []);
 
   // Initialize data
   const initializeData = useCallback(async () => {
@@ -325,54 +305,6 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
       };
     }, [startingTime]);
 
-  // Memoized rendered books list
-  const renderedBooks = useMemo(() => 
-    currentReads.map((book) => (
-      <BookItem 
-        key={book.BookId} 
-        book={book} 
-        navigation={navigation}
-        onUpdatePress={handleOpenBookStatusModal}
-      />
-    )), [currentReads, navigation, handleOpenBookStatusModal]
-  );
-
-  // Render current reads section
-  const renderCurrentReadsSection = () => {
-    return (
-      <View style={styles.currentReadsSection}>
-        {isLoadingCurrentReads ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />
-            <Text style={styles.loadingText}>Loading your books...</Text>
-          </View>
-        ) : currentReads.length > 0 ? (
-          <>
-          <Text style={styles.sectionHeading}>Currently Reading</Text>
-          <ScrollView horizontal contentContainerStyle={styles.currentReads}>
-            {renderedBooks}
-          </ScrollView>
-          </>
-        ) : (
-          <View style={styles.emptyStateContainer}>
-            <Text style={styles.emptyStateText}>
-              No books in your current reads yet
-            </Text>
-            {showDiscoverLink && <TouchableOpacity 
-              style={styles.discoverButton}
-              onPress={() => navigation.navigate('Discover')}
-            >
-              <Text style={styles.discoverButtonText}>
-                Discover Books to Add
-              </Text>
-              <FontAwesome name="arrow-right" style={styles.discoverButtonIcon} />
-            </TouchableOpacity>}
-          </View>
-        )}
-      </View>
-    );
-  };
-
   // Show loading until initialized
   if (!isInitialized) {
     return (
@@ -385,61 +317,27 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
 
   return (
     <View style={styles.pagesReadContainer}>
-      {renderCurrentReadsSection()}
+      <CurrentlyReadingBooks
+        currentReads={currentReads}
+        isLoading={isLoadingCurrentReads}
+        showDiscoverLink={showDiscoverLink}
+        navigation={navigation}
+        onUpdatePress={handleOpenBookStatusModal}
+      />
       
-      <View style={styles.inputBox}>
-        <View style={styles.inputLabelContainer}>
-          <Text style={styles.inputLabel}>Pages read today</Text>
-          <TouchableOpacity onPress={toggleTooltip} style={styles.infoIconContainer}>
-            <FontAwesome name="info-circle" style={styles.infoIcon} />
-            {showTooltip && (
-              <View style={styles.tooltip}>
-                <Text style={styles.tooltipText}>
-                  This is automatically updated, but you can update it manually if there's an inaccuracy.
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
-        <TextInput
-          style={styles.input}
-          placeholder='Optional'
-          placeholderTextColor={COLORS.secondaryLightGreyHex}
-          autoCapitalize='none'
-          keyboardType='numeric'
-          value={pagesRead}
-          onChangeText={setPagesRead}
-          accessibilityLabel="Pages Read"
-          accessibilityHint="Enter the number of pages read today"
-        />
-        <TouchableOpacity onPress={updatePagesRead} style={styles.button}>
-          <Text style={styles.buttonText}>Update</Text>
-        </TouchableOpacity>
-        <Text style={styles.subtext}>
-          Automatically updated from your reading progress. Update manually only if inaccurate.
-        </Text>
-      </View>
+      <PagesReadInputForm
+        pagesRead={pagesRead}
+        onPagesReadChange={setPagesRead}
+        onUpdate={updatePagesRead}
+      />
 
-      {!startingTime && (
-        <View style={styles.sessionButtonContainer}>
-        <TouchableOpacity
-          style={styles.startSessionButton}
-          onPress={() => {
-            setPromptMessage('Would you like to start a reading session?');
-            setShowSessionPrompt(true);
-            setIsCompletingSession(false);
-          }}
-        >
-          <Text style={styles.startSessionButtonText}>Start Reading Session</Text>
-        </TouchableOpacity>
-        </View>
-      )}
+      {/* <SessionControls
+        startingTime={startingTime}
+        timer={timer}
+        onStartSession={handleStartSessionPress}
+      /> */}
 
-      {startingTime && (
-        <SessionTimer timer={timer} />
-      )}
-
-      <NoteSection userDetails={userDetails} />
+      {/* <NoteSection userDetails={userDetails} /> */}
 
       <BookStatusModal
         visible={isBookStatusModalVisible}
@@ -455,203 +353,39 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
       <SessionPrompt
         visible={showSessionPrompt}
         message={promptMessage}
-        onConfirm={isCompletingSession ? handleSessionPromptAction : handleConfirmStartSession}
-        onCancel={isCompletingSession ? handleContinueSession : handleCancelStartSession}
+        onConfirm={() => {
+          if (isCompletingSession) {
+            handleCompleteSession();      // Step 1: completing
+          } else if (sessionData) {
+            handleSaveSession();          // Step 2: saving
+          } else {
+            handleConfirmStartSession();  // Starting new session
+          }
+        }}
+        onCancel={() => {
+          if (isCompletingSession) {
+            handleContinueSession();      // Step 1: continue reading
+          } else if (sessionData) {
+            handleCancelSave();       // Step 2: discard and clear session
+          } else {
+            handleCancelStartSession();   // Cancel start session
+          }
+        }}
       />
     </View>
   );
 };
 
-export default PagesReadInput;
+export default CurrentReadsSection;
 
 const styles = StyleSheet.create({
   pagesReadContainer: {
     marginBottom: SPACING.space_20,
     alignItems: 'center',
   },
-  currentReadsSection: {
-    width: '100%',
-    marginBottom: SPACING.space_20,
-    alignItems: 'center',
-  },
-  sectionHeading: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_20,
-    fontFamily: FONTFAMILY.poppins_semibold,
-    textAlign: 'center',
-    marginBottom: SPACING.space_16,
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.space_30,
-    gap: SPACING.space_10,
-  },
   loadingText: {
     color: COLORS.primaryLightGreyHex,
     fontSize: FONTSIZE.size_14,
     fontFamily: FONTFAMILY.poppins_regular,
-  },
-  emptyStateContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.space_20,
-  },
-  currentReads: {
-    justifyContent: 'center',
-    paddingHorizontal: SPACING.space_20,
-  },
-  book: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    padding: SPACING.space_10,
-    borderRadius: 8,
-    marginHorizontal: SPACING.space_10,
-    shadowColor: COLORS.primaryBlackHex,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-  },
-  bookPhoto: {
-    width: 100,
-    height: 150,
-    borderRadius: 5,
-  },
-  updateButton: {
-    backgroundColor: COLORS.primaryOrangeHex,
-    paddingVertical: SPACING.space_8,
-    paddingHorizontal: SPACING.space_12,
-    borderRadius: 5,
-    marginTop: SPACING.space_10,
-  },
-  updateButtonText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_12,
-    fontFamily: FONTFAMILY.poppins_medium,
-    textAlign: 'center',
-  },
-  inputBox: {
-    alignItems: 'center',
-    gap: SPACING.space_10,
-  },
-  inputLabelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.space_4,
-    position: 'relative',
-  },
-  inputLabel: {
-    color: COLORS.primaryWhiteHex,
-  },
-  input: {
-    padding: SPACING.space_10,
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    borderColor: COLORS.primaryLightGreyHex,
-    borderWidth: 1,
-    borderRadius: 5,
-    color: COLORS.primaryWhiteHex,
-    width: 300,
-    textAlign: 'center',
-    zIndex: -1,
-  },
-  button: {
-    backgroundColor: COLORS.primaryOrangeHex,
-    paddingVertical: SPACING.space_4,
-    paddingHorizontal: SPACING.space_20,
-    borderRadius: 5,
-    marginTop: SPACING.space_10,
-    width: 'auto',
-    alignSelf: 'center',
-    transform: [{ scale: 1 }],
-  },
-  buttonText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_medium,
-    textAlign: 'center',
-  },
-  subtext: {
-    color: COLORS.primaryLightGreyHex,
-    fontSize: FONTSIZE.size_12,
-    marginTop: SPACING.space_4,
-    textAlign: 'center',
-  },
-  infoIconContainer: {
-    position: 'relative',
-  },
-  tooltip: {
-    position: 'absolute',
-    top: 20,
-    right: 5,
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    color: COLORS.primaryWhiteHex,
-    padding: SPACING.space_4,
-    borderRadius: 4,
-    fontSize: FONTSIZE.size_12,
-    width: 200,
-    zIndex: 1,
-    shadowColor: COLORS.primaryBlackHex,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-  },
-  tooltipText: {
-    fontSize: FONTSIZE.size_12,
-    color: COLORS.primaryWhiteHex,
-  },
-  infoIcon: {
-    color: COLORS.primaryLightGreyHex,
-    fontSize: FONTSIZE.size_18,
-  },
-  emptyStateText: {
-    color: COLORS.primaryLightGreyHex,
-    fontSize: FONTSIZE.size_16,
-    fontFamily: FONTFAMILY.poppins_regular,
-    textAlign: 'center',
-    marginBottom: SPACING.space_16,
-  },
-  discoverButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primaryOrangeHex,
-    paddingVertical: SPACING.space_12,
-    paddingHorizontal: SPACING.space_20,
-    borderRadius: 25,
-    gap: SPACING.space_8,
-  },
-  discoverButtonText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_14,
-    fontFamily: FONTFAMILY.poppins_medium,
-  },
-  discoverButtonIcon: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_12,
-  },
-  sessionButtonContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  startSessionButton: {
-    backgroundColor: COLORS.primaryOrangeHex,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  startSessionButtonText: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: 18,
-    fontWeight: '600',
-    letterSpacing: 0.5,
   },
 });

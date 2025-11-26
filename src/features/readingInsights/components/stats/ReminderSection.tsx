@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
-import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
-import instance from '../../../services/axios';
-import requests from '../../../services/requests';
+import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
+import instance from '../../../../services/axios';
+import requests from '../../../../services/requests';
 
 const ReminderSection = ({ onReminderPress }) => {
   const handleTipsPress = async () => {
