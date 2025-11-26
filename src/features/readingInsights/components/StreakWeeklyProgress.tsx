@@ -147,7 +147,7 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => {navigation.navigate('Streaks')}}
+          onPress={() => {navigation.navigate('Stats')}}
         >
           <Text style={styles.streakText}>
             View stats &gt;

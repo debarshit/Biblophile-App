@@ -9,7 +9,7 @@ const prefixes = [
 
 const config = {
   screens: {
-    Streaks: {
+    Stats: {
       path: 'streaks/:action?',
       parse: { action: (action: string) => `${action}` },
     },

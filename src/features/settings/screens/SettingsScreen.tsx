@@ -95,7 +95,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
         {
           icon: <Entypo name="bar-graph" size={20} color="#fff" />,
           label: 'My Stats',
-          onPress: () => navigation.push('Streaks'),
+          onPress: () => navigation.push('Stats'),
           // bgColor: '#4ECDC4',
         },
         {
