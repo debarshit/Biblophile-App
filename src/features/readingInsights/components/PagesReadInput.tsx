@@ -12,6 +12,7 @@ import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useStreak } from '../../../hooks/useStreak';
 import { useNavigation } from '@react-navigation/native';
 import { useAnalytics } from '../../../utils/analytics';
+import NoteSection from './NoteSection';
 
 // Memoized book item component
 const BookItem = React.memo(({ book, navigation, onUpdatePress }) => (
@@ -376,6 +377,8 @@ const PagesReadInput = ({ showDiscoverLink=true }) => {
           Automatically updated from your reading progress. Update manually only if inaccurate.
         </Text>
       </View>
+
+      <NoteSection userDetails={userDetails} />
 
       <BookStatusModal
         visible={isBookStatusModalVisible}

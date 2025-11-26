@@ -3,19 +3,10 @@ import { StyleSheet, ScrollView, SafeAreaView, View, TouchableOpacity, Text } fr
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { useStore } from '../../../store/store';
 import { COLORS } from '../../../theme/theme';
-import PagesReadInput from '../components/PagesReadInput';
 import SessionPrompt from '../components/SessionPrompt';
 import { dismissTimerNotification, updateTimerNotification } from '../../../utils/notificationUtils';
 import Header from '../components/Header';
-import TabSelector from '../../../components/TabSelector';
-import StreakAchievements from '../components/StreakAchievements';
-import NoteSection from '../components/NoteSection';
-import ReminderSection from '../components/ReminderSection';
-import CommunitySection from '../components/CommunitySection';
-import Footer from '../components/Footer';
 import SessionTimer from '../components/SessionTimer';
-import TimePicker from '../components/TimePicker';
-import StreakCalendarView from '../components/StreakCalendarView';
 import StreakCelebration from '../../../components/StreakCelebration';
 import { useStreak } from '../../../hooks/useStreak';
 
@@ -29,9 +20,6 @@ const StreaksScreen = ({ navigation, route }) => {
 
   // Remaining local state (UI-only)
   const [celebration, setCelebration] = useState(false);
-  const [datePickerVisible, setDatePickerVisible] = useState(false);
-  const [reminderTime, setReminderTime] = useState(null);
-  const [activeTab, setActiveTab] = useState('streaks');
   const [showPrompt, setShowPrompt] = useState(false);
   const [promptMessage, setPromptMessage] = useState('');
   const [timer, setTimer] = useState(0);
@@ -79,7 +67,6 @@ const StreaksScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     if (sessionStartTime) {
-      setActiveTab('pages');
       setShowPrompt(false);
     }
   }, [sessionStartTime]);
@@ -128,10 +115,6 @@ const StreaksScreen = ({ navigation, route }) => {
     setShowPrompt(false);
   };
 
-  const handleReminderPress = () => {
-    setDatePickerVisible(true);
-  };
-
   const handleBackPress = () => {
     if (action === "updateReadingStreak") {
       navigation.navigate('Tab');
@@ -142,12 +125,6 @@ const StreaksScreen = ({ navigation, route }) => {
 
   const handleGraphPress = () => {
     navigation.navigate('Stats');
-  };
-  
-  const openWebView = (url) => {
-    navigation.push('Resources', {
-      url: url
-    });
   };
 
   const StartSessionButton = () => (
@@ -186,41 +163,8 @@ const StreaksScreen = ({ navigation, route }) => {
           <StartSessionButton />
         )}
         
-        <TabSelector 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
-        />
-        
-        {activeTab === "streaks" ? (
-          <>
-            <StreakCalendarView />
-            
-            <StreakAchievements maxStreak={maxStreak} />
-            
-            <NoteSection userDetails={userDetails} />
-          </>
-        ) : (
-          <PagesReadInput showDiscoverLink={false} />
-        )}
-        
-        {datePickerVisible && (
-          <TimePicker
-            visible={datePickerVisible}
-            reminderTime={reminderTime}
-            setReminderTime={setReminderTime}
-            setDatePickerVisible={setDatePickerVisible}
-          />
-        )}
-        
-        <ReminderSection 
-          onReminderPress={handleReminderPress} 
-        />
-        
-        <CommunitySection currentStreak={currentStreak} />
       </ScrollView>
       
-      <Footer openWebView={openWebView} />
-
       <StreakCelebration
         visible={showStreakCelebration}
         streakCount={celebrationData?.currentStreak || 0}

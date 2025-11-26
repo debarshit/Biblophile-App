@@ -14,6 +14,7 @@ import {
   Image,
   Linking,
 } from 'react-native';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import Toast from 'react-native-toast-message';
 import Spotlights from '../components/Spotlights';
 import instance from '../../../services/axios';
@@ -58,6 +59,7 @@ const HomeScreen = ({navigation}: any) => {
   const [booksLoading, setBooksLoading] = useState(true);
   const [currentStreak, setCurrentStreak] = useState(1);
   const [latestUpdateTime, setLatestUpdateTime] = useState("");
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const ListRef: any = useRef<FlatList>();
   const scrollViewRef = useRef(null);
@@ -154,6 +156,7 @@ const HomeScreen = ({navigation}: any) => {
     <SafeAreaView style={styles.ScreenContainer}>
 
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
+      {showConfetti && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} />}
 
       <Animated.ScrollView
         ref={scrollViewRef}
@@ -164,7 +167,7 @@ const HomeScreen = ({navigation}: any) => {
         {/* App Header */}
         <HeaderBar showLogo showNotifications />
 
-        <StreakWeeklyProgress userDetails={userDetails} />
+        <StreakWeeklyProgress userDetails={userDetails} onFullWeekComplete={() => setShowConfetti(true)} />
 
         <Banner />
 

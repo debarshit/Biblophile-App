@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
@@ -6,7 +6,7 @@ import { useStreak } from '../../../hooks/useStreak';
 import StreakCelebration from '../../../components/StreakCelebration';
 import { useNavigation } from '@react-navigation/native';
 
-const StreakWeeklyProgress = ({ userDetails }) => {
+const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
   const navigation = useNavigation<any>();
   const [showTooltip, setShowTooltip] = useState(false);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
@@ -82,6 +82,27 @@ const StreakWeeklyProgress = ({ userDetails }) => {
       Alert.alert("Error", "Could not update streak");
     }
   }
+
+  // Confetti logic
+  useEffect(() => {
+    const checkAllDaysFilled = () => {
+      const today = new Date();
+      const currentDayIndex = today.getDay();
+      const lastUpdateDate = new Date(latestUpdateTime);
+      const lastUpdateDayIndex = lastUpdateDate.getDay();
+
+      const weekStartIndex = 0;
+      const streakEndDayIndex = lastUpdateDayIndex;
+      const fillStartDayIndex = Math.max(weekStartIndex, streakEndDayIndex - (currentStreak - 1));
+      const fillEndDayIndex = Math.min(currentDayIndex, streakEndDayIndex);
+
+      if (fillStartDayIndex === 0 && fillEndDayIndex === 6) {
+        onFullWeekComplete?.();   // notify parent
+      }
+    };
+
+    checkAllDaysFilled();
+  }, [currentStreak, latestUpdateTime]);
 
   return (
     <View style={styles.progressContainer}>
