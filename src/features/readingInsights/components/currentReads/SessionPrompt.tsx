@@ -5,7 +5,7 @@ import {
     COLORS,
     FONTSIZE,
     SPACING,
-  } from '../../../theme/theme';
+  } from '../../../../theme/theme';
 
 interface SessionPromptProps {
   message: string;

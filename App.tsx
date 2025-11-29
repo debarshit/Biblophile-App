@@ -23,7 +23,6 @@ import ProfileScreen from './src/features/profile/screens/ProfileScreen';
 import SubscriptionScreen from './src/features/bookshop/screens/SubscriptionScreen';
 import OnboardingScreen from './src/features/onboarding/screens/OnboardingScreen';
 import PaymentGatewayScreen from './src/features/payment/screens/PaymentGatewayScreen';
-import StreaksScreen from './src/features/readingInsights/screens/StreaksScreen';
 import StatScreen from './src/features/readingInsights/screens/StatScreen';
 import AboutScreen from './src/features/settings/screens/AboutScreen';
 import ReviewScreen from './src/features/reading/components/UserReviews';
@@ -213,7 +212,6 @@ const App = () => {
           <CityProvider>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
               <Stack.Screen name="Tab" component={TabNavigator} options={{animation: 'slide_from_bottom'}} />
-              <Stack.Screen name="Streaks" component={StreaksScreen} options={{animation: 'slide_from_bottom'}} />
               <Stack.Screen name="Stats" component={StatScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="Library" component={LibraryScreen} options={{animation: 'slide_from_bottom'}} />
               <Stack.Screen name="Discover" component={DiscoverScreen} options={{animation: 'slide_from_bottom'}} />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
 
 const StreakAchievements = ({ maxStreak }) => {
   return (

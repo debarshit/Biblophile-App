@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Share } from 'react-native';
 import { AntDesign, Entypo } from '@expo/vector-icons';
-import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
 
 const CommunitySection = ({ currentStreak = 0 }) => {
   const handleDiscussionPress = () => {

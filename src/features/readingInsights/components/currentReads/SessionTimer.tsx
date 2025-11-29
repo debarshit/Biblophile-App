@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
+import { COLORS, FONTFAMILY, FONTSIZE } from '../../../../theme/theme';
 
 const SessionTimer = ({ timer }) => {
   const [showTimerTooltip, setShowTimerTooltip] = useState(false);

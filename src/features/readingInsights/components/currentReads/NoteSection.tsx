@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Platform } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
-import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
-import instance from '../../../services/axios';
-import requests from '../../../services/requests';
-import CustomPicker from '../../../components/CustomPickerComponent';
+import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
+import instance from '../../../../services/axios';
+import requests from '../../../../services/requests';
+import CustomPicker from '../../../../components/CustomPickerComponent';
 
 const NoteSection = ({ userDetails }) => {
   const [showNoteInput, setShowNoteInput] = useState(false);

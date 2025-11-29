@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import instance from '../../../services/axios';
-import { COLORS, SPACING } from '../../../theme/theme';
-import { useStore } from '../../../store/store';
-import requests from '../../../services/requests';
+import instance from '../../../../services/axios';
+import { COLORS, SPACING } from '../../../../theme/theme';
+import { useStore } from '../../../../store/store';
+import requests from '../../../../services/requests';
 
 const StreakCalendarView = () => {
   const userDetails = useStore((state) => state.userDetails);

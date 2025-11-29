@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
   HeaderText: {
     fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_20,
+    fontSize: FONTSIZE.size_16,
     color: COLORS.primaryWhiteHex,
   },
   Image: {

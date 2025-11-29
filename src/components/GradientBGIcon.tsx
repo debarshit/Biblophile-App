@@ -36,8 +36,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   LinearGradientBG: {
-    height: SPACING.space_36,
-    width: SPACING.space_36,
+    height: SPACING.space_30,
+    width: SPACING.space_30,
     alignItems: 'center',
     justifyContent: 'center',
   },
