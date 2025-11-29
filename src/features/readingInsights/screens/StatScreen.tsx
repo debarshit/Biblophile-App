@@ -150,7 +150,8 @@ const StatScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.ScrollViewFlex}>
-        <HeaderBar showBackButton={true} title='Stats' />
+        {/* try insights or progress inplace of stats */}
+        <HeaderBar showBackButton={true} title='Stats' /> 
         <ReadingGoals />
         
         {/* Monthly Wrap Link */}
