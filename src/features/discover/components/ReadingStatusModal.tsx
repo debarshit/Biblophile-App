@@ -157,8 +157,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={styles.section}>
+          <View style={styles.section}>
               <Text style={styles.label}>Reading Status</Text>
               <CustomPicker
                 options={statusOptions}
@@ -166,7 +165,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
                 onValueChange={setStatus}
               />
             </View>
-
+          <ScrollView showsVerticalScrollIndicator={false}>
             {(status === 'Currently reading' || status === 'Paused') && (
               <View style={styles.section}>
                 <Text style={styles.label}>Current Page</Text>

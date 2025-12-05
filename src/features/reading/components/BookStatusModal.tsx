@@ -152,29 +152,28 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
           opacity: fadeAnimation,
           transform: [{ scale: fadeAnimation.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }]
         }]}>
+          {/* Header */}
+          <View style={styles.modalHeader}>
+            <View style={styles.headerIcon}>
+              <MaterialIcons name="edit" size={24} color={COLORS.primaryOrangeHex} />
+            </View>
+            <Text style={styles.modalTitle}>Update Reading Status</Text>
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+              <MaterialIcons name="close" size={24} color={COLORS.secondaryLightGreyHex} />
+            </TouchableOpacity>
+          </View>
+            
+          {/* Status Picker */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Reading Status</Text>
+            <CustomPicker
+              options={availableOptions}
+              selectedValue={localStatus}
+              onValueChange={setLocalStatus}
+              placeholder="Select reading status"
+            />
+          </View>
           <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Header */}
-            <View style={styles.modalHeader}>
-              <View style={styles.headerIcon}>
-                <MaterialIcons name="edit" size={24} color={COLORS.primaryOrangeHex} />
-              </View>
-              <Text style={styles.modalTitle}>Update Reading Status</Text>
-              <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                <MaterialIcons name="close" size={24} color={COLORS.secondaryLightGreyHex} />
-              </TouchableOpacity>
-            </View>
-            
-            {/* Status Picker */}
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Reading Status</Text>
-              <CustomPicker
-                options={availableOptions}
-                selectedValue={localStatus}
-                onValueChange={setLocalStatus}
-                placeholder="Select reading status"
-              />
-            </View>
-            
             {/* Page Input */}
             {localStatus === 'Currently reading' && (
               <View style={styles.section}>
