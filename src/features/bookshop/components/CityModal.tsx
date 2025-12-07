@@ -157,6 +157,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontFamily: 'Poppins-Regular',
+    maxWidth: '100%',
   },
 });
 

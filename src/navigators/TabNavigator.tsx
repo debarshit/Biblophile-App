@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {StyleSheet, Image} from 'react-native';
+import {StyleSheet, Image, Platform} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import { MaterialIcons, FontAwesome5, FontAwesome, Entypo } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -132,7 +132,7 @@ const TabNavigator = () => {
 
 const styles = StyleSheet.create({
   tabBarStyle: {
-    height: 80,
+    height:  Platform.OS === 'ios' ? 80 : 60,
     position: 'absolute',
     backgroundColor: COLORS.primaryBlackHex,
     borderTopWidth: 0,
