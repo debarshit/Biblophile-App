@@ -3,7 +3,7 @@ const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
 export default {
   "name": IS_DEV ? "Biblophile Dev" : IS_PREVIEW ? "Biblophile Preview" : "Biblophile",
   "slug": "Biblophile-App",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "orientation": "portrait",
   "icon": "./assets/icon.png",
   "userInterfaceStyle": "light",
@@ -23,7 +23,7 @@ export default {
     "**/*"
   ],
   "ios": {
-    "buildNumber": "6",
+    "buildNumber": "7",
     "supportsTablet": true,
     "infoPlist": {
       "NSCameraUsageDescription": "We need camera access to let you take a profile photo.",
@@ -44,7 +44,7 @@ export default {
       "backgroundColor": "#0C0F14"
     },
     "googleServicesFile": "./google-services.json",
-    "versionCode": 11,
+    "versionCode": 12,
     package: IS_DEV
       ? "com.debar_shit.BiblophileApp.dev"
       : IS_PREVIEW
