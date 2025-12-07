@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Dimensions, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Dimensions, SafeAreaView, Platform } from 'react-native';
 import BookshelfCard from '../components/BookshelfCard';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import instance from '../../../services/axios';
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     },
     listContent: {
         paddingBottom: SPACING.space_24,
-        paddingHorizontal: SPACING.space_10,
+        paddingHorizontal: Platform.OS === 'ios' ? SPACING.space_10: 0,
     },
     emptyListContent: {
         flex: 1,
