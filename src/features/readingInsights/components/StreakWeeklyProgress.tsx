@@ -142,7 +142,7 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
           disabled={hasLoggedToday || loading}
         >
           <Text style={styles.readTodayText}>
-            {hasLoggedToday ? "Already logged" : loading ? "Updating..." : "I read today"}
+            {hasLoggedToday ? "Already logged" : loading ? "Updating..." : currentStreak === 0 ? "Start streak" : "I read today"}
           </Text>
         </TouchableOpacity>
 
