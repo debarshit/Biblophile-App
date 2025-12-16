@@ -124,6 +124,17 @@ const App = () => {
   //check for OTA updates end
 
   //check for appstores update and implement accordingly start
+  const isNewerVersion = (latest, current) => {
+    const latestParts = latest.split('.').map(Number);
+    const currentParts = current.split('.').map(Number);
+
+    for (let i = 0; i < latestParts.length; i++) {
+      if (latestParts[i] > currentParts[i]) return true;
+      if (latestParts[i] < currentParts[i]) return false;
+    }
+    return false; // equal
+  };
+
   const checkForAppUpdate = async () => {
     try {
       // Fetch the latest version from own server
@@ -132,7 +143,7 @@ const App = () => {
       const latestVersion = data.latestVersion;
 
       // Compare the latest version with the current app version
-      if (latestVersion > currentVersion) {
+      if (isNewerVersion(latestVersion, currentVersion)) {
         Alert.alert(
           'Update Available',
           'A new version of the app is available. Please update to the latest version.',
