@@ -53,6 +53,7 @@ import SubmitReviewScreen from './src/features/discover/screens/SubmitReviewScre
 import { linking } from './src/utils/deepLinking/linking';
 import { navigationRef } from './src/utils/deepLinking/navigationRef';
 import { navigateFromUrl } from './src/utils/deepLinking/deepLinking';
+import MonthlyWrapScreen from './src/features/readingInsights/screens/MonthlyWrapScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -246,6 +247,7 @@ const App = () => {
               <Stack.Screen name="CreateBookClub" component={CreateBookClubScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="BookClubDetails" component={BookClubDetailsScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="SubmitReview" component={SubmitReviewScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="MonthlyWrap" component={MonthlyWrapScreen} options={{animation: 'slide_from_bottom'}} />
             </Stack.Navigator>
           </CityProvider>
         ) : (
