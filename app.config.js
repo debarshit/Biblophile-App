@@ -4,8 +4,8 @@ export default {
   "name": IS_DEV ? "Biblophile Dev" : IS_PREVIEW ? "Biblophile Preview" : "Biblophile",
   "slug": "Biblophile-App",
   "version": "0.0.10",
-  "orientation": "portrait",
-  "icon": "./assets/icon.png",
+  "orientation": "default",
+  "icon": IS_DEV ? "./assets/favicon.png" : "./assets/icon.png",
   "userInterfaceStyle": "light",
   "scheme": "biblophile",
   "platforms": [
