@@ -99,24 +99,27 @@ const App = () => {
     initialize("qysqkgnhfy");
   }, []);
 
-  //check for OTA updates start
+  //check for OTA updates - silent update on next launch
   useEffect(() => {
     const checkForUpdates = async () => {
       try {
         const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
+          // Silently fetch and download the update in the background
           await Updates.fetchUpdateAsync();
-          Alert.alert(
-            'Update Available',
-            'We’ve made some improvements. Restart now to update?',
-            [
-              { text: 'Later', style: 'cancel' },
-              { text: 'Restart', onPress: () => Updates.reloadAsync() },
-            ]
-          );
+          // The update will be applied on the next app launch automatically
+          // Alert.alert(
+          //   'Update Available',
+          //   'We’ve made some improvements. Restart now to update?',
+          //   [
+          //     { text: 'Later', style: 'cancel' },
+          //     { text: 'Restart', onPress: () => Updates.reloadAsync() },
+          //   ]
+          // );
+          console.log('Update downloaded and will be applied on next launch');
         }
       } catch (e) {
-        console.log(e);
+        console.log('Error checking for OTA updates:', e);
       }
     };
 

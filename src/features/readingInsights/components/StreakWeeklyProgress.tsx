@@ -108,7 +108,7 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
     <View style={styles.progressContainer}>
       <View style={styles.streakInfo}>
         <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
-        <TouchableOpacity onPress={() => setShowTooltip(!showTooltip)} style={styles.infoIconContainer}>
+        {/* <TouchableOpacity onPress={() => setShowTooltip(!showTooltip)} style={styles.infoIconContainer}>
           <FontAwesome name="info-circle" style={styles.infoIcon} />
           {showTooltip && (
             <View style={styles.tooltip}>
@@ -120,7 +120,7 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
               </TouchableOpacity>
             </View>
           )}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <View style={styles.weekContainer}>

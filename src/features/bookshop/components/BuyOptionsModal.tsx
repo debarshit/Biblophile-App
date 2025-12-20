@@ -25,7 +25,7 @@ const BuyOptionsModal = ({
   const handleAmazonPurchase = () => {
     const encodedTitle = encodeURIComponent(bookTitle || "");
     // Amazon affiliate link with tag
-    const amazonLink = `https://www.amazon.in/s?k=${encodedTitle}&tag=abhi1302-21`;
+    const amazonLink = `https://www.amazon.in/s?k=${encodedTitle}&tag=abhi130208-21`;
     analytics.track('amazon_redirect', {
       book_title: bookTitle,
       price: bookPrice,
