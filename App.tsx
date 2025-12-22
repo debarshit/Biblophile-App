@@ -53,6 +53,7 @@ import SubmitReviewScreen from './src/features/discover/screens/SubmitReviewScre
 import { linking } from './src/utils/deepLinking/linking';
 import { navigationRef } from './src/utils/deepLinking/navigationRef';
 import { navigateFromUrl } from './src/utils/deepLinking/deepLinking';
+import MonthlyWrapScreen from './src/features/readingInsights/screens/MonthlyWrapScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -98,24 +99,27 @@ const App = () => {
     initialize("qysqkgnhfy");
   }, []);
 
-  //check for OTA updates start
+  //check for OTA updates - silent update on next launch
   useEffect(() => {
     const checkForUpdates = async () => {
       try {
         const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
+          // Silently fetch and download the update in the background
           await Updates.fetchUpdateAsync();
-          Alert.alert(
-            'Update Available',
-            'We’ve made some improvements. Restart now to update?',
-            [
-              { text: 'Later', style: 'cancel' },
-              { text: 'Restart', onPress: () => Updates.reloadAsync() },
-            ]
-          );
+          // The update will be applied on the next app launch automatically
+          // Alert.alert(
+          //   'Update Available',
+          //   'We’ve made some improvements. Restart now to update?',
+          //   [
+          //     { text: 'Later', style: 'cancel' },
+          //     { text: 'Restart', onPress: () => Updates.reloadAsync() },
+          //   ]
+          // );
+          console.log('Update downloaded and will be applied on next launch');
         }
       } catch (e) {
-        console.log(e);
+        console.log('Error checking for OTA updates:', e);
       }
     };
 
@@ -257,6 +261,7 @@ const App = () => {
               <Stack.Screen name="CreateBookClub" component={CreateBookClubScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="BookClubDetails" component={BookClubDetailsScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="SubmitReview" component={SubmitReviewScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="MonthlyWrap" component={MonthlyWrapScreen} options={{animation: 'slide_from_bottom'}} />
             </Stack.Navigator>
           </CityProvider>
         ) : (

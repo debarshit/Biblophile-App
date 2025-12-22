@@ -119,6 +119,12 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
     }
   };
 
+  const BookPlaceholder = ({ small = false }) => (
+    <View style={[styles.placeholder, small && styles.placeholderSmall]}>
+      <Text style={styles.placeholderEmoji}>📘</Text>
+    </View>
+  );
+
   const Separator = () => (
     <View style={styles.separator}>
       <Text style={styles.separatorText}>Your Tags</Text>
@@ -130,8 +136,10 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
     if (books.length === 0) return null;
 
     const bookImages = books
-    .map((book) => convertHttpToHttps(book.BookPhoto))
-    .filter((image) => image !== null) as string[];
+      .map((book) => convertHttpToHttps(book.BookPhoto))
+      .filter((image) => image !== null) as string[];
+
+    const displayImages = bookImages.slice(0, 3);
 
     return (
       <View style={styles.sectionContainer}>
@@ -144,29 +152,31 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
           }}
           style={styles.card}
         >
-          {/* Full cover image for the top portion */}
-          <View style={styles.imageContainer}>
-            <Image source={{ uri: bookImages[0] }} style={styles.coverImage} />
-            {/* Collage images */}
-            <View style={styles.collageImages}>
-              {bookImages.slice(1, 5).map((image, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: image }}
-                  style={[
-                    styles.collageImage,
-                    {
-                      top: index % 2 === 0 ? SPACING.space_16 : SPACING.space_18,
-                      left: index % 3 === 0 ? SPACING.space_8 : SPACING.space_10,
-                    },
-                  ]}
-                />
-              ))}
+          {/* Left side: Image collage */}
+          <View style={styles.imageCollageContainer}>
+            {displayImages.length >= 1 ? (
+              <Image source={{ uri: displayImages[0] }} style={styles.largeImage} />
+            ) : (
+              <BookPlaceholder />
+            )}
+
+            <View style={styles.smallImagesColumn}>
+              {displayImages.length >= 2 ? (
+                <Image source={{ uri: displayImages[1] }} style={styles.smallImage} />
+              ) : (
+                <BookPlaceholder small />
+              )}
+
+              {displayImages.length >= 3 ? (
+                <Image source={{ uri: displayImages[2] }} style={styles.smallImage} />
+              ) : (
+                <BookPlaceholder small />
+              )}
             </View>
           </View>
 
-          {/* Status footer */}
-          <View style={styles.footer}>
+          {/* Right side: Status text */}
+          <View style={styles.textContainer}>
             <Text style={styles.statusText}>{status}</Text>
           </View>
         </TouchableOpacity>
@@ -177,7 +187,7 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
   const renderTagCard = (tag) => {
     const bookImages = tag.books
       .map(img => convertHttpToHttps(img))
-      .slice(0, 5);
+      .slice(0, 3);
 
     return (
       <View style={styles.sectionContainer} key={tag.tagId}>
@@ -191,24 +201,31 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
           }
           style={styles.card}
         >
-          <View style={styles.imageContainer}>
-            {bookImages.length > 0 ? (
-              <>
-                <Image source={{ uri: bookImages[0] }} style={styles.coverImage} />
-                <View style={styles.collageImages}>
-                  {bookImages.slice(1).map((img, i) => (
-                    <Image key={i} source={{ uri: img }} style={styles.collageImage} />
-                  ))}
-                </View>
-              </>
+          {/* Left side: Image collage */}
+          <View style={styles.imageCollageContainer}>
+            {bookImages.length >= 1 ? (
+              <Image source={{ uri: bookImages[0] }} style={styles.largeImage} />
             ) : (
-              <View style={styles.emptyTagCover}>
-                <Text style={styles.emptyTagText}>No Books</Text>
-              </View>
+              <BookPlaceholder />
             )}
+
+            <View style={styles.smallImagesColumn}>
+              {bookImages.length >= 2 ? (
+                <Image source={{ uri: bookImages[1] }} style={styles.smallImage} />
+              ) : (
+                <BookPlaceholder small />
+              )}
+
+              {bookImages.length >= 3 ? (
+                <Image source={{ uri: bookImages[2] }} style={styles.smallImage} />
+              ) : (
+                <BookPlaceholder small />
+              )}
+            </View>
           </View>
 
-          <View style={styles.footer}>
+          {/* Right side: Tag text */}
+          <View style={styles.textContainer}>
             <Text style={styles.statusText}>{tag.tagName}</Text>
           </View>
         </TouchableOpacity>
@@ -261,11 +278,10 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     marginBottom: SPACING.space_20,
+    paddingHorizontal: SPACING.space_20,
   },
   card: {
-    margin: SPACING.space_8,
-    width: '100%',
-    maxWidth: 320,
+    flexDirection: 'row',
     backgroundColor: COLORS.primaryDarkGreyHex,
     borderRadius: BORDERRADIUS.radius_20,
     overflow: 'hidden',
@@ -273,66 +289,40 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
+    height: 140,
   },
-  imageContainer: {
-    position: 'relative',
-    width: '100%',
-    height: 160,
+  imageCollageContainer: {
+    flexDirection: 'row',
+    width: 140,
+    height: '100%',
+    gap: 2,
   },
-  coverImage: {
-    width: '100%',
+  largeImage: {
+    flex: 2,
     height: '100%',
     resizeMode: 'cover',
-    borderTopLeftRadius: BORDERRADIUS.radius_20,
-    borderTopRightRadius: BORDERRADIUS.radius_20,
+    backgroundColor: COLORS.primaryGreyHex,
   },
-  collageImages: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
+  smallImagesColumn: {
+    flex: 1,
+    height: '100%',
+    gap: 2,
+    backgroundColor: COLORS.primaryGreyHex,
   },
-  collageImage: {
-    width: 50,
-    height: 75, // 1.5x 50px
+  smallImage: {
+    flex: 1,
     resizeMode: 'cover',
-    borderRadius: BORDERRADIUS.radius_8,
-    margin: SPACING.space_2,
-    borderWidth: 2,
-    borderColor: COLORS.primaryDarkGreyHex,
   },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: SPACING.space_4,
-    backgroundColor: COLORS.primaryDarkGreyHex,
-    borderBottomLeftRadius: BORDERRADIUS.radius_20,
-    borderBottomRightRadius: BORDERRADIUS.radius_20,
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_18,
-    color: COLORS.primaryWhiteHex,
-    paddingLeft: SPACING.space_20,
-    marginBottom: SPACING.space_12,
-  },
-  bookshelfContainer: {
-    paddingLeft: SPACING.space_20,
-    gap: SPACING.space_20,
+  textContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.space_20,
   },
   statusText: {
     color: COLORS.primaryWhiteHex,
     fontSize: FONTSIZE.size_18,
     fontFamily: FONTFAMILY.poppins_semibold,
-    textAlign: 'center',
+    marginBottom: SPACING.space_4,
   },
   loadingText: {
     fontFamily: FONTFAMILY.poppins_regular,
@@ -340,6 +330,19 @@ const styles = StyleSheet.create({
     color: COLORS.primaryLightGreyHex,
     textAlign: 'center',
     marginTop: SPACING.space_36,
+  },
+  placeholder: {
+    flex: 2,
+    backgroundColor: COLORS.primaryGreyHex,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderSmall: {
+    flex: 1,
+  },
+  placeholderEmoji: {
+    fontSize: 28,
+    opacity: 0.6,
   },
   separator: {
     paddingVertical: SPACING.space_20,
