@@ -8,7 +8,8 @@ import {
   Platform, 
   ToastAndroid, 
   ScrollView,
-  Modal 
+  Modal,
+  ActivityIndicator
 } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import instance from '../../../services/axios';
@@ -30,7 +31,7 @@ interface ReadingStatusModalProps {
   initialStatus?: string;
   initialPage?: string;
   initialTags?: any[];
-
+  userBookId?: number|null;
 }
 
 const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
@@ -43,12 +44,15 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
   initialStatus = 'To be read',
   initialPage = '',
   initialTags = [],
+  userBookId,
 }) => {
   const [status, setStatus] = useState(initialStatus);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [bookTags, setBookTags] = useState(initialTags);
   const [tagSelectorVisible, setTagSelectorVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isInQueue, setIsInQueue] = useState(false);
+  const [queueLoading, setQueueLoading] = useState(false);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const analytics = useAnalytics();
@@ -70,8 +74,28 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
       setStatus(initialStatus);
       setCurrentPage(initialPage);
       setBookTags(initialTags);
+      
+      if (initialStatus === 'To be read' && userBookId) {
+        checkIfInQueue();
+      }
     }
-  }, [visible]);
+  }, [visible, initialStatus, userBookId]);
+
+  const checkIfInQueue = async () => {
+    if (!userBookId) return;
+    
+    try {
+      const response = await instance.get(requests.fetchReadingQueue, {
+        headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
+      });
+      
+      const queue = response.data.data.queue || [];
+      const inQueue = queue.some((item: any) => item.userBookId === userBookId);
+      setIsInQueue(inQueue);
+    } catch (error) {
+      console.log('Error checking queue status:', error);
+    }
+  };
 
   const fetchBookTagsList = async () => {
     try {
@@ -91,6 +115,44 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
       ToastAndroid.showWithGravity(message, ToastAndroid.SHORT, ToastAndroid.CENTER);
     } else {
       Toast.show({ type, text1: message, visibilityTime: 2000, position: 'bottom', bottomOffset: 100 });
+    }
+  };
+
+  const handleAddToQueue = async () => {
+    if (!userBookId) {
+      showToast('Please save the book status first', 'error');
+      return;
+    }
+
+    setQueueLoading(true);
+    try {
+      if (isInQueue) {
+        // Remove from queue
+        await instance.delete(requests.removeFromQueue(userBookId), {
+          headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
+        });
+        setIsInQueue(false);
+        showToast('Removed from reading queue');
+        analytics.track('removed_from_reading_queue');
+      } else {
+        // Add to queue
+        await instance.post(
+          requests.addToQueue,
+          { bookId: id },
+          {
+            headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
+          }
+        );
+        setIsInQueue(true);
+        showToast('Added to reading queue');
+        analytics.track('added_to_reading_queue');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error?.message || 'Failed to update queue';
+      showToast(errorMessage, 'error');
+      console.error('Error updating queue:', error);
+    } finally {
+      setQueueLoading(false);
     }
   };
 
@@ -180,6 +242,41 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
               </View>
             )}
 
+            {status === 'To be read' && (
+              <View style={styles.section}>
+                <View style={styles.queueHeader}>
+                  <View>
+                    <Text style={styles.label}>Reading Queue</Text>
+                    <Text style={styles.queueSubtext}>Pin this to your next 5 reads</Text>
+                  </View>
+                </View>
+                <TouchableOpacity 
+                  style={[
+                    styles.queueButton,
+                    isInQueue && styles.queueButtonActive,
+                    queueLoading && styles.queueButtonDisabled
+                  ]}
+                  onPress={handleAddToQueue}
+                  disabled={queueLoading}
+                >
+                  {queueLoading ? (
+                    <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
+                  ) : (
+                    <>
+                      <AntDesign 
+                        name={isInQueue ? "checkcircle" : "plus"} 
+                        size={FONTSIZE.size_16} 
+                        color={COLORS.primaryWhiteHex} 
+                      />
+                      <Text style={styles.queueButtonText}>
+                        {isInQueue ? 'In Reading Queue' : 'Add to Reading Queue'}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+
             <View style={styles.section}>
               <View style={styles.tagsHeader}>
                 <Text style={styles.label}>Tags</Text>
@@ -207,8 +304,16 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
             </View>
           </ScrollView>
 
-          <TouchableOpacity style={[styles.button, loading && { opacity: 0.5 }]} onPress={submitReadingStatus} disabled={loading}>
-            <Text style={styles.buttonText}> {loading ? "Saving..." : "Save Changes"}</Text>
+          <TouchableOpacity 
+            style={[styles.button, loading && styles.buttonDisabled]} 
+            onPress={submitReadingStatus} 
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
+            ) : (
+              <Text style={styles.buttonText}>Save Changes</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -268,6 +373,39 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.secondaryDarkGreyHex,
   },
+  queueHeader: {
+    marginBottom: SPACING.space_12,
+  },
+  queueSubtext: {
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_12,
+    color: COLORS.secondaryLightGreyHex,
+    marginTop: SPACING.space_4,
+  },
+  queueButton: {
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    paddingVertical: SPACING.space_12,
+    paddingHorizontal: SPACING.space_16,
+    borderRadius: BORDERRADIUS.radius_10,
+    borderWidth: 1.5,
+    borderColor: COLORS.primaryOrangeHex,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.space_8,
+  },
+  queueButtonActive: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    borderColor: COLORS.primaryOrangeHex,
+  },
+  queueButtonDisabled: {
+    opacity: 0.5,
+  },
+  queueButtonText: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_14,
+  },
   tagsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -311,6 +449,9 @@ const styles = StyleSheet.create({
     borderRadius: BORDERRADIUS.radius_15,
     alignItems: 'center',
     marginTop: SPACING.space_10,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
   buttonText: {
     fontFamily: FONTFAMILY.poppins_semibold,

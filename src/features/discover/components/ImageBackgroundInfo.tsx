@@ -42,7 +42,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   isGoogleBook,
 }) => {
   const [bookData, setBookData] = useState({ averageRating: null, ratingsCount: null, topEmotions: [] });
-  const [readingStatus, setReadingStatus] = useState({ status: 'To be read', currentPage: '', tags: [] });
+  const [readingStatus, setReadingStatus] = useState({ userBookId: null, status: 'To be read', currentPage: '', tags: [] });
   const [modalVisible, setModalVisible] = useState(false);
   const userDetails = useStore((state: any) => state.userDetails);
 
@@ -89,6 +89,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
 
         if (statusRes && tagsRes) {
           setReadingStatus({
+            userBookId: statusRes.data.data.userBookId,
             status: statusRes.data.data.status || 'To be read',
             currentPage: statusRes.data.data.currentPage || '',
             tags: tagsRes.data.data.tags || []
@@ -208,6 +209,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         initialStatus={readingStatus.status}
         initialPage={readingStatus.currentPage}
         initialTags={readingStatus.tags}
+        userBookId={readingStatus.userBookId}
       />
     </View>
   );
