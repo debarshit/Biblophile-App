@@ -47,6 +47,7 @@
     "react-native-calendars": "^1.1312.0",
     "react-native-chart-kit": "^6.12.0",
     "react-native-confetti-cannon": "^1.5.2",
+    "react-native-draglist": "^3.10.0",
     "react-native-onboarding-swiper": "^1.2.0",
     "react-native-render-html": "^6.3.4",
     "react-native-safe-area-context": "5.4.0",

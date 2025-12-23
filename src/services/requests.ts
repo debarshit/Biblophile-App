@@ -20,6 +20,7 @@ const requests = {
     addBook: `${APIURL}books/`,
     submitBookRequest: `${APIURL}books/request`,
     fetchBookId: (isbn) => `${APIURL}books/isbn/${isbn}`,
+    fetchBooksByUserBookIds: `${APIURL}books/userbooks`,
     fetchReadingStatus: (id) => `${APIURL}books/${id}/status`,
     submitReadingStatus: `${APIURL}books/status`,
     fetchProductReviews: (id) => `${APIURL}books/${id}/reviews`,
