@@ -19,11 +19,14 @@ interface BookStatusModalProps {
   initialStartDate?: string;
   initialEndDate?: string;
   onUpdate: () => void;
+  userBookId?: number;
+  onViewHistory?: () => void;
 }
 
 const BookStatusModal: React.FC<BookStatusModalProps> = ({
-  visible, onClose, bookId, initialStatus, initialPage, initialStartDate, initialEndDate, onUpdate,
+  visible, onClose, bookId, initialStatus, initialPage, initialStartDate, initialEndDate, onUpdate, userBookId, onViewHistory,
 }) => {
+  const [showHistoryButton, setShowHistoryButton] = useState(true);
   const [localStatus, setLocalStatus] = useState(initialStatus);
   const [localPage, setLocalPage] = useState(initialPage);
   const [localStartDate, setLocalStartDate] = useState(initialStartDate || '');
@@ -105,6 +108,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
         currentPage: localStatus === 'Currently reading' ? localPage : undefined,
         startDate: localStartDate || undefined,
         endDate: localStatus === 'Read' ? localEndDate : undefined,
+        userBookId: userBookId || undefined,
       }, {
         headers: {
           Authorization: `Bearer ${userDetails[0].accessToken}`,
@@ -162,6 +166,18 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
               <MaterialIcons name="close" size={24} color={COLORS.secondaryLightGreyHex} />
             </TouchableOpacity>
           </View>
+
+          {/* View History Button */}
+          {onViewHistory && showHistoryButton && !userBookId && (
+            <TouchableOpacity 
+              style={styles.viewHistoryButton}
+              onPress={onViewHistory}
+            >
+              <MaterialIcons name="history" size={20} color={COLORS.primaryOrangeHex} />
+              <Text style={styles.viewHistoryText}>View Reading History</Text>
+              <MaterialIcons name="chevron-right" size={20} color={COLORS.secondaryLightGreyHex} />
+            </TouchableOpacity>
+          )}
             
           {/* Status Picker */}
           <View style={styles.section}>
@@ -406,5 +422,26 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_14,
     marginLeft: SPACING.space_4,
+  },
+  viewHistoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    marginHorizontal: SPACING.space_20,
+    marginTop: SPACING.space_12,
+    marginBottom: SPACING.space_8,
+    paddingHorizontal: SPACING.space_16,
+    paddingVertical: SPACING.space_12,
+    borderRadius: BORDERRADIUS.radius_10,
+    borderWidth: 1,
+    borderColor: COLORS.primaryOrangeHex,
+  },
+  viewHistoryText: {
+    flex: 1,
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+    marginLeft: SPACING.space_12,
   },
 });

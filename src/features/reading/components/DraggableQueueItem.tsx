@@ -60,6 +60,7 @@ const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
                     <View style={styles.queueBookCover}>
                         <BookshelfCard
                             id={item.bookId.toString()}
+                            userBookId={item.userBookId}
                             isPageOwner={userData.isPageOwner}
                             photo={convertHttpToHttps(item.bookPhoto)}
                             status={item.status}

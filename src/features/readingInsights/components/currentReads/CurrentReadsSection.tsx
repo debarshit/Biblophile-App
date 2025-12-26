@@ -15,6 +15,7 @@ import CurrentlyReadingBooks from './CurrentlyReadingBooks';
 import PagesReadInputForm from './PagesReadInputForm';
 import SessionControls from './SessionControls';
 import DailyNoteBottomSheet from './DailyNoteBottomSheet';
+import ReadingHistoryModal from '../../../reading/components/ReadingHistoryModal';
 
 const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const navigation = useNavigation<any>();
@@ -32,7 +33,9 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const [selectedBookPage, setSelectedBookPage] = useState<number | undefined>(undefined);
   const [selectedBookStartDate, setSelectedBookStartDate] = useState<string | undefined>(undefined);
   const [selectedBookEndDate, setSelectedBookEndDate] = useState<string | undefined>(undefined);
+  const [selectedUserBookId, setSelectedUserBookId] = useState<number | undefined>(undefined);
   const [isBookStatusModalVisible, setIsBookStatusModalVisible] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   const userDetails = useStore((state: any) => state.userDetails);
 
@@ -209,6 +212,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
     setSelectedBookPage(book.CurrentPage);
     setSelectedBookStartDate(book.StartDate);
     setSelectedBookEndDate(book.EndDate);
+    setSelectedUserBookId(undefined);
     setIsBookStatusModalVisible(true);
   }, []);
 
@@ -219,6 +223,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
     setSelectedBookPage(undefined);
     setSelectedBookStartDate(undefined);
     setSelectedBookEndDate(undefined);
+    setSelectedUserBookId(undefined);
   }, []);
 
   const handleBookStatusUpdate = useCallback(async () => {
@@ -229,6 +234,16 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
     checkActiveSession();
     handleCloseBookStatusModal();
   }, [fetchPagesRead, updateStreak, checkActiveSession, handleCloseBookStatusModal]);
+
+  const handleEditInstance = useCallback((instance: any) => {
+    setSelectedBookId(instance.bookId || selectedBookId);
+    setSelectedBookStatus(instance.status);
+    setSelectedBookPage(instance.currentPage);
+    setSelectedBookStartDate(instance.startDate);
+    setSelectedBookEndDate(instance.endDate);
+    setSelectedUserBookId(instance.userBookId);
+    setIsBookStatusModalVisible(true);
+  }, [selectedBookId]);
 
   const handleStartSessionPress = useCallback(() => {
     setPromptMessage('Would you like to start a reading session?');
@@ -354,7 +369,19 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
         initialPage={selectedBookPage}
         initialStartDate={selectedBookStartDate}
         initialEndDate={selectedBookEndDate}
+        userBookId={selectedUserBookId}
         onUpdate={handleBookStatusUpdate}
+        onViewHistory={() => {
+          setIsBookStatusModalVisible(false);
+          setTimeout(() => setShowHistoryModal(true), 300);
+        }}
+      />
+
+      <ReadingHistoryModal
+        visible={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        bookId={selectedBookId}
+        onEditInstance={handleEditInstance}
       />
 
       <SessionPrompt

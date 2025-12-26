@@ -16,9 +16,11 @@ import {
   SPACING,
 } from '../../../theme/theme';
 import BookStatusModal from './BookStatusModal';
+import ReadingHistoryModal from './ReadingHistoryModal';
 
 interface BookshelfCardProps {
   id: string;
+  userBookId?: number;
   isPageOwner: boolean;
   photo: string;
   status: string;
@@ -31,6 +33,7 @@ interface BookshelfCardProps {
 
 const BookshelfCard: React.FC<BookshelfCardProps> = ({
   id,
+  userBookId,
   isPageOwner = true,
   photo,
   status,
@@ -41,6 +44,8 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
   navigation
 }) => {
   const [statusModalVisible, setStatusModalVisible] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedInstance, setSelectedInstance] = useState<any>(null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -61,7 +66,18 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
 
   const handleModalUpdate = () => {
     setStatusModalVisible(false);
+    setSelectedInstance(null);
     onUpdate();
+  };
+
+  const handleEditInstance = (instance: any) => {
+    setSelectedInstance(instance);
+    setStatusModalVisible(true);
+  };
+
+  const handleCloseStatusModal = () => {
+    setStatusModalVisible(false);
+    setSelectedInstance(null);
   };
 
   return (
@@ -122,11 +138,22 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
           visible={statusModalVisible}
           onClose={() => setStatusModalVisible(false)}
           bookId={id}
-          initialStatus={status}
-          initialPage={currentPage}
-          initialStartDate={startDate}
-          initialEndDate={endDate}
+          initialStatus={selectedInstance?.status || status}
+          initialPage={selectedInstance?.currentPage || currentPage}
+          initialStartDate={selectedInstance?.startDate || startDate}
+          initialEndDate={selectedInstance?.endDate || endDate}
+          userBookId={selectedInstance?.userBookId}
           onUpdate={handleModalUpdate}
+          onViewHistory={() => {
+            setStatusModalVisible(false);
+            setTimeout(() => setShowHistoryModal(true), 300);
+          }}
+        />
+        <ReadingHistoryModal
+          visible={showHistoryModal}
+          onClose={() => setShowHistoryModal(false)}
+          bookId={id}
+          onEditInstance={handleEditInstance}
         />
       </LinearGradient>
     </View>
