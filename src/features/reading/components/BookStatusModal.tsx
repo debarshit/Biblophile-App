@@ -111,8 +111,8 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
         },
       });
       const submitReadingStatusResponse = response.data;
-      setUpdateMessage(submitReadingStatusResponse.data.message === "Updated" ? "Updated successfully!" : submitReadingStatusResponse.data.message);
-      if (submitReadingStatusResponse.data.message === "Updated") onUpdate();
+      setUpdateMessage(submitReadingStatusResponse.data.message === "Updated successfully" ? "Updated successfully!" : submitReadingStatusResponse.data.message);
+      if (submitReadingStatusResponse.data.message === "Updated successfully") onUpdate();
       analytics.track('reading_status_updated');
     } catch (error) {
       setUpdateMessage("Uh oh! Please try again");

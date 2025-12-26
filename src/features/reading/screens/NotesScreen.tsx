@@ -6,6 +6,7 @@ import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../th
 import { useStore } from '../../../store/store';
 import Mascot from '../../../components/Mascot';
 import HeaderBar from '../../../components/HeaderBar';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 const NotesScreen: React.FC = ({navigation}: any) => {
     const [notes, setNotes] = useState([]);
@@ -102,6 +103,11 @@ const NotesScreen: React.FC = ({navigation}: any) => {
             .catch(error => console.error("Error updating note:", error));
     };
 
+    const handleCancel = () => {
+        setEditing(null);
+        setCurrentNote('');
+    };
+
     const handleChange = (value: string) => {
         setCurrentNote(value);
     };
@@ -118,9 +124,14 @@ const NotesScreen: React.FC = ({navigation}: any) => {
                             placeholder="Your note in 300 char"
                             multiline
                         />
-                        <TouchableOpacity onPress={() => handleSave(item.noteId)} style={styles.saveBtn}>
-                            <Text style={styles.btnText}>Save</Text>
-                        </TouchableOpacity>
+                         <View style={styles.btnGroup}>
+                            <TouchableOpacity onPress={() => handleCancel()} style={styles.editBtn}>
+                                <Text style={styles.btnText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => handleSave(item.noteId)} style={styles.saveBtn}>
+                                <Text style={styles.btnText}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
                     </>
                 ) : (
                     <>
@@ -132,7 +143,7 @@ const NotesScreen: React.FC = ({navigation}: any) => {
                                     type: "Book",
                                 });
                             }}>
-                                <Image source={{ uri: item.bookPhoto }} style={styles.thumbnail} />
+                                <Image source={{ uri: convertHttpToHttps(item.bookPhoto) }} style={styles.thumbnail} />
                             </TouchableOpacity>}
                             <View style={styles.noteTextContainer}>
                                 <Text style={styles.noteText}>{item.note}</Text>

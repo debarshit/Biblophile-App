@@ -10,11 +10,11 @@ import SessionPrompt from './SessionPrompt';
 import { useStreak } from '../../../../hooks/useStreak';
 import { useNavigation } from '@react-navigation/native';
 import { useAnalytics } from '../../../../utils/analytics';
-import NoteSection from './NoteSection';
 import { dismissTimerNotification, updateTimerNotification } from '../../../../utils/notificationUtils';
 import CurrentlyReadingBooks from './CurrentlyReadingBooks';
 import PagesReadInputForm from './PagesReadInputForm';
 import SessionControls from './SessionControls';
+import DailyNoteBottomSheet from './DailyNoteBottomSheet';
 
 const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const navigation = useNavigation<any>();
@@ -24,6 +24,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const [isLoadingCurrentReads, setIsLoadingCurrentReads] = useState(true);
   const [refreshData, setRefreshData] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [showDailyNoteBottomSheet, setShowDailyNoteBottomSheet] = useState(false);
 
   // states for BookStatusModal
   const [selectedBookId, setSelectedBookId] = useState<string>('');
@@ -184,7 +185,8 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
         if (response.data.message === 'Updated') {
           analytics.track('pages_read_updated');
           if (!startingTime) {
-            Alert.alert('Success', 'Updated');
+            // Alert.alert('Success', 'Updated');
+            setShowDailyNoteBottomSheet(true);
           }
           await updateStreak(null);
           setRefreshData(prev => !prev);
@@ -221,6 +223,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
 
   const handleBookStatusUpdate = useCallback(async () => {
     setRefreshData(prev => !prev);
+    setShowDailyNoteBottomSheet(true);
     await fetchPagesRead();
     await updateStreak(null);
     checkActiveSession();
@@ -337,7 +340,11 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
         onStartSession={handleStartSessionPress}
       /> */}
 
-      {/* <NoteSection userDetails={userDetails} /> */}
+      <DailyNoteBottomSheet
+        visible={showDailyNoteBottomSheet}
+        onClose={() => setShowDailyNoteBottomSheet(false)}
+        userDetails={userDetails}
+      />
 
       <BookStatusModal
         visible={isBookStatusModalVisible}
