@@ -57,12 +57,16 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
   const userDetails = useStore((state: any) => state.userDetails);
   const analytics = useAnalytics();
 
+  const isCompletedBook = initialStatus === 'Read' || initialStatus === 'Did not finish';
+
   const statusOptions: PickerOption[] = [
     ...(status === 'Currently reading' || status === 'Paused'
             ? [{ label: 'Paused', value: 'Paused', icon: 'pause' }]
             : []),
     { label: 'Read', value: 'Read', icon: 'check-circle' },
-    { label: 'Currently reading', value: 'Currently reading', icon: 'menu-book' },
+    isCompletedBook 
+      ? { label: 'Re-read', value: 'Re-read', icon: 'read-more' }
+      : { label: 'Currently reading', value: 'Currently reading', icon: 'menu-book' },
     { label: 'To be read', value: 'To be read', icon: 'bookmark-border' },
     { label: 'Did not finish', value: 'Did not finish', icon: 'cancel' },
     { label: 'Remove', value: 'Remove', icon: 'delete' },
@@ -184,19 +188,30 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
         } else throw new Error("Failed to add/update book");
       }
 
-      const requestData: any = { bookId, status };
+      const requestData: any = { bookId };
       
-      if (status === "Currently reading" || status === "Paused") {
+      if (status === 'Re-read') {
+        requestData.status = 'Currently reading';
         requestData.currentPage = (currentPage && !isNaN(Number(currentPage)) && currentPage.trim()) ? currentPage : '0';
+        requestData.createNew = true; // If user selected "Re-read", create a new instance
+      } else {
+        requestData.status = status;
+        if (userBookId) {
+          requestData.userBookId = userBookId; // Update existing instance
+        }
+        if (status === "Currently reading" || status === "Paused") {
+          requestData.currentPage = (currentPage && !isNaN(Number(currentPage)) && currentPage.trim()) ? currentPage : '0';
+        }
       }
 
       const response = await instance.post(requests.submitReadingStatus, requestData, {
         headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
       });
 
-      if (response.data.data.message === "Updated") {
+      if (response.data.data.message === "Updated successfully") {
+        const userBookId = response.data.data.userBookId;
         analytics.track('reading_status_updated');
-        onUpdate({ status, currentPage, tags: bookTags });
+        onUpdate({ userBookId, status, currentPage, tags: bookTags });
         showToast('Updated successfully!');
         onClose();
       }
@@ -228,7 +243,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
               />
             </View>
           <ScrollView showsVerticalScrollIndicator={false}>
-            {(status === 'Currently reading' || status === 'Paused') && (
+            {(status === 'Currently reading' || status === 'Paused' || status === 'Re-read') && (
               <View style={styles.section}>
                 <Text style={styles.label}>Current Page</Text>
                 <TextInput
