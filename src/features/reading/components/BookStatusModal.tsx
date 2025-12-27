@@ -175,7 +175,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
             >
               <MaterialIcons name="history" size={20} color={COLORS.primaryOrangeHex} />
               <Text style={styles.viewHistoryText}>View Reading History</Text>
-              <MaterialIcons name="chevron-right" size={20} color={COLORS.secondaryLightGreyHex} />
+              <MaterialIcons name="chevron-right" size={20} color={COLORS.primaryOrangeHex} />
             </TouchableOpacity>
           )}
             
@@ -425,23 +425,15 @@ const styles = StyleSheet.create({
   },
   viewHistoryButton: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.secondaryDarkGreyHex,
+    justifyContent: 'flex-end',
     marginHorizontal: SPACING.space_20,
-    marginTop: SPACING.space_12,
-    marginBottom: SPACING.space_8,
     paddingHorizontal: SPACING.space_16,
-    paddingVertical: SPACING.space_12,
-    borderRadius: BORDERRADIUS.radius_10,
-    borderWidth: 1,
-    borderColor: COLORS.primaryOrangeHex,
+    paddingVertical: SPACING.space_8,
   },
   viewHistoryText: {
-    flex: 1,
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_14,
-    marginLeft: SPACING.space_12,
+    marginLeft: SPACING.space_4,
   },
 });
