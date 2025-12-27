@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert, Share } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import GradientBGIcon from '../../../components/GradientBGIcon';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import instance from '../../../services/axios';
@@ -185,10 +185,18 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         <View style={styles.readingInfoCard}>
           <View style={styles.readingInfoHeader}>
             <Text style={styles.readingInfoTitle}>My Reading Info</Text>
-            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.editButton}>
-              <AntDesign name="edit" size={FONTSIZE.size_14} color={COLORS.primaryWhiteHex} />
-              <Text style={styles.editButtonText}>Edit</Text>
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <TouchableOpacity 
+                onPress={() => setHistoryModalVisible(true)} 
+                style={styles.historyButton}
+              >
+                <MaterialIcons name="history" size={FONTSIZE.size_16} color={COLORS.primaryOrangeHex} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.editButton}>
+                <AntDesign name="edit" size={FONTSIZE.size_14} color={COLORS.primaryWhiteHex} />
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <View style={styles.statusDisplay}>
@@ -224,10 +232,6 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         initialPage={readingStatus.currentPage}
         initialTags={readingStatus.tags}
         userBookId={readingStatus.userBookId}
-        onViewHistory={() => {
-          setModalVisible(false);
-          setHistoryModalVisible(true);
-        }}
       />
 
       <ReadingHistoryModal
@@ -270,6 +274,8 @@ const styles = StyleSheet.create({
   statusText: { fontFamily: FONTFAMILY.poppins_semibold, color: COLORS.primaryWhiteHex, fontSize: FONTSIZE.size_14 },
   pageInfo: { fontFamily: FONTFAMILY.poppins_regular, color: COLORS.secondaryLightGreyHex, fontSize: FONTSIZE.size_14, marginLeft: SPACING.space_12 },
   tagsSection: { paddingTop: SPACING.space_12, borderTopWidth: 1, borderTopColor: COLORS.primaryDarkGreyHex },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: SPACING.space_8 },
+  historyButton: { padding: SPACING.space_8, backgroundColor: COLORS.primaryDarkGreyHex, borderRadius: BORDERRADIUS.radius_10 },
 });
 
 export default ImageBackgroundInfo;

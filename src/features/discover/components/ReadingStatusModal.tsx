@@ -32,7 +32,6 @@ interface ReadingStatusModalProps {
   initialPage?: string;
   initialTags?: any[];
   userBookId?: number|null;
-  onViewHistory?: () => void;
 }
 
 const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
@@ -46,7 +45,6 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
   initialPage = '',
   initialTags = [],
   userBookId,
-  onViewHistory,
 }) => {
   const [status, setStatus] = useState(initialStatus);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -292,16 +290,6 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
                 </TouchableOpacity>
               </View>
             )}
-            {onViewHistory && (
-              <TouchableOpacity 
-                style={styles.viewHistoryButton}
-                onPress={onViewHistory}
-              >
-                <MaterialIcons name="history" size={14} color={COLORS.primaryOrangeHex} />
-                <Text style={styles.viewHistoryText}>View Reading History</Text>
-                <MaterialIcons name="chevron-right" size={14} color={COLORS.primaryOrangeHex} />
-              </TouchableOpacity>
-            )}
             <View style={styles.section}>
               <View style={styles.tagsHeader}>
                 <Text style={styles.label}>Tags</Text>
@@ -482,18 +470,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_semibold,
     color: COLORS.primaryWhiteHex,
     fontSize: FONTSIZE.size_16,
-  },
-  viewHistoryButton: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: SPACING.space_8,
-    paddingVertical: SPACING.space_8,
-  },
-  viewHistoryText: {
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_10,
-    marginLeft: SPACING.space_4,
   },
 });
 
