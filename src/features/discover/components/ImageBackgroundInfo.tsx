@@ -7,6 +7,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import ReadingStatusModal from './ReadingStatusModal';
 import { useStore } from '../../../store/store';
+import ReadingHistoryModal from '../../reading/components/ReadingHistoryModal';
 
 interface ImageBackgroundInfoProps {
   EnableBackHandler: boolean;
@@ -44,6 +45,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   const [bookData, setBookData] = useState({ averageRating: null, ratingsCount: null, topEmotions: [] });
   const [readingStatus, setReadingStatus] = useState({ userBookId: null, status: '', currentPage: '', tags: [] });
   const [modalVisible, setModalVisible] = useState(false);
+  const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const userDetails = useStore((state: any) => state.userDetails);
 
   const getBookId = async () => {
@@ -109,6 +111,18 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     } catch {
       Alert.alert('Error', 'Failed to share.');
     }
+  };
+
+  const handleEditInstance = (instance: any) => {
+    // Update the reading status with the selected instance
+    setReadingStatus({
+      userBookId: instance.userBookId,
+      status: instance.status,
+      currentPage: instance.currentPage?.toString() || '',
+      tags: readingStatus.tags // Keep existing tags
+    });
+    // Open the status modal to edit
+    setModalVisible(true);
   };
 
   const renderRating = () => {
@@ -210,6 +224,18 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         initialPage={readingStatus.currentPage}
         initialTags={readingStatus.tags}
         userBookId={readingStatus.userBookId}
+        onViewHistory={() => {
+          setModalVisible(false);
+          setHistoryModalVisible(true);
+        }}
+      />
+
+      <ReadingHistoryModal
+        visible={historyModalVisible}
+        onClose={() => setHistoryModalVisible(false)}
+        bookId={id}
+        bookTitle={name}
+        onEditInstance={handleEditInstance}
       />
     </View>
   );

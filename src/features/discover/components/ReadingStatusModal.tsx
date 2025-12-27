@@ -11,7 +11,7 @@ import {
   Modal,
   ActivityIndicator
 } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
@@ -32,6 +32,7 @@ interface ReadingStatusModalProps {
   initialPage?: string;
   initialTags?: any[];
   userBookId?: number|null;
+  onViewHistory?: () => void;
 }
 
 const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
@@ -45,6 +46,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
   initialPage = '',
   initialTags = [],
   userBookId,
+  onViewHistory,
 }) => {
   const [status, setStatus] = useState(initialStatus);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -233,15 +235,14 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
               <AntDesign name="close" size={FONTSIZE.size_24} color={COLORS.secondaryLightGreyHex} />
             </TouchableOpacity>
           </View>
-
           <View style={styles.section}>
-              <Text style={styles.label}>Reading Status</Text>
-              <CustomPicker
-                options={statusOptions}
-                selectedValue={status}
-                onValueChange={setStatus}
-              />
-            </View>
+            <Text style={styles.label}>Reading Status</Text>
+            <CustomPicker
+              options={statusOptions}
+              selectedValue={status}
+              onValueChange={setStatus}
+            />
+          </View>
           <ScrollView showsVerticalScrollIndicator={false}>
             {(status === 'Currently reading' || status === 'Paused' || status === 'Re-read') && (
               <View style={styles.section}>
@@ -291,7 +292,16 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
                 </TouchableOpacity>
               </View>
             )}
-
+            {onViewHistory && (
+              <TouchableOpacity 
+                style={styles.viewHistoryButton}
+                onPress={onViewHistory}
+              >
+                <MaterialIcons name="history" size={14} color={COLORS.primaryOrangeHex} />
+                <Text style={styles.viewHistoryText}>View Reading History</Text>
+                <MaterialIcons name="chevron-right" size={14} color={COLORS.primaryOrangeHex} />
+              </TouchableOpacity>
+            )}
             <View style={styles.section}>
               <View style={styles.tagsHeader}>
                 <Text style={styles.label}>Tags</Text>
@@ -472,6 +482,18 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_semibold,
     color: COLORS.primaryWhiteHex,
     fontSize: FONTSIZE.size_16,
+  },
+  viewHistoryButton: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: SPACING.space_8,
+    paddingVertical: SPACING.space_8,
+  },
+  viewHistoryText: {
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_10,
+    marginLeft: SPACING.space_4,
   },
 });
 
