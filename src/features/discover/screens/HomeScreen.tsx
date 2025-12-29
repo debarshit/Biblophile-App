@@ -38,6 +38,7 @@ import SeasonalRecommendations from '../components/SeasonalRecommendations';
 import StreakWeeklyProgress from '../../readingInsights/components/StreakWeeklyProgress';
 import CurrentReadsSection from '../../readingInsights/components/currentReads/CurrentReadsSection';
 import MerchShopBanner from '../../../components/MerchShopBanner';
+import ChallengesBanner from '../components/ChallengesBanner';
 
 interface Spotlight {
   Id: string;
@@ -166,6 +167,8 @@ const HomeScreen = ({navigation}: any) => {
         scrollEventThrottle={16}>
         {/* App Header */}
         <HeaderBar showLogo showNotifications />
+
+        <ChallengesBanner />
 
         <StreakWeeklyProgress userDetails={userDetails} onFullWeekComplete={() => setShowConfetti(true)} />
 
