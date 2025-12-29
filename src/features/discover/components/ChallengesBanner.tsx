@@ -19,7 +19,7 @@ const ChallengesBanner = () => {
           color={COLORS.primaryOrangeHex}
         />
         <Text style={styles.text}>
-          Explore reading challenges (beta)
+          Explore challenges (beta)
         </Text>
       </View>
 
