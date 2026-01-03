@@ -119,7 +119,7 @@ const ReadingGoals = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Reading Goals (2025)</Text>
+      <Text style={styles.title}>Reading Goals (2026)</Text>
       
       {state.error && (
         <View style={styles.errorMessage}>
@@ -130,7 +130,7 @@ const ReadingGoals = () => {
       {!isGoalSet ? (
         !state.isFormVisible ? (
           <View style={styles.section}>
-            <Text style={styles.promptText}>Set a reading goal for 2025</Text>
+            <Text style={styles.promptText}>Set a reading goal for 2026</Text>
             <TouchableOpacity style={styles.primaryButton} onPress={() => updateState({ isFormVisible: true })}>
               <Text style={styles.buttonText}>Set Goal</Text>
             </TouchableOpacity>
