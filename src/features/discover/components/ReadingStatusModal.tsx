@@ -171,18 +171,25 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
       
       let bookId = id;
       if (isGoogleBook) {
-        const bookData = {
-          ISBN: product.volumeInfo?.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13')?.identifier || '',
-          Title: product.volumeInfo?.title || '',
-          Pages: product.volumeInfo?.pageCount || 0,
-          Price: product.saleInfo?.listPrice?.amount || 0,
-          Description: product.volumeInfo?.description || '',
-          Authors: product.volumeInfo?.authors || [],
-          Genres: product.volumeInfo?.categories || [],
-          Image: product.volumeInfo?.imageLinks?.thumbnail || '',
+        const workPayload = {
+          title: product.volumeInfo?.title || '',
+          description: product.volumeInfo?.description || '',
+          originalLanguage: 'en', // Google Books usually doesn't give this cleanly
+          authors: product.volumeInfo?.authors || [],
+          genres: product.volumeInfo?.categories || [],
+          edition: {
+            isbn: product.volumeInfo?.industryIdentifiers
+              ?.find((id) => id.type === 'ISBN_13')?.identifier || null,
+            format: 'paperback', // default assumption
+            pageCount: product.volumeInfo?.pageCount || null,
+            language: 'en',
+            publisher: null,
+            publicationYear: null,
+            cover: product.volumeInfo?.imageLinks?.thumbnail || null,
+          },
         };
 
-        const response = await instance.post(requests.addBook, bookData);
+        const response = await instance.post(requests.createWork, workPayload);
         if (response.data.status === "success") {
           bookId = response.data.data.bookId;
         } else throw new Error("Failed to add/update book");

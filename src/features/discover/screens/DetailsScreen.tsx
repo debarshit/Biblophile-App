@@ -173,7 +173,7 @@ const DetailsScreen = ({navigation, route}: any) => {
           response = await instance(`${requests.fetchExternalBookDetails(currentId)}`);
           setIsGoogleBook(true);
         } else {
-          response = await instance(`${requests.fetchProductDetails(currentId)}?type=${currentType}&userCity=${selectedCity}`);
+          response = await instance(`${requests.fetchWorkDetails(currentId)}?type=${currentType}&userCity=${selectedCity}`);
           setIsGoogleBook(false);
         }
 
