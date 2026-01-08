@@ -20,6 +20,7 @@ const requests = {
     createWork: `${APIURL}books/works/`,
     addWorkEdition:(workId: number) => `${APIURL}books/works/${workId}/editions`,
     fetchWorkEditions:(workId: number) => `${APIURL}books/works/${workId}/editions`,
+    createChangeProposal: `${APIURL}books/change-proposals/`,
     submitBookRequest: `${APIURL}books/request`,
     fetchBookId: (isbn) => `${APIURL}books/isbn/${isbn}`,
     fetchBooksByUserBookIds: `${APIURL}books/userbooks`,

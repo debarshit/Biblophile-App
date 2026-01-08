@@ -8,6 +8,8 @@ import requests from '../../../services/requests';
 import ReadingStatusModal from './ReadingStatusModal';
 import { useStore } from '../../../store/store';
 import ReadingHistoryModal from '../../reading/components/ReadingHistoryModal';
+import MissingBookInfoModal from './MissingBookInfoModal';
+import { useNavigation } from '@react-navigation/native';
 
 interface ImageBackgroundInfoProps {
   EnableBackHandler: boolean;
@@ -46,7 +48,9 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   const [readingStatus, setReadingStatus] = useState({ userBookId: null, status: '', currentPage: '', tags: [] });
   const [modalVisible, setModalVisible] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const userDetails = useStore((state: any) => state.userDetails);
+  const navigation = useNavigation<any>();
 
   const getBookId = async () => {
     if (type !== 'ExternalBook') return id;
@@ -147,9 +151,14 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             <GradientBGIcon name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
           </TouchableOpacity>
         )}
-        <TouchableOpacity onPress={handleShare}>
-          <GradientBGIcon name="sharealt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
-        </TouchableOpacity>
+         <View style={styles.headerRight}>
+          {!isGoogleBook && <TouchableOpacity onPress={() => setShowReportModal(true)} style={styles.reportButton}>
+            <GradientBGIcon name="warning" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+          </TouchableOpacity>}
+          <TouchableOpacity onPress={handleShare}>
+            <GradientBGIcon name="sharealt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Book Info Card */}
@@ -174,6 +183,20 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
 
           <Text style={styles.authorText}>{author}</Text>
           <View style={styles.ratingContainer}>{renderRating()}</View>
+          
+          {!isGoogleBook && <View style={[styles.section, {flexDirection: 'row', justifyContent: 'space-between', marginTop: SPACING.space_8}]}>
+            <Text style={styles.sectionLabel}>{product.Format}</Text>
+            <TouchableOpacity 
+              style={styles.editionsButton}
+              onPress={() => navigation.navigate('Editions', { workId: product.WorkId, title: name, currentBookId: id })}
+            >
+              <MaterialIcons name="library-books" size={FONTSIZE.size_14} color={COLORS.primaryOrangeHex} />
+              <Text style={styles.editionsText}>
+                {product.OtherEditionsCount} other edition{product.OtherEditionsCount > 1 ? 's' : ''}
+              </Text>
+              <AntDesign name="right" size={FONTSIZE.size_12} color={COLORS.primaryOrangeHex} />
+            </TouchableOpacity>
+          </View>}
         </View>
       </View>
 
@@ -241,6 +264,13 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         bookTitle={name}
         onEditInstance={handleEditInstance}
       />
+      <MissingBookInfoModal
+        modalVisible={showReportModal}
+        setModalVisible={setShowReportModal}
+        accessToken={userDetails[0].accessToken}
+        workId={product?.WorkId}
+        bookId={id}
+      />
     </View>
   );
 };
@@ -276,6 +306,10 @@ const styles = StyleSheet.create({
   tagsSection: { paddingTop: SPACING.space_12, borderTopWidth: 1, borderTopColor: COLORS.primaryDarkGreyHex },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: SPACING.space_8 },
   historyButton: { padding: SPACING.space_8, backgroundColor: COLORS.primaryDarkGreyHex, borderRadius: BORDERRADIUS.radius_10 },
+  headerRight: { flexDirection: 'row', gap: SPACING.space_12 },
+  reportButton: { opacity: 0.7 },
+  editionsButton: { flexDirection: 'row', gap: SPACING.space_4 },
+  editionsText: { fontFamily: FONTFAMILY.poppins_medium, fontSize: FONTSIZE.size_10, color: COLORS.primaryOrangeHex },
 });
 
 export default ImageBackgroundInfo;
