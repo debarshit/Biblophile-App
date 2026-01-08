@@ -234,6 +234,12 @@ const SearchScreen = ({ route }) => {
         ) : (
         <SeasonalRecommendations /> 
         )}
+        <Text style={styles.AddBookText}>
+          Can't find what you're looking for?{` `}
+          <Text style={{color: COLORS.primaryOrangeHex}} onPress={() => navigation.navigate('AddWork')}>
+            Add Book.
+          </Text>
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -296,6 +302,12 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_16,
     color: COLORS.primaryLightGreyHex,
     marginBottom: SPACING.space_4,
+  },
+  AddBookText: {
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_12,
+    alignSelf: 'center',
   },
 });
 
