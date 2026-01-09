@@ -9,11 +9,13 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 import { useAnalytics } from '../../../utils/analytics';
+import { useNavigation } from '@react-navigation/native';
 
 interface BookStatusModalProps {
   visible: boolean;
   onClose: () => void;
   bookId: string;
+  workId?: string;
   initialStatus: string;
   initialPage?: number;
   initialStartDate?: string;
@@ -24,7 +26,7 @@ interface BookStatusModalProps {
 }
 
 const BookStatusModal: React.FC<BookStatusModalProps> = ({
-  visible, onClose, bookId, initialStatus, initialPage, initialStartDate, initialEndDate, onUpdate, userBookId, onViewHistory,
+  visible, onClose, bookId, workId, initialStatus, initialPage, initialStartDate, initialEndDate, onUpdate, userBookId, onViewHistory,
 }) => {
   const [showHistoryButton, setShowHistoryButton] = useState(true);
   const [localStatus, setLocalStatus] = useState(initialStatus);
@@ -36,6 +38,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
 
   const userDetails = useStore((state: any) => state.userDetails);
   const analytics = useAnalytics();
+  const navigation = useNavigation<any>();
 
   const statusOptions: PickerOption[] = [
     { label: 'Currently reading', value: 'Currently reading', icon: 'menu-book' },
@@ -198,6 +201,35 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
                   (text) => setLocalPage(parseInt(text) || 0), 'numeric')}
               </View>
             )}
+
+            {/* Switch Edition Button */}
+{(localStatus === 'Currently reading' || localStatus === 'Read' || localStatus === 'To be read') && userBookId && (
+  <View style={styles.section}>
+    <TouchableOpacity 
+      style={styles.switchEditionButton}
+      onPress={() => {
+        handleClose();
+        // Navigate to EditionsScreen with switch mode
+        // You'll need to pass navigation as a prop to BookStatusModal
+        navigation.navigate('Editions', {
+          workId: workId, // You'll need to pass this as a prop
+          title: '', // You'll need to pass this as a prop
+          currentBookId: bookId,
+          switchMode: true,
+          userBookId: userBookId,
+          onEditionSwitch: (newBookId: string) => {
+            // This callback will be called when edition is switched
+            onUpdate();
+          }
+        });
+      }}
+    >
+      <MaterialIcons name="swap-horiz" size={20} color={COLORS.primaryOrangeHex} />
+      <Text style={styles.switchEditionText}>Switch Edition</Text>
+      <MaterialIcons name="chevron-right" size={20} color={COLORS.secondaryLightGreyHex} />
+    </TouchableOpacity>
+  </View>
+)}
             
             {/* Date Inputs */}
             {(localStatus === 'Currently reading' || localStatus === 'Read') && (
@@ -435,5 +467,22 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_14,
     marginLeft: SPACING.space_4,
+  },
+  switchEditionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    paddingHorizontal: SPACING.space_16,
+    paddingVertical: SPACING.space_12,
+    borderRadius: BORDERRADIUS.radius_10,
+    borderWidth: 1,
+    borderColor: COLORS.primaryOrangeHex,
+  },
+  switchEditionText: {
+    flex: 1,
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+    marginLeft: SPACING.space_8,
   },
 });

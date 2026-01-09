@@ -29,6 +29,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
 
   // states for BookStatusModal
   const [selectedBookId, setSelectedBookId] = useState<string>('');
+  const [selectedWorkId, setSelectedWorkId] = useState<string>('');
   const [selectedBookStatus, setSelectedBookStatus] = useState<string>('');
   const [selectedBookPage, setSelectedBookPage] = useState<number | undefined>(undefined);
   const [selectedBookStartDate, setSelectedBookStartDate] = useState<string | undefined>(undefined);
@@ -208,6 +209,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   // Memoized modal handlers
   const handleOpenBookStatusModal = useCallback((book: any) => {
     setSelectedBookId(book.BookId);
+    setSelectedWorkId(book.WorkId);
     setSelectedBookStatus('Currently reading');
     setSelectedBookPage(book.CurrentPage);
     setSelectedBookStartDate(book.StartDate);
@@ -219,6 +221,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const handleCloseBookStatusModal = useCallback(() => {
     setIsBookStatusModalVisible(false);
     setSelectedBookId('');
+    setSelectedWorkId('');
     setSelectedBookStatus('');
     setSelectedBookPage(undefined);
     setSelectedBookStartDate(undefined);
@@ -237,6 +240,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
 
   const handleEditInstance = useCallback((instance: any) => {
     setSelectedBookId(instance.bookId || selectedBookId);
+    setSelectedBookId(instance.workId || selectedWorkId);
     setSelectedBookStatus(instance.status);
     setSelectedBookPage(instance.currentPage);
     setSelectedBookStartDate(instance.startDate);
@@ -286,7 +290,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
       } else {
         const url = response.notification.request.content.data.urlScheme;
         if (url) {
-          Linking.openURL(url);
+          Linking.openURL(url as string);
         }
       }
     });
@@ -365,6 +369,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
         visible={isBookStatusModalVisible}
         onClose={handleCloseBookStatusModal}
         bookId={selectedBookId}
+        workId={selectedWorkId}
         initialStatus={selectedBookStatus}
         initialPage={selectedBookPage}
         initialStartDate={selectedBookStartDate}
