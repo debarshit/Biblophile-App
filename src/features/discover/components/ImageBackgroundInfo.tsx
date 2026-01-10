@@ -45,7 +45,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   isGoogleBook,
 }) => {
   const [bookData, setBookData] = useState({ averageRating: null, ratingsCount: null, topEmotions: [] });
-  const [readingStatus, setReadingStatus] = useState({ userBookId: null, status: '', currentPage: '', tags: [] });
+  const [readingStatus, setReadingStatus] = useState({ userBookId: null, status: '', progressUnit: '', progressValue: 0, tags: [] });
   const [modalVisible, setModalVisible] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -97,7 +97,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
           setReadingStatus({
             userBookId: statusRes.data.data.userBookId,
             status: statusRes.data.data.status || 'To be read',
-            currentPage: statusRes.data.data.currentPage || '',
+            progressUnit: statusRes.data.data.progressUnit || '',
+            progressValue: statusRes.data.data.progressValue,
             tags: tagsRes.data.data.tags || []
           });
         }
@@ -122,7 +123,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     setReadingStatus({
       userBookId: instance.userBookId,
       status: instance.status,
-      currentPage: instance.currentPage?.toString() || '',
+      progressUnit: instance.progressUnit?.toString() || '',
+      progressValue: instance.progressValue,
       tags: readingStatus.tags // Keep existing tags
     });
     // Open the status modal to edit
@@ -226,8 +228,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             <View style={styles.statusBadge}>
               <Text style={styles.statusText}>{readingStatus.userBookId ? readingStatus.status : 'Set status'}</Text>
             </View>
-            {readingStatus.status === 'Currently reading' && readingStatus.currentPage && (
-              <Text style={styles.pageInfo}>Page {readingStatus.currentPage}</Text>
+            {readingStatus.status === 'Currently reading' && readingStatus.progressValue && (
+              <Text style={styles.pageInfo}>{`${readingStatus.progressValue} ${readingStatus.progressUnit}`}</Text>
             )}
           </View>
 
@@ -252,7 +254,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         product={product}
         onUpdate={setReadingStatus}
         initialStatus={readingStatus.status}
-        initialPage={readingStatus.currentPage}
+        initialProgressUnit={readingStatus.progressUnit as 'pages' | 'percentage' | 'seconds'}
+        initialProgressValue={readingStatus.progressValue}
         initialTags={readingStatus.tags}
         userBookId={readingStatus.userBookId}
       />
