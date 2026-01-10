@@ -30,7 +30,8 @@ interface Book {
     status: string;
     startDate: string;
     endDate: string;
-    currentPage: number;
+    progressUnit?: 'pages' | 'percentage' | 'seconds';
+    progressValue: number|null;
     position?: number;
 }
 
@@ -117,7 +118,8 @@ const BookListScreen = ({ route, navigation }) => {
                 status={item.status}
                 startDate={item.startDate}
                 endDate={item.endDate}
-                currentPage={item.currentPage}
+                progressUnit={item.progressUnit}
+                progressValue={item.progressValue}
                 onUpdate={null}
                 navigation={navigation}
             />

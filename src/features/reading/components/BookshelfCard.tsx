@@ -26,7 +26,8 @@ interface BookshelfCardProps {
   status: string;
   startDate?: string;
   endDate?: string;
-  currentPage?: number;
+  progressUnit?: 'pages' | 'percentage' | 'seconds';
+  progressValue: number|null;
   onUpdate: () => void;
   navigation: any;
 }
@@ -39,7 +40,8 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
   status,
   startDate,
   endDate,
-  currentPage,
+  progressUnit,
+  progressValue,
   onUpdate,
   navigation
 }) => {
@@ -127,7 +129,7 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
                 style={styles.progressContainer}
                 onPress={() => setStatusModalVisible(true)}
               >
-                <Text style={styles.progressText}>Page {currentPage}</Text>
+                <Text style={styles.progressText}>{`${progressUnit} ${progressValue}`}</Text>
               </TouchableOpacity>
             )}
           </ImageBackground>
@@ -139,7 +141,8 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
           onClose={() => setStatusModalVisible(false)}
           bookId={id}
           initialStatus={selectedInstance?.status || status}
-          initialPage={selectedInstance?.currentPage || currentPage}
+          initialProgressUnit={selectedInstance?.progressUnit || progressUnit}
+          initialProgressValue={selectedInstance?.progressValue || progressValue}
           initialStartDate={selectedInstance?.startDate || startDate}
           initialEndDate={selectedInstance?.endDate || endDate}
           userBookId={selectedInstance?.userBookId}

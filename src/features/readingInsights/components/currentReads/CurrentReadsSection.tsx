@@ -31,10 +31,11 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const [selectedBookId, setSelectedBookId] = useState<string>('');
   const [selectedWorkId, setSelectedWorkId] = useState<string>('');
   const [selectedBookStatus, setSelectedBookStatus] = useState<string>('');
-  const [selectedBookPage, setSelectedBookPage] = useState<number | undefined>(undefined);
+  const [selectedBookrogressValue, setSelectedBookProgressValue] = useState<number>(0);
+  const [selectedBookProgressUnit, setSelectedBookProgressUnit] = useState<'pages' | 'percentage' | 'seconds'>('pages');
   const [selectedBookStartDate, setSelectedBookStartDate] = useState<string | undefined>(undefined);
   const [selectedBookEndDate, setSelectedBookEndDate] = useState<string | undefined>(undefined);
-  const [selectedUserBookId, setSelectedUserBookId] = useState<number | undefined>(undefined);
+  const [selectedUserbookId, setSelectedUserbookId] = useState<number | undefined>(undefined);
   const [isBookStatusModalVisible, setIsBookStatusModalVisible] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
@@ -211,10 +212,11 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
     setSelectedBookId(book.BookId);
     setSelectedWorkId(book.WorkId);
     setSelectedBookStatus('Currently reading');
-    setSelectedBookPage(book.CurrentPage);
+    setSelectedBookProgressUnit(book.ProgressUnit);
+    setSelectedBookProgressValue(book.ProgressValue);
     setSelectedBookStartDate(book.StartDate);
     setSelectedBookEndDate(book.EndDate);
-    setSelectedUserBookId(undefined);
+    setSelectedUserbookId(book.UserbookId);
     setIsBookStatusModalVisible(true);
   }, []);
 
@@ -223,10 +225,10 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
     setSelectedBookId('');
     setSelectedWorkId('');
     setSelectedBookStatus('');
-    setSelectedBookPage(undefined);
-    setSelectedBookStartDate(undefined);
+    setSelectedBookProgressUnit(undefined);
+    setSelectedBookProgressValue(undefined);
     setSelectedBookEndDate(undefined);
-    setSelectedUserBookId(undefined);
+    setSelectedUserbookId(undefined);
   }, []);
 
   const handleBookStatusUpdate = useCallback(async () => {
@@ -242,10 +244,11 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
     setSelectedBookId(instance.bookId || selectedBookId);
     setSelectedBookId(instance.workId || selectedWorkId);
     setSelectedBookStatus(instance.status);
-    setSelectedBookPage(instance.currentPage);
+    setSelectedBookProgressUnit(instance.ProgressUnit);
+    setSelectedBookProgressValue(instance.ProgressValue);
     setSelectedBookStartDate(instance.startDate);
     setSelectedBookEndDate(instance.endDate);
-    setSelectedUserBookId(instance.userBookId);
+    setSelectedUserbookId(instance.userbookId);
     setIsBookStatusModalVisible(true);
   }, [selectedBookId]);
 
@@ -371,10 +374,11 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
         bookId={selectedBookId}
         workId={selectedWorkId}
         initialStatus={selectedBookStatus}
-        initialPage={selectedBookPage}
+        initialProgressUnit={selectedBookProgressUnit}
+        initialProgressValue={selectedBookrogressValue}
         initialStartDate={selectedBookStartDate}
         initialEndDate={selectedBookEndDate}
-        userBookId={selectedUserBookId}
+        userBookId={selectedUserbookId}
         onUpdate={handleBookStatusUpdate}
         onViewHistory={() => {
           setIsBookStatusModalVisible(false);
