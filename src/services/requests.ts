@@ -26,6 +26,8 @@ const requests = {
     fetchBooksByUserBookIds: `${APIURL}books/userbooks`,
     fetchReadingStatus: (id) => `${APIURL}books/${id}/status`,
     submitReadingStatus: `${APIURL}books/status`,
+    previewEditionSwitch: `${APIURL}books/preview-edition-switch`,
+    confirmEditionSwitch: `${APIURL}books/confirm-edition-switch`,
     fetchProductReviews: (id) => `${APIURL}books/${id}/reviews`,
     searchBooks: `${APIURL}books/search?searchQuery=`,
     searchExternalBooks: `${APIURL}books/search-external?searchQuery=`,
