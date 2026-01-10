@@ -102,7 +102,8 @@ const contributorRoleOptions: PickerOption[] = [
   { label: 'Translator', value: 'translator', icon: 'translate' },
   { label: 'Illustrator', value: 'illustrator', icon: 'palette' },
   { label: 'Editor', value: 'editor', icon: 'edit' },
-  { label: 'Contributor', value: 'contributor', icon: 'person' },
+  { label: 'Foreword Author', value: 'foreword_author', icon: 'description' },
+  { label: 'Afterword Author', value: 'afterword_author', icon: 'article' },
 ];
 
 const AddEditionScreen = ({ navigation, route }: any) => {

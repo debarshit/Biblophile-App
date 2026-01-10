@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.85)', justifyContent: 'center', alignItems: 'center', padding: SPACING.space_20 },
   confirmModal: { width: '100%', maxWidth: 400, backgroundColor: COLORS.primaryGreyHex, borderRadius: BORDERRADIUS.radius_20, padding: SPACING.space_24, shadowColor: COLORS.primaryOrangeHex, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 10 },
   confirmTitle: { fontFamily: FONTFAMILY.poppins_semibold, fontSize: FONTSIZE.size_20, color: COLORS.primaryWhiteHex, textAlign: 'center', marginBottom: SPACING.space_24 },
-  progressComparison: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACING.space_20, gap: SPACING.space_12 },
+  progressComparison: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACING.space_20, gap: SPACING.space_4, paddingRight: SPACING.space_4},
   progressBlock: { flex: 1, backgroundColor: COLORS.secondaryDarkGreyHex, borderRadius: BORDERRADIUS.radius_15, padding: SPACING.space_16, alignItems: 'center', borderWidth: 1, borderColor: COLORS.primaryBlackHex, minWidth: 140 },
   progressLabel: { fontFamily: FONTFAMILY.poppins_regular, fontSize: FONTSIZE.size_12, color: COLORS.secondaryLightGreyHex, marginBottom: SPACING.space_8, textAlign: 'center' },
   progressValue: { fontFamily: FONTFAMILY.poppins_semibold, fontSize: FONTSIZE.size_18, color: COLORS.primaryOrangeHex, marginBottom: SPACING.space_8, textAlign: 'center' },
