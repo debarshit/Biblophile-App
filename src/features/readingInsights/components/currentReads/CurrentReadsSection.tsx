@@ -8,7 +8,7 @@ import { COLORS, SPACING, FONTSIZE, FONTFAMILY } from '../../../../theme/theme';
 import BookStatusModal from '../../../reading/components/BookStatusModal';
 import SessionPrompt from './SessionPrompt';
 import { useStreak } from '../../../../hooks/useStreak';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useAnalytics } from '../../../../utils/analytics';
 import { dismissTimerNotification, updateTimerNotification } from '../../../../utils/notificationUtils';
 import CurrentlyReadingBooks from './CurrentlyReadingBooks';
@@ -259,23 +259,23 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   }, []);
 
   // Initialize data
-  const initializeData = useCallback(async () => {
-    if (!userDetails[0]?.accessToken || isInitialized) return;
-    
-    try {
-      await Promise.all([
-        fetchCurrentReads(),
-        fetchPagesRead()
-      ]);
-      setIsInitialized(true);
-    } catch (error) {
-      console.error('Error initializing data:', error);
-    }
-  }, [fetchCurrentReads, fetchPagesRead, userDetails, isInitialized]);
+  useFocusEffect(
+    useCallback(() => {
+      const loadData = async () => {
+        try {
+          await Promise.all([
+            fetchCurrentReads(),
+            fetchPagesRead()
+          ]);
+          setIsInitialized(true);
+        } catch (error) {
+          console.error('Error loading data on focus:', error);
+        }
+      };
 
-  useEffect(() => {
-    initializeData();
-  }, [initializeData]);
+      loadData();
+    }, [])
+  );
 
   useEffect(() => {
     if (isInitialized && refreshData) {
