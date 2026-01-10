@@ -169,43 +169,43 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
     setShowSessionPrompt(false);
   }, []);
 
-  const handleSessionPromptAction = useCallback(() => {
-    if (isCompletingSession) {
-      handleCompleteSession();
-    } else {
-      handleSaveSession();
-    }
-  }, [isCompletingSession, handleCompleteSession, handleSaveSession]);
+  // const handleSessionPromptAction = useCallback(() => {
+  //   if (isCompletingSession) {
+  //     handleCompleteSession();
+  //   } else {
+  //     handleSaveSession();
+  //   }
+  // }, [isCompletingSession, handleCompleteSession, handleSaveSession]);
 
-  const updatePagesRead = useCallback(async () => {
-    if (pagesRead !== "" && pagesRead !== "0") {
-      checkActiveSession();
-      try {
-        const updatePagesReadResponse = await instance.post(`${requests.updatePagesRead}?timezone=${userTimezone}`, {
-          pageCount: pagesRead,
-        }, {
-          headers: authHeaders,
-        });
-        const response = updatePagesReadResponse.data;
-        if (response.data.message === 'Updated') {
-          analytics.track('pages_read_updated');
-          if (!startingTime) {
-            // Alert.alert('Success', 'Updated');
-            setShowDailyNoteBottomSheet(true);
-          }
-          await updateStreak(null);
-          setRefreshData(prev => !prev);
-        } else {
-          Alert.alert('Error', response.data.message);
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to update pages read.');
-        console.log(error);
-      }
-    } else {
-      Alert.alert('Page count is 0', 'Please enter number of pages read!');
-    }
-  }, [pagesRead, checkActiveSession, userTimezone, authHeaders, startingTime, updateStreak]);
+  // const updatePagesRead = useCallback(async () => {
+  //   if (pagesRead !== "" && pagesRead !== "0") {
+  //     checkActiveSession();
+  //     try {
+  //       const updatePagesReadResponse = await instance.post(`${requests.updatePagesRead}?timezone=${userTimezone}`, {
+  //         pageCount: pagesRead,
+  //       }, {
+  //         headers: authHeaders,
+  //       });
+  //       const response = updatePagesReadResponse.data;
+  //       if (response.data.message === 'Updated') {
+  //         analytics.track('pages_read_updated');
+  //         if (!startingTime) {
+  //           // Alert.alert('Success', 'Updated');
+  //           setShowDailyNoteBottomSheet(true);
+  //         }
+  //         await updateStreak(null);
+  //         setRefreshData(prev => !prev);
+  //       } else {
+  //         Alert.alert('Error', response.data.message);
+  //       }
+  //     } catch (error) {
+  //       Alert.alert('Error', 'Failed to update pages read.');
+  //       console.log(error);
+  //     }
+  //   } else {
+  //     Alert.alert('Page count is 0', 'Please enter number of pages read!');
+  //   }
+  // }, [pagesRead, checkActiveSession, userTimezone, authHeaders, startingTime, updateStreak]);
 
   // Memoized modal handlers
   const handleOpenBookStatusModal = useCallback((book: any) => {
@@ -350,11 +350,11 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
         onUpdatePress={handleOpenBookStatusModal}
       />
       
-      <PagesReadInputForm
+      {/* <PagesReadInputForm
         pagesRead={pagesRead}
         onPagesReadChange={setPagesRead}
         onUpdate={updatePagesRead}
-      />
+      /> */}
 
       {/* <SessionControls
         startingTime={startingTime}
@@ -423,7 +423,7 @@ export default CurrentReadsSection;
 
 const styles = StyleSheet.create({
   pagesReadContainer: {
-    marginBottom: SPACING.space_20,
+    marginBottom: SPACING.space_10,
     alignItems: 'center',
   },
   loadingText: {
