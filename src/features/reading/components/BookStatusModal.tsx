@@ -210,7 +210,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* View History Button */}
+          {/* View History Button -> currently only visible in bookshleves in profile not in current reads */}
           {onViewHistory && !userBookId && (
             <TouchableOpacity style={styles.viewHistoryButton} onPress={onViewHistory}>
               <MaterialIcons name="history" size={20} color={COLORS.primaryOrangeHex} />

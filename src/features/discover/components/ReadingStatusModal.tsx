@@ -119,15 +119,45 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
     }
   };
 
-  const handleAddToQueue = async () => {
-    if (!userBookId) {
-      showToast('Please save the book status first', 'error');
-      return;
+  const ensureBookExists = async (): Promise<string> => {
+    if (!isGoogleBook) return id;
+
+    const workPayload = {
+      title: product.volumeInfo?.title || '',
+      description: product.volumeInfo?.description || '',
+      originalLanguage: 'en',
+      authors: product.volumeInfo?.authors || [],
+      genres: product.volumeInfo?.categories || [],
+      edition: {
+        isbn: product.volumeInfo?.industryIdentifiers?.find(
+          (id) => id.type === 'ISBN_13'
+        )?.identifier || null,
+        format: 'paperback',
+        pageCount: product.volumeInfo?.pageCount || null,
+        language: 'en',
+        publisher: null,
+        publicationYear: null,
+        cover: product.volumeInfo?.imageLinks?.thumbnail || null,
+      },
+    };
+
+    const { data } = await instance.post(requests.createWork, workPayload);
+
+    if (data.status !== 'success') {
+      throw new Error('Failed to create book work');
     }
 
+    return data.data.bookId;
+  };
+
+  const handleAddToQueue = async () => {
     setQueueLoading(true);
     try {
       if (isInQueue) {
+        if (!userBookId) {
+          showToast('Please save the book status first', 'error');
+          return;
+        }
         await instance.delete(requests.removeFromQueue(userBookId), {
           headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
         });
@@ -135,7 +165,8 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
         showToast('Removed from reading queue');
         analytics.track('removed_from_reading_queue');
       } else {
-        await instance.post(requests.addToQueue, { bookId: id }, {
+        const bookId = await ensureBookExists();
+        await instance.post(requests.addToQueue, { bookId }, {
           headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
         });
         setIsInQueue(true);
@@ -160,30 +191,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
     try {
       setLoading(true);
       
-      let bookId = id;
-      if (isGoogleBook) {
-        const workPayload = {
-          title: product.volumeInfo?.title || '',
-          description: product.volumeInfo?.description || '',
-          originalLanguage: 'en',
-          authors: product.volumeInfo?.authors || [],
-          genres: product.volumeInfo?.categories || [],
-          edition: {
-            isbn: product.volumeInfo?.industryIdentifiers?.find((id) => id.type === 'ISBN_13')?.identifier || null,
-            format: 'paperback',
-            pageCount: product.volumeInfo?.pageCount || null,
-            language: 'en',
-            publisher: null,
-            publicationYear: null,
-            cover: product.volumeInfo?.imageLinks?.thumbnail || null,
-          },
-        };
-
-        const { data } = await instance.post(requests.createWork, workPayload);
-        if (data.status === "success") {
-          bookId = data.data.bookId;
-        } else throw new Error("Failed to add/update book");
-      }
+      const bookId = await ensureBookExists();
 
       const requestData: any = { bookId };
       
