@@ -49,6 +49,9 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
   const analytics = useAnalytics();
 
   const isCompletedBook = initialStatus === 'Read' || initialStatus === 'Did not finish';
+  
+  // Check if book format is audiobook
+  const isAudiobook = product?.Format?.toLowerCase() === 'audiobook';
 
   const statusOptions: PickerOption[] = [
     ...(status === 'Currently reading' || status === 'Paused'
@@ -67,10 +70,13 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
     if (visible) {
       setStatus(initialStatus);
       setLocalProgressValue(initialProgressValue);
-      setLocalProgressUnit(initialProgressUnit || 'pages');
+      
+      // Set progress unit based on format
+      const progressUnit = isAudiobook ? 'seconds' : (initialProgressUnit || 'pages');
+      setLocalProgressUnit(progressUnit);
       setBookTags(initialTags);
       
-      if (initialProgressUnit === 'seconds' && initialProgressValue != null) {
+      if (progressUnit === 'seconds' && initialProgressValue != null) {
         const { h, m, s } = secondsToHMS(initialProgressValue);
         setHours(h.toString());
         setMinutes(m.toString());
@@ -79,7 +85,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
       
       if (initialStatus === 'To be read' && userBookId) checkIfInQueue();
     }
-  }, [visible, initialStatus, userBookId]);
+  }, [visible, initialStatus, userBookId, isAudiobook]);
 
   const updateSecondsFromTime = (h: string, m: string, s: string) => {
     setLocalProgressValue(hmsToSeconds(h, m, s));
@@ -269,10 +275,10 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
             {(status === 'Currently reading' || status === 'Paused' || status === 'Re-read') && (
               <View style={styles.section}>
                 <Text style={styles.label}>
-                  {localProgressUnit === 'seconds' ? 'Current position' : 'Current page'}
+                  {isAudiobook ? 'Current position' : 'Current page'}
                 </Text>
 
-                {localProgressUnit === 'seconds' ? (
+                {isAudiobook ? (
                   <View style={styles.timeRow}>
                     {[
                       { label: 'H', value: hours, setter: setHours },
