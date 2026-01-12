@@ -234,7 +234,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             <View style={styles.statusBadge}>
               <Text style={styles.statusText}>{readingStatus.userBookId ? readingStatus.status : 'Set status'}</Text>
             </View>
-            {readingStatus.status === 'Currently reading' && readingStatus.progressValue && (
+            {readingStatus.status === 'Currently reading' && readingStatus.progressValue != null && (
               <Text style={styles.pageInfo}>{`${readingStatus.progressValue} ${readingStatus.progressUnit}`}</Text>
             )}
           </View>
