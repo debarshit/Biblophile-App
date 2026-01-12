@@ -23,6 +23,8 @@ interface ImageBackgroundInfoProps {
   BackHandler?: () => void;
   product: any;
   isGoogleBook: boolean;
+  onBookPromoted?: (internalBookId: string) => void;
+
 }
 
 // Extracted chip component for reusability
@@ -43,6 +45,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   BackHandler,
   product,
   isGoogleBook,
+  onBookPromoted,
 }) => {
   const [bookData, setBookData] = useState({ averageRating: null, ratingsCount: null, topEmotions: [] });
   const [readingStatus, setReadingStatus] = useState({ userBookId: null, status: '', progressUnit: '', progressValue: 0, tags: [] });
@@ -70,6 +73,9 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     const fetchAllData = async () => {
       try {
         const bookId = await getBookId();
+        if (bookId !== id && isGoogleBook) {
+          onBookPromoted?.(bookId);
+        }
         
         // Parallel API calls
         const promises = [
@@ -251,6 +257,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         onClose={() => setModalVisible(false)}
         id={id}
         isGoogleBook={isGoogleBook}
+        onBookPromoted={onBookPromoted}
         product={product}
         onUpdate={setReadingStatus}
         initialStatus={readingStatus.status}

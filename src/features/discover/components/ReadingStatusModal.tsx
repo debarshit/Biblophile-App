@@ -19,6 +19,7 @@ interface ReadingStatusModalProps {
   onClose: () => void;
   id: string;
   isGoogleBook: boolean;
+  onBookPromoted?: (internalBookId: string) => void;
   product: any;
   onUpdate: (data: any) => void;
   initialStatus?: string;
@@ -30,7 +31,7 @@ interface ReadingStatusModalProps {
 
 const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
   visible, onClose, id, isGoogleBook, product, onUpdate, initialStatus = 'To be read',
-  initialProgressValue, initialProgressUnit, initialTags = [], userBookId,
+  initialProgressValue, initialProgressUnit, initialTags = [], userBookId, onBookPromoted,
 }) => {
   const [status, setStatus] = useState(initialStatus);
   const [localProgressValue, setLocalProgressValue] = useState(initialProgressValue);
@@ -166,6 +167,9 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
         analytics.track('removed_from_reading_queue');
       } else {
         const bookId = await ensureBookExists();
+        if (isGoogleBook) {
+          onBookPromoted?.(bookId);
+        }
         await instance.post(requests.addToQueue, { bookId }, {
           headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
         });
@@ -192,6 +196,9 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
       setLoading(true);
       
       const bookId = await ensureBookExists();
+      if (isGoogleBook) {
+        onBookPromoted?.(bookId);
+      }
 
       const requestData: any = { bookId };
       
