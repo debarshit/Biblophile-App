@@ -55,7 +55,7 @@ const formatProgress = (value: number, unit: string, total: number | null) => {
 };
 
 const EditionsScreen = ({ navigation, route }: any) => {
-  const { workId, title, currentBookId, switchMode, userBookId } = route.params;
+  const { workId, title, currentBookId, switchMode=false, userBookId } = route.params;
   const [editionsData, setEditionsData] = useState<EditionsData | null>(null);
   const [previewData, setPreviewData] = useState<any>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -107,7 +107,7 @@ const EditionsScreen = ({ navigation, route }: any) => {
         Alert.alert('Error', 'Failed to calculate suggested position.');
       }
     } else {
-      navigation.navigate('Details', { id: edition.bookId.toString(), type: 'Book' });
+      navigation.replace('Details', { id: edition.bookId.toString(), type: 'Book' });
     }
   };
 
@@ -141,7 +141,7 @@ const EditionsScreen = ({ navigation, route }: any) => {
 
       Alert.alert('Edition Switched! 📚', message, [{
         text: 'Continue Reading',
-        onPress: () => navigation.navigate('Details', { id: selectedEdition.bookId.toString(), type: 'Book' })
+        onPress: () => navigation.replace('Details', { id: selectedEdition.bookId.toString(), type: 'Book' })
       }]);
     } catch (error) {
       Alert.alert('Error', 'Failed to switch edition.');
@@ -210,7 +210,7 @@ const EditionsScreen = ({ navigation, route }: any) => {
               title={editionsData?.title || ''}
               onPress={() => handleEditionPress(currentEdition)}
               isCurrent
-              switchMode
+              switchMode={switchMode}
             />
             <View style={styles.divider} />
           </View>
@@ -225,7 +225,7 @@ const EditionsScreen = ({ navigation, route }: any) => {
               edition={edition}
               title={editionsData?.title || ''}
               onPress={() => handleEditionPress(edition)}
-              switchMode
+              switchMode={switchMode}
             />
           ))}
           {otherEditions?.length === 0 && currentEdition && (
