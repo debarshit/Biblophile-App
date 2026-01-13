@@ -11,6 +11,8 @@ import {
   Alert,
   Modal,
   TextInput,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
@@ -258,7 +260,11 @@ const EditionsScreen = ({ navigation, route }: any) => {
 
       {/* Confirmation Modal */}
       <Modal visible={showConfirmModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 20}
+          style={styles.modalOverlay}
+        >
           <View style={styles.confirmModal}>
             <Text style={styles.confirmTitle}>Confirm Edition Switch</Text>
             
@@ -326,7 +332,7 @@ const EditionsScreen = ({ navigation, route }: any) => {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

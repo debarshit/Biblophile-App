@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   View, Text, TextInput, StyleSheet, TouchableOpacity, Platform, ToastAndroid, ScrollView,
-  Modal, ActivityIndicator
+  Modal, ActivityIndicator,
+  KeyboardAvoidingView
 } from 'react-native';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import instance from '../../../services/axios';
@@ -258,112 +259,118 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Update Reading Info</Text>
-            <TouchableOpacity onPress={onClose}>
-              <AntDesign name="close" size={FONTSIZE.size_24} color={COLORS.secondaryLightGreyHex} />
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.section}>
-            <Text style={styles.label}>Reading Status</Text>
-            <CustomPicker options={statusOptions} selectedValue={status} onValueChange={setStatus} />
-          </View>
-          
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {(status === 'Currently reading' || status === 'Paused' || status === 'Re-read') && (
-              <View style={styles.section}>
-                <Text style={styles.label}>
-                  {isAudiobook ? 'Current position' : 'Current page'}
-                </Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 20}
+          style={{ flex: 1, justifyContent: 'flex-end' }}
+        >
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <Text style={styles.title}>Update Reading Info</Text>
+              <TouchableOpacity onPress={onClose}>
+                <AntDesign name="close" size={FONTSIZE.size_24} color={COLORS.secondaryLightGreyHex} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.section}>
+              <Text style={styles.label}>Reading Status</Text>
+              <CustomPicker options={statusOptions} selectedValue={status} onValueChange={setStatus} />
+            </View>
+            
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {(status === 'Currently reading' || status === 'Paused' || status === 'Re-read') && (
+                <View style={styles.section}>
+                  <Text style={styles.label}>
+                    {isAudiobook ? 'Current position' : 'Current page'}
+                  </Text>
 
-                {isAudiobook ? (
-                  <View style={styles.timeRow}>
-                    {[
-                      { label: 'H', value: hours, setter: setHours },
-                      { label: 'M', value: minutes, setter: setMinutes },
-                      { label: 'S', value: seconds, setter: setSeconds }
-                    ].map(({ label, value, setter }) =>
-                      renderTimeInput(label, label, value, (text) => {
-                        setter(text);
-                        updateSecondsFromTime(
-                          label === 'H' ? text : hours,
-                          label === 'M' ? text : minutes,
-                          label === 'S' ? text : seconds
-                        );
-                      })
-                    )}
+                  {isAudiobook ? (
+                    <View style={styles.timeRow}>
+                      {[
+                        { label: 'H', value: hours, setter: setHours },
+                        { label: 'M', value: minutes, setter: setMinutes },
+                        { label: 'S', value: seconds, setter: setSeconds }
+                      ].map(({ label, value, setter }) =>
+                        renderTimeInput(label, label, value, (text) => {
+                          setter(text);
+                          updateSecondsFromTime(
+                            label === 'H' ? text : hours,
+                            label === 'M' ? text : minutes,
+                            label === 'S' ? text : seconds
+                          );
+                        })
+                      )}
+                    </View>
+                  ) : (
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter page number"
+                      keyboardType="numeric"
+                      value={localProgressValue?.toString() || ''}
+                      onChangeText={(text) => setLocalProgressValue(parseInt(text) || 0)}
+                    />
+                  )}
+                </View>
+              )}
+
+              {status === 'To be read' && (
+                <View style={styles.section}>
+                  <View style={styles.queueHeader}>
+                    <View>
+                      <Text style={styles.label}>Reading Queue</Text>
+                      <Text style={styles.queueSubtext}>Pin this to your next 5 reads</Text>
+                    </View>
                   </View>
+                  <TouchableOpacity 
+                    style={[styles.queueButton, isInQueue && styles.queueButtonActive, queueLoading && styles.queueButtonDisabled]}
+                    onPress={handleAddToQueue}
+                    disabled={queueLoading}
+                  >
+                    {queueLoading ? (
+                      <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
+                    ) : (
+                      <>
+                        <AntDesign name={isInQueue ? "checkcircle" : "plus"} size={FONTSIZE.size_16} color={COLORS.primaryWhiteHex} />
+                        <Text style={styles.queueButtonText}>{isInQueue ? 'In Reading Queue' : 'Add to Reading Queue'}</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <View style={styles.section}>
+                <View style={styles.tagsHeader}>
+                  <Text style={styles.label}>Tags</Text>
+                  <TouchableOpacity onPress={() => setTagSelectorVisible(true)}>
+                    <Text style={styles.manageText}>Manage Tags</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {bookTags.length > 0 ? (
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    {bookTags.map((tag: any) => (
+                      <View key={tag.tagId} style={[styles.chip, { backgroundColor: tag.tagColor || COLORS.primaryGreyHex }]}>
+                        <Text style={styles.chipText}>{tag.tagName}</Text>
+                      </View>
+                    ))}
+                  </ScrollView>
                 ) : (
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter page number"
-                    keyboardType="numeric"
-                    value={localProgressValue?.toString() || ''}
-                    onChangeText={(text) => setLocalProgressValue(parseInt(text) || 0)}
-                  />
+                  <TouchableOpacity style={styles.addChip} onPress={() => setTagSelectorVisible(true)}>
+                    <Text style={styles.addText}>+ Add your first tag</Text>
+                  </TouchableOpacity>
                 )}
               </View>
-            )}
+            </ScrollView>
 
-            {status === 'To be read' && (
-              <View style={styles.section}>
-                <View style={styles.queueHeader}>
-                  <View>
-                    <Text style={styles.label}>Reading Queue</Text>
-                    <Text style={styles.queueSubtext}>Pin this to your next 5 reads</Text>
-                  </View>
-                </View>
-                <TouchableOpacity 
-                  style={[styles.queueButton, isInQueue && styles.queueButtonActive, queueLoading && styles.queueButtonDisabled]}
-                  onPress={handleAddToQueue}
-                  disabled={queueLoading}
-                >
-                  {queueLoading ? (
-                    <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
-                  ) : (
-                    <>
-                      <AntDesign name={isInQueue ? "checkcircle" : "plus"} size={FONTSIZE.size_16} color={COLORS.primaryWhiteHex} />
-                      <Text style={styles.queueButtonText}>{isInQueue ? 'In Reading Queue' : 'Add to Reading Queue'}</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </View>
-            )}
-
-            <View style={styles.section}>
-              <View style={styles.tagsHeader}>
-                <Text style={styles.label}>Tags</Text>
-                <TouchableOpacity onPress={() => setTagSelectorVisible(true)}>
-                  <Text style={styles.manageText}>Manage Tags</Text>
-                </TouchableOpacity>
-              </View>
-              
-              {bookTags.length > 0 ? (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {bookTags.map((tag: any) => (
-                    <View key={tag.tagId} style={[styles.chip, { backgroundColor: tag.tagColor || COLORS.primaryGreyHex }]}>
-                      <Text style={styles.chipText}>{tag.tagName}</Text>
-                    </View>
-                  ))}
-                </ScrollView>
+            <TouchableOpacity style={[styles.button, loading && styles.buttonDisabled]} onPress={submitReadingStatus} disabled={loading}>
+              {loading ? (
+                <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
               ) : (
-                <TouchableOpacity style={styles.addChip} onPress={() => setTagSelectorVisible(true)}>
-                  <Text style={styles.addText}>+ Add your first tag</Text>
-                </TouchableOpacity>
+                <Text style={styles.buttonText}>Save Changes</Text>
               )}
-            </View>
-          </ScrollView>
-
-          <TouchableOpacity style={[styles.button, loading && styles.buttonDisabled]} onPress={submitReadingStatus} disabled={loading}>
-            {loading ? (
-              <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
-            ) : (
-              <Text style={styles.buttonText}>Save Changes</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
       </View>
 
       <TagSelectorModal
