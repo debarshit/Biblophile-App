@@ -241,8 +241,8 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
     }
   };
 
-  const renderTimeInput = (label: string, value: string, onChangeText: (text: string) => void) => (
-    <View style={styles.timeInputWrapper}>
+  const renderTimeInput = (key: string, label: string, value: string, onChangeText: (text: string) => void) => (
+    <View key={key} style={styles.timeInputWrapper}>
       <Text style={styles.timeLabel}>{label}</Text>
       <TextInput
         style={styles.timeInput}
@@ -285,7 +285,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
                       { label: 'M', value: minutes, setter: setMinutes },
                       { label: 'S', value: seconds, setter: setSeconds }
                     ].map(({ label, value, setter }) =>
-                      renderTimeInput(label, value, (text) => {
+                      renderTimeInput(label, label, value, (text) => {
                         setter(text);
                         updateSecondsFromTime(
                           label === 'H' ? text : hours,
