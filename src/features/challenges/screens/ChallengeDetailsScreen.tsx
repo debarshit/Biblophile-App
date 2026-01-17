@@ -103,10 +103,10 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
   };
 
   useEffect(() => {
-    if (challengeId) {
-      fetchChallengeDetails();
-    }
-  }, [challengeId]);
+  if (challengeId && accessToken) {
+    fetchChallengeDetails();
+  }
+}, [challengeId, accessToken]);
 
   const toggleEditing = () => {
     updateState({
