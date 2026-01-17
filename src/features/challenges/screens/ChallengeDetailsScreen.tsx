@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   ScrollView,
   Dimensions,
+  Alert,
+  Share,
 } from 'react-native';
 import { ProgressChart } from 'react-native-chart-kit';
 import Toast from 'react-native-toast-message';
@@ -20,11 +22,12 @@ import HeaderBar from '../../../components/HeaderBar';
 import ChallengePrompts from '../components/ChallengePrompts';
 import ChallengePromptDetails from '../components/ChallengePromptDetails';
 import CreatePrompt from '../components/CreatePrompt';
+import GradientBGIcon from '../../../components/GradientBGIcon';
 
 const { width } = Dimensions.get('window');
 
 const ChallengeDetailsScreen = ({ route, navigation }) => {
-  const { challengeId } = route.params;
+  const challengeId = route.params?.challengeId;
   const [state, setState] = useState({
     challenge: null,
     description: '',
@@ -47,6 +50,23 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
 
   const showToast = (type, text1, text2) => Toast.show({ type, text1, text2 });
 
+  const BackHandler = () => {
+    if (navigation.canGoBack()) {
+      navigation.pop();
+    } else {
+      navigation.navigate('Tab');
+    }
+  };
+
+  const handleShare = async () => {
+    if (!state.challenge) return;
+    try {
+      await Share.share({ message: `Checkout this challenge at https://biblophile.com/challenges/${challengeId}/${challenge.challengeTitle}}` });
+    } catch {
+      Alert.alert('Error', 'Failed to share.');
+    }
+  };
+
   const fetchChallengeDetails = async () => {
     try {
       updateState({ loading: true });
@@ -59,6 +79,14 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
 
       const challengeData = challengeResponse.data.data;
       const membershipData = membershipResponse.data.data;
+
+      if (!challengeData) {
+        updateState({
+          loading: false,
+          error: 'Challenge not found',
+        });
+        return;
+      }
 
       updateState({
         challenge: challengeData,
@@ -75,7 +103,9 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
   };
 
   useEffect(() => {
-    fetchChallengeDetails();
+    if (challengeId) {
+      fetchChallengeDetails();
+    }
   }, [challengeId]);
 
   const toggleEditing = () => {
@@ -158,7 +188,15 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderBar showBackButton={true} title="" />
+      {/* Header */}
+      <View style={styles.header}>
+          <TouchableOpacity onPress={BackHandler}>
+            <GradientBGIcon name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleShare}>
+            <GradientBGIcon name="sharealt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+          </TouchableOpacity>
+      </View>
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         
         {/* Header Card */}
@@ -287,6 +325,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
+  },
+  header: { 
+    padding: SPACING.space_20, 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center' 
   },
   scrollContainer: {
     padding: SPACING.space_16,

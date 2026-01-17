@@ -1,5 +1,4 @@
 import * as Linking from 'expo-linking';
-import { navigationRef } from './navigationRef';
 
 const prefixes = [
   Linking.createURL('/'),
@@ -23,6 +22,12 @@ const config = {
     Payment: {
       path: 'payment/:action?',
       parse: { action: (action: string) => `${action}` },
+    },
+    ChallengeDetails: {
+      path: 'challenges/:challengeId/:challengeTitle?',
+      parse: {
+        challengeId: (id: string) => id,
+      },
     },
   },
 };
