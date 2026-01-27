@@ -190,7 +190,29 @@ const App = () => {
     initializeNotifications();
   }, []);
 
+  //handle deep links on app launch
+  useEffect(() => {
+    linking.getInitialURL().then((url) => {
+      if (url) {
+        // Small delay to ensure navigation is ready
+        setTimeout(() => {
+          navigateFromUrl(url);
+        }, 100);
+      }
+    });
+  }, []);
+
+  // Handle deep links while app is running
+  useEffect(() => {
+    const subscription = linking.subscribe((url) => {
+      navigateFromUrl(url);
+    });
+
+    return () => subscription();
+  }, []);
+
   // Handle notification responses
+
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       const url = response.notification.request.content.data.urlScheme;
@@ -198,7 +220,7 @@ const App = () => {
         navigateFromUrl(url as string);
       }
     });
-  
+
     return () => subscription.remove();
   }, []);
   // for expo notifications end

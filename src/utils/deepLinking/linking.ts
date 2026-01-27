@@ -29,6 +29,9 @@ const config = {
         challengeId: (id: string) => parseInt(id, 10),
       },
     },
+    Resources: {
+      path: ':*', // The asterisk acts as a wildcard
+    },
   },
 };
 
