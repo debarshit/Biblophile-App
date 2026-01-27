@@ -100,7 +100,7 @@ const CreateChallengeForm = ({ modalVisible, setModalVisible, fetchChallenges })
             { condition: !challengeType, message: 'Challenge type is required.' },
             { condition: !selectedCategory, message: 'Please select a category.' },
             { condition: !startDate || !endDate, message: 'Both start and end dates are required.' },
-            { condition: startDate < now || endDate < now, message: 'Dates cannot be in the past.' },
+            { condition: endDate < now, message: 'Dates cannot be in the past.' },
             { condition: startDate >= endDate, message: 'Start date must be before end date.' }
         ];
 
