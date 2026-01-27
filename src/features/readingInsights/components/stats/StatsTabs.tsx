@@ -18,12 +18,12 @@ const StatsTabs: React.FC<StatsTabsProps> = ({ activeStat, setActiveStat }) => {
         <Text style={[styles.tabText, activeStat === 'page-stats' ? styles.activeTabText : null]}>Page Stats</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity 
+      {/* <TouchableOpacity 
         style={[styles.tabButton, activeStat === 'time-stats' ? styles.activeTab : null]}
         onPress={() => setActiveStat('time-stats')}>
         <Ionicons name="time-outline" size={24} color={activeStat === 'time-stats' ? COLORS.primaryOrangeHex : COLORS.primaryWhiteHex} />
         <Text style={[styles.tabText, activeStat === 'time-stats' ? styles.activeTabText : null]}>Time Stats</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       
       <TouchableOpacity 
         style={[styles.tabButton, activeStat === 'emotion-stats' ? styles.activeTab : null]}

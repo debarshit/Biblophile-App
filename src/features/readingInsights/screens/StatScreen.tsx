@@ -187,12 +187,12 @@ const StatScreen = () => {
           />
         )}
         
-        {activeStat === 'time-stats' && (
+        {/* {activeStat === 'time-stats' && (
           <TimeStatsChart 
             readingDurations={readingDurations} 
             timeFrame={timeFrame}
           />
-        )}
+        )} */}
         
         {activeStat === 'emotion-stats' && (
           <EmotionStatsChart 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Animated, Platform,
+  Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Animated,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
@@ -9,33 +9,43 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 import { useAnalytics } from '../../../utils/analytics';
+import { useNavigation } from '@react-navigation/native';
+import { hmsToSeconds, secondsToHMS } from '../../../utils/timeConversion';
 
 interface BookStatusModalProps {
   visible: boolean;
   onClose: () => void;
   bookId: string;
+  workId?: string;
   initialStatus: string;
-  initialPage?: number;
+  initialProgressValue?: number;
+  initialProgressUnit?: 'pages' | 'percentage' | 'seconds';
   initialStartDate?: string;
   initialEndDate?: string;
   onUpdate: () => void;
   userBookId?: number;
   onViewHistory?: () => void;
+  bookTitle?: string;
 }
 
 const BookStatusModal: React.FC<BookStatusModalProps> = ({
-  visible, onClose, bookId, initialStatus, initialPage, initialStartDate, initialEndDate, onUpdate, userBookId, onViewHistory,
+  visible, onClose, bookId, workId, initialStatus, initialProgressUnit, initialProgressValue,
+  initialStartDate, initialEndDate, onUpdate, userBookId, onViewHistory, bookTitle
 }) => {
-  const [showHistoryButton, setShowHistoryButton] = useState(true);
   const [localStatus, setLocalStatus] = useState(initialStatus);
-  const [localPage, setLocalPage] = useState(initialPage);
+  const [localProgressValue, setLocalProgressValue] = useState(initialProgressValue);
+  const [localProgressUnit, setLocalProgressUnit] = useState<'pages' | 'percentage' | 'seconds'>(initialProgressUnit || 'pages');
   const [localStartDate, setLocalStartDate] = useState(initialStartDate || '');
   const [localEndDate, setLocalEndDate] = useState(initialEndDate || '');
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [fadeAnimation] = useState(new Animated.Value(0));
+  const [hours, setHours] = useState('0');
+  const [minutes, setMinutes] = useState('0');
+  const [seconds, setSeconds] = useState('0');
 
   const userDetails = useStore((state: any) => state.userDetails);
   const analytics = useAnalytics();
+  const navigation = useNavigation<any>();
 
   const statusOptions: PickerOption[] = [
     { label: 'Currently reading', value: 'Currently reading', icon: 'menu-book' },
@@ -46,27 +56,37 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
     { label: 'Remove', value: 'Remove', icon: 'delete' },
   ];
 
-  const availableOptions = statusOptions.filter(option => 
+  const availableOptions = statusOptions.filter(option =>
     initialStatus === 'Currently reading' || initialStatus === 'Paused' || option.value !== 'Paused'
   );
 
   useEffect(() => {
     if (visible) {
       setLocalStatus(initialStatus);
-      setLocalPage(initialPage);
+      setLocalProgressValue(initialProgressValue);
+      setLocalProgressUnit(initialProgressUnit || 'pages');
       setLocalStartDate(initialStartDate || '');
       setLocalEndDate(initialEndDate || '');
       setUpdateMessage(null);
+      
+      if (initialProgressUnit === 'seconds' && initialProgressValue != null) {
+        const { h, m, s } = secondsToHMS(initialProgressValue);
+        setHours(h.toString());
+        setMinutes(m.toString());
+        setSeconds(s.toString());
+      }
       Animated.timing(fadeAnimation, { toValue: 1, duration: 300, useNativeDriver: true }).start();
     } else {
       fadeAnimation.setValue(0);
     }
-  }, [visible, initialStatus, initialPage, initialStartDate, initialEndDate]);
+  }, [visible, initialStatus, initialProgressValue, initialStartDate, initialEndDate]);
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const updateSecondsFromTime = (h: string, m: string, s: string) => {
+    setLocalProgressValue(hmsToSeconds(h, m, s));
   };
+
+  const formatDate = (dateString?: string) =>
+    dateString ? new Date(dateString).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
   const handleSaveDates = async () => {
     if (localStartDate && localEndDate && localStartDate > localEndDate) {
@@ -75,16 +95,13 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
     }
 
     try {
-      const updateBookDatesResponse = await instance.put(requests.updateBookDates, {
+      const { data } = await instance.put(requests.updateBookDates, {
         bookId, startDate: localStartDate, endDate: localEndDate
       }, {
-        headers: {
-          Authorization: `Bearer ${userDetails[0].accessToken}`
-        },
+        headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
       });
-      const response = updateBookDatesResponse.data;
-      setUpdateMessage(response.data.status === "success" ? "Dates updated successfully!" : response.data.message);
-      if (response.data.status === "success") onUpdate();
+      setUpdateMessage(data.data.status === "success" ? "Dates updated successfully!" : data.data.message);
+      if (data.data.status === "success") onUpdate();
     } catch (error) {
       setUpdateMessage("Uh oh! Please try again");
     }
@@ -103,20 +120,18 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
     }
 
     try {
-      const response = await instance.post(requests.submitReadingStatus, {
+      const { data } = await instance.post(requests.submitReadingStatus, {
         bookId, status: localStatus,
-        currentPage: localStatus === 'Currently reading' ? localPage : undefined,
+        progressValue: localStatus === 'Currently reading' ? localProgressValue : undefined,
+        progressUnit: localStatus === 'Currently reading' ? localProgressUnit : undefined,
         startDate: localStartDate || undefined,
         endDate: localStatus === 'Read' ? localEndDate : undefined,
         userBookId: userBookId || undefined,
       }, {
-        headers: {
-          Authorization: `Bearer ${userDetails[0].accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
       });
-      const submitReadingStatusResponse = response.data;
-      setUpdateMessage(submitReadingStatusResponse.data.message === "Updated successfully" ? "Updated successfully!" : submitReadingStatusResponse.data.message);
-      if (submitReadingStatusResponse.data.message === "Updated successfully") onUpdate();
+      setUpdateMessage(data.data.message === "Updated successfully" ? "Updated successfully!" : data.data.message);
+      if (data.data.message === "Updated successfully") onUpdate();
       analytics.track('reading_status_updated');
     } catch (error) {
       setUpdateMessage("Uh oh! Please try again");
@@ -135,6 +150,20 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
     setTimeout(handleClose, 1000);
   };
 
+  const handleSwitchEdition = () => {
+    handleClose();
+    navigation.navigate('Editions', {
+      workId, title: bookTitle, currentBookId: bookId, switchMode: true, userBookId,
+      progressValue: localProgressValue, progressUnit: localProgressUnit,
+    });
+  };
+
+  const progressConfig = {
+    seconds: { label: 'Current position (seconds)', placeholder: 'Seconds listened' },
+    percentage: { label: 'Progress (%)', placeholder: '0 – 100' },
+    pages: { label: 'Current page', placeholder: 'Page number' }
+  };
+
   const renderInput = (icon: string, placeholder: string, value: string, onChangeText: (text: string) => void, keyboardType?: any) => (
     <View style={styles.inputContainer}>
       <MaterialIcons name={icon as keyof typeof MaterialIcons.glyphMap} size={20} color={COLORS.primaryOrangeHex} />
@@ -145,6 +174,20 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
         placeholder={placeholder}
         placeholderTextColor={COLORS.secondaryLightGreyHex}
         keyboardType={keyboardType}
+      />
+    </View>
+  );
+
+  const renderTimeInput = (key: string, label: string, value: string, onChangeText: (text: string) => void) => (
+    <View key={key} style={styles.timeInputWrapper}>
+      <Text style={styles.timeLabel}>{label}</Text>
+      <TextInput
+        style={styles.timeInput}
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType="numeric"
+        placeholder="0"
+        placeholderTextColor={COLORS.secondaryLightGreyHex}
       />
     </View>
   );
@@ -167,18 +210,15 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* View History Button */}
-          {onViewHistory && showHistoryButton && !userBookId && (
-            <TouchableOpacity 
-              style={styles.viewHistoryButton}
-              onPress={onViewHistory}
-            >
+          {/* View History Button -> currently only visible in bookshleves in profile not in current reads */}
+          {onViewHistory && !userBookId && (
+            <TouchableOpacity style={styles.viewHistoryButton} onPress={onViewHistory}>
               <MaterialIcons name="history" size={20} color={COLORS.primaryOrangeHex} />
               <Text style={styles.viewHistoryText}>View Reading History</Text>
               <MaterialIcons name="chevron-right" size={20} color={COLORS.primaryOrangeHex} />
             </TouchableOpacity>
           )}
-            
+
           {/* Status Picker */}
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>Reading Status</Text>
@@ -189,29 +229,68 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
               placeholder="Select reading status"
             />
           </View>
+
           <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Page Input */}
+            {/* Progress Input */}
             {localStatus === 'Currently reading' && (
               <View style={styles.section}>
-                <Text style={styles.sectionLabel}>Current Page</Text>
-                {renderInput('bookmark', 'Page number', localPage?.toString() || '', 
-                  (text) => setLocalPage(parseInt(text) || 0), 'numeric')}
+                <Text style={styles.sectionLabel}>{progressConfig[localProgressUnit].label}</Text>
+                {localProgressUnit === 'seconds' ? (
+                  <View style={styles.timeRow}>
+                    {[
+                      { label: 'H', value: hours, setter: setHours },
+                      { label: 'M', value: minutes, setter: setMinutes },
+                      { label: 'S', value: seconds, setter: setSeconds }
+                    ].map(({ label, value, setter }) =>
+                      renderTimeInput(label, label, value, (text) => {
+                        setter(text);
+                        updateSecondsFromTime(
+                          label === 'H' ? text : hours,
+                          label === 'M' ? text : minutes,
+                          label === 'S' ? text : seconds
+                        );
+                      })
+                    )}
+                  </View>
+                ) : (
+                  renderInput(
+                    'bookmark',
+                    progressConfig[localProgressUnit].placeholder,
+                    localProgressValue?.toString() || '',
+                    (text) => setLocalProgressValue(parseInt(text) || 0),
+                    'numeric'
+                  )
+                )}
               </View>
             )}
-            
+
+            {/* Switch Edition Button */}
+            {(localStatus === 'Currently reading' || localStatus === 'Paused') && userBookId && workId && (
+              <View style={styles.section}>
+                <TouchableOpacity style={styles.switchEditionButton} onPress={handleSwitchEdition}>
+                  <MaterialIcons name="swap-horiz" size={20} color={COLORS.primaryOrangeHex} />
+                  <View style={styles.switchEditionContent}>
+                    <Text style={styles.switchEditionText}>Switch Edition</Text>
+                    <Text style={styles.switchEditionSubtext}>Continue reading in a different format</Text>
+                  </View>
+                  <MaterialIcons name="chevron-right" size={20} color={COLORS.secondaryLightGreyHex} />
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* Date Inputs */}
             {(localStatus === 'Currently reading' || localStatus === 'Read') && (
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>Reading Dates</Text>
                 {renderInput('event', 'Start Date (YYYY-MM-DD)', localStartDate, setLocalStartDate)}
                 {localStatus === 'Read' && renderInput('event-available', 'End Date (YYYY-MM-DD)', localEndDate, setLocalEndDate)}
-                
+
                 {(localStartDate || localEndDate) && (
                   <View style={styles.dateDisplayContainer}>
                     <View style={styles.dateDisplay}>
                       <MaterialIcons name="schedule" size={16} color={COLORS.primaryOrangeHex} />
                       <Text style={styles.dateDisplayText}>
-                        {localStatus === 'Read' 
+                        {localStatus === 'Read'
                           ? `${formatDate(localStartDate)} - ${formatDate(localEndDate || new Date().toISOString().split('T')[0])}`
                           : `Started: ${formatDate(localStartDate)}`}
                       </Text>
@@ -224,27 +303,28 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
                 )}
               </View>
             )}
-            
+
             {/* Update Message */}
             {updateMessage && (
               <View style={[styles.updateMessageContainer, updateMessage.includes('successfully') && styles.successMessage]}>
-                <MaterialIcons name={updateMessage.includes('successfully') ? "check-circle" : "error"} size={16} 
+                <MaterialIcons name={updateMessage.includes('successfully') ? "check-circle" : "error"} size={16}
                   color={updateMessage.includes('successfully') ? COLORS.primaryOrangeHex : COLORS.primaryRedHex} />
                 <Text style={styles.updateMessage}>{updateMessage}</Text>
               </View>
             )}
           </ScrollView>
-          
+
           {/* Action Buttons */}
           <View style={styles.modalButtons}>
-            <TouchableOpacity onPress={handleClose} style={styles.cancelButton}>
-              <MaterialIcons name="close" size={20} color={COLORS.primaryRedHex} />
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleSaveAndClose} style={styles.saveButton}>
-              <MaterialIcons name="check" size={20} color={COLORS.primaryWhiteHex} />
-              <Text style={styles.saveButtonText}>Save Changes</Text>
-            </TouchableOpacity>
+            {[
+              { label: 'Cancel', icon: 'close', style: styles.cancelButton, textStyle: styles.cancelButtonText, onPress: handleClose },
+              { label: 'Save Changes', icon: 'check', style: styles.saveButton, textStyle: styles.saveButtonText, onPress: handleSaveAndClose }
+            ].map(({ label, icon, style, textStyle, onPress }) => (
+              <TouchableOpacity key={label} onPress={onPress} style={style}>
+                <MaterialIcons name={icon as any} size={20} color={textStyle.color} />
+                <Text style={textStyle}>{label}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </Animated.View>
       </View>
@@ -255,185 +335,37 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
 export default BookStatusModal;
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: SPACING.space_20,
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: 400,
-    maxHeight: '90%',
-    backgroundColor: COLORS.primaryGreyHex,
-    borderRadius: BORDERRADIUS.radius_20,
-    padding: 0,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.space_20,
-    paddingVertical: SPACING.space_16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.secondaryDarkGreyHex,
-  },
-  headerIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: FONTSIZE.size_18,
-    fontFamily: FONTFAMILY.poppins_semibold,
-    color: COLORS.primaryWhiteHex,
-    flex: 1,
-    textAlign: 'center',
-    marginHorizontal: SPACING.space_10,
-  },
-  closeButton: {
-    padding: SPACING.space_4,
-  },
-  section: {
-    paddingHorizontal: SPACING.space_20,
-    paddingVertical: SPACING.space_12,
-  },
-  sectionLabel: {
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_14,
-    marginBottom: SPACING.space_8,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    borderRadius: BORDERRADIUS.radius_10,
-    borderWidth: 1,
-    borderColor: COLORS.secondaryLightGreyHex,
-    paddingHorizontal: SPACING.space_12,
-    marginBottom: SPACING.space_8,
-  },
-  input: {
-    flex: 1,
-    height: 48,
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_14,
-    fontFamily: FONTFAMILY.poppins_regular,
-    marginLeft: SPACING.space_8,
-  },
-  dateDisplayContainer: {
-    backgroundColor: COLORS.primaryBlackHex,
-    borderRadius: BORDERRADIUS.radius_10,
-    padding: SPACING.space_12,
-    marginTop: SPACING.space_8,
-  },
-  dateDisplay: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.space_8,
-  },
-  dateDisplayText: {
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_12,
-    marginLeft: SPACING.space_8,
-  },
-  updateDatesButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primaryOrangeHex,
-    paddingHorizontal: SPACING.space_12,
-    paddingVertical: SPACING.space_8,
-    borderRadius: BORDERRADIUS.radius_8,
-    alignSelf: 'center',
-  },
-  updateDatesText: {
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_12,
-    marginLeft: SPACING.space_4,
-  },
-  updateMessageContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primaryRedHex,
-    marginHorizontal: SPACING.space_20,
-    paddingHorizontal: SPACING.space_12,
-    paddingVertical: SPACING.space_8,
-    borderRadius: BORDERRADIUS.radius_8,
-    marginBottom: SPACING.space_12,
-  },
-  successMessage: {
-    backgroundColor: COLORS.primaryOrangeHex,
-  },
-  updateMessage: {
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_12,
-    marginLeft: SPACING.space_8,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.space_20,
-    paddingVertical: SPACING.space_16,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.secondaryDarkGreyHex,
-    gap: SPACING.space_12,
-  },
-  cancelButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    paddingVertical: SPACING.space_12,
-    borderRadius: BORDERRADIUS.radius_10,
-    borderWidth: 1,
-    borderColor: COLORS.primaryRedHex,
-  },
-  cancelButtonText: {
-    color: COLORS.primaryRedHex,
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_14,
-    marginLeft: SPACING.space_4,
-  },
-  saveButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.primaryOrangeHex,
-    paddingVertical: SPACING.space_12,
-    borderRadius: BORDERRADIUS.radius_10,
-  },
-  saveButtonText: {
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_14,
-    marginLeft: SPACING.space_4,
-  },
-  viewHistoryButton: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginHorizontal: SPACING.space_20,
-    paddingHorizontal: SPACING.space_16,
-    paddingVertical: SPACING.space_8,
-  },
-  viewHistoryText: {
-    color: COLORS.primaryWhiteHex,
-    fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_14,
-    marginLeft: SPACING.space_4,
-  },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: SPACING.space_20 },
+  modalContent: { width: '100%', maxWidth: 400, maxHeight: '90%', backgroundColor: COLORS.primaryGreyHex, borderRadius: BORDERRADIUS.radius_20, padding: 0, elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20 },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.space_20, paddingVertical: SPACING.space_16, borderBottomWidth: 1, borderBottomColor: COLORS.secondaryDarkGreyHex },
+  headerIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.secondaryDarkGreyHex, justifyContent: 'center', alignItems: 'center' },
+  modalTitle: { fontSize: FONTSIZE.size_18, fontFamily: FONTFAMILY.poppins_semibold, color: COLORS.primaryWhiteHex, flex: 1, textAlign: 'center', marginHorizontal: SPACING.space_10 },
+  closeButton: { padding: SPACING.space_4 },
+  section: { paddingHorizontal: SPACING.space_20, paddingVertical: SPACING.space_12 },
+  sectionLabel: { color: COLORS.primaryWhiteHex, fontFamily: FONTFAMILY.poppins_medium, fontSize: FONTSIZE.size_14, marginBottom: SPACING.space_8 },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.secondaryDarkGreyHex, borderRadius: BORDERRADIUS.radius_10, borderWidth: 1, borderColor: COLORS.secondaryLightGreyHex, paddingHorizontal: SPACING.space_12, marginBottom: SPACING.space_8 },
+  input: { flex: 1, height: 48, color: COLORS.primaryWhiteHex, fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_regular, marginLeft: SPACING.space_8 },
+  dateDisplayContainer: { backgroundColor: COLORS.primaryBlackHex, borderRadius: BORDERRADIUS.radius_10, padding: SPACING.space_12, marginTop: SPACING.space_8 },
+  dateDisplay: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.space_8 },
+  dateDisplayText: { color: COLORS.primaryWhiteHex, fontFamily: FONTFAMILY.poppins_regular, fontSize: FONTSIZE.size_12, marginLeft: SPACING.space_8 },
+  updateDatesButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.primaryOrangeHex, paddingHorizontal: SPACING.space_12, paddingVertical: SPACING.space_8, borderRadius: BORDERRADIUS.radius_8, alignSelf: 'center' },
+  updateDatesText: { color: COLORS.primaryWhiteHex, fontFamily: FONTFAMILY.poppins_medium, fontSize: FONTSIZE.size_12, marginLeft: SPACING.space_4 },
+  updateMessageContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.primaryRedHex, marginHorizontal: SPACING.space_20, paddingHorizontal: SPACING.space_12, paddingVertical: SPACING.space_8, borderRadius: BORDERRADIUS.radius_8, marginBottom: SPACING.space_12 },
+  successMessage: { backgroundColor: COLORS.primaryOrangeHex },
+  updateMessage: { color: COLORS.primaryWhiteHex, fontFamily: FONTFAMILY.poppins_medium, fontSize: FONTSIZE.size_12, marginLeft: SPACING.space_8 },
+  modalButtons: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: SPACING.space_20, paddingVertical: SPACING.space_16, borderTopWidth: 1, borderTopColor: COLORS.secondaryDarkGreyHex, gap: SPACING.space_12 },
+  cancelButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.secondaryDarkGreyHex, paddingVertical: SPACING.space_12, borderRadius: BORDERRADIUS.radius_10, borderWidth: 1, borderColor: COLORS.primaryRedHex },
+  cancelButtonText: { color: COLORS.primaryRedHex, fontFamily: FONTFAMILY.poppins_medium, fontSize: FONTSIZE.size_14, marginLeft: SPACING.space_4 },
+  saveButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primaryOrangeHex, paddingVertical: SPACING.space_12, borderRadius: BORDERRADIUS.radius_10 },
+  saveButtonText: { color: COLORS.primaryWhiteHex, fontFamily: FONTFAMILY.poppins_medium, fontSize: FONTSIZE.size_14, marginLeft: SPACING.space_4 },
+  viewHistoryButton: { flexDirection: 'row', justifyContent: 'flex-end', marginHorizontal: SPACING.space_20, paddingHorizontal: SPACING.space_16, paddingVertical: SPACING.space_8 },
+  viewHistoryText: { color: COLORS.primaryWhiteHex, fontFamily: FONTFAMILY.poppins_medium, fontSize: FONTSIZE.size_14, marginLeft: SPACING.space_4 },
+  switchEditionButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.secondaryDarkGreyHex, paddingHorizontal: SPACING.space_4, paddingVertical: SPACING.space_4, borderRadius: BORDERRADIUS.radius_10, borderWidth: 1, borderColor: COLORS.primaryOrangeHex },
+  switchEditionContent: { flex: 1, marginLeft: SPACING.space_12 },
+  switchEditionText: { color: COLORS.primaryWhiteHex, fontFamily: FONTFAMILY.poppins_medium, fontSize: FONTSIZE.size_10 },
+  switchEditionSubtext: { color: COLORS.secondaryLightGreyHex, fontFamily: FONTFAMILY.poppins_regular, fontSize: FONTSIZE.size_10, marginTop: SPACING.space_2 },
+  timeRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: SPACING.space_8 },
+  timeInputWrapper: { flex: 1, alignItems: 'center' },
+  timeLabel: { color: COLORS.secondaryLightGreyHex, fontSize: FONTSIZE.size_10, marginBottom: SPACING.space_4 },
+  timeInput: { width: '90%', height: 44, backgroundColor: COLORS.secondaryDarkGreyHex, borderRadius: BORDERRADIUS.radius_8, borderWidth: 1, borderColor: COLORS.secondaryLightGreyHex, color: COLORS.primaryWhiteHex, textAlign: 'center', fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_regular },
 });

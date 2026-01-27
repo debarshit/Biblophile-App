@@ -14,7 +14,7 @@ interface NoteBottomSheetProps {
 
 const DailyNoteBottomSheet = ({ visible, onClose, userDetails }: NoteBottomSheetProps) => {
   const [note, setNote] = useState("");
-  const [selectedBook, setSelectedBook] = useState("");
+  const [selectedUserBook, setSelectedUserBook] = useState("");
   const [readingBooks, setReadingBooks] = useState([]);
 
   useEffect(() => {
@@ -44,8 +44,13 @@ const DailyNoteBottomSheet = ({ visible, onClose, userDetails }: NoteBottomSheet
     }
 
     try {
+      const selectedBook = readingBooks.find(book => book.UserBookId === selectedUserBook);
+      
       const noteData = {
-        bookId: selectedBook || null,
+        userBookId: selectedUserBook || null,
+        bookId: selectedBook?.BookId || null,
+        progressUnit: selectedBook?.ProgressUnit || null,
+        progressValue: selectedBook?.ProgressValue || null,
         note: note.trim(),
       };
 
@@ -69,14 +74,14 @@ const DailyNoteBottomSheet = ({ visible, onClose, userDetails }: NoteBottomSheet
 
   const handleClose = () => {
     setNote("");
-    setSelectedBook("");
+    setSelectedUserBook("");
     onClose();
   };
 
   const getPickerOptions = () => {
     return readingBooks.map(book => ({
       label: book.BookName,
-      value: book.BookId,
+      value: book.UserBookId, // Changed from BookId to UserBookId
       icon: 'book'
     }));
   };
@@ -123,8 +128,8 @@ const DailyNoteBottomSheet = ({ visible, onClose, userDetails }: NoteBottomSheet
           {readingBooks.length > 0 && (
             <CustomPicker
               options={getPickerOptions()}
-              selectedValue={selectedBook}
-              onValueChange={setSelectedBook}
+              selectedValue={selectedUserBook}
+              onValueChange={setSelectedUserBook}
               placeholder="Link to a specific book (optional)"
               style={styles.customPickerStyle}
             />

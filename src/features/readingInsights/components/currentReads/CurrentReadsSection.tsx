@@ -8,7 +8,7 @@ import { COLORS, SPACING, FONTSIZE, FONTFAMILY } from '../../../../theme/theme';
 import BookStatusModal from '../../../reading/components/BookStatusModal';
 import SessionPrompt from './SessionPrompt';
 import { useStreak } from '../../../../hooks/useStreak';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useAnalytics } from '../../../../utils/analytics';
 import { dismissTimerNotification, updateTimerNotification } from '../../../../utils/notificationUtils';
 import CurrentlyReadingBooks from './CurrentlyReadingBooks';
@@ -29,11 +29,13 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
 
   // states for BookStatusModal
   const [selectedBookId, setSelectedBookId] = useState<string>('');
+  const [selectedWorkId, setSelectedWorkId] = useState<string>('');
   const [selectedBookStatus, setSelectedBookStatus] = useState<string>('');
-  const [selectedBookPage, setSelectedBookPage] = useState<number | undefined>(undefined);
+  const [selectedBookrogressValue, setSelectedBookProgressValue] = useState<number>(0);
+  const [selectedBookProgressUnit, setSelectedBookProgressUnit] = useState<'pages' | 'percentage' | 'seconds'>('pages');
   const [selectedBookStartDate, setSelectedBookStartDate] = useState<string | undefined>(undefined);
   const [selectedBookEndDate, setSelectedBookEndDate] = useState<string | undefined>(undefined);
-  const [selectedUserBookId, setSelectedUserBookId] = useState<number | undefined>(undefined);
+  const [selectedUserbookId, setSelectedUserbookId] = useState<number | undefined>(undefined);
   const [isBookStatusModalVisible, setIsBookStatusModalVisible] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
@@ -167,63 +169,66 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
     setShowSessionPrompt(false);
   }, []);
 
-  const handleSessionPromptAction = useCallback(() => {
-    if (isCompletingSession) {
-      handleCompleteSession();
-    } else {
-      handleSaveSession();
-    }
-  }, [isCompletingSession, handleCompleteSession, handleSaveSession]);
+  // const handleSessionPromptAction = useCallback(() => {
+  //   if (isCompletingSession) {
+  //     handleCompleteSession();
+  //   } else {
+  //     handleSaveSession();
+  //   }
+  // }, [isCompletingSession, handleCompleteSession, handleSaveSession]);
 
-  const updatePagesRead = useCallback(async () => {
-    if (pagesRead !== "" && pagesRead !== "0") {
-      checkActiveSession();
-      try {
-        const updatePagesReadResponse = await instance.post(`${requests.updatePagesRead}?timezone=${userTimezone}`, {
-          pageCount: pagesRead,
-        }, {
-          headers: authHeaders,
-        });
-        const response = updatePagesReadResponse.data;
-        if (response.data.message === 'Updated') {
-          analytics.track('pages_read_updated');
-          if (!startingTime) {
-            // Alert.alert('Success', 'Updated');
-            setShowDailyNoteBottomSheet(true);
-          }
-          await updateStreak(null);
-          setRefreshData(prev => !prev);
-        } else {
-          Alert.alert('Error', response.data.message);
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to update pages read.');
-        console.log(error);
-      }
-    } else {
-      Alert.alert('Page count is 0', 'Please enter number of pages read!');
-    }
-  }, [pagesRead, checkActiveSession, userTimezone, authHeaders, startingTime, updateStreak]);
+  // const updatePagesRead = useCallback(async () => {
+  //   if (pagesRead !== "" && pagesRead !== "0") {
+  //     checkActiveSession();
+  //     try {
+  //       const updatePagesReadResponse = await instance.post(`${requests.updatePagesRead}?timezone=${userTimezone}`, {
+  //         pageCount: pagesRead,
+  //       }, {
+  //         headers: authHeaders,
+  //       });
+  //       const response = updatePagesReadResponse.data;
+  //       if (response.data.message === 'Updated') {
+  //         analytics.track('pages_read_updated');
+  //         if (!startingTime) {
+  //           // Alert.alert('Success', 'Updated');
+  //           setShowDailyNoteBottomSheet(true);
+  //         }
+  //         await updateStreak(null);
+  //         setRefreshData(prev => !prev);
+  //       } else {
+  //         Alert.alert('Error', response.data.message);
+  //       }
+  //     } catch (error) {
+  //       Alert.alert('Error', 'Failed to update pages read.');
+  //       console.log(error);
+  //     }
+  //   } else {
+  //     Alert.alert('Page count is 0', 'Please enter number of pages read!');
+  //   }
+  // }, [pagesRead, checkActiveSession, userTimezone, authHeaders, startingTime, updateStreak]);
 
   // Memoized modal handlers
   const handleOpenBookStatusModal = useCallback((book: any) => {
     setSelectedBookId(book.BookId);
+    setSelectedWorkId(book.WorkId);
     setSelectedBookStatus('Currently reading');
-    setSelectedBookPage(book.CurrentPage);
+    setSelectedBookProgressUnit(book.ProgressUnit);
+    setSelectedBookProgressValue(book.ProgressValue);
     setSelectedBookStartDate(book.StartDate);
     setSelectedBookEndDate(book.EndDate);
-    setSelectedUserBookId(undefined);
+    setSelectedUserbookId(book.UserbookId);
     setIsBookStatusModalVisible(true);
   }, []);
 
   const handleCloseBookStatusModal = useCallback(() => {
     setIsBookStatusModalVisible(false);
     setSelectedBookId('');
+    setSelectedWorkId('');
     setSelectedBookStatus('');
-    setSelectedBookPage(undefined);
-    setSelectedBookStartDate(undefined);
+    setSelectedBookProgressUnit(undefined);
+    setSelectedBookProgressValue(undefined);
     setSelectedBookEndDate(undefined);
-    setSelectedUserBookId(undefined);
+    setSelectedUserbookId(undefined);
   }, []);
 
   const handleBookStatusUpdate = useCallback(async () => {
@@ -237,11 +242,13 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
 
   const handleEditInstance = useCallback((instance: any) => {
     setSelectedBookId(instance.bookId || selectedBookId);
+    setSelectedBookId(instance.workId || selectedWorkId);
     setSelectedBookStatus(instance.status);
-    setSelectedBookPage(instance.currentPage);
+    setSelectedBookProgressUnit(instance.ProgressUnit);
+    setSelectedBookProgressValue(instance.ProgressValue);
     setSelectedBookStartDate(instance.startDate);
     setSelectedBookEndDate(instance.endDate);
-    setSelectedUserBookId(instance.userBookId);
+    setSelectedUserbookId(instance.userbookId);
     setIsBookStatusModalVisible(true);
   }, [selectedBookId]);
 
@@ -252,23 +259,23 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   }, []);
 
   // Initialize data
-  const initializeData = useCallback(async () => {
-    if (!userDetails[0]?.accessToken || isInitialized) return;
-    
-    try {
-      await Promise.all([
-        fetchCurrentReads(),
-        fetchPagesRead()
-      ]);
-      setIsInitialized(true);
-    } catch (error) {
-      console.error('Error initializing data:', error);
-    }
-  }, [fetchCurrentReads, fetchPagesRead, userDetails, isInitialized]);
+  useFocusEffect(
+    useCallback(() => {
+      const loadData = async () => {
+        try {
+          await Promise.all([
+            fetchCurrentReads(),
+            fetchPagesRead()
+          ]);
+          setIsInitialized(true);
+        } catch (error) {
+          console.error('Error loading data on focus:', error);
+        }
+      };
 
-  useEffect(() => {
-    initializeData();
-  }, [initializeData]);
+      loadData();
+    }, [])
+  );
 
   useEffect(() => {
     if (isInitialized && refreshData) {
@@ -286,7 +293,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
       } else {
         const url = response.notification.request.content.data.urlScheme;
         if (url) {
-          Linking.openURL(url);
+          Linking.openURL(url as string);
         }
       }
     });
@@ -343,11 +350,11 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
         onUpdatePress={handleOpenBookStatusModal}
       />
       
-      <PagesReadInputForm
+      {/* <PagesReadInputForm
         pagesRead={pagesRead}
         onPagesReadChange={setPagesRead}
         onUpdate={updatePagesRead}
-      />
+      /> */}
 
       {/* <SessionControls
         startingTime={startingTime}
@@ -365,11 +372,13 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
         visible={isBookStatusModalVisible}
         onClose={handleCloseBookStatusModal}
         bookId={selectedBookId}
+        workId={selectedWorkId}
         initialStatus={selectedBookStatus}
-        initialPage={selectedBookPage}
+        initialProgressUnit={selectedBookProgressUnit}
+        initialProgressValue={selectedBookrogressValue}
         initialStartDate={selectedBookStartDate}
         initialEndDate={selectedBookEndDate}
-        userBookId={selectedUserBookId}
+        userBookId={selectedUserbookId}
         onUpdate={handleBookStatusUpdate}
         onViewHistory={() => {
           setIsBookStatusModalVisible(false);
@@ -414,7 +423,7 @@ export default CurrentReadsSection;
 
 const styles = StyleSheet.create({
   pagesReadContainer: {
-    marginBottom: SPACING.space_20,
+    marginBottom: SPACING.space_10,
     alignItems: 'center',
   },
   loadingText: {

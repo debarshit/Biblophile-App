@@ -4,13 +4,22 @@ import { navigate } from './navigationRef';
 
 function matchPattern(path: string, pattern: string) {
   const paramNames: string[] = [];
-
+  const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+  if (pattern === ':*') {
+    return { '*': normalizedPath };
+  }
+  
   // Convert pattern to regex: replace :param with a capture group
   const regexString =
     '^' +
     pattern
       .split('/')
       .map((segment) => {
+        if (segment === '*') {
+          // Match everything for asterisk wildcard
+          paramNames.push('*');
+          return '(.*)';
+        }
         if (segment.startsWith(':')) {
           const isOptional = segment.endsWith('?');
           const name = segment.replace(':', '').replace('?', '');
@@ -23,7 +32,7 @@ function matchPattern(path: string, pattern: string) {
     '$';
 
   const regex = new RegExp(regexString);
-  const match = path.match(regex);
+  const match = normalizedPath.match(regex);
 
   if (!match) return null;
 
@@ -44,9 +53,14 @@ export function navigateFromUrl(url: string) {
     if (!url) return;
 
     const parsed = Linking.parse(url);
-    const { path, queryParams } = parsed;
+    let { path, queryParams } = parsed;
 
     console.log('[DeepLink] Parsed URL:', parsed);
+
+    // Handle custom schemes where hostname is part of the path
+    if (parsed.hostname && parsed.scheme !== 'https' && parsed.scheme !== 'http') {
+      path = parsed.hostname + (path ? `/${path}` : '');
+    }
 
     if (!path) {
       console.warn('[DeepLink] No path found in URL:', url);
@@ -55,12 +69,24 @@ export function navigateFromUrl(url: string) {
     }
 
     const screens = (linking.config as any).screens;
+    
+    // Sort screens to check specific patterns before wildcards
+    const sortedScreens = Object.entries(screens).sort(([, a], [, b]) => {
+      const patternA = typeof a === 'string' ? a : (a as { path: string }).path;
+      const patternB = typeof b === 'string' ? b : (b as { path: string }).path;
+      
+      // Wildcard patterns should be checked last
+      if (patternA === ':*') return 1;
+      if (patternB === ':*') return -1;
+      return 0;
+    });
 
-    for (const [screenName, screenConfig] of Object.entries(screens)) {
+    for (const [screenName, screenConfig] of sortedScreens) {
       const pattern = typeof screenConfig === 'string' ? screenConfig : (screenConfig as { path: string }).path;
       if (!pattern) continue;
 
       const pathParams = matchPattern(path, pattern);
+      
       if (pathParams) {
         const params = { ...pathParams, ...queryParams };
         console.log(`[DeepLink] Navigating to ${screenName} with`, params);
@@ -69,9 +95,12 @@ export function navigateFromUrl(url: string) {
       }
     }
 
-    // Fallback if no match
-    console.warn('[DeepLink] No route match for', path);
-    navigate('Tab');
+    let fullUrl = url;
+    if (!url.startsWith('http')) {
+      const queryString = url.includes('?') ? url.substring(url.indexOf('?')) : '';
+      fullUrl = `https://biblophile.com/${path}${queryString}`;
+    }
+    navigate('Resources', { url: fullUrl });
   } catch (err) {
     console.error('[DeepLink] Failed to handle URL:', url, err);
   }

@@ -1,5 +1,4 @@
 import * as Linking from 'expo-linking';
-import { navigationRef } from './navigationRef';
 
 const prefixes = [
   Linking.createURL('/'),
@@ -10,7 +9,7 @@ const prefixes = [
 const config = {
   screens: {
     Stats: {
-      path: 'streaks/:action?',
+      path: 'streak/:action?',
       parse: { action: (action: string) => `${action}` },
     },
     Details: {
@@ -23,6 +22,15 @@ const config = {
     Payment: {
       path: 'payment/:action?',
       parse: { action: (action: string) => `${action}` },
+    },
+    ChallengeDetails: {
+      path: 'challenges/:challengeId/:challengeTitle?',
+      parse: {
+        challengeId: (id: string) => parseInt(id, 10),
+      },
+    },
+    Resources: {
+      path: ':*', // The asterisk acts as a wildcard
     },
   },
 };

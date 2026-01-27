@@ -55,6 +55,9 @@ import { navigationRef } from './src/utils/deepLinking/navigationRef';
 import { navigateFromUrl } from './src/utils/deepLinking/deepLinking';
 import MonthlyWrapScreen from './src/features/readingInsights/screens/MonthlyWrapScreen';
 import ChallengeScreen from './src/features/challenges/screens/ChallengesScreen';
+import AddWorkScreen from './src/features/discover/screens/AddWorkScreen';
+import EditionsScreen from './src/features/discover/screens/EditionsScreen';
+import AddEditionScreen from './src/features/discover/screens/AddEditionScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -187,15 +190,37 @@ const App = () => {
     initializeNotifications();
   }, []);
 
+  //handle deep links on app launch
+  useEffect(() => {
+    linking.getInitialURL().then((url) => {
+      if (url) {
+        // Small delay to ensure navigation is ready
+        setTimeout(() => {
+          navigateFromUrl(url);
+        }, 100);
+      }
+    });
+  }, []);
+
+  // Handle deep links while app is running
+  useEffect(() => {
+    const subscription = linking.subscribe((url) => {
+      navigateFromUrl(url);
+    });
+
+    return () => subscription();
+  }, []);
+
   // Handle notification responses
+
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       const url = response.notification.request.content.data.urlScheme;
       if (url) {
-        navigateFromUrl(url);
+        navigateFromUrl(url as string);
       }
     });
-  
+
     return () => subscription.remove();
   }, []);
   // for expo notifications end
@@ -263,8 +288,12 @@ const App = () => {
               <Stack.Screen name="BookClubDetails" component={BookClubDetailsScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="SubmitReview" component={SubmitReviewScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="MonthlyWrap" component={MonthlyWrapScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="AddWork" component={AddWorkScreen} options={{animation: 'slide_from_bottom'}} />
               {/* can be removed safely after the challengeBanner removed from HomeScreen */}
               <Stack.Screen name="Challenges" component={ChallengeScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="Editions" component={EditionsScreen} options={{animation: 'slide_from_right'}} />
+              <Stack.Screen name="AddEdition" component={AddEditionScreen} options={{animation: 'slide_from_bottom'}} />
+
             </Stack.Navigator>
           </CityProvider>
         ) : (

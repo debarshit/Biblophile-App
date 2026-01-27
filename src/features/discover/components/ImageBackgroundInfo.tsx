@@ -8,6 +8,8 @@ import requests from '../../../services/requests';
 import ReadingStatusModal from './ReadingStatusModal';
 import { useStore } from '../../../store/store';
 import ReadingHistoryModal from '../../reading/components/ReadingHistoryModal';
+import MissingBookInfoModal from './MissingBookInfoModal';
+import { useNavigation } from '@react-navigation/native';
 
 interface ImageBackgroundInfoProps {
   EnableBackHandler: boolean;
@@ -21,6 +23,8 @@ interface ImageBackgroundInfoProps {
   BackHandler?: () => void;
   product: any;
   isGoogleBook: boolean;
+  onBookPromoted?: (internalBookId: string) => void;
+
 }
 
 // Extracted chip component for reusability
@@ -41,12 +45,15 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   BackHandler,
   product,
   isGoogleBook,
+  onBookPromoted,
 }) => {
   const [bookData, setBookData] = useState({ averageRating: null, ratingsCount: null, topEmotions: [] });
-  const [readingStatus, setReadingStatus] = useState({ userBookId: null, status: '', currentPage: '', tags: [] });
+  const [readingStatus, setReadingStatus] = useState({ userBookId: null, status: '', progressUnit: '', progressValue: 0, tags: [] });
   const [modalVisible, setModalVisible] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const userDetails = useStore((state: any) => state.userDetails);
+  const navigation = useNavigation<any>();
 
   const getBookId = async () => {
     if (type !== 'ExternalBook') return id;
@@ -66,6 +73,9 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     const fetchAllData = async () => {
       try {
         const bookId = await getBookId();
+        if (bookId !== id && isGoogleBook) {
+          onBookPromoted?.(bookId);
+        }
         
         // Parallel API calls
         const promises = [
@@ -93,7 +103,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
           setReadingStatus({
             userBookId: statusRes.data.data.userBookId,
             status: statusRes.data.data.status || 'To be read',
-            currentPage: statusRes.data.data.currentPage || '',
+            progressUnit: statusRes.data.data.progressUnit || '',
+            progressValue: statusRes.data.data.progressValue,
             tags: tagsRes.data.data.tags || []
           });
         }
@@ -118,7 +129,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     setReadingStatus({
       userBookId: instance.userBookId,
       status: instance.status,
-      currentPage: instance.currentPage?.toString() || '',
+      progressUnit: instance.progressUnit?.toString() || '',
+      progressValue: instance.progressValue,
       tags: readingStatus.tags // Keep existing tags
     });
     // Open the status modal to edit
@@ -147,9 +159,14 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             <GradientBGIcon name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
           </TouchableOpacity>
         )}
-        <TouchableOpacity onPress={handleShare}>
-          <GradientBGIcon name="sharealt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
-        </TouchableOpacity>
+         <View style={styles.headerRight}>
+          {!isGoogleBook && <TouchableOpacity onPress={() => setShowReportModal(true)} style={styles.reportButton}>
+            <GradientBGIcon name="warning" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+          </TouchableOpacity>}
+          <TouchableOpacity onPress={handleShare}>
+            <GradientBGIcon name="sharealt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Book Info Card */}
@@ -174,6 +191,20 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
 
           <Text style={styles.authorText}>{author}</Text>
           <View style={styles.ratingContainer}>{renderRating()}</View>
+          
+          {!isGoogleBook && <View style={[styles.section, {flexDirection: 'row', justifyContent: 'space-between', marginTop: SPACING.space_8}]}>
+            <Text style={styles.sectionLabel}>{product.Format}</Text>
+            <TouchableOpacity 
+              style={styles.editionsButton}
+              onPress={() => navigation.replace('Editions', { workId: product.WorkId, title: name, currentBookId: id })}
+            >
+              <MaterialIcons name="library-books" size={FONTSIZE.size_14} color={COLORS.primaryOrangeHex} />
+              <Text style={styles.editionsText}>
+                {product.OtherEditionsCount} other edition{product.OtherEditionsCount > 1 ? 's' : ''}
+              </Text>
+              <AntDesign name="right" size={FONTSIZE.size_12} color={COLORS.primaryOrangeHex} />
+            </TouchableOpacity>
+          </View>}
         </View>
       </View>
 
@@ -203,8 +234,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             <View style={styles.statusBadge}>
               <Text style={styles.statusText}>{readingStatus.userBookId ? readingStatus.status : 'Set status'}</Text>
             </View>
-            {readingStatus.status === 'Currently reading' && readingStatus.currentPage && (
-              <Text style={styles.pageInfo}>Page {readingStatus.currentPage}</Text>
+            {readingStatus.status === 'Currently reading' && readingStatus.progressValue != null && (
+              <Text style={styles.pageInfo}>{`${readingStatus.progressValue} ${readingStatus.progressUnit}`}</Text>
             )}
           </View>
 
@@ -226,10 +257,12 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         onClose={() => setModalVisible(false)}
         id={id}
         isGoogleBook={isGoogleBook}
+        onBookPromoted={onBookPromoted}
         product={product}
         onUpdate={setReadingStatus}
         initialStatus={readingStatus.status}
-        initialPage={readingStatus.currentPage}
+        initialProgressUnit={readingStatus.progressUnit as 'pages' | 'percentage' | 'seconds'}
+        initialProgressValue={readingStatus.progressValue}
         initialTags={readingStatus.tags}
         userBookId={readingStatus.userBookId}
       />
@@ -240,6 +273,13 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         bookId={id}
         bookTitle={name}
         onEditInstance={handleEditInstance}
+      />
+      <MissingBookInfoModal
+        modalVisible={showReportModal}
+        setModalVisible={setShowReportModal}
+        accessToken={userDetails[0].accessToken}
+        workId={product?.WorkId}
+        bookId={id}
       />
     </View>
   );
@@ -276,6 +316,10 @@ const styles = StyleSheet.create({
   tagsSection: { paddingTop: SPACING.space_12, borderTopWidth: 1, borderTopColor: COLORS.primaryDarkGreyHex },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: SPACING.space_8 },
   historyButton: { padding: SPACING.space_8, backgroundColor: COLORS.primaryDarkGreyHex, borderRadius: BORDERRADIUS.radius_10 },
+  headerRight: { flexDirection: 'row', gap: SPACING.space_12 },
+  reportButton: { opacity: 0.7 },
+  editionsButton: { flexDirection: 'row', gap: SPACING.space_4 },
+  editionsText: { fontFamily: FONTFAMILY.poppins_medium, fontSize: FONTSIZE.size_10, color: COLORS.primaryOrangeHex },
 });
 
 export default ImageBackgroundInfo;

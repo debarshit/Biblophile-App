@@ -13,20 +13,30 @@ const requests = {
     //books data requests
     getBookGenre:`${APIURL}books/genre`,
     getBooks:`${APIURL}books/?bookGenre=`,
-    fetchProductDetails: (id) => `${APIURL}books/${id}`,
+    fetchWorkDetails: (id) => `${APIURL}books/${id}`,
     fetchExternalBookDetails: (id) => `${APIURL}books/external/${id}`,
     fetchAverageRating: (id) => `${APIURL}books/${id}/rating`,
     fetchAverageEmotions: (id) => `${APIURL}books/${id}/emotions`,
-    addBook: `${APIURL}books/`,
+    createWork: `${APIURL}books/works/`,
+    addWorkEdition:(workId: number) => `${APIURL}books/works/${workId}/editions`,
+    fetchWorkEditions:(workId: number) => `${APIURL}books/works/${workId}/editions`,
+    createChangeProposal: `${APIURL}books/change-proposals/`,
     submitBookRequest: `${APIURL}books/request`,
     fetchBookId: (isbn) => `${APIURL}books/isbn/${isbn}`,
     fetchBooksByUserBookIds: `${APIURL}books/userbooks`,
     fetchReadingStatus: (id) => `${APIURL}books/${id}/status`,
     submitReadingStatus: `${APIURL}books/status`,
+    previewEditionSwitch: `${APIURL}books/preview-edition-switch`,
+    confirmEditionSwitch: `${APIURL}books/confirm-edition-switch`,
     fetchProductReviews: (id) => `${APIURL}books/${id}/reviews`,
     searchBooks: `${APIURL}books/search?searchQuery=`,
     searchExternalBooks: `${APIURL}books/search-external?searchQuery=`,
     fetchReviewTags: `${APIURL}books/reviews/tags`,
+
+    //books meta requests
+    searchAuthors: `${APIURL}admin/book-meta/authors/search`,
+    searchGenres: `${APIURL}admin/book-meta/genres/search`,
+    searchSeries: `${APIURL}admin/book-meta/series/search`,
 
     //subscription requests
     fetchSubscriptionPlans: `${APIURL}subscriptions/plans`,

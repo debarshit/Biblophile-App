@@ -34,9 +34,9 @@ const DetailsScreen = ({navigation, route}: any) => {
   const { selectedCity } = useCity();
   const analytics = useAnalytics();
 
-  const [id, setId] = useState(route.params.id);
+  const [canonicalBookId, setCanonicalBookId] = useState(route.params.id);
   const [type, setType] = useState(route.params.type);
-  const [isGoogleBook, setIsGoogleBook] = useState(false); 
+  const [isGoogleBook, setIsGoogleBook] = useState(route.params.type === 'ExternalBook');
 
   const [subscription, setSubscription] = useState(false);
   const [product, setProduct] = useState<any>({});
@@ -74,7 +74,7 @@ const DetailsScreen = ({navigation, route}: any) => {
   //handle the deep linked function
   const handleAction = (action) => {
     if (action === 'fetchProductDetails') {
-        setId(productId);
+        setCanonicalBookId(productId);
         setType(productType);
     }
   };
@@ -92,6 +92,11 @@ const DetailsScreen = ({navigation, route}: any) => {
     }
   };
 
+  const promoteToInternalBook = (internalBookId: string) => {
+    setCanonicalBookId(internalBookId);
+    setIsGoogleBook(false);
+  };
+
   const handleBuyOptions = () => {
     setBuyModalVisible(true);
   };
@@ -103,7 +108,7 @@ const DetailsScreen = ({navigation, route}: any) => {
       if (buyPrice) {
         setPrice(buyPrice);
         addToCarthandler({
-          id: id,
+          id: canonicalBookId,
           name: product['ProductName'],
           photo: convertHttpToHttps(product['ProductPhoto']),
           type: type,
@@ -152,14 +157,23 @@ const DetailsScreen = ({navigation, route}: any) => {
     fetchActivePlan();
   }, []);
 
+  //Separate useEffect to sync state with route params
   useEffect(() => {
-    const currentId = route.params?.id;
-    const currentType = route.params?.type;
+    const newId = route.params?.id;
+    const newType = route.params?.type;
+    
+    if (newId && newType) {
+      // Only update if the values actually changed
+      if (newId !== canonicalBookId || newType !== type) {
+        setCanonicalBookId(newId);
+        setType(newType);
+        setIsGoogleBook(newType === 'ExternalBook');
+      }
+    }
+  }, [route.params?.id, route.params?.type]);
 
-    if (!currentId || !currentType) return;
-
-    setId(currentId);
-    setType(currentType);
+  useEffect(() => {
+    if (!canonicalBookId || !type) return;
 
     async function fetchProductDetails() {
       try {
@@ -169,12 +183,14 @@ const DetailsScreen = ({navigation, route}: any) => {
         }
 
         let response;
-        if (currentType === 'ExternalBook') {
-          response = await instance(`${requests.fetchExternalBookDetails(currentId)}`);
-          setIsGoogleBook(true);
+        if (isGoogleBook) {
+          response = await instance(
+            requests.fetchExternalBookDetails(canonicalBookId)
+          );
         } else {
-          response = await instance(`${requests.fetchProductDetails(currentId)}?type=${currentType}&userCity=${selectedCity}`);
-          setIsGoogleBook(false);
+          response = await instance(
+            `${requests.fetchWorkDetails(canonicalBookId)}?type=Book&userCity=${selectedCity}`
+          );
         }
 
         const data = response.data.data;
@@ -183,13 +199,13 @@ const DetailsScreen = ({navigation, route}: any) => {
         const fetchedPrice = data.ProductPrice || data.saleInfo?.listPrice?.amount;
         setActualPrice(fetchedPrice);
 
-        const updatedPrices = calculatePricesFromData(data, currentType);
+        const updatedPrices = calculatePricesFromData(data, type);
         setPrices(updatedPrices);
         setPrice(updatedPrices[0] || { size: '', price: 0, currency: '₹' });
 
         analytics.track('view_item', {
-          item_id: currentId,
-          is_google_book: currentType === 'ExternalBook',
+          item_id: canonicalBookId,
+          is_google_book: isGoogleBook,
           item_name: data['ProductName'] || data['volumeInfo']?.title || '',
         });
       } catch (error) {
@@ -198,7 +214,7 @@ const DetailsScreen = ({navigation, route}: any) => {
     }
 
     fetchProductDetails();
-  }, [route.params?.id, route.params?.type, selectedCity, subscription]);
+  }, [canonicalBookId, type, selectedCity, subscription]);
 
   const calculatePricesFromData = (productData, productType) => {
     if (productType === 'Book' || productType === 'ExternalBook') {
@@ -232,7 +248,7 @@ const DetailsScreen = ({navigation, route}: any) => {
             price={price}
             setPrice={setPrice}
             type={type}
-            id={id}
+            id={canonicalBookId}
             actualPrice={actualPrice}
             userDetails={userDetails}
             stripHtmlTags={stripHtmlTags}
@@ -242,14 +258,14 @@ const DetailsScreen = ({navigation, route}: any) => {
         return (
           <View style={styles.TabContent}>
             <Text style={styles.InfoTitle}>Reviews</Text>
-            <ProductReview id={id} isGoogleBook={isGoogleBook} product={product} />
+            <ProductReview id={canonicalBookId} isGoogleBook={isGoogleBook} product={product} />
           </View>
         );
       case 'read-together':
         return (
           <View style={styles.TabContent}>
             <Text style={styles.InfoTitle}>Read Together</Text>
-            <ReadTogetherLinks id={id} isGoogleBook={isGoogleBook} product={product} />
+            <ReadTogetherLinks id={canonicalBookId} isGoogleBook={isGoogleBook} product={product} />
           </View>
         );
       default:
@@ -267,8 +283,9 @@ const DetailsScreen = ({navigation, route}: any) => {
           EnableBackHandler={true}
           imagelink_portrait={isGoogleBook ? convertHttpToHttps(product['volumeInfo']?.imageLinks?.thumbnail) : convertHttpToHttps(product['ProductPhoto'])}
           type={type}
-          id={id}
+          id={canonicalBookId}
           isGoogleBook={isGoogleBook}
+          onBookPromoted={promoteToInternalBook}
           favourite={favourite}
           name={isGoogleBook ? product['volumeInfo']?.title : product['ProductName']}
           genre={isGoogleBook ? product['volumeInfo']?.categories?.join(", ") : product['ProductGenres']}
@@ -290,7 +307,7 @@ const DetailsScreen = ({navigation, route}: any) => {
                 handleBuyOptions();
               } else {
                 addToCarthandler({
-                  id: id,
+                  id: canonicalBookId,
                   name: product['ProductName'],
                   photo: convertHttpToHttps(product['ProductPhoto']),
                   type: type,
