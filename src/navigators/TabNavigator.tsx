@@ -97,7 +97,7 @@ const TabNavigator = () => {
               />
             ),
           }}></Tab.Screen> */}
-        {/* <Tab.Screen
+        <Tab.Screen
           name="Social"
           component={SocialScreen}
           options={{
@@ -110,7 +110,7 @@ const TabNavigator = () => {
                 }
               />
             ),
-          }}></Tab.Screen> */}
+          }}></Tab.Screen>
           <Tab.Screen
         name="Profile"
         component={ProfileSummaryScreen}

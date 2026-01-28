@@ -193,7 +193,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
           }
         );
 
-        if (response.data.status === 'added' || response.data.status === 'removed') {
+        if (response.data.status === 'success') {
           console.log('Join/Leave action performed');
           fetchReadalongDetails(); // Refresh details
         } else {
@@ -314,7 +314,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
           {/* update the text color; it is invisible currently */}
         {isHost && (
           <TouchableOpacity onPress={() => navigation.navigate('CreateReadalongCheckpoint', { readalong: readalong, currentUser: currentUser, isHost: isHost })}>
-            <Text>Create a new checkpoint</Text>
+            <Text style={{color: COLORS.primaryWhiteHex}}>Create a new checkpoint</Text>
           </TouchableOpacity>
         )}
 

@@ -15,6 +15,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // --- Interface Definitions (Ensure consistency) ---
 interface Host {
@@ -224,7 +225,8 @@ const CreateReadalongCheckpoint: React.FC = () => {
      }
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.contentContainer}>
             <Text style={styles.title}>
                 {checkpoint.checkpointId ? "Edit Checkpoint" : "Create New Checkpoint"}
             </Text>
@@ -311,6 +313,7 @@ const CreateReadalongCheckpoint: React.FC = () => {
                 </Pressable>
             </View>
         </ScrollView>
+        </SafeAreaView>
     );
 };
 
