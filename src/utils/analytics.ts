@@ -1,56 +1,65 @@
 import { usePostHog } from 'posthog-react-native';
-import analytics from '@react-native-firebase/analytics';
+import { getApp } from '@react-native-firebase/app';
+import {
+  getAnalytics,
+  logEvent,
+  setUserId,
+  setUserProperty,
+  resetAnalyticsData,
+} from '@react-native-firebase/analytics';
 
 export interface Item {
-  item_id: string
-  item_name: string
-  item_category?: string
-  item_list_name?: string
-  price: number
-  quantity: number
+  item_id: string;
+  item_name: string;
+  item_category?: string;
+  item_list_name?: string;
+  price: number;
+  quantity: number;
 }
 
 interface PurchaseData {
-  transaction_id: string
-  value: number
-  currency?: string
-  items: Item[]
+  transaction_id: string;
+  value: number;
+  currency?: string;
+  items: Item[];
 }
 
 export const useAnalytics = () => {
   const posthog = usePostHog();
+  const analytics = getAnalytics(getApp());
 
   return {
     // --- User identity management ---
     identifyUser: async (userId: string, traits: Record<string, any> = {}) => {
-      // Firebase: Set user ID and properties
-      await analytics().setUserId(userId);
-      for (const [key, value] of Object.entries(traits)) {
-        await analytics().setUserProperty(key, String(value));
-      }
-      posthog?.identify(userId, traits)
+      await Promise.all([
+        setUserId(analytics, userId),
+        ...Object.entries(traits).map(([key, value]) =>
+          setUserProperty(analytics, key, String(value))
+        ),
+      ]);
+
+      posthog?.identify(userId, traits);
     },
 
     resetUser: async () => {
-      await analytics().resetAnalyticsData();
-      posthog?.reset()
+      await resetAnalyticsData(analytics);
+      posthog?.reset();
     },
 
     // --- User lifecycle events ---
     signup: async (method: string = 'email') => {
-      await analytics().logSignUp({ method });
-      posthog?.capture('signup', { method })
+      await logEvent(analytics, 'sign_up', { method });
+      posthog?.capture('signup', { method });
     },
 
     login: async (method: string = 'email') => {
-      await analytics().logLogin({ method });
-      posthog?.capture('login', { method })
+      await logEvent(analytics, 'login', { method });
+      posthog?.capture('login', { method });
     },
 
     // --- Business events ---
     purchase: async ({ transaction_id, value, currency = 'INR', items }: PurchaseData) => {
-      // Firebase: Uses a strictly typed logPurchase method
-      await analytics().logPurchase({
+      await logEvent(analytics, 'purchase', {
         transaction_id,
         value,
         currency,
@@ -62,15 +71,13 @@ export const useAnalytics = () => {
         value,
         currency,
         items: items as any,
-      })
+      });
     },
 
     // --- Utility ---
     track: async (event: string, properties: Record<string, any> = {}) => {
-      // Firebase handles IDFV automatically
-      await analytics().logEvent(event, properties);
-      // PostHog captures standard event data
+      await logEvent(analytics, event, properties);
       posthog?.capture(event, properties);
     },
-  }
-}
+  };
+};
