@@ -25,6 +25,7 @@ export default {
   "ios": {
     "buildNumber": "7",
     "supportsTablet": true,
+    "googleServicesFile": "./GoogleService-Info.plist",
     "infoPlist": {
       "NSCameraUsageDescription": "We need camera access to let you take a profile photo.",
       "NSPhotoLibraryUsageDescription": "We need photo library access so you can choose a profile picture.",
@@ -78,7 +79,22 @@ export default {
   },
   "plugins": [
     "expo-font",
-    "expo-localization"
+    "expo-localization",
+    "@react-native-firebase/app",
+    [
+      "expo-build-properties",
+      {
+        "ios": {
+          "useFrameworks": "static"
+        }
+      }
+    ],
+    [
+      "expo-tracking-transparency",
+      {
+        "userTrackingPermission": "This allows Biblophile to provide personalized book recommendations and measure the effectiveness of our ads."
+      }
+    ]
   ],
   "extra": {
     "eas": {
