@@ -42,13 +42,11 @@ import { useAnalytics } from '../../../utils/analytics';
 
 const DiscoverScreen = ({ navigation }) => {
   // Global state from store
-  const { addToCart, calculateCartPrice, fetchGenres, GenreList, CartList } = useStore((state) => ({
-    addToCart: state.addToCart,
-    calculateCartPrice: state.calculateCartPrice,
-    fetchGenres: state.fetchGenres,
-    GenreList: state.GenreList,
-    CartList: state.CartList,
-  }));
+  const addToCart = useStore((state) => state.addToCart);
+  const calculateCartPrice = useStore((state) => state.calculateCartPrice);
+  const fetchGenres = useStore((state) => state.fetchGenres);
+  const GenreList = useStore((state) => state.GenreList);
+  const CartList = useStore((state) => state.CartList);
 
   // Local state
   const [spotlights, setSpotlights] = useState([]);
