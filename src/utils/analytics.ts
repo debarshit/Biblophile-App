@@ -1,4 +1,5 @@
-import { usePostHog } from 'posthog-react-native'
+import { usePostHog } from 'posthog-react-native';
+import analytics from '@react-native-firebase/analytics';
 
 export interface Item {
   item_id: string
@@ -21,25 +22,41 @@ export const useAnalytics = () => {
 
   return {
     // --- User identity management ---
-    identifyUser: (userId: string, traits: Record<string, any> = {}) => {
+    identifyUser: async (userId: string, traits: Record<string, any> = {}) => {
+      // Firebase: Set user ID and properties
+      await analytics().setUserId(userId);
+      for (const [key, value] of Object.entries(traits)) {
+        await analytics().setUserProperty(key, String(value));
+      }
       posthog?.identify(userId, traits)
     },
 
-    resetUser: () => {
+    resetUser: async () => {
+      await analytics().resetAnalyticsData();
       posthog?.reset()
     },
 
     // --- User lifecycle events ---
-    signup: (method: string = 'email') => {
+    signup: async (method: string = 'email') => {
+      await analytics().logSignUp({ method });
       posthog?.capture('signup', { method })
     },
 
-    login: (method: string = 'email') => {
+    login: async (method: string = 'email') => {
+      await analytics().logLogin({ method });
       posthog?.capture('login', { method })
     },
 
     // --- Business events ---
-    purchase: ({ transaction_id, value, currency = 'INR', items }: PurchaseData) => {
+    purchase: async ({ transaction_id, value, currency = 'INR', items }: PurchaseData) => {
+      // Firebase: Uses a strictly typed logPurchase method
+      await analytics().logPurchase({
+        transaction_id,
+        value,
+        currency,
+        items: items as any,
+      });
+
       posthog?.capture('purchase', {
         transaction_id,
         value,
@@ -49,8 +66,11 @@ export const useAnalytics = () => {
     },
 
     // --- Utility ---
-    track: (event: string, properties: Record<string, any> = {}) => {
-      posthog?.capture(event, properties)
+    track: async (event: string, properties: Record<string, any> = {}) => {
+      // Firebase handles IDFV automatically
+      await analytics().logEvent(event, properties);
+      // PostHog captures standard event data
+      posthog?.capture(event, properties);
     },
   }
 }
