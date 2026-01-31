@@ -9,7 +9,7 @@ import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 
 // --- Interface Definitions (Ensure they are the same as used in Details component) ---
 interface Host { name: string; userId: string; }
-interface CurrentUser { userId: string; readingStatus: string, currentPage: number; }
+interface CurrentUser { userId: string; readingStatus: string, progressPercentage: number; }
 interface Readalong {
     readalongId: number;
     bookId: string;
@@ -24,7 +24,7 @@ interface Readalong {
     host: Host;
   }
 interface Checkpoint {
-    checkpoint_id: string; readalong_id: string; page_number: string; // Keep string here as per loader data
+    checkpoint_id: string; readalong_id: string; progress: string; label?: string
     discussion_prompt: string; discussion_date: string;
 }
 // -------------------------------------------------------------------------
@@ -128,7 +128,7 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
             isHost: isHost,
             checkpoint: {
               checkpointId: checkpointId,
-              pageNumber: checkpoints.find(c => c.checkpoint_id === checkpointId)?.page_number || '0',
+              progress: checkpoints.find(c => c.checkpoint_id === checkpointId)?.progress || '0',
               description: checkpoints.find(c => c.checkpoint_id === checkpointId)?.discussion_prompt || '',
               date: checkpoints.find(c => c.checkpoint_id === checkpointId)?.discussion_date || '',
             },
@@ -168,8 +168,8 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
                       )}
 
                     <Text style={styles.checkpointDate}>{item.discussion_date}</Text>
-                    <Text style={styles.checkpointPrompt}>{item.discussion_prompt}</Text>
-                    <Text style={styles.checkpointPage}>Page: {item.page_number}</Text>
+                    <Text style={styles.checkpointPrompt}>{item.label}</Text>
+                    <Text style={styles.checkpointPage}>Progress: {item.progress}%</Text>
                  </View>
              </Pressable>
         );
@@ -214,6 +214,7 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
                 isMember={isMember}
                 isHost={isHost}
                 checkpointId={selectedCheckpointId}
+                checkpointPrompt={selectedCheckpointDetails.discussion_prompt}
                 onBack={handleBackToList}
             />
         );
@@ -249,6 +250,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: SPACING.space_16,
+        paddingBottom: SPACING.space_4,
         backgroundColor: COLORS.primaryDarkGreyHex,
     },
     flatListContent: {

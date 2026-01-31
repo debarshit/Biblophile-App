@@ -47,7 +47,7 @@ type CreateCheckpointRouteParams = {
     readalong: Readalong;
     checkpoint: {
         checkpointId: number | null;
-        pageNumber: number | null;
+        progressPercentage: number;
         description: string | null;
         date: string | null;
     };
@@ -64,7 +64,7 @@ const CreateReadalongCheckpoint: React.FC = () => {
     const route = useRoute<CreateCheckpointScreenRouteProp>();
     const { 
         readalong, 
-        checkpoint = { checkpointId: null, pageNumber: null, description: null, date: null }, 
+        checkpoint = { checkpointId: null, progressPercentage: 0, description: null, date: null }, 
         currentUser, 
         isHost 
     } = route.params;
@@ -72,10 +72,11 @@ const CreateReadalongCheckpoint: React.FC = () => {
     const userDetails = useStore((state: any) => state.userDetails);
 
     // --- Form State ---
-    const [pageNumber, setPageNumber] = useState<string>('');
+    const [progressPercentage, setProgressPercentage] = useState<string>('0');
     const [discussionPrompt, setDiscussionPrompt] = useState('');
     const [discussionDate, setDiscussionDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [label, setLabel] = useState('');
 
     // --- UI State ---
     const [submitting, setSubmitting] = useState(false);
@@ -94,7 +95,7 @@ const CreateReadalongCheckpoint: React.FC = () => {
              setInitialLoadError(null);
              try {
                   if (checkpoint.checkpointId) {
-                      setPageNumber(checkpoint.pageNumber?.toString() || '');
+                      setProgressPercentage(checkpoint.progressPercentage?.toString() || '');
                       setDiscussionPrompt(checkpoint.description || '');
                       setDiscussionDate(checkpoint.date ? new Date(checkpoint.date) : new Date());
                   }
@@ -132,14 +133,14 @@ const CreateReadalongCheckpoint: React.FC = () => {
              setSubmitting(false);
              return;
          }
-         if (!pageNumber || parseInt(pageNumber) <= 0) {
-              setFormError("Page number must be a positive number.");
+         if (!progressPercentage || parseInt(progressPercentage) <= 0) {
+              setFormError("Progress must be a positive number.");
               setSubmitting(false);
               return;
          }
-         const pageNum = parseInt(pageNumber);
-         if (maxBookPages !== null && pageNum > maxBookPages) {
-             setFormError(`Page number cannot exceed the book's total pages (${maxBookPages}).`);
+         const progress = parseInt(progressPercentage);
+         if (progress > 100) {
+             setFormError(`Progress percentage cannot exceed 100.`);
              setSubmitting(false);
              return;
          }
@@ -164,9 +165,10 @@ const CreateReadalongCheckpoint: React.FC = () => {
              readalongId: parseInt(readalong.readalongId.toString()),
              checkpointId: checkpoint.checkpointId || null,
              userId: currentUserId,
-             pageNumber: pageNum, // Send as number
+             progressPercentage: progress, // Send as number
              discussionPrompt: discussionPrompt.trim() || null,
              discussionDate: discussionDate.toISOString().split('T')[0],
+             label: label,
          };
 
          try {
@@ -236,18 +238,31 @@ const CreateReadalongCheckpoint: React.FC = () => {
 
             {/* Page Number Field */}
             <View style={styles.formGroup}>
-                <Text style={styles.label}>Page Number</Text>
+                <Text style={styles.label}>Progress Percentage</Text>
                 <TextInput
                     style={styles.input}
                     keyboardType="numeric"
-                    value={pageNumber}
-                    onChangeText={setPageNumber}
+                    value={progressPercentage}
+                    onChangeText={setProgressPercentage}
                     placeholder="e.g., 50"
                     placeholderTextColor="#a0aec0"
                 />
                 {maxBookPages !== null && (
                      <Text style={styles.helpText}>Max page number: {maxBookPages}</Text>
                 )}
+            </View>
+
+            {/* Label */}
+            <View style={styles.formGroup}>
+                <Text style={styles.label}>Label</Text>
+                <TextInput
+                    style={[styles.input, styles.textarea]}
+                    multiline={true}
+                    value={label}
+                    onChangeText={setLabel}
+                    placeholder="Optional. For example 'Chapter 5...'"
+                    placeholderTextColor="#a0aec0"
+                />
             </View>
 
             {/* Discussion Prompt */}

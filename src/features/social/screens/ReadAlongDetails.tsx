@@ -31,7 +31,7 @@ interface Host {
 interface CurrentUser {
   userId: string | null;
   readingStatus: string | null;
-  currentPage: number;
+  progressPercentage: number;
 }
 
 interface Readalong {
@@ -59,7 +59,7 @@ interface Props {
 const ReadAlongDetails: React.FC<Props> = ({ route }) => {
   const { readalongId } = route.params;
   const [readalong, setReadalong] = useState<Readalong | null>(null);
-  const [currentUser, setCurrentUser] = useState<CurrentUser>({ userId: null, readingStatus: null, currentPage: 0 });
+  const [currentUser, setCurrentUser] = useState<CurrentUser>({ userId: null, readingStatus: null, progressPercentage: 0 });
   const [isMember, setIsMember] = useState<boolean>(false);
   const [isHost, setIsHost] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,25 +86,26 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
       );
       const readalong = readalongResponse.data.data;
       setReadalong(readalong);
-      setDescription(readalong?.readalong_description || 'Such empty! Much wow!');
+      setDescription(readalong?.readalongDescription || 'Such empty! Much wow!');
 
-      let currentUserData: CurrentUser = { userId: null, readingStatus: null, currentPage: 0 };
+      let currentUserData: CurrentUser = { userId: null, readingStatus: null, progressPercentage: 0 };
       let isHostUser = false;
       let isMemberUser = false;
 
       if (accessToken) {
         // Only fetch user-specific data if accessToken is available
-        const response = await instance.get(requests.fetchReadingStatus(readalong?.bookId), {
+        const response = await instance.get(requests.fetchReadingStatusByWork(readalong?.workId), {
           headers: {
               Authorization: `Bearer ${userDetails[0].accessToken}`,
           },
         });
 
         const currentUserReadingStatusResponse = response.data;
+
         currentUserData = {
           userId: currentUserReadingStatusResponse.data.userId,
           readingStatus: currentUserReadingStatusResponse.data.status,
-          currentPage: currentUserReadingStatusResponse.data.currentPage || 0,
+          progressPercentage: currentUserReadingStatusResponse.data.progressPercentage,
         };
 
         // Check if the current user is the host
@@ -252,7 +253,9 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
         <Text style={styles.title}>{readalong.book_title}</Text>
         <View style={styles.bookDetailsContainer}>
           {/* Book Image */}
+          <TouchableOpacity onPress={() => navigation.navigate('Details', { id: readalong.bookId, type: 'Book' })}>
           <Image source={{ uri: readalong.book_photo }} style={styles.bookImage} />
+          </TouchableOpacity>
           {/* Readalong Read Details */}
           <View style={styles.readalongInfo}>
             <TouchableOpacity
@@ -312,11 +315,11 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
         )}
 
           {/* update the text color; it is invisible currently */}
-        {isHost && (
+        {isHost ? (
           <TouchableOpacity onPress={() => navigation.navigate('CreateReadalongCheckpoint', { readalong: readalong, currentUser: currentUser, isHost: isHost })}>
             <Text style={{color: COLORS.primaryWhiteHex}}>Create a new checkpoint</Text>
           </TouchableOpacity>
-        )}
+        ) : <Text style={{color: COLORS.primaryWhiteHex}}></Text>}
 
         {isMember && (
           <ReadalongCheckpoints readalong={readalong} currentUser={currentUser} isMember={isMember} isHost={isHost}/>

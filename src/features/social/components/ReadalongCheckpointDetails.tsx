@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, ActivityIndicator, Pressable, TextInput } from 'react-native';
+import { StyleSheet, Text, View, FlatList, ActivityIndicator, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import instance from '../../../services/axios';
@@ -16,7 +16,7 @@ interface Host {
 interface CurrentUser {
     userId: string;
     readingStatus: string;
-    currentPage: number;
+    progressPercentage: number;
 }
 
 interface Readalong {
@@ -36,7 +36,7 @@ interface Readalong {
 interface Comment {
     commentId: number;
     commentText: string;
-    pageNumber: number;
+    progressPercentage: number;
     user_name: string;
     userId: string;
     like_count: number;
@@ -50,6 +50,7 @@ interface ReadalongCheckpointDetailsProps {
     isMember: boolean;
     isHost: boolean;
     checkpointId: string;
+    checkpointPrompt: string;
     onBack: () => void;
 }
 
@@ -186,7 +187,7 @@ const CommentItem = memo(({
     onDeleteComment: (commentId: number) => void
 }) => {
     const [showDeleteMenu, setShowDeleteMenu] = useState(false);
-    const shouldBlur = currentUser.currentPage < comment.pageNumber;
+    const shouldBlur = currentUser.progressPercentage < comment.progressPercentage;
     const canDelete = isHost || comment.userId === currentUser.userId;
     
     const formattedDate = useMemo(() => {
@@ -221,8 +222,8 @@ const CommentItem = memo(({
 
                 <Text style={styles.commentMeta}>
                     <Text style={styles.commentUser}>{comment.user_name}</Text>
-                    <Text style={styles.commentPage}> (Page {comment.pageNumber})</Text>
-                    <Text style={styles.commentDate}> - {formattedDate}</Text>
+                    <Text style={styles.commentPage}> (Progress {comment.progressPercentage})</Text>
+                    <Text style={styles.commentDate}> • {formattedDate}</Text>
                 </Text>
                 
                 <Text style={[styles.commentText, shouldBlur && styles.blurredText]}>
@@ -247,6 +248,17 @@ const CommentItem = memo(({
     );
 });
 
+// Checkpoint Prompt Component
+const CheckpointPrompt = memo(({ prompt }: { prompt: string }) => (
+    <View style={styles.promptContainer}>
+        <View style={styles.promptHeader}>
+            <Ionicons name="chatbubbles-outline" size={20} color={COLORS.primaryOrangeHex} />
+            <Text style={styles.promptTitle}>Discussion Prompt</Text>
+        </View>
+        <Text style={styles.promptText}>{prompt}</Text>
+    </View>
+));
+
 // Main Component
 const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
     readalong,
@@ -254,6 +266,7 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
     isMember,
     isHost,
     checkpointId,
+    checkpointPrompt,
     onBack,
 }) => {
     const userDetails = useStore((state: any) => state.userDetails);
@@ -269,6 +282,8 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
         deleteComment
     } = useComments(checkpointId, currentUser, userDetails);
     
+    const [showSortMenu, setShowSortMenu] = useState(false);
+
     const handleToggleLike = useCallback(async (commentId: number) => {
         // Optimistic update
         const commentToUpdate = comments.find(c => c.commentId === commentId);
@@ -332,8 +347,8 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
         }
     }, [deleteComment, currentUser.userId, handleSortChange, sort]);
 
-    const handleCommentSubmit = useCallback(async (text: string, pageNumber: number) => {
-        if (!text.trim() || !pageNumber || !readalong?.readalongId || !checkpointId) {
+    const handleCommentSubmit = useCallback(async (text: string, progressPercentage: number) => {
+        if (!text.trim() || !progressPercentage || !readalong?.readalongId || !checkpointId) {
             return;
         }
 
@@ -341,7 +356,7 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
         const tempComment: Comment = {
             commentId: tempId,
             commentText: text,
-            pageNumber: pageNumber,
+            progressPercentage: progressPercentage,
             user_name: currentUser.userId, // Will be replaced with actual name from API
             userId: currentUser.userId,
             like_count: 0,
@@ -355,7 +370,7 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
             const response = await instance.post(requests.submitReadalongComment(checkpointId), {
                 commentText: text,
                 readalongId: readalong.readalongId,
-                pageNumber: pageNumber,
+                progressPercentage: progressPercentage,
             },
             {
                 headers: {
@@ -386,6 +401,19 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
         }
     }, [readalong?.readalongId, checkpointId, currentUser.userId, addComment, deleteComment, sort, handleSortChange]);
 
+    const getSortLabel = useCallback(() => {
+        switch (sort) {
+            case SORT_OPTIONS.NEWEST:
+                return 'Newest';
+            case SORT_OPTIONS.OLDEST:
+                return 'Oldest';
+            case SORT_OPTIONS.LIKES:
+                return 'Most Liked';
+            default:
+                return 'Sort';
+        }
+    }, [sort]);
+
     const renderFooter = useCallback(() => {
         if (!pagination.loading) return null;
         return (
@@ -400,85 +428,157 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
         if (pagination.loading || error) return null;
         return (
             <View style={styles.emptyList}>
+                <Ionicons name="chatbubble-outline" size={48} color={COLORS.secondaryLightGreyHex} />
                 <Text style={styles.emptyListText}>No comments yet.</Text>
+                <Text style={styles.emptyListSubtext}>Be the first to share your thoughts!</Text>
             </View>
         );
     }, [pagination.loading, error]);
 
+    const renderListHeader = useCallback(() => (
+        <>
+            {/* Checkpoint Prompt */}
+            <CheckpointPrompt prompt={checkpointPrompt} />
+
+            {/* Comments Header with Sort Button */}
+            <View style={styles.commentsHeader}>
+                <Text style={styles.commentsTitle}>
+                    Comments {comments.length > 0 && `(${comments.length})`}
+                </Text>
+                <View>
+                    <Pressable 
+                        style={styles.sortButton}
+                        onPress={() => setShowSortMenu(!showSortMenu)}
+                    >
+                        <Feather name="filter" size={18} color={COLORS.secondaryLightGreyHex} />
+                        <Text style={styles.sortButtonText}>{getSortLabel()}</Text>
+                    </Pressable>
+                    
+                    {showSortMenu && (
+                        <View style={styles.sortMenu}>
+                            <Pressable
+                                style={[styles.sortMenuItem, sort === SORT_OPTIONS.NEWEST && styles.sortMenuItemActive]}
+                                onPress={() => {
+                                    handleSortChange(SORT_OPTIONS.NEWEST);
+                                    setShowSortMenu(false);
+                                }}
+                            >
+                                <Text style={[styles.sortMenuItemText, sort === SORT_OPTIONS.NEWEST && styles.sortMenuItemTextActive]}>
+                                    Newest First
+                                </Text>
+                            </Pressable>
+                            <Pressable
+                                style={[styles.sortMenuItem, sort === SORT_OPTIONS.OLDEST && styles.sortMenuItemActive]}
+                                onPress={() => {
+                                    handleSortChange(SORT_OPTIONS.OLDEST);
+                                    setShowSortMenu(false);
+                                }}
+                            >
+                                <Text style={[styles.sortMenuItemText, sort === SORT_OPTIONS.OLDEST && styles.sortMenuItemTextActive]}>
+                                    Oldest First
+                                </Text>
+                            </Pressable>
+                            <Pressable
+                                style={[styles.sortMenuItem, sort === SORT_OPTIONS.LIKES && styles.sortMenuItemActive]}
+                                onPress={() => {
+                                    handleSortChange(SORT_OPTIONS.LIKES);
+                                    setShowSortMenu(false);
+                                }}
+                            >
+                                <Text style={[styles.sortMenuItemText, sort === SORT_OPTIONS.LIKES && styles.sortMenuItemTextActive]}>
+                                    Most Liked
+                                </Text>
+                            </Pressable>
+                        </View>
+                    )}
+                </View>
+            </View>
+        </>
+    ), [checkpointPrompt, comments.length, showSortMenu, sort, getSortLabel, handleSortChange]);
+
     // Handle error state
     if (error) {
         return (
-            <View style={styles.centeredMessage}>
-                <Text style={styles.errorText}>{error}</Text>
-                <Pressable 
-                    style={styles.retryButton} 
-                    onPress={() => handleSortChange(sort)}
-                >
-                    <Text style={styles.retryButtonText}>Retry</Text>
+            <View style={styles.detailsContainer}>
+                <Pressable onPress={onBack} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color={COLORS.primaryWhiteHex} />
+                    <Text style={styles.backButtonText}>Back to Checkpoints</Text>
                 </Pressable>
+                <View style={styles.centeredMessage}>
+                    <Ionicons name="alert-circle-outline" size={48} color="red" />
+                    <Text style={styles.errorText}>{error}</Text>
+                    <Pressable 
+                        style={styles.retryButton} 
+                        onPress={() => handleSortChange(sort)}
+                    >
+                        <Text style={styles.retryButtonText}>Retry</Text>
+                    </Pressable>
+                </View>
             </View>
         );
     }
 
     return (
-        <View style={styles.detailsContainer}>
-            {/* Back Button */}
-            <Pressable onPress={onBack} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color={COLORS.primaryWhiteHex} />
-                <Text style={styles.backButtonText}>Back to Checkpoints</Text>
-            </Pressable>
+        <KeyboardAvoidingView 
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        >
+            <View style={styles.detailsContainer}>
+                {/* Back Button */}
+                <Pressable onPress={onBack} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color={COLORS.primaryWhiteHex} />
+                    <Text style={styles.backButtonText}>Back to Checkpoints</Text>
+                </Pressable>
 
-            {/* Comments Header with Sort Button */}
-            <View style={styles.commentsHeader}>
-                <Text style={styles.commentsTitle}>Comments</Text>
-                <View>
-                    <Pressable style={styles.sortButton}>
-                        <Feather name="filter" size={20} color={COLORS.secondaryLightGreyHex} />
-                    </Pressable>
-                    {/* Sort options would be implemented in a modal/menu */}
-                </View>
+                {isMember ? (
+                    <>
+                        <FlatList
+                            data={comments}
+                            renderItem={({ item }) => (
+                                <CommentItem
+                                    comment={item}
+                                    currentUser={currentUser}
+                                    isHost={isHost}
+                                    onToggleLike={handleToggleLike}
+                                    onDeleteComment={handleDeleteComment}
+                                />
+                            )}
+                            keyExtractor={(item) => item.commentId.toString()}
+                            onEndReached={comments.length > 0 ? handleLoadMore : undefined}
+                            onEndReachedThreshold={0.5}
+                            ListHeaderComponent={renderListHeader}
+                            ListFooterComponent={renderFooter}
+                            ListEmptyComponent={renderEmpty}
+                            contentContainerStyle={styles.flatListContent}
+                            keyboardShouldPersistTaps="handled"
+                        />
+
+                        <CommentInputForm 
+                            onSubmit={(text, progressPercentage) => handleCommentSubmit(text, progressPercentage)}
+                            isLoading={pagination.loading}
+                            showPageInput={true}
+                            initialPageNumber={currentUser.progressPercentage}
+                        />
+                    </>
+                ) : (
+                    <View style={styles.centeredMessage}>
+                        <Ionicons name="lock-closed-outline" size={48} color={COLORS.secondaryLightGreyHex} />
+                        <Text style={styles.notMemberText}>
+                            You must be a member to view and add comments.
+                        </Text>
+                    </View>
+                )}
             </View>
-
-            {isMember ? (
-                <>
-                    <FlatList
-                        data={comments}
-                        renderItem={({ item }) => (
-                            <CommentItem
-                                comment={item}
-                                currentUser={currentUser}
-                                isHost={isHost}
-                                onToggleLike={handleToggleLike}
-                                onDeleteComment={handleDeleteComment}
-                            />
-                        )}
-                        keyExtractor={(item) => item.commentId.toString()}
-                        onEndReached={comments.length > 0 ? handleLoadMore : undefined}
-                        onEndReachedThreshold={0.5}
-                        ListFooterComponent={renderFooter}
-                        ListEmptyComponent={renderEmpty}
-                        contentContainerStyle={styles.flatListContent}
-                    />
-
-                    <CommentInputForm 
-                        onSubmit={(text, pageNumber) => handleCommentSubmit(text, pageNumber)}
-                        isLoading={pagination.loading}
-                        showPageInput={true}
-                        initialPageNumber={currentUser.currentPage}
-                    />
-                </>
-            ) : (
-                <View style={styles.centeredMessage}>
-                    <Text style={styles.notMemberText}>
-                        You must be a member to view and add comments.
-                    </Text>
-                </View>
-            )}
-        </View>
+        </KeyboardAvoidingView>
     );
 };
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: COLORS.primaryDarkGreyHex,
+    },
     detailsContainer: {
         flex: 1,
         backgroundColor: COLORS.primaryDarkGreyHex,
@@ -488,36 +588,110 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: SPACING.space_16,
+        paddingVertical: SPACING.space_8,
     },
     backButtonText: {
         marginLeft: SPACING.space_8,
-        fontSize: SPACING.space_16,
+        fontSize: FONTSIZE.size_16,
         color: COLORS.primaryWhiteHex,
+        fontWeight: '500',
+    },
+    promptContainer: {
+        backgroundColor: '#1a2332',
+        borderRadius: BORDERRADIUS.radius_10,
+        padding: SPACING.space_16,
+        marginBottom: SPACING.space_20,
+        borderLeftWidth: 4,
+        borderLeftColor: COLORS.primaryOrangeHex,
+    },
+    promptHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: SPACING.space_10,
+    },
+    promptTitle: {
+        fontSize: FONTSIZE.size_14,
+        fontWeight: '600',
+        color: COLORS.primaryOrangeHex,
+        marginLeft: SPACING.space_8,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    promptText: {
+        fontSize: FONTSIZE.size_16,
+        color: COLORS.primaryWhiteHex,
+        lineHeight: 24,
     },
     commentsHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: SPACING.space_12,
+        marginBottom: SPACING.space_16,
+        paddingBottom: SPACING.space_12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#2d3748',
     },
     commentsTitle: {
         fontSize: FONTSIZE.size_18,
-        fontWeight: 'bold',
+        fontWeight: '600',
         color: COLORS.primaryWhiteHex,
     },
     sortButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
         padding: SPACING.space_8,
+        paddingHorizontal: SPACING.space_12,
+        backgroundColor: '#2d3748',
+        borderRadius: BORDERRADIUS.radius_8,
+    },
+    sortButtonText: {
+        marginLeft: SPACING.space_4,
+        fontSize: FONTSIZE.size_14,
+        color: COLORS.secondaryLightGreyHex,
+    },
+    sortMenu: {
+        position: 'absolute',
+        top: 40,
+        right: 0,
+        backgroundColor: '#2d3748',
+        borderRadius: BORDERRADIUS.radius_8,
+        shadowColor: COLORS.primaryBlackHex,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 8,
+        zIndex: 10,
+        minWidth: 150,
+    },
+    sortMenuItem: {
+        padding: SPACING.space_12,
+        paddingHorizontal: SPACING.space_16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#1a2332',
+    },
+    sortMenuItemActive: {
+        backgroundColor: '#1a2332',
+    },
+    sortMenuItemText: {
+        color: COLORS.primaryWhiteHex,
+        fontSize: FONTSIZE.size_14,
+    },
+    sortMenuItemTextActive: {
+        color: COLORS.primaryOrangeHex,
+        fontWeight: '600',
     },
     flatListContent: {
         paddingBottom: SPACING.space_20,
     },
     commentContainer: {
         flexDirection: 'row',
-        marginBottom: SPACING.space_16,
+        marginBottom: SPACING.space_12,
         backgroundColor: '#2d3748',
-        borderRadius: BORDERRADIUS.radius_8,
+        borderRadius: BORDERRADIUS.radius_10,
         padding: SPACING.space_12,
         position: 'relative',
+        borderWidth: 1,
+        borderColor: 'transparent',
     },
     commentContent: {
         flex: 1,
@@ -531,30 +705,33 @@ const styles = StyleSheet.create({
     },
     deleteMenu: {
         position: 'absolute',
-        top: 28,
+        top: 36,
         right: 8,
-        backgroundColor: COLORS.primaryGreyHex,
-        borderRadius: BORDERRADIUS.radius_4,
+        backgroundColor: '#1a2332',
+        borderRadius: BORDERRADIUS.radius_8,
         shadowColor: COLORS.primaryBlackHex,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
-        shadowRadius: 3,
-        elevation: 4,
+        shadowRadius: 4,
+        elevation: 6,
         zIndex: 10,
     },
     deleteMenuItem: {
-        padding: SPACING.space_10,
+        padding: SPACING.space_12,
+        paddingHorizontal: SPACING.space_16,
     },
     deleteMenuItemText: {
-        color: COLORS.primaryWhiteHex,
+        color: '#ff6b6b',
         fontSize: FONTSIZE.size_14,
+        fontWeight: '500',
     },
     commentMeta: {
-        marginBottom: SPACING.space_4,
+        marginBottom: SPACING.space_8,
     },
     commentUser: {
-        fontWeight: 'bold',
-        color: COLORS.secondaryLightGreyHex,
+        fontWeight: '600',
+        color: COLORS.primaryWhiteHex,
+        fontSize: FONTSIZE.size_14,
     },
     commentPage: {
         fontSize: FONTSIZE.size_12,
@@ -568,27 +745,31 @@ const styles = StyleSheet.create({
     commentText: {
         fontSize: FONTSIZE.size_14,
         color: COLORS.primaryWhiteHex,
-        marginBottom: SPACING.space_8,
+        marginBottom: SPACING.space_10,
+        lineHeight: 20,
     },
     blurredText: {
-        // color: 'transparent',
-        textShadowColor: 'rgba(0, 0, 0, 0.5)',
-        textShadowOffset: {width: 1, height: 1},
-        textShadowRadius: 5,
+        color: 'transparent',
+        textShadowColor: 'rgba(255, 255, 255, 0.3)',
+        textShadowOffset: {width: 0, height: 0},
+        textShadowRadius: 8,
     },
     commentActions: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginTop: SPACING.space_4,
     },
     likeButton: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: SPACING.space_4,
+        paddingRight: SPACING.space_8,
     },
     likeCount: {
         marginLeft: SPACING.space_4,
-        fontSize: FONTSIZE.size_12,
+        fontSize: FONTSIZE.size_14,
         color: COLORS.secondaryLightGreyHex,
+        fontWeight: '500',
     },
     loadingFooter: {
         paddingVertical: SPACING.space_20,
@@ -597,14 +778,22 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: SPACING.space_8,
         color: COLORS.secondaryLightGreyHex,
+        fontSize: FONTSIZE.size_14,
     },
     emptyList: {
-        paddingVertical: SPACING.space_20,
+        paddingVertical: SPACING.space_32,
         alignItems: 'center',
     },
     emptyListText: {
-        color: COLORS.secondaryLightGreyHex,
+        color: COLORS.primaryWhiteHex,
         fontSize: FONTSIZE.size_16,
+        fontWeight: '500',
+        marginTop: SPACING.space_12,
+    },
+    emptyListSubtext: {
+        color: COLORS.secondaryLightGreyHex,
+        fontSize: FONTSIZE.size_14,
+        marginTop: SPACING.space_4,
     },
     centeredMessage: {
         flex: 1,
@@ -613,26 +802,29 @@ const styles = StyleSheet.create({
         padding: SPACING.space_20,
     },
     errorText: {
-        color: 'red',
+        color: '#ff6b6b',
         textAlign: 'center',
         fontSize: FONTSIZE.size_16,
-        marginBottom: SPACING.space_10,
+        marginTop: SPACING.space_12,
+        marginBottom: SPACING.space_16,
     },
     notMemberText: {
         color: COLORS.secondaryLightGreyHex,
         textAlign: 'center',
         fontSize: FONTSIZE.size_16,
+        marginTop: SPACING.space_12,
     },
     retryButton: {
-        marginTop: SPACING.space_10,
-        backgroundColor: COLORS.primaryRedHex,
-        borderRadius: BORDERRADIUS.radius_8,
-        paddingVertical: SPACING.space_10,
-        paddingHorizontal: SPACING.space_15,
+        marginTop: SPACING.space_16,
+        backgroundColor: COLORS.primaryOrangeHex,
+        borderRadius: BORDERRADIUS.radius_10,
+        paddingVertical: SPACING.space_12,
+        paddingHorizontal: SPACING.space_24,
     },
     retryButtonText: {
         color: COLORS.primaryWhiteHex,
         fontSize: FONTSIZE.size_14,
+        fontWeight: '600',
     }
 });
 
