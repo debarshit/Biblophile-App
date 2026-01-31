@@ -254,7 +254,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
         <View style={styles.bookDetailsContainer}>
           {/* Book Image */}
           <TouchableOpacity onPress={() => navigation.navigate('Details', { id: readalong.bookId, type: 'Book' })}>
-          <Image source={{ uri: readalong.book_photo }} style={styles.bookImage} />
+            <Image source={{ uri: readalong.book_photo }} style={styles.bookImage} />
           </TouchableOpacity>
           {/* Readalong Read Details */}
           <View style={styles.readalongInfo}>

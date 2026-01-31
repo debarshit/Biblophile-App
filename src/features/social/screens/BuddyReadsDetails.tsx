@@ -35,11 +35,11 @@ interface CurrentUser {
 }
 
 interface BuddyRead {
+  workId: number;
   buddyReadId: number;
   bookId: string;
   book_title: string;
   book_photo: string;
-  book_pages: number;
   buddyReadDescription: string;
   startDate: string;
   endDate: string;
@@ -86,7 +86,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
       );
       const buddyReadData = buddyReadResponse.data.data;
       setBuddyRead(buddyReadData);
-      setDescription(buddyReadData?.buddy_read_description || 'Such empty! Much wow!');
+      setDescription(buddyReadData?.buddyReadDescription || 'Such empty! Much wow!');
 
       let currentUserData: CurrentUser = { userId: null, readingStatus: null, currentPage: 0 };
       let isHostUser = false;
@@ -240,7 +240,9 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
         </TouchableOpacity>
         <Text style={styles.title}>{buddyRead.book_title}</Text>
         <View style={styles.bookDetailsContainer}>
-          <Image source={{ uri: buddyRead.book_photo }} style={styles.bookImage} />
+          <TouchableOpacity onPress={() => navigation.navigate('Details', { id: buddyRead.bookId, type: 'Book' })}>
+            <Image source={{ uri: buddyRead.book_photo }} style={styles.bookImage} />
+          </TouchableOpacity>
           <View style={styles.buddyReadInfo}>
             <TouchableOpacity
               style={[

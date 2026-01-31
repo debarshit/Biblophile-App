@@ -8,8 +8,7 @@ import { useStore } from '../../../store/store';
 interface MemberDetails {
   userId: string;
   name: string;
-  bookPages: number;
-  bookId: string;
+  workId: number;
 }
 
 interface Props {
@@ -17,7 +16,7 @@ interface Props {
 }
 
 const MemberProgressCard: React.FC<Props> = ({ memberDetails }) => {
-  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [currentProgress, setCurrentProgress] = useState<number>(0);
   const [readingStatus, setReadingStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -28,14 +27,14 @@ const MemberProgressCard: React.FC<Props> = ({ memberDetails }) => {
     const fetchProgress = async () => {
       setLoading(true);
       try {
-        const response = await instance.get(requests.fetchReadingStatus(memberDetails.bookId), {
+        const response = await instance.get(requests.fetchReadingStatusByWork(memberDetails.workId), {
           headers: {
               Authorization: `Bearer ${userDetails[0].accessToken}`,
           },
         });
 
         const readingStatusResponse = response.data;
-        setCurrentPage(readingStatusResponse.data.currentPage || 0);
+        setCurrentProgress(readingStatusResponse.data.progressPercentage);
         setReadingStatus(readingStatusResponse.data.status);
       } catch (error) {
         console.error('Error fetching member progress:', error);
@@ -45,9 +44,7 @@ const MemberProgressCard: React.FC<Props> = ({ memberDetails }) => {
     };
 
     fetchProgress();
-  }, [memberDetails.bookId, memberDetails.userId]);
-
-  const progress = memberDetails.bookPages > 0 ? (currentPage / memberDetails.bookPages) * 100 : 0;
+  }, [memberDetails.workId, memberDetails.userId]);
 
   return (
     <View style={styles.card}>
@@ -57,10 +54,10 @@ const MemberProgressCard: React.FC<Props> = ({ memberDetails }) => {
       ) : (
         <>
           <View style={styles.progressBar}>
-            <View style={[styles.progressInner, { width: `${progress}%` }]} />
+            <View style={[styles.progressInner, { width: `${currentProgress}%` }]} />
           </View>
           <Text style={styles.progressText}>
-            {currentPage}/{memberDetails.bookPages} pages ({progress.toFixed(0)}%)
+            ({currentProgress.toFixed(0)}%)
           </Text>
           {readingStatus && <Text style={styles.statusText}>Status: {readingStatus}</Text>}
         </>

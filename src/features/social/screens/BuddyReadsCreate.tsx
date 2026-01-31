@@ -68,6 +68,7 @@ const BuddyReadsCreate = ({ route }: any) => {
           position: 'bottom',
           bottomOffset: 100, 
         });
+        navigation.navigate('BuddyReadsDetails', { buddyReadId: response.data.data.buddyReadId });
       }
       else {
         Toast.show({
