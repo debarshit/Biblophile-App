@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, ActivityIndicator, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, Text, View, FlatList, ActivityIndicator, Pressable } from 'react-native';
 import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import instance from '../../../services/axios';
@@ -519,11 +519,6 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
     }
 
     return (
-        <KeyboardAvoidingView 
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-        >
             <View style={styles.detailsContainer}>
                 {/* Back Button */}
                 <Pressable onPress={onBack} style={styles.backButton}>
@@ -570,7 +565,6 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
                     </View>
                 )}
             </View>
-        </KeyboardAvoidingView>
     );
 };
 

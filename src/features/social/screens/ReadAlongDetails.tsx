@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   Alert,
   Share,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -246,6 +248,10 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
   return (
     <SafeAreaView style={styles.container} >
       <HeaderBar showBackButton={true} title='Readalong' />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer}>
         <TouchableOpacity onPress={sharePage} style={styles.shareButton}>
           <FontAwesome name="share" size={25} color={COLORS.primaryOrangeHex} />
@@ -325,6 +331,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
           <ReadalongCheckpoints readalong={readalong} currentUser={currentUser} isMember={isMember} isHost={isHost}/>
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
