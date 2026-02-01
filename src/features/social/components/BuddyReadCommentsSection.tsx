@@ -1,5 +1,5 @@
 import { FontAwesome6, FontAwesome, Ionicons } from "@expo/vector-icons";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef, JSX } from "react";
 import { 
   View, 
   TouchableOpacity, 
@@ -30,7 +30,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 interface CurrentUser {
     userId: string | null;
     readingStatus: string | null;
-    currentPage: number;
+    progressPercentage: number;
 }
 
 interface BuddyReadCommentsSectionProps {
@@ -42,12 +42,12 @@ interface BuddyReadCommentsSectionProps {
 
 interface Comment {
     commentId: number;
-    comment_text: string;
-    page_number: number;
+    commentText: string;
+    progressPercentage: number;
     user_name: string;
-    user_id: string;
+    userId: string;
     like_count: number;
-    created_at: string;
+    createdAt: string;
     parent_comment_id?: number | null;
     replies: Comment[] | undefined;
     reply_count: number;
@@ -168,7 +168,7 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
         try {
             const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const repliesResponse = await instance.get(
-                `${requests.fetchReplies}?parent_comment_id=${parentCommentId}&page=${currentPage}&order_by=${sort}&timezone=${userTimezone}`,
+                `${requests.fetchReplies(parentCommentId)}?page=${currentPage}&order_by=${sort}&timezone=${userTimezone}`,
                 {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,
@@ -178,12 +178,13 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
             const response = repliesResponse.data;
             const newReplies = response.data.replies || [];
             const hasMore = response.data.hasMoreReplies ?? false;
+            console.log(response);
 
             const filteredReplies = newReplies.filter(newReply =>
                 !comments.some(comment =>
                     comment.commentId === parentCommentId &&
                     comment.replies?.some(existingReply =>
-                        existingReply.commentId === newReply.comment_id
+                        existingReply.commentId === newReply.commentId
                     )
                 )
             );
@@ -306,7 +307,7 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
         );
     };
 
-    const handleCommentSubmit = async (commentText: string, pageNumber?: number, parentCommentId?: number | null) => {
+    const handleCommentSubmit = async (commentText: string, progressPercentage?: number, parentCommentId?: number | null) => {
         if (!accessToken || !buddyReadId || !currentUser.userId) return;
 
         if (!commentText.trim()) {
@@ -314,13 +315,13 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
             return;
         }
 
-        const actualPageNumber = pageNumber || currentUser.currentPage;
+        const actualProgressPercentage = progressPercentage || currentUser.progressPercentage;
 
         try {
             const params = new URLSearchParams({
                 comment_text: commentText,
                 buddy_read_id: String(buddyReadId),
-                page_number: String(actualPageNumber),
+                progress_percentage: String(actualProgressPercentage),
                 user_id: currentUser.userId,
             });
 
@@ -486,7 +487,7 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
 
     const renderComments = (currentComments: Comment[], depth: number = 0, maxDepth: number = 3): JSX.Element[] => {
         return currentComments?.map((comment) => {
-            const isBlurred = currentUser.readingStatus !== 'Read' && currentUser.currentPage < comment.page_number;
+            const isBlurred = currentUser.readingStatus !== 'Read' && currentUser.progressPercentage < comment.progressPercentage;
             const animatedValue = getAnimatedValue(comment.commentId);
 
             return (
@@ -511,14 +512,14 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
                             <View style={styles.userDetails}>
                                 <Text style={styles.commentUserName}>{comment.user_name}</Text>
                                 <View style={styles.commentMeta}>
-                                    <Text style={styles.pageIndicator}>Page {comment.page_number}</Text>
-                                    <Text style={styles.timestamp}>• {formatTimestamp(comment.created_at)}</Text>
+                                    <Text style={styles.pageIndicator}>Progress {comment.progressPercentage}%</Text>
+                                    <Text style={styles.timestamp}>• {formatTimestamp(comment.createdAt)}</Text>
                                 </View>
                             </View>
                         </View>
                         
                         {/* Options Menu */}
-                        {(isHost || comment.user_id == currentUser.userId) && (
+                        {(isHost || comment.userId == currentUser.userId) && (
                             <Pressable 
                                 onPress={() => handleEllipsisClick(comment.commentId)} 
                                 style={styles.optionsButton}
@@ -544,7 +545,7 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
 
                     {/* Comment Text */}
                     <Text style={[styles.commentText, isBlurred && styles.blurredText]}>
-                        {comment.comment_text}
+                        {comment.commentText}
                     </Text>
 
                     {/* Action Buttons */}
@@ -608,7 +609,7 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
                                 onSubmit={(text, page) => handleCommentSubmit(text, page, comment.commentId)}
                                 placeholder="Write your reply..."
                                 showPageInput={true}
-                                initialPageNumber={currentUser.currentPage}
+                                initialPageNumber={currentUser.progressPercentage}
                             />
                         </View>
                     )}
@@ -692,7 +693,7 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
                     onSubmit={(text, page) => handleCommentSubmit(text, page, null)}
                     placeholder="Share your thoughts..."
                     showPageInput={true}
-                    initialPageNumber={currentUser.currentPage}
+                    initialPageNumber={currentUser.progressPercentage}
                 />
             </View>
 

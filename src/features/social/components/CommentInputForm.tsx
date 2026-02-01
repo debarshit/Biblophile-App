@@ -96,6 +96,7 @@ export const CommentInputForm: React.FC<CommentInputFormProps> = ({
                                 editable={!isLoading}
                                 placeholderTextColor={COLORS.secondaryLightGreyHex}
                             />
+                            <Text style={styles.pageLabel}>%</Text>
                         </View>
                     )}
 

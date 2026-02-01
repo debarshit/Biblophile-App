@@ -33,7 +33,7 @@ interface Member {
 interface CurrentUser {
   userId: string | null;
   readingStatus: string | null;
-  currentPage: number;
+  progressPercentage: number;
 }
 
 interface BuddyRead {
@@ -61,7 +61,7 @@ interface Props {
 const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   const { buddyReadId } = route.params;
   const [buddyRead, setBuddyRead] = useState<BuddyRead | null>(null);
-  const [currentUser, setCurrentUser] = useState<CurrentUser>({ userId: null, readingStatus: null, currentPage: 0 });
+  const [currentUser, setCurrentUser] = useState<CurrentUser>({ userId: null, readingStatus: null, progressPercentage: 0 });
   const [isMember, setIsMember] = useState<boolean>(false);
   const [isHost, setIsHost] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,13 +90,13 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
       setBuddyRead(buddyReadData);
       setDescription(buddyReadData?.buddyReadDescription || 'Such empty! Much wow!');
 
-      let currentUserData: CurrentUser = { userId: null, readingStatus: null, currentPage: 0 };
+      let currentUserData: CurrentUser = { userId: null, readingStatus: null, progressPercentage: 0 };
       let isHostUser = false;
       let isMemberUser = false;
 
       if (accessToken) {
         // Only fetch user-specific data if accessToken is available
-        const response = await instance.get(requests.fetchReadingStatus(buddyReadData?.bookId), {
+        const response = await instance.get(requests.fetchReadingStatusByWork(buddyReadData?.workId), {
           headers: {
               Authorization: `Bearer ${userDetails[0].accessToken}`,
           },
@@ -106,7 +106,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
         currentUserData = {
           userId: currentUserReadingStatusResponse.data.userId,
           readingStatus: currentUserReadingStatusResponse.data.status,
-          currentPage: currentUserReadingStatusResponse.data.currentPage || 0,
+          progressPercentage: currentUserReadingStatusResponse.data.progressPercentage,
         };
 
         // Check if the current user is the host & member
