@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   Modal,
   View,
@@ -11,6 +11,7 @@ import {
 import { AntDesign, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import { shareToplatform, SHARE_PLATFORMS, ShareContent, SharePlatform } from '../utils/share';
+import InstagramStoryTemplate from './InstagramStoryTemplate';
 
 interface ShareModalProps {
   visible: boolean;
@@ -25,6 +26,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
   content,
   imageUri,
 }) => {
+  const storyRef = useRef<View>(null);
   const handleShare = async (platform: SharePlatform) => {
     try {
       await shareToplatform({
@@ -37,7 +39,6 @@ const ShareModal: React.FC<ShareModalProps> = ({
       onClose();
     } catch (error) {
       console.error('Share error:', error);
-      Alert.alert('Error', 'Failed to share. Please try again.');
     }
   };
 
@@ -126,6 +127,15 @@ const ShareModal: React.FC<ShareModalProps> = ({
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
+      {/* Hidden Instagram Story Template for view-shot */}
+    <View style={{ position: 'absolute', left: -9999, top: 0 }}>
+      <InstagramStoryTemplate
+        ref={storyRef}
+        image={imageUri || content.image}
+        title={content.title}
+        message={content.message}
+      />
+    </View>
     </Modal>
   );
 };

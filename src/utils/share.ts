@@ -106,8 +106,8 @@ export async function shareToplatform(config: ShareConfig): Promise<void> {
       case 'x':
         shareOptions = {
           title: content.title,
-          message: `${content.message}\n\n${content.url || ''}`,
-          url: content.image || content.url,
+          message: `${content.message}`,
+          url: content.url || content.image,
           social: Social.Twitter,
         };
         await Share.shareSingle(shareOptions as ShareSingleOptions);
@@ -117,7 +117,7 @@ export async function shareToplatform(config: ShareConfig): Promise<void> {
         shareOptions = {
           title: content.title,
           message: content.message,
-          url: content.image || content.url,
+          url: content.url ?? content.image,
           social: Social.Whatsapp,
         };
         await Share.shareSingle(shareOptions as ShareSingleOptions);
@@ -127,7 +127,7 @@ export async function shareToplatform(config: ShareConfig): Promise<void> {
         shareOptions = {
           title: content.title,
           message: content.message,
-          url: content.url || content.image,
+          url: content.url ?? content.image,
           social: Social.Facebook,
         };
         await Share.shareSingle(shareOptions as ShareSingleOptions);
@@ -139,7 +139,7 @@ export async function shareToplatform(config: ShareConfig): Promise<void> {
         shareOptions = {
           title: content.title,
           message: content.message,
-          url: content.image || content.url,
+          url: content.url,
         };
         await Share.open(shareOptions);
         break;
