@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, use } from 'react';
 import {
   StyleSheet,
   Text,
@@ -19,10 +19,12 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ReadalongCheckpoints from '../components/ReadalongCheckpoints';
+import ReadalongCheckpoints, { ReadalongCheckpointsRef } from '../components/ReadalongCheckpoints';
 import { useNavigation } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
 import ReadalongParticipants from '../components/ReadalongParticipants';
+import { CommentInputForm, CommentInputFormRef } from '../components/CommentInputForm';
+import { ReadalongCheckpointDetailsRef } from '../components/ReadalongCheckpointDetails';
 
 // Define the Readalong interface
 interface Host {
@@ -68,11 +70,16 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
   const [description, setDescription] = useState<string>('Such empty! Much wow!');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [loadingInitialData, setLoadingInitialData] = useState<boolean>(true);
+  const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(null);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
 
   const navigation = useNavigation<any>();
+  const commentInputRef = useRef<CommentInputFormRef>(null);
+  const checkpointsRef = useRef<ReadalongCheckpointsRef>(null);
+  const checkpointDetailsRef = useRef<ReadalongCheckpointDetailsRef>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const fetchReadalongDetails = useCallback(async () => {
     setLoadingInitialData(true);
@@ -136,6 +143,13 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
       setLoadingInitialData(false);
     }
   }, [readalongId]);
+
+  const handleCommentSubmit = useCallback(async (text: string, progressPercentage: number) => {
+    if (checkpointsRef.current) {
+        await checkpointsRef.current.submitComment(text, progressPercentage);
+    }
+  }, []);
+
 
   useEffect(() => {
     fetchReadalongDetails();
@@ -251,86 +265,100 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-      <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer}>
-        <TouchableOpacity onPress={sharePage} style={styles.shareButton}>
-          <FontAwesome name="share" size={25} color={COLORS.primaryOrangeHex} />
-        </TouchableOpacity>
-        <Text style={styles.title}>{readalong.book_title}</Text>
-        <View style={styles.bookDetailsContainer}>
-          {/* Book Image */}
-          <TouchableOpacity onPress={() => navigation.navigate('Details', { id: readalong.bookId, type: 'Book' })}>
-            <Image source={{ uri: readalong.book_photo }} style={styles.bookImage} />
+        <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer} ref={scrollViewRef} keyboardShouldPersistTaps="handled">
+          <TouchableOpacity onPress={sharePage} style={styles.shareButton}>
+            <FontAwesome name="share" size={25} color={COLORS.primaryOrangeHex} />
           </TouchableOpacity>
-          {/* Readalong Read Details */}
-          <View style={styles.readalongInfo}>
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                {
-                  backgroundColor: isMember ? COLORS.primaryOrangeHex : readalong.members < readalong.maxMembers ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex,
-                },
-              ]}
-              onPress={joinOrLeave}
-              disabled={!isMember && readalong.members >= readalong.maxMembers}
-            >
-              <Text style={styles.actionButtonText}>
-                {isMember ? 'Leave' : readalong.members < readalong.maxMembers ? 'Join' : 'Full'}
+          <Text style={styles.title}>{readalong.book_title}</Text>
+          <View style={styles.bookDetailsContainer}>
+            {/* Book Image */}
+            <TouchableOpacity onPress={() => navigation.navigate('Details', { id: readalong.bookId, type: 'Book' })}>
+              <Image source={{ uri: readalong.book_photo }} style={styles.bookImage} />
+            </TouchableOpacity>
+            {/* Readalong Read Details */}
+            <View style={styles.readalongInfo}>
+              <TouchableOpacity
+                style={[
+                  styles.actionButton,
+                  {
+                    backgroundColor: isMember ? COLORS.primaryOrangeHex : readalong.members < readalong.maxMembers ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex,
+                  },
+                ]}
+                onPress={joinOrLeave}
+                disabled={!isMember && readalong.members >= readalong.maxMembers}
+              >
+                <Text style={styles.actionButtonText}>
+                  {isMember ? 'Leave' : readalong.members < readalong.maxMembers ? 'Join' : 'Full'}
+                </Text>
+              </TouchableOpacity>
+              <Text style={styles.infoText}>
+                <Text style={styles.infoLabel}>Ends on:</Text> {readalong.endDate ? readalong.endDate : 'when everyone finishes'}
               </Text>
-            </TouchableOpacity>
-            <Text style={styles.infoText}>
-              <Text style={styles.infoLabel}>Ends on:</Text> {readalong.endDate ? readalong.endDate : 'when everyone finishes'}
-            </Text>
-            <Text style={styles.infoText}>
-              <Text style={styles.infoLabel}>Max Members:</Text> {readalong.maxMembers}
-            </Text>
-            <Text style={styles.infoText}>
-              <Text style={styles.infoLabel}>Host:</Text> {readalong.host.name}
-            </Text>
+              <Text style={styles.infoText}>
+                <Text style={styles.infoLabel}>Max Members:</Text> {readalong.maxMembers}
+              </Text>
+              <Text style={styles.infoText}>
+                <Text style={styles.infoLabel}>Host:</Text> {readalong.host.name}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {/* Description Section */}
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.descriptionTitle}>Description</Text>
-          {isEditing ? (
-            <TextInput
-              style={styles.descriptionInput}
-              value={description}
-              onChangeText={handleDescriptionChange}
-              multiline
-            />
-          ) : (
-            <Text style={styles.descriptionText}>{description}</Text>
+          {/* Description Section */}
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Description</Text>
+            {isEditing ? (
+              <TextInput
+                style={styles.descriptionInput}
+                value={description}
+                onChangeText={handleDescriptionChange}
+                multiline
+              />
+            ) : (
+              <Text style={styles.descriptionText}>{description}</Text>
+            )}
+
+            {isHost && (
+              <TouchableOpacity onPress={toggleEditing} style={styles.editButton}>
+                <Text style={styles.editText}>{isEditing ? 'Cancel' : 'Edit'}</Text>
+              </TouchableOpacity>
+            )}
+            {isEditing && (
+              <TouchableOpacity onPress={updateDescription} style={styles.saveButton}>
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {isMember && (
+              <ReadalongParticipants readalongId={readalong.readalongId} />
           )}
 
-          {isHost && (
-            <TouchableOpacity onPress={toggleEditing} style={styles.editButton}>
-              <Text style={styles.editText}>{isEditing ? 'Cancel' : 'Edit'}</Text>
+            {/* update the text color; it is invisible currently */}
+          {isHost ? (
+            <TouchableOpacity onPress={() => navigation.navigate('CreateReadalongCheckpoint', { readalong: readalong, currentUser: currentUser, isHost: isHost })}>
+              <Text style={{color: COLORS.primaryWhiteHex}}>Create a new checkpoint</Text>
             </TouchableOpacity>
+          ) : <Text style={{color: COLORS.primaryWhiteHex}}></Text>}
+
+          {isMember && (
+            <ReadalongCheckpoints ref={checkpointsRef} readalong={readalong} currentUser={currentUser} isMember={isMember} isHost={isHost} />
           )}
-          {isEditing && (
-            <TouchableOpacity onPress={updateDescription} style={styles.saveButton}>
-              <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {isMember && (
-            <ReadalongParticipants readalongId={readalong.readalongId} />
+        </ScrollView>
+        {/* Show input only when there's an active checkpoint */}
+        {isMember && checkpointsRef.current?.getCurrentCheckpointId() && (
+          <View style={styles.fixedCommentInputContainer}>
+              <CommentInputForm
+                  ref={commentInputRef}
+                  onSubmit={handleCommentSubmit}
+                  isLoading={false}
+                  showPageInput
+                  initialPageNumber={currentUser.progressPercentage}
+                  placeholder="Share your thoughts..."
+              />
+          </View>
         )}
-
-          {/* update the text color; it is invisible currently */}
-        {isHost ? (
-          <TouchableOpacity onPress={() => navigation.navigate('CreateReadalongCheckpoint', { readalong: readalong, currentUser: currentUser, isHost: isHost })}>
-            <Text style={{color: COLORS.primaryWhiteHex}}>Create a new checkpoint</Text>
-          </TouchableOpacity>
-        ) : <Text style={{color: COLORS.primaryWhiteHex}}></Text>}
-
-        {isMember && (
-          <ReadalongCheckpoints readalong={readalong} currentUser={currentUser} isMember={isMember} isHost={isHost}/>
-        )}
-      </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -371,7 +399,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.space_15,
   },
   contentContainer: {
-    paddingBottom: SPACING.space_30,
+    paddingBottom: SPACING.space_10,
   },
   shareButton: {
     position: 'absolute',
@@ -472,6 +500,14 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_14,
     color: COLORS.primaryWhiteHex,
   },
+  fixedCommentInputContainer: {
+    backgroundColor: COLORS.primaryBlackHex,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.primaryGreyHex,
+    paddingHorizontal: SPACING.space_15,
+    paddingVertical: SPACING.space_10,
+    paddingBottom: Platform.OS === 'ios' ? SPACING.space_10 : SPACING.space_15,
+},
 });
 
 export default ReadAlongDetails;

@@ -1,10 +1,9 @@
 import { StyleSheet, Text, View, FlatList, ActivityIndicator, Pressable } from 'react-native';
-import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo, forwardRef, useImperativeHandle } from 'react';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
-import { CommentInputForm } from './CommentInputForm';
 import { useStore } from '../../../store/store';
 
 // Types
@@ -44,6 +43,10 @@ interface Comment {
     liked_by_user: boolean;
 }
 
+export interface ReadalongCheckpointDetailsRef {
+    submitComment: (text: string, progressPercentage: number) => Promise<void>;
+}
+
 interface ReadalongCheckpointDetailsProps {
     readalong: Readalong;
     currentUser: CurrentUser;
@@ -52,6 +55,7 @@ interface ReadalongCheckpointDetailsProps {
     checkpointId: string;
     checkpointPrompt: string;
     onBack: () => void;
+    onCommentSubmit?: (text: string, progressPercentage: number) => void;
 }
 
 // Constants
@@ -260,7 +264,7 @@ const CheckpointPrompt = memo(({ prompt }: { prompt: string }) => (
 ));
 
 // Main Component
-const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
+const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, ReadalongCheckpointDetailsProps>(({
     readalong,
     currentUser,
     isMember,
@@ -268,7 +272,7 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
     checkpointId,
     checkpointPrompt,
     onBack,
-}) => {
+}, ref) => {
     const userDetails = useStore((state: any) => state.userDetails);
     const {
         comments,
@@ -283,6 +287,10 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
     } = useComments(checkpointId, currentUser, userDetails);
     
     const [showSortMenu, setShowSortMenu] = useState(false);
+
+    useImperativeHandle(ref, () => ({
+        submitComment: handleCommentSubmit,
+    }));
 
     const handleToggleLike = useCallback(async (commentId: number) => {
         // Optimistic update
@@ -527,35 +535,26 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
                 </Pressable>
 
                 {isMember ? (
-                    <>
-                        <FlatList
-                            data={comments}
-                            renderItem={({ item }) => (
-                                <CommentItem
-                                    comment={item}
-                                    currentUser={currentUser}
-                                    isHost={isHost}
-                                    onToggleLike={handleToggleLike}
-                                    onDeleteComment={handleDeleteComment}
-                                />
-                            )}
-                            keyExtractor={(item) => item.commentId.toString()}
-                            onEndReached={comments.length > 0 ? handleLoadMore : undefined}
-                            onEndReachedThreshold={0.5}
-                            ListHeaderComponent={renderListHeader}
-                            ListFooterComponent={renderFooter}
-                            ListEmptyComponent={renderEmpty}
-                            contentContainerStyle={styles.flatListContent}
-                            keyboardShouldPersistTaps="handled"
-                        />
-
-                        <CommentInputForm 
-                            onSubmit={(text, progressPercentage) => handleCommentSubmit(text, progressPercentage)}
-                            isLoading={pagination.loading}
-                            showPageInput={true}
-                            initialPageNumber={currentUser.progressPercentage}
-                        />
-                    </>
+                    <FlatList
+                        data={comments}
+                        renderItem={({ item }) => (
+                            <CommentItem
+                                comment={item}
+                                currentUser={currentUser}
+                                isHost={isHost}
+                                onToggleLike={handleToggleLike}
+                                onDeleteComment={handleDeleteComment}
+                            />
+                        )}
+                        keyExtractor={(item) => item.commentId.toString()}
+                        onEndReached={comments.length > 0 ? handleLoadMore : undefined}
+                        onEndReachedThreshold={0.5}
+                        ListHeaderComponent={renderListHeader}
+                        ListFooterComponent={renderFooter}
+                        ListEmptyComponent={renderEmpty}
+                        contentContainerStyle={styles.flatListContent}
+                        keyboardShouldPersistTaps="handled"
+                    />
                 ) : (
                     <View style={styles.centeredMessage}>
                         <Ionicons name="lock-closed-outline" size={48} color={COLORS.secondaryLightGreyHex} />
@@ -566,7 +565,7 @@ const ReadalongCheckpointDetails: React.FC<ReadalongCheckpointDetailsProps> = ({
                 )}
             </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {

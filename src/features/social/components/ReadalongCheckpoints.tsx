@@ -1,12 +1,16 @@
 import { StyleSheet, Text, View, FlatList, ActivityIndicator, Pressable } from 'react-native';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Feather } from '@expo/vector-icons';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import ReadalongCheckpointDetails from './ReadalongCheckpointDetails'; // Adjust path
+import ReadalongCheckpointDetails, { ReadalongCheckpointDetailsRef } from './ReadalongCheckpointDetails'; // Adjust path
 import { useNavigation } from '@react-navigation/native';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 
+export interface ReadalongCheckpointsRef {
+    getCurrentCheckpointId: () => string | null;
+    submitComment: (text: string, progressPercentage: number) => Promise<void>;
+}
 // --- Interface Definitions (Ensure they are the same as used in Details component) ---
 interface Host { name: string; userId: string; }
 interface CurrentUser { userId: string; readingStatus: string, progressPercentage: number; }
@@ -35,17 +39,19 @@ interface ReadalongCheckpointsProps {
     isMember: boolean;
     isHost: boolean;
     initialLoadError?: string;
+    ref?: React.Ref<ReadalongCheckpointsRef>;
+    onCommentSubmit?: (text: string, progressPercentage: number) => Promise<void>;
 }
 
 const checkpointsLimit = 10;
 
-const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
+const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckpointsProps>(({
     readalong,
     currentUser,
     isMember,
     isHost,
     initialLoadError,
-}) => {
+}, ref) => {
     const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
     const [offset, setOffset] = useState<number>(0);
     const [hasMore, setHasMore] = useState<boolean>(true);
@@ -56,6 +62,16 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
     const [selectedCheckpointDetails, setSelectedCheckpointDetails] = useState<Checkpoint | null>(null);
 
     const navigation = useNavigation<any>();
+    const checkpointDetailsRef = useRef<ReadalongCheckpointDetailsRef>(null);
+
+    useImperativeHandle(ref, () => ({
+        getCurrentCheckpointId: () => selectedCheckpointId,
+        submitComment: async (text: string, progressPercentage: number) => {
+            if (checkpointDetailsRef.current) {
+                await checkpointDetailsRef.current.submitComment(text, progressPercentage);
+            }
+        },
+    }));
 
     const fetchCheckpoints = useCallback(async () => {
         if (loading || !hasMore || !readalong?.readalongId || selectedCheckpointId !== null) {
@@ -244,7 +260,7 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
             <Text style={styles.notMemberText}>You must be a member to view checkpoints.</Text>
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {
