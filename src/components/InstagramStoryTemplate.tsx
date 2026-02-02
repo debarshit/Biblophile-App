@@ -1,10 +1,13 @@
 import React, { forwardRef } from 'react';
-import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
-import { COLORS, FONTFAMILY, FONTSIZE } from '../theme/theme';
+import {
+  View,
+  Text,
+  Image,
+  ImageBackground,
+  StyleSheet,
+} from 'react-native';
+import { COLORS, FONTFAMILY } from '../theme/theme';
 
-const { width, height } = Dimensions.get('window');
-
-// Instagram story aspect ratio (9:16)
 const STORY_WIDTH = 1080;
 const STORY_HEIGHT = 1920;
 
@@ -17,29 +20,46 @@ interface InstagramStoryTemplateProps {
 const InstagramStoryTemplate = forwardRef<View, InstagramStoryTemplateProps>(
   ({ image, title, message }, ref) => {
     return (
-      <View ref={ref} style={styles.container}>
-        {/* Background image */}
-        {image && (
-          <Image
+      <View
+        ref={ref}
+        collapsable={false}
+        renderToHardwareTextureAndroid={false}
+        needsOffscreenAlphaCompositing
+        style={styles.container}
+      >
+        {/* Blurred background */}
+        {image ? (
+          <ImageBackground
             source={{ uri: image }}
-            style={styles.backgroundImage}
+            style={styles.background}
             resizeMode="cover"
-          />
+            blurRadius={18} // 👈 key part
+          >
+            <View style={styles.overlay}>
+              {/* Content */}
+              <View style={styles.content}>
+                <Text style={styles.title}>{title}</Text>
+                <Text style={styles.message}>{message}</Text>
+
+                {/* Clear image card */}
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: image }}
+                    style={styles.clearImage}
+                    resizeMode="cover"
+                  />
+                </View>
+              </View>
+
+              {/* Branding */}
+              <View style={styles.footer}>
+                <Text style={styles.brand}>biblophile</Text>
+              </View>
+            </View>
+          </ImageBackground>
+        ) : (
+          <View style={styles.fallback} />
         )}
-
-        {/* Overlay */}
-        <View style={styles.overlay}>
-          {/* Content */}
-          <View style={styles.content}>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.message}>{message}</Text>
-          </View>
-
-          {/* Branding */}
-          <View style={styles.footer}>
-            <Text style={styles.brand}>biblophile</Text>
-          </View>
-        </View>
       </View>
     );
   }
@@ -53,39 +73,63 @@ const styles = StyleSheet.create({
     height: STORY_HEIGHT,
     backgroundColor: COLORS.primaryDarkGreyHex,
   },
-  backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
+
+  background: {
+    flex: 1,
   },
+
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0,0,0,0.45)', // keeps text readable
     padding: 80,
     justifyContent: 'space-between',
   },
+
   content: {
     marginTop: 300,
   },
+
   title: {
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: 64,
     color: COLORS.primaryWhiteHex,
     marginBottom: 24,
   },
+
   message: {
     fontFamily: FONTFAMILY.poppins_regular,
     fontSize: 42,
     color: COLORS.primaryWhiteHex,
     lineHeight: 56,
+    marginBottom: 48,
   },
+
+  /* Clear image card */
+  imageWrapper: {
+    alignItems: 'center',
+  },
+
+  clearImage: {
+    width: 760/1.5,
+    height: 760,
+    borderRadius: 32,
+  },
+
   footer: {
     alignItems: 'center',
     opacity: 0.85,
   },
+
   brand: {
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: 28,
     letterSpacing: 2,
     color: COLORS.primaryWhiteHex,
     textTransform: 'uppercase',
+  },
+
+  fallback: {
+    flex: 1,
+    backgroundColor: COLORS.primaryDarkGreyHex,
   },
 });

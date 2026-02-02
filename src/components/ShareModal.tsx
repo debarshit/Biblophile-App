@@ -26,19 +26,26 @@ const ShareModal: React.FC<ShareModalProps> = ({
   content,
   imageUri,
 }) => {
+  const [isGeneratingStory, setIsGeneratingStory] = React.useState(false);
   const storyRef = useRef<View>(null);
   const handleShare = async (platform: SharePlatform) => {
     try {
+      if (platform === 'instagram-stories') {
+        setIsGeneratingStory(true);
+      }
       await shareToplatform({
         platform,
         content: {
           ...content,
           image: imageUri || content.image,
         },
+        screenshotRef: platform === 'instagram-stories' ? storyRef : undefined,
       });
       onClose();
     } catch (error) {
       console.error('Share error:', error);
+    } finally {
+      setIsGeneratingStory(false);
     }
   };
 
@@ -106,11 +113,12 @@ const ShareModal: React.FC<ShareModalProps> = ({
                     key={platform.id}
                     style={styles.optionButton}
                     onPress={() => handleShare(platform.id)}
+                    disabled={isGeneratingStory}
                   >
                     <View style={styles.iconContainer}>
                       {getIconComponent(platform.icon)}
                     </View>
-                    <Text style={styles.optionText}>{platform.name}</Text>
+                    <Text style={styles.optionText}>{isGeneratingStory ? 'Generating...' : platform.name}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -127,15 +135,30 @@ const ShareModal: React.FC<ShareModalProps> = ({
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
+      {isGeneratingStory && (
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingCard}>
+            <MaterialCommunityIcons
+              name="image-edit"
+              size={36}
+              color={COLORS.primaryWhiteHex}
+            />
+            <Text style={styles.loadingTitle}>Generating your story</Text>
+            <Text style={styles.loadingSubtitle}>
+              Opening Instagram…
+            </Text>
+          </View>
+        </View>
+      )}
       {/* Hidden Instagram Story Template for view-shot */}
-    <View style={{ position: 'absolute', left: -9999, top: 0 }}>
-      <InstagramStoryTemplate
-        ref={storyRef}
-        image={imageUri || content.image}
-        title={content.title}
-        message={content.message}
-      />
-    </View>
+      <View style={{ position: 'absolute', left: -9999, top: 0 }}>
+        <InstagramStoryTemplate
+          ref={storyRef}
+          image={imageUri || content.image}
+          title={content.title}
+          message={content.message}
+        />
+      </View>
     </Modal>
   );
 };
@@ -209,6 +232,35 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_14,
     color: COLORS.primaryWhiteHex,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  loadingCard: {
+    alignItems: 'center',
+    padding: 40,
+    borderRadius: 24,
+    backgroundColor: COLORS.primaryGreyHex,
+  },
+  loadingTitle: {
+    marginTop: 16,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: 18,
+    color: COLORS.primaryWhiteHex,
+  },
+  loadingSubtitle: {
+    marginTop: 8,
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: 14,
+    color: COLORS.primaryLightGreyHex,
   },
 });
 

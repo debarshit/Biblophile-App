@@ -284,8 +284,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         visible={shareModalVisible}
         onClose={() => setShareModalVisible(false)}
         content={{
-          title: `Check out ${name}`,
-          message: `📖 Check out "${name}" by ${author} on Biblophile!`,
+          title: `${name}`,
+          message: `Check out "${name}" by ${author} on Biblophile!`,
           url: `https://biblophile.com/books/${type}/${id}/${encodeURIComponent(name)}`,
         }}
         imageUri={imagelink_portrait}

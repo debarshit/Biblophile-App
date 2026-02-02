@@ -1,7 +1,6 @@
 // utils/share.ts
 import Share, { ShareSingleOptions, ShareOptions, Social } from 'react-native-share';
 import * as viewShot from 'react-native-view-shot';
-import { Platform } from 'react-native';
 
 const META_APP_ID = '1899922437581251'; // Your Facebook App ID for Instagram Stories
 
@@ -17,15 +16,15 @@ export type SharePlatform =
 export interface ShareContent {
   title: string;
   message: string;
-  image?: string; // Local image URI or remote URL
-  url?: string; // App deep link or store URL
+  image?: string;
+  url?: string;
   backgroundImage?: string; // Base64 for IG Stories bg
 }
 
 export interface ShareConfig {
   platform: SharePlatform;
   content: ShareContent;
-  screenshotRef?: any; // react-native-view-shot ref for custom screenshot
+  screenshotRef?: any;
 }
 
 export const SHARE_PLATFORMS = [
@@ -74,24 +73,28 @@ export async function shareToplatform(config: ShareConfig): Promise<void> {
 
   try {
     switch (platform) {
-      case 'instagram-stories':
-        // Capture screenshot if ref provided or use provided image
-        const uri = screenshotRef 
-          ? await viewShot.default.captureRef(screenshotRef, { format: 'png', quality: 1 })
-          : content.image;
+      case 'instagram-stories': {
+        if (!screenshotRef) {
+          throw new Error('Instagram Stories requires screenshotRef');
+        }
 
-        if (!uri) throw new Error('Image required for Instagram Stories');
+        const base64 = await viewShot.default.captureRef(screenshotRef, {
+          format: 'png',
+          quality: 0.9,
+          result: 'base64',
+        });
 
-        shareOptions = {
+        const image = `data:image/png;base64,${base64}`;
+
+        await Share.shareSingle({
           appId: META_APP_ID,
           social: Social.InstagramStories,
-          stickerImage: uri,
-          backgroundTopColor: '#FF6B6B', // Biblophile-themed gradients
-          backgroundBottomColor: '#4ECDC4',
+          backgroundImage: image,
           attributionURL: content.url,
-        };
-        await Share.shareSingle(shareOptions as ShareSingleOptions);
+        });
+
         break;
+      }
 
       case 'bluesky':
         shareOptions = {
