@@ -23,8 +23,6 @@ import ReadalongCheckpoints, { ReadalongCheckpointsRef } from '../components/Rea
 import { useNavigation } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
 import ReadalongParticipants from '../components/ReadalongParticipants';
-import { CommentInputForm, CommentInputFormRef } from '../components/CommentInputForm';
-import { ReadalongCheckpointDetailsRef } from '../components/ReadalongCheckpointDetails';
 
 // Define the Readalong interface
 interface Host {
@@ -70,15 +68,11 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
   const [description, setDescription] = useState<string>('Such empty! Much wow!');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [loadingInitialData, setLoadingInitialData] = useState<boolean>(true);
-  const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(null);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
 
   const navigation = useNavigation<any>();
-  const commentInputRef = useRef<CommentInputFormRef>(null);
-  const checkpointsRef = useRef<ReadalongCheckpointsRef>(null);
-  const checkpointDetailsRef = useRef<ReadalongCheckpointDetailsRef>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const fetchReadalongDetails = useCallback(async () => {
@@ -143,13 +137,6 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
       setLoadingInitialData(false);
     }
   }, [readalongId]);
-
-  const handleCommentSubmit = useCallback(async (text: string, progressPercentage: number) => {
-    if (checkpointsRef.current) {
-        await checkpointsRef.current.submitComment(text, progressPercentage);
-    }
-  }, []);
-
 
   useEffect(() => {
     fetchReadalongDetails();
@@ -262,11 +249,6 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
   return (
     <SafeAreaView style={styles.container} >
       <HeaderBar showBackButton={true} title='Readalong' />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      >
         <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer} ref={scrollViewRef} keyboardShouldPersistTaps="handled">
           <TouchableOpacity onPress={sharePage} style={styles.shareButton}>
             <FontAwesome name="share" size={25} color={COLORS.primaryOrangeHex} />
@@ -343,23 +325,9 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
           ) : <Text style={{color: COLORS.primaryWhiteHex}}></Text>}
 
           {isMember && (
-            <ReadalongCheckpoints ref={checkpointsRef} readalong={readalong} currentUser={currentUser} isMember={isMember} isHost={isHost} />
+            <ReadalongCheckpoints readalong={readalong} currentUser={currentUser} isMember={isMember} isHost={isHost} />
           )}
         </ScrollView>
-        {/* Show input only when there's an active checkpoint */}
-        {isMember && checkpointsRef.current?.getCurrentCheckpointId() && (
-          <View style={styles.fixedCommentInputContainer}>
-              <CommentInputForm
-                  ref={commentInputRef}
-                  onSubmit={handleCommentSubmit}
-                  isLoading={false}
-                  showPageInput
-                  initialPageNumber={currentUser.progressPercentage}
-                  placeholder="Share your thoughts..."
-              />
-          </View>
-        )}
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -500,14 +468,6 @@ const styles = StyleSheet.create({
     fontSize: FONTSIZE.size_14,
     color: COLORS.primaryWhiteHex,
   },
-  fixedCommentInputContainer: {
-    backgroundColor: COLORS.primaryBlackHex,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.primaryGreyHex,
-    paddingHorizontal: SPACING.space_15,
-    paddingVertical: SPACING.space_10,
-    paddingBottom: Platform.OS === 'ios' ? SPACING.space_10 : SPACING.space_15,
-},
 });
 
 export default ReadAlongDetails;

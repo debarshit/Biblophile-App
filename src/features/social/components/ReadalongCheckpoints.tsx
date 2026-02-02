@@ -118,9 +118,14 @@ const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckp
     };
 
     const handleViewCheckpointDetails = (checkpoint: Checkpoint) => {
-        setSelectedCheckpointId(checkpoint.checkpoint_id);
-        setSelectedCheckpointDetails(checkpoint);
-        setSelectedCheckpointForUpdation(null);
+navigation.navigate('ReadalongCheckpointDiscussion', {
+            readalong,
+            currentUser,
+            isMember,
+            isHost,
+            checkpointId: checkpoint.checkpoint_id,
+            checkpointPrompt: checkpoint.discussion_prompt,
+        });
     };
 
     const handleBackToList = () => {

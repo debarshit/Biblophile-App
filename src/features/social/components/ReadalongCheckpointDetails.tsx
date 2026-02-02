@@ -5,6 +5,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
+import { useNavigation } from '@react-navigation/native';
 
 // Types
 interface Host {
@@ -194,9 +195,23 @@ const CommentItem = memo(({
     const shouldBlur = currentUser.progressPercentage < comment.progressPercentage;
     const canDelete = isHost || comment.userId === currentUser.userId;
     
-    const formattedDate = useMemo(() => {
-        return new Date(comment.createdAt).toLocaleDateString();
-    }, [comment.createdAt]);
+    const formatTimestamp = (timestamp: string) => {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffInMs = now.getTime() - date.getTime();
+        const diffInHours = diffInMs / (1000 * 60 * 60);
+        const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+        if (diffInHours < 1) {
+            return 'just now';
+        } else if (diffInHours < 24) {
+            return `${Math.floor(diffInHours)}h ago`;
+        } else if (diffInDays < 7) {
+            return `${Math.floor(diffInDays)}d ago`;
+        } else {
+            return date.toLocaleDateString();
+        }
+    };
 
     return (
         <View style={styles.commentContainer}>
@@ -227,7 +242,7 @@ const CommentItem = memo(({
                 <Text style={styles.commentMeta}>
                     <Text style={styles.commentUser}>{comment.user_name}</Text>
                     <Text style={styles.commentPage}> (Progress {comment.progressPercentage})</Text>
-                    <Text style={styles.commentDate}> • {formattedDate}</Text>
+                    <Text style={styles.commentDate}> • {formatTimestamp(comment.createdAt)}</Text>
                 </Text>
                 
                 <Text style={[styles.commentText, shouldBlur && styles.blurredText]}>
@@ -274,6 +289,7 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
     onBack,
 }, ref) => {
     const userDetails = useStore((state: any) => state.userDetails);
+    const navigation = useNavigation<any>();
     const {
         comments,
         pagination,
@@ -378,7 +394,7 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
             const response = await instance.post(requests.submitReadalongComment(checkpointId), {
                 commentText: text,
                 readalongId: readalong.readalongId,
-                progressPercentage: progressPercentage,
+                progress_percentage: progressPercentage,
             },
             {
                 headers: {
@@ -508,7 +524,15 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
     if (error) {
         return (
             <View style={styles.detailsContainer}>
-                <Pressable onPress={onBack} style={styles.backButton}>
+                <Pressable 
+                    onPress={() => {
+                        if (onBack) {
+                            onBack();
+                        } else {
+                            navigation.goBack();
+                        }
+                    }}
+                    style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={COLORS.primaryWhiteHex} />
                     <Text style={styles.backButtonText}>Back to Checkpoints</Text>
                 </Pressable>
