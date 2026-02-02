@@ -163,12 +163,12 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
 
     const loadReplies = async (parentCommentId: number) => {
         if (!accessToken || !currentUser.userId) return;
-        const currentPage = replyPages[parentCommentId] || 1;
+        const nextPage = replyPages[parentCommentId] || 1;
 
         try {
             const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const repliesResponse = await instance.get(
-                `${requests.fetchReplies(parentCommentId)}?page=${currentPage}&order_by=${sort}&timezone=${userTimezone}`,
+                `${requests.fetchReplies(parentCommentId)}?page=${nextPage}&order_by=${sort}&timezone=${userTimezone}`,
                 {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,
@@ -178,20 +178,10 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
             const response = repliesResponse.data;
             const newReplies = response.data.replies || [];
             const hasMore = response.data.hasMoreReplies ?? false;
-            console.log(response);
-
-            const filteredReplies = newReplies.filter(newReply =>
-                !comments.some(comment =>
-                    comment.commentId === parentCommentId &&
-                    comment.replies?.some(existingReply =>
-                        existingReply.commentId === newReply.commentId
-                    )
-                )
-            );
 
             setReplyPages(prev => ({
                 ...prev,
-                [parentCommentId]: hasMore ? currentPage + 1 : 0,
+                [parentCommentId]: hasMore ? nextPage + 1 : nextPage,
             }));
 
             setHasMoreReplies(prev => ({
@@ -204,13 +194,13 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
                     if (comment.commentId === parentCommentId) {
                         return {
                             ...comment,
-                            replies: [...(comment.replies || []), ...filteredReplies],
+                            replies: [...(comment.replies || []), ...newReplies],
                         };
                     }
                     if (comment.replies) {
                         return {
                             ...comment,
-                            replies: loadRepliesRecursively(comment.replies, parentCommentId, filteredReplies),
+                            replies: loadRepliesRecursively(comment.replies, parentCommentId, newReplies),
                         };
                     }
                     return comment;
@@ -512,7 +502,7 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
                             <View style={styles.userDetails}>
                                 <Text style={styles.commentUserName}>{comment.user_name}</Text>
                                 <View style={styles.commentMeta}>
-                                    <Text style={styles.pageIndicator}>Progress {comment.progressPercentage}%</Text>
+                                    <Text style={styles.pageIndicator}>At {comment.progressPercentage}%</Text>
                                     <Text style={styles.timestamp}>• {formatTimestamp(comment.createdAt)}</Text>
                                 </View>
                             </View>

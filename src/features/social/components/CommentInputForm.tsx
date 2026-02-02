@@ -86,7 +86,7 @@ export const CommentInputForm: React.FC<CommentInputFormProps> = ({
                                 size={16} 
                                 color={COLORS.secondaryLightGreyHex} 
                             />
-                            <Text style={styles.pageLabel}>Page</Text>
+                            <Text style={styles.pageLabel}>At</Text>
                             <TextInput
                                 style={styles.pageInput}
                                 value={pageNumber}
