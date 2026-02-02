@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -20,9 +20,10 @@ import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BuddyReadMembersSection from '../components/BuddyReadMembersSection';
-import BuddyReadCommentsSection from '../components/BuddyReadCommentsSection';
+import BuddyReadCommentsSection, { BuddyReadCommentsSectionRef } from '../components/BuddyReadCommentsSection';
 import { useNavigation } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
+import { CommentInputForm, CommentInputFormRef } from '../components/CommentInputForm';
 
 // Define the BuddyRead interface
 interface Member {
@@ -69,10 +70,17 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   const [description, setDescription] = useState<string>('Such empty! Much wow!');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [loadingInitialData, setLoadingInitialData] = useState<boolean>(true);
+  const [replyContext, setReplyContext] = useState<{
+    commentId: number | null;
+    username?: string;
+    pageNumber?: number;
+  } | null>(null);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
   const navigation = useNavigation<any>();
+  const commentsSectionRef = useRef<BuddyReadCommentsSectionRef>(null);
+  const commentInputRef = useRef<CommentInputFormRef>(null);
 
   const fetchBuddyReadDetails = useCallback(async () => {
     setLoadingInitialData(true);
@@ -124,6 +132,24 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
       setLoadingInitialData(false);
     }
   }, [buddyReadId]);
+
+  const handleReplyPress = useCallback((commentId: number, username: string, pageNumber: number) => {
+    setReplyContext({ commentId, username, pageNumber });
+    setTimeout(() => {
+        commentInputRef.current?.focus();
+    }, 50);
+  }, []);
+
+  const handleCommentSubmit = useCallback(async (commentText: string, progressPercentage?: number) => {
+    if (commentsSectionRef.current) {
+        await commentsSectionRef.current.submitComment(
+            commentText,
+            progressPercentage,
+            replyContext?.commentId ?? null
+        );
+        setReplyContext(null);
+    }
+  }, [replyContext]);
 
   useEffect(() => {
     fetchBuddyReadDetails();
@@ -239,8 +265,9 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-      <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer}>
+      <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
         <TouchableOpacity onPress={sharePage} style={styles.shareButton}>
           <FontAwesome name="share" size={25} color={COLORS.primaryOrangeHex} />
         </TouchableOpacity>
@@ -311,14 +338,36 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
             />
 
             <BuddyReadCommentsSection
+              ref={commentsSectionRef}
               buddyReadId={buddyReadId}
               currentUser={currentUser}
               isHost={isHost}
               accessToken={accessToken}
+              onReplyPress={handleReplyPress}
+              replyContextId={replyContext?.commentId ?? null}
             />
           </>
         )}
       </ScrollView>
+      {/* ADD: Fixed Comment Input at Bottom */}
+            {isMember && (
+                <View style={styles.fixedCommentInputContainer}>
+                    <CommentInputForm
+                        ref={commentInputRef}
+                        onSubmit={handleCommentSubmit}
+                        isLoading={false}
+                        showPageInput
+                        initialPageNumber={replyContext?.pageNumber ?? currentUser.progressPercentage}
+                        placeholder={
+                            replyContext
+                                ? `Replying to ${replyContext.username}`
+                                : 'Share your thoughts...'
+                        }
+                        replyContext={replyContext}
+                        onCancelReply={() => setReplyContext(null)}
+                    />
+                </View>
+            )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -359,7 +408,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.space_15,
   },
   contentContainer: {
-    paddingBottom: SPACING.space_30,
+    paddingBottom: SPACING.space_10,
   },
   shareButton: {
     position: 'absolute',
@@ -459,6 +508,14 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_14,
     color: COLORS.primaryWhiteHex,
+  },
+  fixedCommentInputContainer: {
+    backgroundColor: COLORS.primaryBlackHex,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.primaryGreyHex,
+    paddingHorizontal: SPACING.space_15,
+    paddingVertical: SPACING.space_10,
+    paddingBottom: Platform.OS === 'ios' ? SPACING.space_10 : SPACING.space_15,
   },
 });
 

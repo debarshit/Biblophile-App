@@ -1,5 +1,5 @@
-import { FontAwesome6, FontAwesome, Ionicons } from "@expo/vector-icons";
-import { useCallback, useEffect, useState, useRef, JSX } from "react";
+import { FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { useCallback, useEffect, useState, useRef, JSX, forwardRef, useImperativeHandle } from "react";
 import { 
   View, 
   TouchableOpacity, 
@@ -12,20 +12,18 @@ import {
   Platform,
   UIManager,
   Pressable,
-  Dimensions
+  ScrollView
 } from "react-native";
 import { SPACING, COLORS, BORDERRADIUS, FONTFAMILY, FONTSIZE } from "../../../theme/theme";
-import { CommentInputForm } from "./CommentInputForm";
 import { CommentSortDropdown } from "./CommentSortDropdown";
 import requests from "../../../services/requests";
 import instance from "../../../services/axios";
+import { BlurView } from "expo-blur";
 
 // Enable LayoutAnimation for Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface CurrentUser {
     userId: string | null;
@@ -33,11 +31,18 @@ interface CurrentUser {
     progressPercentage: number;
 }
 
+export interface BuddyReadCommentsSectionRef {
+    submitComment: (commentText: string, progressPercentage?: number, parentCommentId?: number | null) => Promise<void>;
+}
+
 interface BuddyReadCommentsSectionProps {
     buddyReadId: string;
     currentUser: CurrentUser;
     isHost: boolean;
     accessToken: string | null;
+    onReplyPress: (commentId: number, username: string, pageNumber: number) => void;
+    replyContextId: number | null;
+    onCommentSubmit?: (commentText: string, progressPercentage?: number, parentCommentId?: number | null) => void;
 }
 
 interface Comment {
@@ -54,12 +59,15 @@ interface Comment {
     liked_by_user: boolean;
 }
 
-const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
+const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyReadCommentsSectionProps>(({
     buddyReadId,
     currentUser,
     isHost,
     accessToken,
-}) => {
+    onReplyPress,
+    replyContextId,
+    onCommentSubmit,
+}, ref) => {
     const [comments, setComments] = useState<Comment[]>([]);
     const [loadingInitialData, setLoadingInitialData] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -67,16 +75,17 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
     const [commentPage, setCommentPage] = useState<number>(1);
     const [replyPages, setReplyPages] = useState<Record<number, number>>({});
     const [hasMoreReplies, setHasMoreReplies] = useState<Record<number, boolean>>({});
-    const [replyingTo, setReplyingTo] = useState<number | null>(null);
     const [newComment, setNewComment] = useState<string>('');
-    const [newReply, setNewReply] = useState<string>('');
     const [hasMoreCommentsState, setHasMoreCommentsState] = useState<boolean>(false);
     const [selectedCommentForDeletion, setSelectedCommentForDeletion] = useState<number | null>(null);
     const [sort, setSort] = useState<string>('created_at_asc');
-    const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
-    const [likeAnimations] = useState<Record<number, Animated.Value>>({});
-
     const animatedValues = useRef<Record<number, Animated.Value>>({}).current;
+    const scrollRef = useRef<ScrollView>(null);
+    const commentPositions = useRef<Record<number, number>>({});
+
+    useImperativeHandle(ref, () => ({
+        submitComment: handleCommentSubmit,
+    }));
 
     const getAnimatedValue = (commentId: number) => {
         if (!animatedValues[commentId]) {
@@ -328,10 +337,7 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
             if (response.data.data.message == 'Comment added') {
                 console.log('Comment posted');
                 setNewComment('');
-                setNewReply('');
-                setReplyingTo(null);
                 setCommentPage(1);
-                
                 LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                 fetchComments(sort);
             } else if (response.data.data.status === 'error') {
@@ -449,14 +455,6 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
         }
     };
 
-    const toggleReply = (commentId: number) => {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        setReplyingTo(replyingTo === commentId ? null : commentId);
-        if (replyingTo !== commentId) {
-            setNewReply('');
-        }
-    };
-
     const formatTimestamp = (timestamp: string) => {
         const date = new Date(timestamp);
         const now = new Date();
@@ -482,7 +480,7 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
 
             return (
                 <Animated.View 
-                    key={comment.commentId} 
+                    key={comment.commentId}
                     style={[
                         styles.commentContainer, 
                         { 
@@ -534,9 +532,19 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
                     )}
 
                     {/* Comment Text */}
-                    <Text style={[styles.commentText, isBlurred && styles.blurredText]}>
-                        {comment.commentText}
-                    </Text>
+                    <View style={styles.textWrapper}>
+                        <Text style={styles.commentText}>
+                            {comment.commentText}
+                        </Text>
+
+                        {isBlurred && (
+                            <BlurView
+                            intensity={30}
+                            tint="dark"
+                            style={StyleSheet.absoluteFill}
+                            />
+                        )}
+                    </View>
 
                     {/* Action Buttons */}
                     <View style={styles.commentActions}>
@@ -561,17 +569,19 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
                         </Pressable>
 
                         <Pressable 
-                            onPress={() => toggleReply(comment.commentId)} 
+                            onPress={() => {
+                                onReplyPress(comment.commentId, comment.user_name, comment.progressPercentage);
+                            }}
                             style={styles.actionButton}
                         >
                             <Ionicons 
                                 name="chatbubble-outline" 
                                 size={18} 
-                                color={replyingTo === comment.commentId ? COLORS.primaryOrangeHex : COLORS.secondaryLightGreyHex} 
+                                color={replyContextId === comment.commentId ? COLORS.primaryOrangeHex : COLORS.secondaryLightGreyHex} 
                             />
                             <Text style={[
                                 styles.actionText,
-                                replyingTo === comment.commentId && { color: COLORS.primaryOrangeHex }
+                                replyContextId === comment.commentId && { color: COLORS.primaryOrangeHex }
                             ]}>
                                 Reply
                             </Text>
@@ -589,20 +599,6 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
                             </Pressable>
                         )}
                     </View>
-
-                    {/* Reply Input */}
-                    {replyingTo === comment.commentId && (
-                        <View style={styles.replyInputContainer}>
-                            <CommentInputForm
-                                value={newReply}
-                                onChangeText={setNewReply}
-                                onSubmit={(text, page) => handleCommentSubmit(text, page, comment.commentId)}
-                                placeholder="Write your reply..."
-                                showPageInput={true}
-                                initialPageNumber={currentUser.progressPercentage}
-                            />
-                        </View>
-                    )}
 
                     {/* Nested Replies */}
                     {depth < maxDepth && Array.isArray(comment.replies) && comment.replies.length > 0 && (
@@ -650,76 +646,72 @@ const BuddyReadCommentsSection: React.FC<BuddyReadCommentsSectionProps> = ({
     }
 
     return (
-        <View style={styles.commentsSection}>
-            {/* Header */}
-            <View style={styles.commentsHeader}>
-                <View style={styles.headerLeft}>
-                    <Text style={styles.commentsTitle}>Comments</Text>
-                    <View style={styles.commentCount}>
-                        <Text style={styles.commentCountText}>{comments.length}</Text>
+        <View style={{ flex: 1 }}>
+            <ScrollView
+                ref={scrollRef}
+                keyboardDismissMode="on-drag"
+                keyboardShouldPersistTaps="handled"
+            >
+            <View style={styles.commentsSection}>
+                {/* Header */}
+                <View style={styles.commentsHeader}>
+                    <View style={styles.headerLeft}>
+                        <Text style={styles.commentsTitle}>Discussion</Text>
+                        <View style={styles.commentCount}>
+                            <Text style={styles.commentCountText}>{comments.length}</Text>
+                        </View>
                     </View>
+                    <CommentSortDropdown
+                        label={<Ionicons name="filter" size={20} color={COLORS.primaryWhiteHex} />}
+                        items={[
+                            { label: 'Latest First', value: 'created_at_desc' },
+                            { label: 'Oldest First', value: 'created_at_asc' },
+                            { label: 'Page Ascending', value: 'page_asc' },
+                            { label: 'Page Descending', value: 'page_desc' },
+                        ]}
+                        onValueChange={handleSortChange}
+                        itemStyle={styles.dropdownItem}
+                        itemTextStyle={styles.dropdownItemText}
+                        dropdownStyle={styles.dropdownStyle}
+                        labelStyle={styles.dropdownLabel}
+                    />
                 </View>
-                <CommentSortDropdown
-                    label={<Ionicons name="filter" size={20} color={COLORS.primaryWhiteHex} />}
-                    items={[
-                        { label: 'Latest First', value: 'created_at_desc' },
-                        { label: 'Oldest First', value: 'created_at_asc' },
-                        { label: 'Page Ascending', value: 'page_asc' },
-                        { label: 'Page Descending', value: 'page_desc' },
-                    ]}
-                    onValueChange={handleSortChange}
-                    itemStyle={styles.dropdownItem}
-                    itemTextStyle={styles.dropdownItemText}
-                    dropdownStyle={styles.dropdownStyle}
-                    labelStyle={styles.dropdownLabel}
-                />
+
+                {/* Comments List */}
+                {comments && comments.length > 0 ? (
+                    <View style={styles.commentsContainer}>
+                        {renderComments(comments)}
+                    </View>
+                ) : (
+                    <View style={styles.emptyStateContainer}>
+                        <Ionicons name="chatbubbles-outline" size={64} color={COLORS.secondaryLightGreyHex} />
+                        <Text style={styles.emptyStateTitle}>No comments yet</Text>
+                        <Text style={styles.emptyStateSubtitle}>Be the first to share your thoughts!</Text>
+                    </View>
+                )}
+
+                {/* Load More Comments */}
+                {hasMoreCommentsState && (
+                    <Pressable 
+                        onPress={loadMoreComments} 
+                        style={[styles.loadMoreCommentsButton, loadingComments && styles.loadingButton]}
+                        disabled={loadingComments}
+                    >
+                        {loadingComments ? (
+                            <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
+                        ) : (
+                            <>
+                                <Ionicons name="arrow-down" size={18} color={COLORS.primaryWhiteHex} />
+                                <Text style={styles.loadMoreCommentsButtonText}>Load More Comments</Text>
+                            </>
+                        )}
+                    </Pressable>
+                )}
             </View>
-
-            {/* Add Comment Form */}
-            <View style={styles.addCommentContainer}>
-                <CommentInputForm
-                    value={newComment}
-                    onChangeText={setNewComment}
-                    onSubmit={(text, page) => handleCommentSubmit(text, page, null)}
-                    placeholder="Share your thoughts..."
-                    showPageInput={true}
-                    initialPageNumber={currentUser.progressPercentage}
-                />
-            </View>
-
-            {/* Comments List */}
-            {comments && comments.length > 0 ? (
-                <View style={styles.commentsContainer}>
-                    {renderComments(comments)}
-                </View>
-            ) : (
-                <View style={styles.emptyStateContainer}>
-                    <Ionicons name="chatbubbles-outline" size={64} color={COLORS.secondaryLightGreyHex} />
-                    <Text style={styles.emptyStateTitle}>No comments yet</Text>
-                    <Text style={styles.emptyStateSubtitle}>Be the first to share your thoughts!</Text>
-                </View>
-            )}
-
-            {/* Load More Comments */}
-            {hasMoreCommentsState && (
-                <Pressable 
-                    onPress={loadMoreComments} 
-                    style={[styles.loadMoreCommentsButton, loadingComments && styles.loadingButton]}
-                    disabled={loadingComments}
-                >
-                    {loadingComments ? (
-                        <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
-                    ) : (
-                        <>
-                            <Ionicons name="arrow-down" size={18} color={COLORS.primaryWhiteHex} />
-                            <Text style={styles.loadMoreCommentsButtonText}>Load More Comments</Text>
-                        </>
-                    )}
-                </Pressable>
-            )}
+            </ScrollView>
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     commentsSection: {
@@ -797,13 +789,6 @@ const styles = StyleSheet.create({
         color: COLORS.primaryWhiteHex,
         fontSize: FONTSIZE.size_12,
         fontFamily: FONTFAMILY.poppins_medium,
-    },
-    addCommentContainer: {
-        paddingHorizontal: SPACING.space_20,
-        paddingTop: SPACING.space_20,
-        paddingBottom: SPACING.space_15,
-        borderBottomWidth: 1,
-        borderBottomColor: COLORS.primaryGreyHex,
     },
     commentsContainer: {
         paddingHorizontal: SPACING.space_20,
@@ -905,16 +890,16 @@ const styles = StyleSheet.create({
         fontFamily: FONTFAMILY.poppins_medium,
         marginLeft: SPACING.space_8,
     },
+    textWrapper: {
+        position: 'relative',
+        overflow: 'hidden',
+    },
     commentText: {
         color: COLORS.primaryWhiteHex,
         fontSize: FONTSIZE.size_14,
         fontFamily: FONTFAMILY.poppins_regular,
         lineHeight: 20,
         marginBottom: SPACING.space_12,
-    },
-    blurredText: {
-        opacity: 0.3,
-        fontStyle: 'italic',
     },
     commentActions: {
         flexDirection: 'row',

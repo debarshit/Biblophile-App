@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
     StyleSheet,
     View,
@@ -12,21 +12,33 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 
+export interface CommentInputFormRef {
+    focus: () => void;
+}
+
 interface CommentInputFormProps {
     onSubmit: (text: string, pageNumber: number) => void;
     isLoading: boolean;
     showPageInput?: boolean;
     initialPageNumber?: number;
     placeholder?: string;
+    replyContext?: {
+    commentId: number | null;
+    username?: string;
+    pageNumber?: number;
+  } | null;
+  onCancelReply?: () => void;
 }
 
-export const CommentInputForm: React.FC<CommentInputFormProps> = ({
+export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputFormProps>(({
     onSubmit,
     isLoading,
     showPageInput = false,
     initialPageNumber = 1,
     placeholder = "Share your thoughts...",
-}) => {
+    replyContext = null,
+    onCancelReply = () => {},
+}, ref) => {
     const [commentText, setCommentText] = useState('');
     const [pageNumber, setPageNumber] = useState(initialPageNumber.toString());
     const [isFocused, setIsFocused] = useState(false);
@@ -35,6 +47,12 @@ export const CommentInputForm: React.FC<CommentInputFormProps> = ({
     useEffect(() => {
         setPageNumber(initialPageNumber.toString());
     }, [initialPageNumber]);
+
+    useImperativeHandle(ref, () => ({
+        focus: () => {
+            textInputRef.current?.focus();
+        },
+    }));
 
     const handleSubmit = () => {
         const trimmedText = commentText.trim();
@@ -59,6 +77,17 @@ export const CommentInputForm: React.FC<CommentInputFormProps> = ({
         <View style={styles.container}>
             {/* Main Input Area */}
             <View style={[styles.inputWrapper, isFocused && styles.inputWrapperFocused]}>
+                {replyContext && (
+  <View style={styles.replyBanner}>
+    <Text style={styles.replyText}>
+      Replying to <Text style={styles.replyUser}>@{replyContext.username}</Text>
+    </Text>
+
+    <Pressable onPress={onCancelReply}>
+      <Ionicons name="close" size={18} color={COLORS.secondaryLightGreyHex} />
+    </Pressable>
+  </View>
+)}
                 {/* Text Input */}
                 <View style={styles.textInputContainer}>
                     <TextInput
@@ -144,7 +173,7 @@ export const CommentInputForm: React.FC<CommentInputFormProps> = ({
             </View>
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {
@@ -170,6 +199,26 @@ const styles = StyleSheet.create({
         paddingHorizontal: SPACING.space_12,
         paddingTop: SPACING.space_12,
     },
+    replyBanner: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  backgroundColor: '#1f2933',
+  paddingHorizontal: SPACING.space_12,
+  paddingVertical: SPACING.space_8,
+  borderTopLeftRadius: BORDERRADIUS.radius_10,
+  borderTopRightRadius: BORDERRADIUS.radius_10,
+},
+
+replyText: {
+  color: COLORS.secondaryLightGreyHex,
+  fontSize: FONTSIZE.size_12,
+},
+
+replyUser: {
+  color: COLORS.primaryOrangeHex,
+  fontWeight: '600',
+},
     textInput: {
         fontSize: FONTSIZE.size_14,
         color: COLORS.primaryWhiteHex,
