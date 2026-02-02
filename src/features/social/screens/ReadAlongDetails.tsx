@@ -23,6 +23,7 @@ import ReadalongCheckpoints, { ReadalongCheckpointsRef } from '../components/Rea
 import { useNavigation } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
 import ReadalongParticipants from '../components/ReadalongParticipants';
+import ShareModal from '../../../components/ShareModal';
 
 // Define the Readalong interface
 interface Host {
@@ -68,6 +69,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
   const [description, setDescription] = useState<string>('Such empty! Much wow!');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [loadingInitialData, setLoadingInitialData] = useState<boolean>(true);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
@@ -212,22 +214,9 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
     }
   };
 
-  const sharePage = async () => {
-    if (readalong?.book_title) {
-      try {
-        const result = await Share.share({
-          message: `Check out this readalong for "${readalong.book_title}" on Biblophile! https://biblophile.com/social/readalong/${readalong.readalongId}`,
-        });
-
-        if (result.action === Share.sharedAction) {
-          console.log('Shared successfully');
-        } else if (result.action === Share.dismissedAction) {
-          console.log('Dismissed');
-        }
-      } catch (error: any) {
-        Alert.alert(error.message);
-      }
-    }
+  const sharePage = () => {
+    if (!readalong?.book_title) return;
+    setShareModalVisible(true);
   };
 
   if (loadingInitialData) {
@@ -328,6 +317,17 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
             <ReadalongCheckpoints readalong={readalong} currentUser={currentUser} isMember={isMember} isHost={isHost} />
           )}
         </ScrollView>
+        <ShareModal
+          visible={shareModalVisible}
+          onClose={() => setShareModalVisible(false)}
+          content={{
+            title: readalong.book_title,
+            message: `Readalong in progress on Biblophile`,
+            url: `https://biblophile.com/social/readalong/${readalong.readalongId}`,
+            image: readalong.book_photo,
+          }}
+          imageUri={readalong.book_photo}
+        />
     </SafeAreaView>
   );
 };

@@ -28,20 +28,20 @@ const InstagramStoryTemplate = forwardRef<View, InstagramStoryTemplateProps>(
         style={styles.container}
       >
         {/* Blurred background */}
-        {image ? (
-          <ImageBackground
-            source={{ uri: image }}
-            style={styles.background}
-            resizeMode="cover"
-            blurRadius={18} // 👈 key part
-          >
-            <View style={styles.overlay}>
-              {/* Content */}
-              <View style={styles.content}>
-                <Text style={styles.title}>{title}</Text>
-                <Text style={styles.message}>{message}</Text>
+        <ImageBackground
+          source={image ? { uri: image } : undefined}
+          style={styles.background}
+          resizeMode="cover"
+          blurRadius={image ? 18 : 0}
+        >
+          <View style={styles.overlay}>
+            {/* Content */}
+            <View style={styles.content}>
+              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.message}>{message}</Text>
 
-                {/* Clear image card */}
+              {/* Clear image card */}
+              {image && (
                 <View style={styles.imageWrapper}>
                   <Image
                     source={{ uri: image }}
@@ -49,17 +49,15 @@ const InstagramStoryTemplate = forwardRef<View, InstagramStoryTemplateProps>(
                     resizeMode="cover"
                   />
                 </View>
-              </View>
-
-              {/* Branding */}
-              <View style={styles.footer}>
-                <Text style={styles.brand}>biblophile</Text>
-              </View>
+                )}
             </View>
-          </ImageBackground>
-        ) : (
-          <View style={styles.fallback} />
-        )}
+
+            {/* Branding */}
+            <View style={styles.footer}>
+              <Text style={styles.brand}>biblophile</Text>
+            </View>
+          </View>
+        </ImageBackground>
       </View>
     );
   }
@@ -126,10 +124,5 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     color: COLORS.primaryWhiteHex,
     textTransform: 'uppercase',
-  },
-
-  fallback: {
-    flex: 1,
-    backgroundColor: COLORS.primaryDarkGreyHex,
   },
 });
