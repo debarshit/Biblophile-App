@@ -73,6 +73,23 @@ const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckp
         },
     }));
 
+    // Helper function to check if checkpoint is locked
+    const isCheckpointLocked = (checkpoint: Checkpoint): boolean => {
+        // Hosts can always access checkpoints
+        if (isHost) return false;
+
+        const checkpointProgress = parseFloat(checkpoint.progress);
+        const userProgress = currentUser.progressPercentage;
+        
+        if (userProgress < checkpointProgress) return true;
+
+        const checkpointDate = new Date(checkpoint.discussion_date);
+        const currentDate = new Date();
+        if (currentDate < checkpointDate) return true;
+
+        return false;
+    };
+
     const fetchCheckpoints = useCallback(async () => {
         if (loading || !hasMore || !readalong?.readalongId || selectedCheckpointId !== null) {
              if (!readalong?.readalongId) console.warn("Readalong ID is missing, cannot fetch checkpoints.");
@@ -118,6 +135,7 @@ const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckp
     };
 
     const handleViewCheckpointDetails = (checkpoint: Checkpoint) => {
+        if (isCheckpointLocked(checkpoint)) return;
         navigation.navigate('ReadalongCheckpointDiscussion', {
             readalong,
             currentUser,
@@ -149,14 +167,16 @@ const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckp
 
     const renderCheckpointItem = ({ item }: { item: Checkpoint }) => {
          const isSelected = item.checkpoint_id === selectedCheckpointForUpdation;
+         const isLocked = isCheckpointLocked(item);
 
         return (
             <Pressable
                  key={item.checkpoint_id}
-                 style={styles.checkpointItem}
+                 style={[styles.checkpointItem, isLocked && styles.checkpointItemLocked]}
                  onPress={() => handleViewCheckpointDetails(item)}
+                 disabled={isLocked}
             >
-                 <View style={styles.timelinePoint} />
+                 <View style={[styles.timelinePoint, isLocked && styles.timelinePointLocked]} />
                  <View style={styles.checkpointContent}>
                      {isHost && (
                          <Pressable
@@ -178,9 +198,27 @@ const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckp
                           </View>
                       )}
 
-                    <Text style={styles.checkpointDate}>{item.discussion_date}</Text>
-                    <Text style={styles.checkpointPrompt}>{item.label}</Text>
-                    <Text style={styles.checkpointPage}>Progress: {item.progress}%</Text>
+                    <Text style={[styles.checkpointDate, isLocked && styles.dateTextLocked]}>
+                        {item.discussion_date}
+                    </Text>
+                    <Text style={[styles.checkpointPrompt, isLocked && styles.textLocked]}>
+                        {item.label}
+                    </Text>
+                    <Text style={[styles.checkpointPage, isLocked && styles.textLocked]}>
+                        Progress: {item.progress}%
+                    </Text>
+
+                    {/* Lock Overlay */}
+                    {isLocked && (
+                        <View style={styles.lockOverlay}>
+                            <Feather name="lock" size={24} color={COLORS.secondaryLightGreyHex} />
+                            <Text style={styles.lockText}>
+                                {currentUser.progressPercentage < parseFloat(item.progress)
+                                    ? `Reach ${item.progress}% to unlock`
+                                    : 'Available from ' + new Date(item.discussion_date).toLocaleDateString()}
+                            </Text>
+                        </View>
+                    )}
                  </View>
              </Pressable>
         );
@@ -270,6 +308,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         marginBottom: SPACING.space_20,
     },
+    checkpointItemLocked: {
+        opacity: 0.6,
+    },
     timelinePoint: {
         width: 10,
         height: 10,
@@ -277,6 +318,9 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.primaryOrangeHex,
         marginTop: SPACING.space_4,
         marginRight: SPACING.space_10,
+    },
+    timelinePointLocked: {
+        backgroundColor: COLORS.secondaryLightGreyHex,
     },
     checkpointContent: {
         flex: 1,
@@ -299,6 +343,13 @@ const styles = StyleSheet.create({
     checkpointPage: {
         fontSize: FONTSIZE.size_14,
         color: COLORS.secondaryLightGreyHex,
+    },
+    textLocked: {
+        color: COLORS.secondaryLightGreyHex,
+        opacity: 0.5,
+    },
+    dateTextLocked: {
+        color: COLORS.primaryWhiteHex,
     },
     checkpointEllipsis: {
         position: 'absolute',
@@ -326,6 +377,24 @@ const styles = StyleSheet.create({
     updateMenuItemText: {
         color: COLORS.primaryWhiteHex,
         fontSize: FONTSIZE.size_14,
+    },
+    lockOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: BORDERRADIUS.radius_4,
+        paddingHorizontal: SPACING.space_12,
+    },
+    lockText: {
+        color: COLORS.secondaryLightGreyHex,
+        fontSize: FONTSIZE.size_12,
+        marginTop: SPACING.space_8,
+        textAlign: 'center',
     },
     loadingFooter: {
         padding: SPACING.space_10,
