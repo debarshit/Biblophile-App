@@ -24,6 +24,7 @@ import BuddyReadCommentsSection, { BuddyReadCommentsSectionRef } from '../compon
 import { useNavigation } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
 import { CommentInputForm, CommentInputFormRef } from '../components/CommentInputForm';
+import ShareModal from '../../../components/ShareModal';
 
 // Define the BuddyRead interface
 interface Member {
@@ -70,6 +71,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   const [description, setDescription] = useState<string>('Such empty! Much wow!');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [loadingInitialData, setLoadingInitialData] = useState<boolean>(true);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
   const [replyContext, setReplyContext] = useState<{
     commentId: number | null;
     username?: string;
@@ -225,22 +227,9 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
     setMemberDisplayCount((prevCount) => prevCount + 4);
   };
 
-  const sharePage = async () => {
-    if (buddyRead?.book_title) {
-      try {
-        const result = await Share.share({
-          message: `Check out this buddy read for "${buddyRead.book_title}" on Biblophile! https://biblophile.com/social/buddy-reads/${buddyRead.buddyReadId}`,
-        });
-
-        if (result.action === Share.sharedAction) {
-          console.log('Shared successfully');
-        } else if (result.action === Share.dismissedAction) {
-          console.log('Dismissed');
-        }
-      } catch (error: any) {
-        Alert.alert(error.message);
-      }
-    }
+  const sharePage = () => {
+    if (!buddyRead?.book_title) return;
+    setShareModalVisible(true);
   };
 
   if (loadingInitialData) {
@@ -369,6 +358,17 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
                 </View>
             )}
       </KeyboardAvoidingView>
+      <ShareModal
+        visible={shareModalVisible}
+        onClose={() => setShareModalVisible(false)}
+        content={{
+          title: buddyRead.book_title,
+          message: `Doing a buddy read for this book on Biblophile`,
+          url: `https://biblophile.com/social/buddy-reads/${buddyRead.buddyReadId}`,
+          image: buddyRead.book_photo,
+        }}
+        imageUri={buddyRead.book_photo}
+      />
     </SafeAreaView>
   );
 };

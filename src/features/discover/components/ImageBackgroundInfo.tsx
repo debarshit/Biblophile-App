@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert, Share } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import GradientBGIcon from '../../../components/GradientBGIcon';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
@@ -9,6 +9,7 @@ import ReadingStatusModal from './ReadingStatusModal';
 import { useStore } from '../../../store/store';
 import ReadingHistoryModal from '../../reading/components/ReadingHistoryModal';
 import MissingBookInfoModal from './MissingBookInfoModal';
+import ShareModal from '../../../components/ShareModal';
 import { useNavigation } from '@react-navigation/native';
 
 interface ImageBackgroundInfoProps {
@@ -24,7 +25,6 @@ interface ImageBackgroundInfoProps {
   product: any;
   isGoogleBook: boolean;
   onBookPromoted?: (internalBookId: string) => void;
-
 }
 
 // Extracted chip component for reusability
@@ -52,6 +52,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   const [modalVisible, setModalVisible] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
   const userDetails = useStore((state: any) => state.userDetails);
   const navigation = useNavigation<any>();
 
@@ -116,12 +117,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     fetchAllData();
   }, [id, type, product]);
 
-  const handleShare = async () => {
-    try {
-      await Share.share({ message: `Checkout this book at https://biblophile.com/books/${type}/${id}/${name}` });
-    } catch {
-      Alert.alert('Error', 'Failed to share.');
-    }
+  const handleShare = () => {
+    setShareModalVisible(true);
   };
 
   const handleEditInstance = (instance: any) => {
@@ -274,12 +271,24 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         bookTitle={name}
         onEditInstance={handleEditInstance}
       />
+
       <MissingBookInfoModal
         modalVisible={showReportModal}
         setModalVisible={setShowReportModal}
         accessToken={userDetails[0].accessToken}
         workId={product?.WorkId}
         bookId={id}
+      />
+
+      <ShareModal
+        visible={shareModalVisible}
+        onClose={() => setShareModalVisible(false)}
+        content={{
+          title: `${name}`,
+          message: `Check out "${name}" by ${author} on Biblophile!`,
+          url: `https://biblophile.com/books/${type}/${id}/${encodeURIComponent(name)}`,
+        }}
+        imageUri={imagelink_portrait}
       />
     </View>
   );
