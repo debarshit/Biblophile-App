@@ -25,14 +25,14 @@ const TabNavigator = ({ activeTab, setActiveTab, type }) => {
             </Text>
           </TouchableOpacity>
           
-          {/* <TouchableOpacity 
+          <TouchableOpacity 
             onPress={() => setActiveTab('read-together')} 
             style={[styles.TabButton, activeTab === 'read-together' && styles.TabButtonActive]}
           >
             <Text style={[styles.TabLabel, activeTab === 'read-together' && styles.TabLabelActive]}>
               Read Together
             </Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </>
       )}
     </View>

@@ -37,7 +37,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const [signupName , setSignupName] = useState<string>('');
     const [signupUserName, setSignupUserName] = useState<string>('');
     const [signupEmail, setSignupEmail] = useState<string>('');
-    const [signupPhone , setSignupPhone] = useState<string>(null);
+    const [signupPhone , setSignupPhone] = useState<string>('');
     const [signupPass , setSignupPass] = useState<string>('');
     const [signupPassCnf, setSignupPassCnf] = useState<string>('');
     const [source, setSource] = useState(null);
@@ -159,7 +159,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     };
 
     const handleSignup = () => {
-        if (!signupName || !signupUserName || !signupEmail || !signupPhone || !signupPass || !signupPassCnf || !source)
+        if (!signupName || !signupUserName || !signupEmail || !signupPass || !signupPassCnf || !source)
         {
             alert("Please fill all the details!");
             return;
@@ -168,7 +168,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
             alert("Invalid email format!");
             return;
         }
-        if (!validatePhone(signupPhone)) {
+        if (signupPhone && !validatePhone(signupPhone)) {
             alert("Invalid phone number format!");
             return;
         }
@@ -180,15 +180,20 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
             async function fetchData() {
                 setIsLoading(true);
                 try {
-                    const signupResponse = await instance.post(requests.userSignup, {
-                        name: signupName,
-                        userName: signupUserName,
-                        email: signupEmail,
-                        phone: signupPhone,
-                        password: signupPass,
-                        signupPassCnf: signupPassCnf,
-                        source: source,
-                    });
+                    const payload: any = {
+    name: signupName,
+    userName: signupUserName,
+    email: signupEmail,
+    password: signupPass,
+    signupPassCnf: signupPassCnf,
+    source: source,
+};
+
+if (signupPhone) {
+    payload.phone = signupPhone;
+}
+
+                    const signupResponse = await instance.post(requests.userSignup, payload);
 
                     const response = signupResponse.data;
                     console.log(response);
@@ -262,7 +267,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                         setLoginMessage({ text: response.data.message, color: COLORS.primaryRedHex });
                     }
                 } catch (error) {
-                    setLoginMessage({ text: "There was an error! Please try again.", color: COLORS.primaryRedHex });
+                    setLoginMessage({ text:error?.response?.data?.message || "There was an error! Please try again.", color: COLORS.primaryRedHex });
                 } finally {
                     setIsLoading(false); 
                 }
@@ -409,7 +414,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                                 <MdIcon name='email' style={styles.icon} />
                             </View>
                         </View>
-                        <View style={styles.inputBox}>
+                        {/* <View style={styles.inputBox}>
                             <View style={[styles.inputWrapper, focusedInput === 'signupPhone' && styles.highlightedInput]}>
                                 <TextInput
                                     style={styles.input}
@@ -423,7 +428,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                                 />
                                 <FaIcon name='phone' style={styles.icon} />
                             </View>
-                        </View>
+                        </View> */}
                         <View style={styles.inputBox}>
                             <View style={[styles.inputWrapper, focusedInput === 'signupPass' && styles.highlightedInput]}>
                                 <TextInput

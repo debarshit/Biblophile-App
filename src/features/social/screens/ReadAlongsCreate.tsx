@@ -68,6 +68,7 @@ const ReadAlongsCreate = ({ route }: any) => {
           position: 'bottom',
           bottomOffset: 100, 
         });
+        navigation.navigate('ReadalongDetails', { readalongId: response.data.data.readalongId });
       }
       else {
         Toast.show({

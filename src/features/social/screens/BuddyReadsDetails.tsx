@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   Alert,
   Share,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -18,9 +20,11 @@ import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BuddyReadMembersSection from '../components/BuddyReadMembersSection';
-import BuddyReadCommentsSection from '../components/BuddyReadCommentsSection';
+import BuddyReadCommentsSection, { BuddyReadCommentsSectionRef } from '../components/BuddyReadCommentsSection';
 import { useNavigation } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
+import { CommentInputForm, CommentInputFormRef } from '../components/CommentInputForm';
+import ShareModal from '../../../components/ShareModal';
 
 // Define the BuddyRead interface
 interface Member {
@@ -31,15 +35,15 @@ interface Member {
 interface CurrentUser {
   userId: string | null;
   readingStatus: string | null;
-  currentPage: number;
+  progressPercentage: number;
 }
 
 interface BuddyRead {
+  workId: number;
   buddyReadId: number;
   bookId: string;
   book_title: string;
   book_photo: string;
-  book_pages: number;
   buddyReadDescription: string;
   startDate: string;
   endDate: string;
@@ -59,7 +63,7 @@ interface Props {
 const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   const { buddyReadId } = route.params;
   const [buddyRead, setBuddyRead] = useState<BuddyRead | null>(null);
-  const [currentUser, setCurrentUser] = useState<CurrentUser>({ userId: null, readingStatus: null, currentPage: 0 });
+  const [currentUser, setCurrentUser] = useState<CurrentUser>({ userId: null, readingStatus: null, progressPercentage: 0 });
   const [isMember, setIsMember] = useState<boolean>(false);
   const [isHost, setIsHost] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,10 +71,18 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   const [description, setDescription] = useState<string>('Such empty! Much wow!');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [loadingInitialData, setLoadingInitialData] = useState<boolean>(true);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
+  const [replyContext, setReplyContext] = useState<{
+    commentId: number | null;
+    username?: string;
+    pageNumber?: number;
+  } | null>(null);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
   const navigation = useNavigation<any>();
+  const commentsSectionRef = useRef<BuddyReadCommentsSectionRef>(null);
+  const commentInputRef = useRef<CommentInputFormRef>(null);
 
   const fetchBuddyReadDetails = useCallback(async () => {
     setLoadingInitialData(true);
@@ -86,15 +98,15 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
       );
       const buddyReadData = buddyReadResponse.data.data;
       setBuddyRead(buddyReadData);
-      setDescription(buddyReadData?.buddy_read_description || 'Such empty! Much wow!');
+      setDescription(buddyReadData?.buddyReadDescription || 'Such empty! Much wow!');
 
-      let currentUserData: CurrentUser = { userId: null, readingStatus: null, currentPage: 0 };
+      let currentUserData: CurrentUser = { userId: null, readingStatus: null, progressPercentage: 0 };
       let isHostUser = false;
       let isMemberUser = false;
 
       if (accessToken) {
         // Only fetch user-specific data if accessToken is available
-        const response = await instance.get(requests.fetchReadingStatus(buddyReadData?.bookId), {
+        const response = await instance.get(requests.fetchReadingStatusByWork(buddyReadData?.workId), {
           headers: {
               Authorization: `Bearer ${userDetails[0].accessToken}`,
           },
@@ -104,7 +116,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
         currentUserData = {
           userId: currentUserReadingStatusResponse.data.userId,
           readingStatus: currentUserReadingStatusResponse.data.status,
-          currentPage: currentUserReadingStatusResponse.data.currentPage || 0,
+          progressPercentage: currentUserReadingStatusResponse.data.progressPercentage,
         };
 
         // Check if the current user is the host & member
@@ -122,6 +134,24 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
       setLoadingInitialData(false);
     }
   }, [buddyReadId]);
+
+  const handleReplyPress = useCallback((commentId: number, username: string, pageNumber: number) => {
+    setReplyContext({ commentId, username, pageNumber });
+    setTimeout(() => {
+        commentInputRef.current?.focus();
+    }, 50);
+  }, []);
+
+  const handleCommentSubmit = useCallback(async (commentText: string, progressPercentage?: number) => {
+    if (commentsSectionRef.current) {
+        await commentsSectionRef.current.submitComment(
+            commentText,
+            progressPercentage,
+            replyContext?.commentId ?? null
+        );
+        setReplyContext(null);
+    }
+  }, [replyContext]);
 
   useEffect(() => {
     fetchBuddyReadDetails();
@@ -197,22 +227,9 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
     setMemberDisplayCount((prevCount) => prevCount + 4);
   };
 
-  const sharePage = async () => {
-    if (buddyRead?.book_title) {
-      try {
-        const result = await Share.share({
-          message: `Check out this buddy read for "${buddyRead.book_title}" on Biblophile! https://biblophile.com/social/buddy-reads/${buddyRead.buddyReadId}`,
-        });
-
-        if (result.action === Share.sharedAction) {
-          console.log('Shared successfully');
-        } else if (result.action === Share.dismissedAction) {
-          console.log('Dismissed');
-        }
-      } catch (error: any) {
-        Alert.alert(error.message);
-      }
-    }
+  const sharePage = () => {
+    if (!buddyRead?.book_title) return;
+    setShareModalVisible(true);
   };
 
   if (loadingInitialData) {
@@ -234,13 +251,20 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   return (
     <SafeAreaView style={styles.container} >
       <HeaderBar showBackButton={true} title='Buddy read' />
-      <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+      <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
         <TouchableOpacity onPress={sharePage} style={styles.shareButton}>
           <FontAwesome name="share" size={25} color={COLORS.primaryOrangeHex} />
         </TouchableOpacity>
         <Text style={styles.title}>{buddyRead.book_title}</Text>
         <View style={styles.bookDetailsContainer}>
-          <Image source={{ uri: buddyRead.book_photo }} style={styles.bookImage} />
+          <TouchableOpacity onPress={() => navigation.navigate('Details', { id: buddyRead.bookId, type: 'Book' })}>
+            <Image source={{ uri: buddyRead.book_photo }} style={styles.bookImage} />
+          </TouchableOpacity>
           <View style={styles.buddyReadInfo}>
             <TouchableOpacity
               style={[
@@ -303,14 +327,48 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
             />
 
             <BuddyReadCommentsSection
+              ref={commentsSectionRef}
               buddyReadId={buddyReadId}
               currentUser={currentUser}
               isHost={isHost}
               accessToken={accessToken}
+              onReplyPress={handleReplyPress}
+              replyContextId={replyContext?.commentId ?? null}
             />
           </>
         )}
       </ScrollView>
+      {/* ADD: Fixed Comment Input at Bottom */}
+            {isMember && (
+                <View style={styles.fixedCommentInputContainer}>
+                    <CommentInputForm
+                        ref={commentInputRef}
+                        onSubmit={handleCommentSubmit}
+                        isLoading={false}
+                        showPageInput
+                        initialPageNumber={replyContext?.pageNumber ?? currentUser.progressPercentage}
+                        placeholder={
+                            replyContext
+                                ? `Replying to ${replyContext.username}`
+                                : 'Share your thoughts...'
+                        }
+                        replyContext={replyContext}
+                        onCancelReply={() => setReplyContext(null)}
+                    />
+                </View>
+            )}
+      </KeyboardAvoidingView>
+      <ShareModal
+        visible={shareModalVisible}
+        onClose={() => setShareModalVisible(false)}
+        content={{
+          title: buddyRead.book_title,
+          message: `Doing a buddy read for this book on Biblophile`,
+          url: `https://biblophile.com/social/buddy-reads/${buddyRead.buddyReadId}`,
+          image: buddyRead.book_photo,
+        }}
+        imageUri={buddyRead.book_photo}
+      />
     </SafeAreaView>
   );
 };
@@ -350,7 +408,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.space_15,
   },
   contentContainer: {
-    paddingBottom: SPACING.space_30,
+    paddingBottom: SPACING.space_10,
   },
   shareButton: {
     position: 'absolute',
@@ -450,6 +508,14 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_14,
     color: COLORS.primaryWhiteHex,
+  },
+  fixedCommentInputContainer: {
+    backgroundColor: COLORS.primaryBlackHex,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.primaryGreyHex,
+    paddingHorizontal: SPACING.space_15,
+    paddingVertical: SPACING.space_10,
+    paddingBottom: Platform.OS === 'ios' ? SPACING.space_10 : SPACING.space_15,
   },
 });
 

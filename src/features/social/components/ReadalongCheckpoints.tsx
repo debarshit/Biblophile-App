@@ -1,15 +1,19 @@
 import { StyleSheet, Text, View, FlatList, ActivityIndicator, Pressable } from 'react-native';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Feather } from '@expo/vector-icons';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import ReadalongCheckpointDetails from './ReadalongCheckpointDetails'; // Adjust path
+import ReadalongCheckpointDetails, { ReadalongCheckpointDetailsRef } from './ReadalongCheckpointDetails'; // Adjust path
 import { useNavigation } from '@react-navigation/native';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 
+export interface ReadalongCheckpointsRef {
+    getCurrentCheckpointId: () => string | null;
+    submitComment: (text: string, progressPercentage: number) => Promise<void>;
+}
 // --- Interface Definitions (Ensure they are the same as used in Details component) ---
 interface Host { name: string; userId: string; }
-interface CurrentUser { userId: string; readingStatus: string, currentPage: number; }
+interface CurrentUser { userId: string; readingStatus: string, progressPercentage: number; }
 interface Readalong {
     readalongId: number;
     bookId: string;
@@ -24,7 +28,7 @@ interface Readalong {
     host: Host;
   }
 interface Checkpoint {
-    checkpoint_id: string; readalong_id: string; page_number: string; // Keep string here as per loader data
+    checkpoint_id: string; readalong_id: string; progress: string; label?: string
     discussion_prompt: string; discussion_date: string;
 }
 // -------------------------------------------------------------------------
@@ -35,17 +39,19 @@ interface ReadalongCheckpointsProps {
     isMember: boolean;
     isHost: boolean;
     initialLoadError?: string;
+    ref?: React.Ref<ReadalongCheckpointsRef>;
+    onCommentSubmit?: (text: string, progressPercentage: number) => Promise<void>;
 }
 
 const checkpointsLimit = 10;
 
-const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
+const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckpointsProps>(({
     readalong,
     currentUser,
     isMember,
     isHost,
     initialLoadError,
-}) => {
+}, ref) => {
     const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
     const [offset, setOffset] = useState<number>(0);
     const [hasMore, setHasMore] = useState<boolean>(true);
@@ -56,6 +62,33 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
     const [selectedCheckpointDetails, setSelectedCheckpointDetails] = useState<Checkpoint | null>(null);
 
     const navigation = useNavigation<any>();
+    const checkpointDetailsRef = useRef<ReadalongCheckpointDetailsRef>(null);
+
+    useImperativeHandle(ref, () => ({
+        getCurrentCheckpointId: () => selectedCheckpointId,
+        submitComment: async (text: string, progressPercentage: number) => {
+            if (checkpointDetailsRef.current) {
+                await checkpointDetailsRef.current.submitComment(text, progressPercentage);
+            }
+        },
+    }));
+
+    // Helper function to check if checkpoint is locked
+    const isCheckpointLocked = (checkpoint: Checkpoint): boolean => {
+        // Hosts can always access checkpoints
+        if (isHost) return false;
+
+        const checkpointProgress = parseFloat(checkpoint.progress);
+        const userProgress = currentUser.progressPercentage;
+        
+        if (userProgress < checkpointProgress) return true;
+
+        const checkpointDate = new Date(checkpoint.discussion_date);
+        const currentDate = new Date();
+        if (currentDate < checkpointDate) return true;
+
+        return false;
+    };
 
     const fetchCheckpoints = useCallback(async () => {
         if (loading || !hasMore || !readalong?.readalongId || selectedCheckpointId !== null) {
@@ -102,19 +135,15 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
     };
 
     const handleViewCheckpointDetails = (checkpoint: Checkpoint) => {
-        setSelectedCheckpointId(checkpoint.checkpoint_id);
-        setSelectedCheckpointDetails(checkpoint);
-        setSelectedCheckpointForUpdation(null);
-    };
-
-    const handleBackToList = () => {
-        setSelectedCheckpointId(null);
-        setSelectedCheckpointDetails(null);
-        // Optionally refetch the list if you think data might have changed (e.g., comments added)
-        // setOffset(0);
-        // setHasMore(true);
-        // setCheckpoints([]);
-        // fetchCheckpoints(); // This will be triggered by the useEffect when selectedCheckpointId becomes null and offset is reset
+        if (isCheckpointLocked(checkpoint)) return;
+        navigation.navigate('ReadalongCheckpointDiscussion', {
+            readalong,
+            currentUser,
+            isMember,
+            isHost,
+            checkpointId: checkpoint.checkpoint_id,
+            checkpointPrompt: checkpoint.discussion_prompt,
+        });
     };
 
     const handleEllipsisClick = (checkpointId: string) => {
@@ -128,7 +157,7 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
             isHost: isHost,
             checkpoint: {
               checkpointId: checkpointId,
-              pageNumber: checkpoints.find(c => c.checkpoint_id === checkpointId)?.page_number || '0',
+              progress: checkpoints.find(c => c.checkpoint_id === checkpointId)?.progress || '0',
               description: checkpoints.find(c => c.checkpoint_id === checkpointId)?.discussion_prompt || '',
               date: checkpoints.find(c => c.checkpoint_id === checkpointId)?.discussion_date || '',
             },
@@ -138,14 +167,16 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
 
     const renderCheckpointItem = ({ item }: { item: Checkpoint }) => {
          const isSelected = item.checkpoint_id === selectedCheckpointForUpdation;
+         const isLocked = isCheckpointLocked(item);
 
         return (
             <Pressable
                  key={item.checkpoint_id}
-                 style={styles.checkpointItem}
+                 style={[styles.checkpointItem, isLocked && styles.checkpointItemLocked]}
                  onPress={() => handleViewCheckpointDetails(item)}
+                 disabled={isLocked}
             >
-                 <View style={styles.timelinePoint} />
+                 <View style={[styles.timelinePoint, isLocked && styles.timelinePointLocked]} />
                  <View style={styles.checkpointContent}>
                      {isHost && (
                          <Pressable
@@ -167,9 +198,27 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
                           </View>
                       )}
 
-                    <Text style={styles.checkpointDate}>{item.discussion_date}</Text>
-                    <Text style={styles.checkpointPrompt}>{item.discussion_prompt}</Text>
-                    <Text style={styles.checkpointPage}>Page: {item.page_number}</Text>
+                    <Text style={[styles.checkpointDate, isLocked && styles.dateTextLocked]}>
+                        {item.discussion_date}
+                    </Text>
+                    <Text style={[styles.checkpointPrompt, isLocked && styles.textLocked]}>
+                        {item.label}
+                    </Text>
+                    <Text style={[styles.checkpointPage, isLocked && styles.textLocked]}>
+                        Progress: {item.progress}%
+                    </Text>
+
+                    {/* Lock Overlay */}
+                    {isLocked && (
+                        <View style={styles.lockOverlay}>
+                            <Feather name="lock" size={24} color={COLORS.secondaryLightGreyHex} />
+                            <Text style={styles.lockText}>
+                                {currentUser.progressPercentage < parseFloat(item.progress)
+                                    ? `Reach ${item.progress}% to unlock`
+                                    : 'Available from ' + new Date(item.discussion_date).toLocaleDateString()}
+                            </Text>
+                        </View>
+                    )}
                  </View>
              </Pressable>
         );
@@ -214,7 +263,7 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
                 isMember={isMember}
                 isHost={isHost}
                 checkpointId={selectedCheckpointId}
-                onBack={handleBackToList}
+                checkpointPrompt={selectedCheckpointDetails.discussion_prompt}
             />
         );
     }
@@ -243,12 +292,13 @@ const ReadalongCheckpoints: React.FC<ReadalongCheckpointsProps> = ({
             <Text style={styles.notMemberText}>You must be a member to view checkpoints.</Text>
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: SPACING.space_16,
+        paddingBottom: SPACING.space_4,
         backgroundColor: COLORS.primaryDarkGreyHex,
     },
     flatListContent: {
@@ -258,6 +308,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         marginBottom: SPACING.space_20,
     },
+    checkpointItemLocked: {
+        opacity: 0.6,
+    },
     timelinePoint: {
         width: 10,
         height: 10,
@@ -265,6 +318,9 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.primaryOrangeHex,
         marginTop: SPACING.space_4,
         marginRight: SPACING.space_10,
+    },
+    timelinePointLocked: {
+        backgroundColor: COLORS.secondaryLightGreyHex,
     },
     checkpointContent: {
         flex: 1,
@@ -287,6 +343,13 @@ const styles = StyleSheet.create({
     checkpointPage: {
         fontSize: FONTSIZE.size_14,
         color: COLORS.secondaryLightGreyHex,
+    },
+    textLocked: {
+        color: COLORS.secondaryLightGreyHex,
+        opacity: 0.5,
+    },
+    dateTextLocked: {
+        color: COLORS.primaryWhiteHex,
     },
     checkpointEllipsis: {
         position: 'absolute',
@@ -314,6 +377,24 @@ const styles = StyleSheet.create({
     updateMenuItemText: {
         color: COLORS.primaryWhiteHex,
         fontSize: FONTSIZE.size_14,
+    },
+    lockOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: BORDERRADIUS.radius_4,
+        paddingHorizontal: SPACING.space_12,
+    },
+    lockText: {
+        color: COLORS.secondaryLightGreyHex,
+        fontSize: FONTSIZE.size_12,
+        marginTop: SPACING.space_8,
+        textAlign: 'center',
     },
     loadingFooter: {
         padding: SPACING.space_10,

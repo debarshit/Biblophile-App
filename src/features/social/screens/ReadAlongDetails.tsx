@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, use } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   Alert,
   Share,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -17,10 +19,11 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ReadalongCheckpoints from '../components/ReadalongCheckpoints';
+import ReadalongCheckpoints, { ReadalongCheckpointsRef } from '../components/ReadalongCheckpoints';
 import { useNavigation } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
 import ReadalongParticipants from '../components/ReadalongParticipants';
+import ShareModal from '../../../components/ShareModal';
 
 // Define the Readalong interface
 interface Host {
@@ -31,7 +34,7 @@ interface Host {
 interface CurrentUser {
   userId: string | null;
   readingStatus: string | null;
-  currentPage: number;
+  progressPercentage: number;
 }
 
 interface Readalong {
@@ -59,18 +62,20 @@ interface Props {
 const ReadAlongDetails: React.FC<Props> = ({ route }) => {
   const { readalongId } = route.params;
   const [readalong, setReadalong] = useState<Readalong | null>(null);
-  const [currentUser, setCurrentUser] = useState<CurrentUser>({ userId: null, readingStatus: null, currentPage: 0 });
+  const [currentUser, setCurrentUser] = useState<CurrentUser>({ userId: null, readingStatus: null, progressPercentage: 0 });
   const [isMember, setIsMember] = useState<boolean>(false);
   const [isHost, setIsHost] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [description, setDescription] = useState<string>('Such empty! Much wow!');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [loadingInitialData, setLoadingInitialData] = useState<boolean>(true);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
 
   const navigation = useNavigation<any>();
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const fetchReadalongDetails = useCallback(async () => {
     setLoadingInitialData(true);
@@ -86,25 +91,26 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
       );
       const readalong = readalongResponse.data.data;
       setReadalong(readalong);
-      setDescription(readalong?.readalong_description || 'Such empty! Much wow!');
+      setDescription(readalong?.readalongDescription || 'Such empty! Much wow!');
 
-      let currentUserData: CurrentUser = { userId: null, readingStatus: null, currentPage: 0 };
+      let currentUserData: CurrentUser = { userId: null, readingStatus: null, progressPercentage: 0 };
       let isHostUser = false;
       let isMemberUser = false;
 
       if (accessToken) {
         // Only fetch user-specific data if accessToken is available
-        const response = await instance.get(requests.fetchReadingStatus(readalong?.bookId), {
+        const response = await instance.get(requests.fetchReadingStatusByWork(readalong?.workId), {
           headers: {
               Authorization: `Bearer ${userDetails[0].accessToken}`,
           },
         });
 
         const currentUserReadingStatusResponse = response.data;
+
         currentUserData = {
           userId: currentUserReadingStatusResponse.data.userId,
           readingStatus: currentUserReadingStatusResponse.data.status,
-          currentPage: currentUserReadingStatusResponse.data.currentPage || 0,
+          progressPercentage: currentUserReadingStatusResponse.data.progressPercentage,
         };
 
         // Check if the current user is the host
@@ -193,7 +199,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
           }
         );
 
-        if (response.data.status === 'added' || response.data.status === 'removed') {
+        if (response.data.status === 'success') {
           console.log('Join/Leave action performed');
           fetchReadalongDetails(); // Refresh details
         } else {
@@ -208,22 +214,9 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
     }
   };
 
-  const sharePage = async () => {
-    if (readalong?.book_title) {
-      try {
-        const result = await Share.share({
-          message: `Check out this readalong for "${readalong.book_title}" on Biblophile! https://biblophile.com/social/readalong/${readalong.readalongId}`,
-        });
-
-        if (result.action === Share.sharedAction) {
-          console.log('Shared successfully');
-        } else if (result.action === Share.dismissedAction) {
-          console.log('Dismissed');
-        }
-      } catch (error: any) {
-        Alert.alert(error.message);
-      }
-    }
+  const sharePage = () => {
+    if (!readalong?.book_title) return;
+    setShareModalVisible(true);
   };
 
   if (loadingInitialData) {
@@ -245,83 +238,96 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
   return (
     <SafeAreaView style={styles.container} >
       <HeaderBar showBackButton={true} title='Readalong' />
-      <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer}>
-        <TouchableOpacity onPress={sharePage} style={styles.shareButton}>
-          <FontAwesome name="share" size={25} color={COLORS.primaryOrangeHex} />
-        </TouchableOpacity>
-        <Text style={styles.title}>{readalong.book_title}</Text>
-        <View style={styles.bookDetailsContainer}>
-          {/* Book Image */}
-          <Image source={{ uri: readalong.book_photo }} style={styles.bookImage} />
-          {/* Readalong Read Details */}
-          <View style={styles.readalongInfo}>
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                {
-                  backgroundColor: isMember ? COLORS.primaryOrangeHex : readalong.members < readalong.maxMembers ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex,
-                },
-              ]}
-              onPress={joinOrLeave}
-              disabled={!isMember && readalong.members >= readalong.maxMembers}
-            >
-              <Text style={styles.actionButtonText}>
-                {isMember ? 'Leave' : readalong.members < readalong.maxMembers ? 'Join' : 'Full'}
-              </Text>
-            </TouchableOpacity>
-            <Text style={styles.infoText}>
-              <Text style={styles.infoLabel}>Ends on:</Text> {readalong.endDate ? readalong.endDate : 'when everyone finishes'}
-            </Text>
-            <Text style={styles.infoText}>
-              <Text style={styles.infoLabel}>Max Members:</Text> {readalong.maxMembers}
-            </Text>
-            <Text style={styles.infoText}>
-              <Text style={styles.infoLabel}>Host:</Text> {readalong.host.name}
-            </Text>
-          </View>
-        </View>
-
-        {/* Description Section */}
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.descriptionTitle}>Description</Text>
-          {isEditing ? (
-            <TextInput
-              style={styles.descriptionInput}
-              value={description}
-              onChangeText={handleDescriptionChange}
-              multiline
-            />
-          ) : (
-            <Text style={styles.descriptionText}>{description}</Text>
-          )}
-
-          {isHost && (
-            <TouchableOpacity onPress={toggleEditing} style={styles.editButton}>
-              <Text style={styles.editText}>{isEditing ? 'Cancel' : 'Edit'}</Text>
-            </TouchableOpacity>
-          )}
-          {isEditing && (
-            <TouchableOpacity onPress={updateDescription} style={styles.saveButton}>
-              <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {isMember && (
-            <ReadalongParticipants readalongId={readalong.readalongId} />
-        )}
-
-          {/* update the text color; it is invisible currently */}
-        {isHost && (
-          <TouchableOpacity onPress={() => navigation.navigate('CreateReadalongCheckpoint', { readalong: readalong, currentUser: currentUser, isHost: isHost })}>
-            <Text>Create a new checkpoint</Text>
+        <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer} ref={scrollViewRef} keyboardShouldPersistTaps="handled">
+          <TouchableOpacity onPress={sharePage} style={styles.shareButton}>
+            <FontAwesome name="share" size={25} color={COLORS.primaryOrangeHex} />
           </TouchableOpacity>
-        )}
+          <Text style={styles.title}>{readalong.book_title}</Text>
+          <View style={styles.bookDetailsContainer}>
+            {/* Book Image */}
+            <TouchableOpacity onPress={() => navigation.navigate('Details', { id: readalong.bookId, type: 'Book' })}>
+              <Image source={{ uri: readalong.book_photo }} style={styles.bookImage} />
+            </TouchableOpacity>
+            {/* Readalong Read Details */}
+            <View style={styles.readalongInfo}>
+              <TouchableOpacity
+                style={[
+                  styles.actionButton,
+                  {
+                    backgroundColor: isMember ? COLORS.primaryOrangeHex : readalong.members < readalong.maxMembers ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex,
+                  },
+                ]}
+                onPress={joinOrLeave}
+                disabled={!isMember && readalong.members >= readalong.maxMembers}
+              >
+                <Text style={styles.actionButtonText}>
+                  {isMember ? 'Leave' : readalong.members < readalong.maxMembers ? 'Join' : 'Full'}
+                </Text>
+              </TouchableOpacity>
+              <Text style={styles.infoText}>
+                <Text style={styles.infoLabel}>Ends on:</Text> {readalong.endDate ? readalong.endDate : 'when everyone finishes'}
+              </Text>
+              <Text style={styles.infoText}>
+                <Text style={styles.infoLabel}>Max Members:</Text> {readalong.maxMembers}
+              </Text>
+              <Text style={styles.infoText}>
+                <Text style={styles.infoLabel}>Host:</Text> {readalong.host.name}
+              </Text>
+            </View>
+          </View>
 
-        {isMember && (
-          <ReadalongCheckpoints readalong={readalong} currentUser={currentUser} isMember={isMember} isHost={isHost}/>
-        )}
-      </ScrollView>
+          {/* Description Section */}
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Description</Text>
+            {isEditing ? (
+              <TextInput
+                style={styles.descriptionInput}
+                value={description}
+                onChangeText={handleDescriptionChange}
+                multiline
+              />
+            ) : (
+              <Text style={styles.descriptionText}>{description}</Text>
+            )}
+
+            {isHost && (
+              <TouchableOpacity onPress={toggleEditing} style={styles.editButton}>
+                <Text style={styles.editText}>{isEditing ? 'Cancel' : 'Edit'}</Text>
+              </TouchableOpacity>
+            )}
+            {isEditing && (
+              <TouchableOpacity onPress={updateDescription} style={styles.saveButton}>
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {isMember && (
+              <ReadalongParticipants readalongId={readalong.readalongId} />
+          )}
+
+            {/* update the text color; it is invisible currently */}
+          {isHost ? (
+            <TouchableOpacity onPress={() => navigation.navigate('CreateReadalongCheckpoint', { readalong: readalong, currentUser: currentUser, isHost: isHost })}>
+              <Text style={{color: COLORS.primaryWhiteHex}}>Create a new checkpoint</Text>
+            </TouchableOpacity>
+          ) : <Text style={{color: COLORS.primaryWhiteHex}}></Text>}
+
+          {isMember && (
+            <ReadalongCheckpoints readalong={readalong} currentUser={currentUser} isMember={isMember} isHost={isHost} />
+          )}
+        </ScrollView>
+        <ShareModal
+          visible={shareModalVisible}
+          onClose={() => setShareModalVisible(false)}
+          content={{
+            title: readalong.book_title,
+            message: `Readalong in progress on Biblophile`,
+            url: `https://biblophile.com/social/readalong/${readalong.readalongId}`,
+            image: readalong.book_photo,
+          }}
+          imageUri={readalong.book_photo}
+        />
     </SafeAreaView>
   );
 };
@@ -361,7 +367,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.space_15,
   },
   contentContainer: {
-    paddingBottom: SPACING.space_30,
+    paddingBottom: SPACING.space_10,
   },
   shareButton: {
     position: 'absolute',

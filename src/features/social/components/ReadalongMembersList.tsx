@@ -23,8 +23,6 @@ interface Participant {
   userId: number;
   name: string;
   userName: string;
-  currentPage: number;
-  totalPages: number;
   progressPercentage: number;
   status: string;
   rating: number | null;
@@ -175,7 +173,7 @@ const ReadalongMembersList: React.FC<Props> = ({ visible, onClose, readalongId, 
         <View style={styles.progressSection}>
           <View style={styles.progressInfo}>
             <Text style={styles.progressText}>
-              {item.currentPage} / {item.totalPages} pages ({item.progressPercentage}%)
+              ({item.progressPercentage}%)
             </Text>
           </View>
           <View style={styles.progressBarContainer}>
