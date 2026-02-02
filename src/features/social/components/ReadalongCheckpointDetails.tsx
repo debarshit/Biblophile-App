@@ -1,11 +1,12 @@
 import { StyleSheet, Text, View, FlatList, ActivityIndicator, Pressable } from 'react-native';
-import React, { useState, useEffect, useCallback, useMemo, memo, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useCallback, memo, forwardRef, useImperativeHandle } from 'react';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import { useNavigation } from '@react-navigation/native';
+import { BlurView } from 'expo-blur';
 
 // Types
 interface Host {
@@ -55,8 +56,6 @@ interface ReadalongCheckpointDetailsProps {
     isHost: boolean;
     checkpointId: string;
     checkpointPrompt: string;
-    onBack: () => void;
-    onCommentSubmit?: (text: string, progressPercentage: number) => void;
 }
 
 // Constants
@@ -64,7 +63,9 @@ const COMMENTS_LIMIT = 10;
 const SORT_OPTIONS = {
     NEWEST: 'created_at_desc',
     OLDEST: 'created_at_asc',
-    LIKES: 'like_count_desc'
+    PAGE_ASC: 'page_asc',
+    PAGE_DESC: 'page_desc',
+
 };
 
 // Custom Hooks
@@ -98,7 +99,6 @@ const useComments = (checkpointId: string, currentUser: CurrentUser,  userDetail
             });
 
             const fetchedData = response.data.data;
-            console.log(fetchedData);
             const hasMore = fetchedData.comments.length === COMMENTS_LIMIT;
 
             if (!appending && fetchedData.comments.length === 0) {
@@ -241,13 +241,24 @@ const CommentItem = memo(({
 
                 <Text style={styles.commentMeta}>
                     <Text style={styles.commentUser}>{comment.user_name}</Text>
-                    <Text style={styles.commentPage}> (Progress {comment.progressPercentage})</Text>
+                    <Text style={styles.commentPage}> (At {comment.progressPercentage}%)</Text>
                     <Text style={styles.commentDate}> • {formatTimestamp(comment.createdAt)}</Text>
                 </Text>
-                
-                <Text style={[styles.commentText, shouldBlur && styles.blurredText]}>
-                    {comment.commentText}
-                </Text>
+
+                {/* Comment Text */}
+                <View style={styles.textWrapper}>
+                    <Text style={styles.commentText}>
+                        {comment.commentText}
+                    </Text>
+
+                    {shouldBlur && (
+                        <BlurView
+                        intensity={30}
+                        tint="dark"
+                        style={StyleSheet.absoluteFill}
+                        />
+                    )}
+                </View>
 
                 <View style={styles.commentActions}>
                     <Pressable
@@ -286,7 +297,6 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
     isHost,
     checkpointId,
     checkpointPrompt,
-    onBack,
 }, ref) => {
     const userDetails = useStore((state: any) => state.userDetails);
     const navigation = useNavigation<any>();
@@ -431,8 +441,10 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
                 return 'Newest';
             case SORT_OPTIONS.OLDEST:
                 return 'Oldest';
-            case SORT_OPTIONS.LIKES:
-                return 'Most Liked';
+            case SORT_OPTIONS.PAGE_ASC:
+                return 'Page Ascending';
+            case SORT_OPTIONS.PAGE_DESC:
+                return 'Page Descending';
             default:
                 return 'Sort';
         }
@@ -503,14 +515,25 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
                                 </Text>
                             </Pressable>
                             <Pressable
-                                style={[styles.sortMenuItem, sort === SORT_OPTIONS.LIKES && styles.sortMenuItemActive]}
+                                style={[styles.sortMenuItem, sort === SORT_OPTIONS.PAGE_ASC && styles.sortMenuItemActive]}
                                 onPress={() => {
-                                    handleSortChange(SORT_OPTIONS.LIKES);
+                                    handleSortChange(SORT_OPTIONS.PAGE_ASC);
                                     setShowSortMenu(false);
                                 }}
                             >
-                                <Text style={[styles.sortMenuItemText, sort === SORT_OPTIONS.LIKES && styles.sortMenuItemTextActive]}>
-                                    Most Liked
+                                <Text style={[styles.sortMenuItemText, sort === SORT_OPTIONS.PAGE_ASC && styles.sortMenuItemTextActive]}>
+                                    Page Ascending
+                                </Text>
+                            </Pressable>
+                            <Pressable
+                                style={[styles.sortMenuItem, sort === SORT_OPTIONS.PAGE_DESC && styles.sortMenuItemActive]}
+                                onPress={() => {
+                                    handleSortChange(SORT_OPTIONS.PAGE_DESC);
+                                    setShowSortMenu(false);
+                                }}
+                            >
+                                <Text style={[styles.sortMenuItemText, sort === SORT_OPTIONS.PAGE_DESC && styles.sortMenuItemTextActive]}>
+                                    Page Descending
                                 </Text>
                             </Pressable>
                         </View>
@@ -524,18 +547,6 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
     if (error) {
         return (
             <View style={styles.detailsContainer}>
-                <Pressable 
-                    onPress={() => {
-                        if (onBack) {
-                            onBack();
-                        } else {
-                            navigation.goBack();
-                        }
-                    }}
-                    style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.primaryWhiteHex} />
-                    <Text style={styles.backButtonText}>Back to Checkpoints</Text>
-                </Pressable>
                 <View style={styles.centeredMessage}>
                     <Ionicons name="alert-circle-outline" size={48} color="red" />
                     <Text style={styles.errorText}>{error}</Text>
@@ -552,12 +563,6 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
 
     return (
             <View style={styles.detailsContainer}>
-                {/* Back Button */}
-                <Pressable onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.primaryWhiteHex} />
-                    <Text style={styles.backButtonText}>Back to Checkpoints</Text>
-                </Pressable>
-
                 {isMember ? (
                     <FlatList
                         data={comments}
@@ -600,18 +605,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: COLORS.primaryDarkGreyHex,
         padding: SPACING.space_16,
-    },
-    backButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: SPACING.space_16,
-        paddingVertical: SPACING.space_8,
-    },
-    backButtonText: {
-        marginLeft: SPACING.space_8,
-        fontSize: FONTSIZE.size_16,
-        color: COLORS.primaryWhiteHex,
-        fontWeight: '500',
     },
     promptContainer: {
         backgroundColor: '#1a2332',
@@ -709,6 +702,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         borderWidth: 1,
         borderColor: 'transparent',
+        zIndex: -1,
     },
     commentContent: {
         flex: 1,
@@ -759,17 +753,15 @@ const styles = StyleSheet.create({
         fontSize: FONTSIZE.size_12,
         color: COLORS.secondaryLightGreyHex,
     },
+    textWrapper: {
+        position: 'relative',
+        overflow: 'hidden',
+    },
     commentText: {
         fontSize: FONTSIZE.size_14,
         color: COLORS.primaryWhiteHex,
         marginBottom: SPACING.space_10,
         lineHeight: 20,
-    },
-    blurredText: {
-        color: 'transparent',
-        textShadowColor: 'rgba(255, 255, 255, 0.3)',
-        textShadowOffset: {width: 0, height: 0},
-        textShadowRadius: 8,
     },
     commentActions: {
         flexDirection: 'row',

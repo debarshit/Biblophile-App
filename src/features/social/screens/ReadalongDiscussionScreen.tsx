@@ -2,9 +2,10 @@ import React, { useRef, useCallback } from 'react';
 import { StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SPACING } from '../../../theme/theme';
-import { CommentInputForm, type CommentInputFormRef } from '../components/CommentInputForm';
+import { CommentInputForm } from '../components/CommentInputForm';
 import ReadalongCheckpointDetails, { type ReadalongCheckpointDetailsRef } from '../components/ReadalongCheckpointDetails';
 import { useRoute, type RouteProp } from '@react-navigation/native';
+import HeaderBar from '../../../components/HeaderBar';
 
 interface Host {
     name: string;
@@ -42,11 +43,10 @@ type ReadalongCheckpointDetailsScreenRouteProp = RouteProp<{
     };
 }>;
 
-const ReadalongCheckpointDetailsScreen: React.FC = () => {
+const ReadalongCheckpointDiscussion: React.FC = () => {
     const route = useRoute<ReadalongCheckpointDetailsScreenRouteProp>();
     const { readalong, currentUser, isMember, isHost, checkpointId, checkpointPrompt } = route.params;
 
-    const commentInputRef = useRef<CommentInputFormRef>(null);
     const checkpointDetailsRef = useRef<ReadalongCheckpointDetailsRef>(null);
 
     const handleCommentSubmit = useCallback(async (text: string, progressPercentage: number) => {
@@ -55,12 +55,9 @@ const ReadalongCheckpointDetailsScreen: React.FC = () => {
         }
     }, []);
 
-    const handleBack = useCallback(() => {
-        // Navigation will be handled by the back button in ReadalongCheckpointDetails
-    }, []);
-
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <HeaderBar title="Checkpoint Discussion" showBackButton={true} />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
@@ -74,14 +71,12 @@ const ReadalongCheckpointDetailsScreen: React.FC = () => {
                     isHost={isHost}
                     checkpointId={checkpointId}
                     checkpointPrompt={checkpointPrompt}
-                    onBack={handleBack}
                 />
 
                 {/* Fixed Comment Input at Bottom */}
                 {isMember && (
                     <View style={styles.fixedCommentInputContainer}>
                         <CommentInputForm
-                            ref={commentInputRef}
                             onSubmit={handleCommentSubmit}
                             isLoading={false}
                             showPageInput
@@ -110,4 +105,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ReadalongCheckpointDetailsScreen;
+export default ReadalongCheckpointDiscussion;

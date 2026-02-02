@@ -58,7 +58,7 @@ import ChallengeScreen from './src/features/challenges/screens/ChallengesScreen'
 import AddWorkScreen from './src/features/discover/screens/AddWorkScreen';
 import EditionsScreen from './src/features/discover/screens/EditionsScreen';
 import AddEditionScreen from './src/features/discover/screens/AddEditionScreen';
-import ReadalongCheckpointDetailsScreen from './src/features/social/screens/ReadalongCheckpointDetailsScreen';
+import ReadalongCheckpointDiscussion from './src/features/social/screens/ReadalongDiscussionScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -284,7 +284,7 @@ const App = () => {
               <Stack.Screen name="BuddyReadsCreate" component={BuddyReadsCreate} options={{animation: 'slide_from_bottom'}} />
               <Stack.Screen name="ReadAlongsCreate" component={ReadAlongsCreate} options={{animation: 'slide_from_bottom'}} />
               <Stack.Screen name="ReadalongDetails" component={ReadAlongDetails} options={{animation: 'slide_from_bottom'}} />
-              <Stack.Screen name="ReadalongCheckpointDiscussion" component={ReadalongCheckpointDetailsScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="ReadalongCheckpointDiscussion" component={ReadalongCheckpointDiscussion} options={{animation: 'slide_from_bottom'}} />
               <Stack.Screen name="CreateReadalongCheckpoint" component={CreateReadalongCheckpoint} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="CreateBookClub" component={CreateBookClubScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="BookClubDetails" component={BookClubDetailsScreen} options={{animation: 'slide_from_right'}} />

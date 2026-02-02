@@ -118,7 +118,7 @@ const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckp
     };
 
     const handleViewCheckpointDetails = (checkpoint: Checkpoint) => {
-navigation.navigate('ReadalongCheckpointDiscussion', {
+        navigation.navigate('ReadalongCheckpointDiscussion', {
             readalong,
             currentUser,
             isMember,
@@ -126,16 +126,6 @@ navigation.navigate('ReadalongCheckpointDiscussion', {
             checkpointId: checkpoint.checkpoint_id,
             checkpointPrompt: checkpoint.discussion_prompt,
         });
-    };
-
-    const handleBackToList = () => {
-        setSelectedCheckpointId(null);
-        setSelectedCheckpointDetails(null);
-        // Optionally refetch the list if you think data might have changed (e.g., comments added)
-        // setOffset(0);
-        // setHasMore(true);
-        // setCheckpoints([]);
-        // fetchCheckpoints(); // This will be triggered by the useEffect when selectedCheckpointId becomes null and offset is reset
     };
 
     const handleEllipsisClick = (checkpointId: string) => {
@@ -236,7 +226,6 @@ navigation.navigate('ReadalongCheckpointDiscussion', {
                 isHost={isHost}
                 checkpointId={selectedCheckpointId}
                 checkpointPrompt={selectedCheckpointDetails.discussion_prompt}
-                onBack={handleBackToList}
             />
         );
     }
