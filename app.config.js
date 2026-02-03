@@ -23,7 +23,7 @@ export default {
     "**/*"
   ],
   "ios": {
-    "buildNumber": "8",
+    "buildNumber": "9",
     "supportsTablet": true,
     "googleServicesFile": "./GoogleService-Info.plist",
     "infoPlist": {
@@ -89,12 +89,6 @@ export default {
         }
       }
     ],
-    [
-      "expo-tracking-transparency",
-      {
-        "userTrackingPermission": "This allows Biblophile to provide personalized book recommendations and measure the effectiveness of our ads."
-      }
-    ]
   ],
   "extra": {
     "eas": {
