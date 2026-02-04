@@ -20,7 +20,7 @@ import { useStore } from '../../../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
 import ChallengePrompts from '../components/ChallengePrompts';
-import ChallengePromptDetails from '../components/ChallengePromptDetails';
+import ChallengePromptDetails from './ChallengePromptDetailsScreen';
 import CreatePrompt from '../components/CreatePrompt';
 import GradientBGIcon from '../../../components/GradientBGIcon';
 
@@ -294,7 +294,11 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
                 ChallengeId={challengeId} 
                 IsHost={isHost}
                 onCreatePrompt={() => updateState({ currentView: 'create' })}
-                onViewPrompt={(prompt) => updateState({ selectedPrompt: prompt, currentView: 'details' })}
+                onViewPrompt={(prompt) =>
+                  navigation.navigate('ChallengePromptDetails', {
+                    promptId: prompt.promptId,
+                  })
+                }
               />
             )}
             {state.currentView === 'create' && (
@@ -306,12 +310,6 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
                   updateState({ currentView: 'prompts' });
                   fetchChallengeDetails();
                 }}
-              />
-            )}
-            {state.currentView === 'details' && state.selectedPrompt && (
-              <ChallengePromptDetails 
-                promptId={state.selectedPrompt.promptId}
-                onBack={() => updateState({ currentView: 'prompts' })}
               />
             )}
           </View>
