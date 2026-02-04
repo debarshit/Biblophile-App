@@ -59,6 +59,7 @@ import AddWorkScreen from './src/features/discover/screens/AddWorkScreen';
 import EditionsScreen from './src/features/discover/screens/EditionsScreen';
 import AddEditionScreen from './src/features/discover/screens/AddEditionScreen';
 import ReadalongCheckpointDiscussion from './src/features/social/screens/ReadalongDiscussionScreen';
+import ChallengePromptDetailsScreen from './src/features/challenges/screens/ChallengePromptDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -280,6 +281,7 @@ const App = () => {
               <Stack.Screen name="GenreScreen" component={GenreScreen} options={{animation: 'slide_from_bottom'}} />
               <Stack.Screen name="Notifications" component={NotificationsScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="ChallengeDetails" component={ChallengeDetailsScreen} options={{animation: 'slide_from_bottom'}} />
+              <Stack.Screen name="ChallengePromptDetails" component={ChallengePromptDetailsScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="BuddyReadsDetails" component={BuddyReadsDetails} options={{animation: 'slide_from_bottom'}} />
               <Stack.Screen name="BuddyReadsCreate" component={BuddyReadsCreate} options={{animation: 'slide_from_bottom'}} />
               <Stack.Screen name="ReadAlongsCreate" component={ReadAlongsCreate} options={{animation: 'slide_from_bottom'}} />
