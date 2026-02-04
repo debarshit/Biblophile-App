@@ -134,6 +134,25 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     setModalVisible(true);
   };
 
+  const getPrimaryAuthor = () => {
+    if (!author) return '';
+    return author.split(',')[0].trim();
+  };
+
+  const getShareContent = () => {
+    const primaryAuthor = getPrimaryAuthor();
+
+    const isCurrentlyReading = readingStatus.status === 'Currently reading';
+
+    return {
+      title: name,
+      message: isCurrentlyReading
+        ? `I'm currently reading "${name}" by ${primaryAuthor}`
+        : `Check out "${name}" by ${primaryAuthor} on Biblophile!`,
+      url: `https://biblophile.com/books/${type}/${id}/${encodeURIComponent(name)}`,
+    };
+  };
+
   const renderRating = () => {
     if (!bookData.averageRating) {
       return <Text style={styles.noRatingsText}>No ratings yet</Text>;
@@ -280,14 +299,10 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         bookId={id}
       />
 
-      <ShareModal
+      <ShareModal 
         visible={shareModalVisible}
         onClose={() => setShareModalVisible(false)}
-        content={{
-          title: `${name}`,
-          message: `Check out "${name}" by ${author} on Biblophile!`,
-          url: `https://biblophile.com/books/${type}/${id}/${encodeURIComponent(name)}`,
-        }}
+        content={getShareContent()}
         imageUri={imagelink_portrait}
       />
     </View>
