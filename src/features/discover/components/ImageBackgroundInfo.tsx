@@ -147,7 +147,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
     return {
       title: name,
       message: isCurrentlyReading
-        ? `I'm currently reading "${name}" by ${primaryAuthor}`
+        ? `I'm reading "${name}" by ${primaryAuthor}`
         : `Check out "${name}" by ${primaryAuthor} on Biblophile!`,
       url: `https://biblophile.com/books/${type}/${id}/${encodeURIComponent(name)}`,
     };
