@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  Image,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import instance from '../services/axios';
@@ -25,7 +26,7 @@ interface BookPickerProps {
   onSelect: (data: {
     bookId: string;
     userBookId?: string;
-    type: 'Book' | 'ExternalBook';
+    isGoogleBook: boolean;
     title: string;
   }) => void;
   selectedBookId?: string;
@@ -79,9 +80,9 @@ const BookPicker: React.FC<BookPickerProps> = ({
 
   const renderItem = ({ item }: any) => {
     const bookId = item.BookId || item.GoogleBookId;
-    const type = item.BookAvailability ? 'Book' : 'ExternalBook';
-
+    const isGoogleBook = item.GoogleBookId ?? false;;
     const isSelected = selectedBookId === bookId;
+    const imageUrl = item.BookPhoto;
 
     return (
       <TouchableOpacity
@@ -93,17 +94,25 @@ const BookPicker: React.FC<BookPickerProps> = ({
           onSelect({
             bookId,
             userBookId: item.UserBookId,
-            type,
+            isGoogleBook,
             title: item.BookName,
           })
         }
       >
+        {imageUrl ? (
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.bookImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={styles.placeholderImage}>
+            <Feather name="book" size={16} color={COLORS.primaryLightGreyHex} />
+          </View>
+        )}
         <View style={styles.textWrap}>
           <Text style={styles.bookTitle} numberOfLines={1}>
             {item.BookName}
-          </Text>
-          <Text style={styles.metaText}>
-            {type === 'Book' ? 'In your library' : 'External'}
           </Text>
         </View>
 
@@ -191,15 +200,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primaryOrangeHex,
   },
+  bookImage: {
+    width: 45,
+    height: 65,
+    borderRadius: BORDERRADIUS.radius_8,
+    marginRight: SPACING.space_12,
+    backgroundColor: COLORS.primaryDarkGreyHex,
+  },
+
+  placeholderImage: {
+    width: 45,
+    height: 65,
+    borderRadius: BORDERRADIUS.radius_8,
+    marginRight: SPACING.space_12,
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   textWrap: { flex: 1 },
   bookTitle: {
     color: COLORS.primaryWhiteHex,
     fontSize: FONTSIZE.size_14,
     fontFamily: FONTFAMILY.poppins_medium,
-  },
-  metaText: {
-    color: COLORS.primaryLightGreyHex,
-    fontSize: FONTSIZE.size_12,
   },
   empty: {
     color: COLORS.primaryLightGreyHex,
