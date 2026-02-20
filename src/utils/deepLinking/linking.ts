@@ -29,6 +29,18 @@ const config = {
         challengeId: (id: string) => parseInt(id, 10),
       },
     },
+    BuddyReadsDetails: {
+      path: 'social/buddy-reads/:buddyReadId',
+      parse: {
+        buddyReadId: (id: string) => parseInt(id, 10),
+      },
+    },
+    ReadalongDetails: {
+      path: 'social/readalong/:readalongId',
+      parse: {
+        readalongId: (id: string) => parseInt(id, 10),
+      },
+    },
     Resources: {
       path: ':*', // The asterisk acts as a wildcard
     },
