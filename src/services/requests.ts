@@ -197,6 +197,9 @@ const requests = {
     updatePromptProgress: (promptId) => `${APIURL}challenges/prompts/${promptId}/progress`,
     fetchCategories:`${APIURL}challenges/categories`,
     fetchKeywords:`${APIURL}challenges/keywords`,
+    fetchPromptBooks: (promptId: number) => `${APIURL}challenges/prompts/${promptId}/books`,
+    addBookToPrompt: `${APIURL}challenges/prompts/books`,
+    removeBookFromPrompt: `${APIURL}challenges/prompts/books`,
 }
 
 export default requests;

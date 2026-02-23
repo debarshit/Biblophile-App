@@ -59,7 +59,6 @@ const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckp
     const [error, setError] = useState<string | null>(null);
     const [selectedCheckpointForUpdation, setSelectedCheckpointForUpdation] = useState<string | null>(null);
     const [selectedCheckpointId, setSelectedCheckpointId] = useState<string | null>(null);
-    const [selectedCheckpointDetails, setSelectedCheckpointDetails] = useState<Checkpoint | null>(null);
 
     const navigation = useNavigation<any>();
     const checkpointDetailsRef = useRef<ReadalongCheckpointDetailsRef>(null);
@@ -254,19 +253,6 @@ const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckp
               </View>
           );
      }
-
-    if (selectedCheckpointId !== null && selectedCheckpointDetails !== null) {
-        return (
-            <ReadalongCheckpointDetails
-                readalong={readalong!}
-                currentUser={currentUser}
-                isMember={isMember}
-                isHost={isHost}
-                checkpointId={selectedCheckpointId}
-                checkpointPrompt={selectedCheckpointDetails.discussion_prompt}
-            />
-        );
-    }
 
     if (isMember) {
         return (
