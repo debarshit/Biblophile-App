@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView, ActivityIndicator, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView, ActivityIndicator, SafeAreaView, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 import instance from '../../../services/axios';
@@ -8,6 +8,7 @@ import { useStore } from '../../../store/store';
 import Toast from 'react-native-toast-message';
 import BookPicker from '../../../components/BookPicker';
 import { useNavigation } from '@react-navigation/native';
+import { Feather } from '@expo/vector-icons';
 
 interface Prompt {
     promptId: string;
@@ -29,12 +30,12 @@ const ChallengePromptDetailsScreen = ({ route }) => {
     const [selectedUserBookId, setSelectedUserBookId] = useState<string | null>(null);
     const [linkedBooks, setLinkedBooks] = useState<any[]>([]);
     const [isLoadingBooks, setIsLoadingBooks] = useState<boolean>(false);
-    const [userPromptId, setUserPromptId] = useState<number | null>(null);
     const [showBookPicker, setShowBookPicker] = useState<boolean>(false);
     const [bookToRemove, setBookToRemove] = useState<any>(null);
     const [showRemoveConfirm, setShowRemoveConfirm] = useState<boolean>(false);
     const [showAddConfirm, setShowAddConfirm] = useState<boolean>(false);
     const [pendingBook, setPendingBook] = useState<any>(null);
+    const [isProcessingBook, setIsProcessingBook] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -56,10 +57,7 @@ const ChallengePromptDetailsScreen = ({ route }) => {
           setPromptdata(promptData);
           setProgress(promptData.Progress || '');
           setIsCompleted(promptData.Completed || false);
-          if (promptData.userPromptId) {
-            setUserPromptId(promptData.userPromptId);
-            await fetchLinkedBooks(promptData.userPromptId);
-        }
+          await fetchLinkedBooks();
         } catch (error) {
           setError('Failed to fetch prompt details');
           Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to fetch challenge details.' });
@@ -68,11 +66,11 @@ const ChallengePromptDetailsScreen = ({ route }) => {
         }
     };
 
-    const fetchLinkedBooks = async (userPromptId: number) => {
+    const fetchLinkedBooks = async () => {
         try {
             setIsLoadingBooks(true);
             const response = await instance.get(
-                requests.fetchPromptBooks(userPromptId),
+                requests.fetchPromptBooks(promptId),
                 { headers: { Authorization: `Bearer ${accessToken}` } }
             );
             setLinkedBooks(response.data.data || []);
@@ -83,14 +81,136 @@ const ChallengePromptDetailsScreen = ({ route }) => {
         }
     };
 
+    const handleBookSelect = async ({
+        bookId,
+        isGoogleBook,
+        title,
+    }: {
+        bookId: string;
+        userBookId?: string;
+        isGoogleBook: boolean;
+        title: string;
+    }) => {
+        if (isProcessingBook) return;
+        setIsProcessingBook(true);
+
+        try {
+            let resolvedBookId = bookId;
+
+            // If google book, fetch details and add to DB first
+            if (isGoogleBook) {
+                let workPayload = {};
+                try {
+                    const response = await instance(
+                        requests.fetchExternalBookDetails(bookId)
+                    );
+
+                    const product = response.data.data;
+
+                    workPayload = {
+                        title: product.volumeInfo?.title || '',
+                        description: product.volumeInfo?.description || '',
+                        originalLanguage: product.volumeInfo?.language || 'en',
+                        authors: product.volumeInfo?.authors || [],
+                        genres: product.volumeInfo?.categories || [],
+                        edition: {
+                        isbn:
+                            product.volumeInfo?.industryIdentifiers?.find(
+                            (id: any) => id.type === 'ISBN_13'
+                            )?.identifier || null,
+                        format: 'paperback',
+                        pageCount: product.volumeInfo?.pageCount || null,
+                        language: product.volumeInfo?.language || 'en',
+                        publisher: product.volumeInfo?.publisher || null,
+                        publicationYear: product.volumeInfo?.publishedDate
+                            ? new Date(product.volumeInfo.publishedDate).getFullYear()
+                            : null,
+                        cover: product.volumeInfo?.imageLinks?.thumbnail || null,
+                        },
+                    };
+                } catch (error: any) {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Error',
+                        text2:
+                        error.response?.data?.message ||
+                        'Failed to fetch external book details',
+                    });
+                }
+
+                const bookResponse = await instance.post(requests.createWork, workPayload);
+
+                if (bookResponse.data.status === 'success') {
+                    resolvedBookId = bookResponse.data.data.bookId;
+                } else {
+                    Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to add book to database' });
+                    return;
+                }
+            }
+
+            // Search for existing userBookId, create one if not found
+            let resolvedUserBookId: string | null = null;
+
+            try {
+                const statusRes = await instance.get(
+                    requests.fetchReadingStatus(resolvedBookId),
+                    { headers: { Authorization: `Bearer ${accessToken}` } }
+                );
+                // Use the latest userBookId if it exists
+                resolvedUserBookId = statusRes.data?.data?.userBookId
+                    ? String(statusRes.data.data.userBookId)
+                    : null;
+            } catch {
+                // Not found — will create below
+            }
+
+            if (!resolvedUserBookId) {
+                const { data } = await instance.post(
+                    requests.submitReadingStatus,
+                    {
+                        bookId: resolvedBookId,
+                        status: 'To be read',
+                    },
+                    { headers: { Authorization: `Bearer ${accessToken}` } }
+                );
+                resolvedUserBookId = data?.data?.userBookId
+                    ? String(data.data.userBookId)
+                    : null;
+            }
+
+            if (!resolvedUserBookId) {
+                Toast.show({ type: 'error', text1: 'Error', text2: 'Could not resolve user book' });
+                return;
+            }
+
+            // Set IDs — useEffect will detect and show confirmation modal
+            setSelectedBookId(resolvedBookId);
+            setSelectedUserBookId(resolvedUserBookId);
+            setPendingBook({
+                bookId: resolvedBookId,
+                userBookId: resolvedUserBookId,
+                title,
+            });
+
+        } catch (err: any) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: err?.response?.data?.message || 'Something went wrong',
+            });
+        } finally {
+            setIsProcessingBook(false);
+        }
+    };
+
     const handleAddBook = async () => {
-        if (!pendingBook || !userPromptId) return;
+        if (!pendingBook || !promptId) return;
         
         try {
             await instance.post(
                 requests.addBookToPrompt,
                 {
-                    userPromptId: userPromptId,
+                    promptId,
                     userBookId: parseInt(pendingBook.userBookId)
                 },
                 { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -102,7 +222,7 @@ const ChallengePromptDetailsScreen = ({ route }) => {
                 text2: 'Book linked successfully!'
             });
             
-            await fetchLinkedBooks(userPromptId);
+            await fetchLinkedBooks();
             setShowBookPicker(false);
             setPendingBook(null);
             setShowAddConfirm(false);
@@ -118,12 +238,12 @@ const ChallengePromptDetailsScreen = ({ route }) => {
     };
 
     const handleRemoveBook = async () => {
-        if (!bookToRemove || !userPromptId) return;
+        if (!bookToRemove) return;
         
         try {
             await instance.delete(requests.removeBookFromPrompt, {
                 data: {
-                    userPromptId: userPromptId,
+                    promptId,
                     userBookId: bookToRemove.userBookId
                 },
                 headers: { Authorization: `Bearer ${accessToken}` }
@@ -135,7 +255,7 @@ const ChallengePromptDetailsScreen = ({ route }) => {
                 text2: 'Book unlinked successfully!'
             });
             
-            await fetchLinkedBooks(userPromptId);
+            await fetchLinkedBooks();
             setBookToRemove(null);
             setShowRemoveConfirm(false);
         } catch (error: any) {
@@ -150,14 +270,10 @@ const ChallengePromptDetailsScreen = ({ route }) => {
     useEffect(() => { fetchPromptDetails(); }, [promptId]);
 
     useEffect(() => {
-        if (selectedUserBookId && !showAddConfirm) {
-            setPendingBook({
-                bookId: selectedBookId,
-                userBookId: selectedUserBookId
-            });
+        if (selectedUserBookId && pendingBook && !showAddConfirm) {
             setShowAddConfirm(true);
         }
-    }, [selectedUserBookId, selectedBookId]);
+    }, [selectedUserBookId]);
 
     const handleCompleteChallenge = async () => {
         if (!promptData) return;
@@ -309,8 +425,21 @@ const ChallengePromptDetailsScreen = ({ route }) => {
         <View>
             {linkedBooks.map((book, index) => (
                 <View key={index} style={styles.linkedBookItem}>
+                    {book?.book?.photo ? (
+                        <Image
+                            source={{ uri: book.book.photo }}
+                            style={styles.linkedBookImage}
+                            resizeMode="cover"
+                        />
+                    ) : (
+                        <View style={styles.linkedBookImagePlaceholder}>
+                            <Feather name="book" size={16} color={COLORS.primaryLightGreyHex} />
+                        </View>
+                    )}
                     <View style={styles.linkedBookInfo}>
-                        <Text style={styles.linkedBookId}>Book ID: {book.userBookId}</Text>
+                        <Text style={styles.linkedBookTitle} numberOfLines={2}>
+                            {book?.book?.title || 'Unknown Book'}
+                        </Text>
                         <Text style={styles.linkedBookDate}>
                             Added: {new Date(book.addedAt).toLocaleDateString()}
                         </Text>
@@ -345,19 +474,9 @@ const ChallengePromptDetailsScreen = ({ route }) => {
         <View>
             <BookPicker
                 title="Search and select a book"
-                onSelect={({ bookId, userBookId }) => {
-                    if (userBookId) {
-                        setSelectedBookId(bookId);
-                        setSelectedUserBookId(userBookId);
-                    } else {
-                        Toast.show({
-                            type: 'error',
-                            text1: 'Error',
-                            text2: 'Please select a book from your library'
-                        });
-                    }
-                }}
+                onSelect={handleBookSelect}
                 selectedBookId={selectedBookId || undefined}
+                autoFocus
             />
             <TouchableOpacity
                 onPress={() => {
@@ -370,6 +489,16 @@ const ChallengePromptDetailsScreen = ({ route }) => {
             >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
+
+            {/* Show loading indicator while processing */}
+            {isProcessingBook && (
+                <View style={{ alignItems: 'center', marginTop: SPACING.space_12 }}>
+                    <ActivityIndicator size="small" color={COLORS.primaryOrangeHex} />
+                    <Text style={{ color: COLORS.primaryLightGreyHex, fontSize: FONTSIZE.size_12, marginTop: SPACING.space_4, fontFamily: FONTFAMILY.poppins_regular }}>
+                        Processing book...
+                    </Text>
+                </View>
+            )}
         </View>
     )}
 </View>
@@ -382,65 +511,65 @@ const ChallengePromptDetailsScreen = ({ route }) => {
                 </TouchableOpacity>
             </View>
 
-             { /*Add Confirmation Modal */}
-{showAddConfirm && pendingBook && (
-    <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Confirm Link Book</Text>
-            <Text style={styles.modalMessage}>
-                Link this book (ID: {pendingBook.userBookId}) to this prompt?
-            </Text>
-            <View style={styles.modalButtons}>
-                <TouchableOpacity
-                    onPress={() => {
-                        setShowAddConfirm(false);
-                        setPendingBook(null);
-                        setSelectedBookId(null);
-                        setSelectedUserBookId(null);
-                    }}
-                    style={[styles.modalButton, styles.modalButtonCancel]}
-                >
-                    <Text style={styles.modalButtonTextCancel}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={handleAddBook}
-                    style={[styles.modalButton, styles.modalButtonConfirm]}
-                >
-                    <Text style={styles.modalButtonText}>Confirm</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
-    </View>
-)}
+            { /*Add Confirmation Modal */}
+            {showAddConfirm && pendingBook && (
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Confirm Link Book</Text>
+                        <Text style={styles.modalMessage}>
+                            Link "{pendingBook.title}" to this prompt?
+                        </Text>
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setShowAddConfirm(false);
+                                    setPendingBook(null);
+                                    setSelectedBookId(null);
+                                    setSelectedUserBookId(null);
+                                }}
+                                style={[styles.modalButton, styles.modalButtonCancel]}
+                            >
+                                <Text style={styles.modalButtonTextCancel}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={handleAddBook}
+                                style={[styles.modalButton, styles.modalButtonConfirm]}
+                            >
+                                <Text style={styles.modalButtonText}>Confirm</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            )}
 
-{/* Remove Confirmation Modal */}
-{showRemoveConfirm && bookToRemove && (
-    <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Confirm Remove Book</Text>
-            <Text style={styles.modalMessage}>
-                Remove Book ID: {bookToRemove.userBookId} from this prompt?
-            </Text>
-            <View style={styles.modalButtons}>
-                <TouchableOpacity
-                    onPress={() => {
-                        setShowRemoveConfirm(false);
-                        setBookToRemove(null);
-                    }}
-                    style={[styles.modalButton, styles.modalButtonCancel]}
-                >
-                    <Text style={styles.modalButtonTextCancel}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={handleRemoveBook}
-                    style={[styles.modalButton, styles.modalButtonConfirm]}
-                >
-                    <Text style={styles.modalButtonText}>Remove</Text>
-                </TouchableOpacity>
+        {/* Remove Confirmation Modal */}
+        {showRemoveConfirm && bookToRemove && (
+            <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>Confirm Remove Book</Text>
+                    <Text style={styles.modalMessage}>
+                        Remove "{bookToRemove?.book?.title || 'this book'}" from this prompt?
+                    </Text>
+                    <View style={styles.modalButtons}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                setShowRemoveConfirm(false);
+                                setBookToRemove(null);
+                            }}
+                            style={[styles.modalButton, styles.modalButtonCancel]}
+                        >
+                            <Text style={styles.modalButtonTextCancel}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={handleRemoveBook}
+                            style={[styles.modalButton, styles.modalButtonConfirm]}
+                        >
+                            <Text style={styles.modalButtonText}>Remove</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
-        </View>
-    </View>
-)}
+        )}
         </SafeAreaView>
     );
 };
@@ -510,16 +639,33 @@ const styles = StyleSheet.create({
 linkedBookInfo: {
     flex: 1,
 },
-linkedBookId: {
-    color: COLORS.primaryWhiteHex,
-    fontSize: FONTSIZE.size_14,
-    fontFamily: FONTFAMILY.poppins_medium,
-    marginBottom: SPACING.space_4,
-},
 linkedBookDate: {
     color: COLORS.primaryLightGreyHex,
     fontSize: FONTSIZE.size_12,
     fontFamily: FONTFAMILY.poppins_regular,
+},
+linkedBookImage: {
+    width: 45,
+    height: 65,
+    borderRadius: BORDERRADIUS.radius_8,
+    marginRight: SPACING.space_12,
+    backgroundColor: COLORS.primaryDarkGreyHex,
+},
+linkedBookImagePlaceholder: {
+    width: 45,
+    height: 65,
+    borderRadius: BORDERRADIUS.radius_8,
+    marginRight: SPACING.space_12,
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    alignItems: 'center',
+    justifyContent: 'center',
+},
+linkedBookTitle: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_medium,
+    marginBottom: SPACING.space_4,
+    flexShrink: 1,
 },
 completedBadge: {
     color: COLORS.primaryOrangeHex,
