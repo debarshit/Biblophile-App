@@ -417,8 +417,8 @@ const LibraryScreen = ({navigation}: any) => {
         })}
 
         {/* Checkout Bookmarks shop */}
-        <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
-        <MerchShopBanner />
+        {/* <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
+        <MerchShopBanner /> */}
 
       </ScrollView>
       {CartList.length > 0 && <FloatingIcon />}
