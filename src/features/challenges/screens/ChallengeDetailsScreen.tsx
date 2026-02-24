@@ -20,7 +20,6 @@ import { useStore } from '../../../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
 import ChallengePrompts from '../components/ChallengePrompts';
-import ChallengePromptDetails from './ChallengePromptDetailsScreen';
 import CreatePrompt from '../components/CreatePrompt';
 import GradientBGIcon from '../../../components/GradientBGIcon';
 

@@ -228,7 +228,7 @@ const HomeScreen = ({navigation}: any) => {
         <SeasonalRecommendations latitude={latitude} longitude={longitude} />
 
         {/* Checkout merch shop */}
-        <MerchShopBanner title='Check Out Our Exclusive Merch!' description='Browse our latest merchandise, only for book lovers like you.' />
+        {/* <MerchShopBanner title='Check Out Our Exclusive Merch!' description='Browse our latest merchandise, only for book lovers like you.' /> */}
 
         {/* biblo jan and made with love in India */}
         <View style={styles.welcomeMascot}>

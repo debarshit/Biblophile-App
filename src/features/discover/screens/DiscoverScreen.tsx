@@ -217,7 +217,7 @@ const DiscoverScreen = ({ navigation }) => {
         />
 
         {/* Checkout Bookmarks shop */}
-        <MerchShopBanner />
+        {/* <MerchShopBanner /> */}
 
         {/* Indian voices */}
         <CulturalRecommendations />
