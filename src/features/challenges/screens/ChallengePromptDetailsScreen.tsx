@@ -9,6 +9,7 @@ import Toast from 'react-native-toast-message';
 import BookPicker from '../../../components/BookPicker';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 interface Prompt {
     promptId: string;
@@ -426,11 +427,13 @@ const ChallengePromptDetailsScreen = ({ route }) => {
             {linkedBooks.map((book, index) => (
                 <View key={index} style={styles.linkedBookItem}>
                     {book?.book?.photo ? (
+                        <TouchableOpacity onPress={() => navigation.navigate('Details', { id: book.book.bookId, type: 'Book' })}>
                         <Image
-                            source={{ uri: book.book.photo }}
+                            source={{ uri: convertHttpToHttps(book.book.photo) }}
                             style={styles.linkedBookImage}
                             resizeMode="cover"
                         />
+                        </TouchableOpacity>
                     ) : (
                         <View style={styles.linkedBookImagePlaceholder}>
                             <Feather name="book" size={16} color={COLORS.primaryLightGreyHex} />
