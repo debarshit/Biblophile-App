@@ -69,7 +69,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   const [error, setError] = useState<string | null>(null);
   const [memberDisplayCount, setMemberDisplayCount] = useState<number>(4);
   const [description, setDescription] = useState<string>('Such empty! Much wow!');
-  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isEditingDescription, setIsEditingDescription] = useState<boolean>(false);
   const [loadingInitialData, setLoadingInitialData] = useState<boolean>(true);
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [replyContext, setReplyContext] = useState<{
@@ -162,7 +162,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   };
 
   const toggleEditing = () => {
-    setIsEditing(!isEditing);
+    setIsEditingDescription(!isEditingDescription);
   };
 
   const updateDescription = async () => {
@@ -185,7 +185,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
 
       if (response.data.data.message == 'description updated') {
         Alert.alert('Success', 'Description updated successfully!');
-        setIsEditing(false);
+        setIsEditingDescription(false);
         setBuddyRead(prev => prev ? { ...prev, buddy_read_description: description } : prev);
       } else {
         Alert.alert('Error', 'Failed to update description: ' + response.data.message);
@@ -294,7 +294,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
 
         <View style={styles.descriptionContainer}>
           <Text style={styles.descriptionTitle}>Description</Text>
-          {isEditing ? (
+          {isEditingDescription ? (
             <TextInput
               style={styles.descriptionInput}
               value={description}
@@ -307,10 +307,10 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
 
           {isHost && (
             <TouchableOpacity onPress={toggleEditing} style={styles.editButton}>
-              <Text style={styles.editText}>{isEditing ? 'Cancel' : 'Edit'}</Text>
+              <Text style={styles.editText}>{isEditingDescription ? 'Cancel' : 'Edit'}</Text>
             </TouchableOpacity>
           )}
-          {isEditing && (
+          {isEditingDescription && (
             <TouchableOpacity onPress={updateDescription} style={styles.saveButton}>
               <Text style={styles.saveButtonText}>Save</Text>
             </TouchableOpacity>
@@ -339,7 +339,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
         )}
       </ScrollView>
       {/* ADD: Fixed Comment Input at Bottom */}
-            {isMember && (
+            {isMember && !isEditingDescription && (
                 <View style={styles.fixedCommentInputContainer}>
                     <CommentInputForm
                         ref={commentInputRef}

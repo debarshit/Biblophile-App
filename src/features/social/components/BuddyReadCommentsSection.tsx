@@ -285,7 +285,7 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
                             );
                             const response = deleteResponse.data;
 
-                            if (response.data.status === 'success') {
+                            if (response.status === 'success') {
                                 LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                                 setComments((prevComments) => 
                                     prevComments?.filter((comment) => comment.commentId !== commentId) || []
@@ -314,7 +314,9 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
             return;
         }
 
-        const actualProgressPercentage = progressPercentage || currentUser.progressPercentage;
+        const actualProgressPercentage = progressPercentage !== undefined && progressPercentage !== null 
+            ? progressPercentage 
+            : currentUser.progressPercentage;
 
         try {
             const params = new URLSearchParams({

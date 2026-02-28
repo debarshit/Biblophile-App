@@ -58,7 +58,7 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
         const trimmedText = commentText.trim();
         const parsedPage = parseInt(pageNumber, 10);
 
-        if (!trimmedText || !parsedPage || isNaN(parsedPage)) {
+        if (!trimmedText || isNaN(parsedPage) || parsedPage < 0) {
             return;
         }
 
@@ -69,8 +69,9 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
     };
 
     const canSubmit = commentText.trim().length > 0 && 
-                      pageNumber && 
+                      pageNumber !== '' && 
                       !isNaN(parseInt(pageNumber, 10)) &&
+                      parseInt(pageNumber, 10) >= 0 &&
                       !isLoading;
 
     return (
