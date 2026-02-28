@@ -37,6 +37,9 @@ export default {
       : IS_PREVIEW
       ? "com.biblophile.biblophile.preview"
       : "com.biblophile.biblophile",
+    "entitlements": {
+      "aps-environment": IS_DEV ? "development" : "production"
+    },
     "associatedDomains": ["applinks:biblophile.com"]
   },
   "android": {
