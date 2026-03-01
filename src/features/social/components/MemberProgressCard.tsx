@@ -27,11 +27,7 @@ const MemberProgressCard: React.FC<Props> = ({ memberDetails }) => {
     const fetchProgress = async () => {
       setLoading(true);
       try {
-        const response = await instance.get(requests.fetchReadingStatusByWork(memberDetails.workId), {
-          headers: {
-              Authorization: `Bearer ${userDetails[0].accessToken}`,
-          },
-        });
+        const response = await instance.get(`${requests.fetchReadingStatusByWork(memberDetails.workId)}?userId=${memberDetails.userId}`);
 
         const readingStatusResponse = response.data;
         setCurrentProgress(readingStatusResponse.data.progressPercentage);
