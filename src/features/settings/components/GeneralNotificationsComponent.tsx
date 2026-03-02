@@ -5,8 +5,10 @@ import Mascot from '../../../components/Mascot';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
+import { navigateFromUrl } from '../../../utils/deepLinking/deepLinking';
 
 interface NotificationContent {
+  urlScheme: any;
   title?: string;
   body?: string;
   actionUrl?: string;
@@ -151,11 +153,26 @@ const GeneralNotificationsComponent: React.FC<NotificationsComponentProps> = ({
 
   const renderNotification = ({ item }: { item: UserNotification }) => {
     const isMarking = markingAsRead.has(item.notificationId);
+
+    const handlePress = () => {
+      // 1. Mark as read in the background (don't await so UI feels snappy)
+      if (!item.isRead) {
+        markAsRead(item.notificationId);
+      }
+
+      // 2. Extract URL and Navigate
+      const url = item.content?.urlScheme;
+      if (url) {
+        navigateFromUrl(url);
+      } else {
+        console.warn('No actionUrl provided for this notification');
+      }
+    };
     
     return (
       <TouchableOpacity
         style={[styles.notificationCard, !item.isRead && styles.unreadNotification]}
-        onPress={() => !item.isRead && markAsRead(item.notificationId)}
+        onPress={handlePress}
         disabled={isMarking}
       >
         <View style={styles.notificationContent}>

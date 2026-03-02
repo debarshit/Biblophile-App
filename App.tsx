@@ -217,13 +217,30 @@ const App = () => {
 
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-      const url = response.notification.request.content.data.urlScheme;
+      const data = response.notification.request.content.data;
+      const url = data?.actionUrl || data?.url || data?.urlScheme;
       if (url) {
         navigateFromUrl(url as string);
       }
     });
 
     return () => subscription.remove();
+  }, []);
+
+  // Handle "Killed State" (Cold Start)
+  useEffect(() => {
+    const handleInitialNotification = async () => {
+      const response = await Notifications.getLastNotificationResponseAsync();
+      if (response) {
+        const data = response.notification.request.content.data;
+        const url = data?.actionUrl || data?.url || data?.urlScheme;
+        if (url) {
+          setTimeout(() => navigateFromUrl(url as string), 1000);
+        }
+      }
+    };
+
+    handleInitialNotification();
   }, []);
   // for expo notifications end
 

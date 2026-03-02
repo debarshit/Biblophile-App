@@ -19,6 +19,13 @@ const config = {
         type: (type: string) => `${type}`,
       },
     },
+    SubmitReview: {
+      path: 'books/Book/:bookId/:title?/review-form',
+      parse: {
+        bookId: (id: string) => parseInt(id, 10),
+        isGoogleBook: false,
+      },
+    },
     Payment: {
       path: 'payment/:action?',
       parse: { action: (action: string) => `${action}` },
