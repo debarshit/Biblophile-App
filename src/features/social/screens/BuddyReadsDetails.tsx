@@ -25,6 +25,7 @@ import { useNavigation } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
 import { CommentInputForm, CommentInputFormRef } from '../components/CommentInputForm';
 import ShareModal from '../../../components/ShareModal';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 // Define the BuddyRead interface
 interface Member {
@@ -263,7 +264,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
         <Text style={styles.title}>{buddyRead.book_title}</Text>
         <View style={styles.bookDetailsContainer}>
           <TouchableOpacity onPress={() => navigation.navigate('Details', { id: buddyRead.bookId, type: 'Book' })}>
-            <Image source={{ uri: buddyRead.book_photo }} style={styles.bookImage} />
+            <Image source={{ uri: convertHttpToHttps(buddyRead.book_photo) }} style={styles.bookImage} />
           </TouchableOpacity>
           <View style={styles.buddyReadInfo}>
             <TouchableOpacity

@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
 import ReadalongParticipants from '../components/ReadalongParticipants';
 import ShareModal from '../../../components/ShareModal';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 // Define the Readalong interface
 interface Host {
@@ -246,7 +247,7 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
           <View style={styles.bookDetailsContainer}>
             {/* Book Image */}
             <TouchableOpacity onPress={() => navigation.navigate('Details', { id: readalong.bookId, type: 'Book' })}>
-              <Image source={{ uri: readalong.book_photo }} style={styles.bookImage} />
+              <Image source={{ uri: convertHttpToHttps(readalong.book_photo) }} style={styles.bookImage} />
             </TouchableOpacity>
             {/* Readalong Read Details */}
             <View style={styles.readalongInfo}>

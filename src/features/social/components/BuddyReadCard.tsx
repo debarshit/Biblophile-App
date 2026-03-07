@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS, FONTSIZE, FONTFAMILY, SPACING, BORDERRADIUS } from '../../../theme/theme';
+import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 
 interface User {
   name: string;
@@ -33,7 +34,7 @@ const BuddyReadCard: React.FC<Props> = ({ buddyRead, onPress }) => {
 
   return (
     <TouchableOpacity style={styles.cardContainer} onPress={() => onPress(buddyReadId)}>
-      <Image source={{ uri: book_photo }} style={styles.image} />
+      <Image source={{ uri: convertHttpToHttps(book_photo) }} style={styles.image} />
       <View style={styles.content}>
         <Text style={styles.title}>{book_title}</Text>
         <Text style={styles.subtitle}>{readingWithText}</Text>
