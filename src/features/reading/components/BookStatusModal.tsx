@@ -100,8 +100,17 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
       }, {
         headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
       });
-      setUpdateMessage(data.data.status === "success" ? "Dates updated successfully!" : data.data.message);
-      if (data.data.status === "success") onUpdate();
+      if (data.data.status === "success") {
+        setUpdateMessage("Dates updated successfully!");
+        // close first
+        handleClose();
+        // then refresh parent
+        setTimeout(() => {
+          onUpdate();
+        }, 300);
+      } else {
+        setUpdateMessage(data.data.message);
+      }
     } catch (error) {
       setUpdateMessage("Uh oh! Please try again");
     }

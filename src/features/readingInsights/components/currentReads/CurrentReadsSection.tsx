@@ -242,7 +242,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
 
   const handleEditInstance = useCallback((instance: any) => {
     setSelectedBookId(instance.bookId || selectedBookId);
-    setSelectedBookId(instance.workId || selectedWorkId);
+    setSelectedWorkId(instance.workId || selectedWorkId);
     setSelectedBookStatus(instance.status);
     setSelectedBookProgressUnit(instance.ProgressUnit);
     setSelectedBookProgressValue(instance.ProgressValue);
