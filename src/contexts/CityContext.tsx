@@ -25,9 +25,16 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
         const ipApiResponse = await fetch('https://ipwho.is/');
         const ipData = await ipApiResponse.json();
         const ipCity = ipData.city?.toLowerCase();
-        const isInBangalore = ipCity === 'bengaluru' || ipCity === 'bangalore';
-
+        const ipCountryCode = ipData.country_code;
+        const isFromIndia = ipCountryCode === 'IN';
         setCoordinates(ipData.latitude, ipData.longitude);
+
+        if (!isFromIndia) {
+          setIsCityModalOpen(false);
+          return; 
+        }
+
+        const isInBangalore = ipCity === 'bengaluru' || ipCity === 'bangalore';
 
         if (!selectedCity) {
           setCityModalType('firstLaunch');
