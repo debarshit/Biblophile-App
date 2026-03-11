@@ -17,6 +17,14 @@ const NotificationsScreen = () => {
   const [countsLoading, setCountsLoading] = useState(true);
   const userDetails = useStore((state: any) => state.userDetails);
 
+  const setUnreadNotificationCount = useStore(
+    (state) => state.setUnreadNotificationCount
+  );
+
+  useEffect(() => {
+    setUnreadNotificationCount(0);
+  }, []);
+
   const fetchCounts = async () => {
     try {
       // Fetch both counts in parallel
@@ -29,13 +37,22 @@ const NotificationsScreen = () => {
         })
       ]);
 
+      let friendCount = 0;
+      let notificationCount = 0;
+
       if (friendRequestsResponse.status === 200) {
-        setFriendRequestCount(friendRequestsResponse.data.data?.incomingRequests?.length || 0);
+        friendCount = friendRequestsResponse.data.data?.incomingRequests?.length || 0;
       }
 
       if (unreadNotificationsResponse.status === 200) {
-        setNotificationUnreadCount(unreadNotificationsResponse.data.data?.unreadCount || 0);
+        notificationCount = unreadNotificationsResponse.data.data?.unreadCount || 0;
       }
+
+      setFriendRequestCount(friendCount);
+      setNotificationUnreadCount(notificationCount);
+
+      // update global badge correctly
+      setUnreadNotificationCount(friendCount + notificationCount);
     } catch (error) {
       console.error('Failed to fetch counts:', error);
       setFriendRequestCount(0);

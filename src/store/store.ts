@@ -24,6 +24,7 @@ interface StoreState {
     lastPermissionRequest: string | null;
     expoPushToken: string | null;
   };
+  unreadNotificationCount: number;
   
   login: (userData: any) => Promise<void>;
   logout: () => void;
@@ -46,6 +47,8 @@ interface StoreState {
   setLastPermissionRequest: (timestamp: string) => void;
   setExpoPushToken: (token: string) => void;
   resetNotificationPermissions: () => void;
+  setUnreadNotificationCount: (count: number) => void;
+  fetchUnreadNotificationCount: () => Promise<void>;
 }
 
 export const useStore = create<StoreState>()(
@@ -69,6 +72,7 @@ export const useStore = create<StoreState>()(
           lastPermissionRequest: null,
           expoPushToken: null,
         },
+        unreadNotificationCount: 0,
         
         login: async (userData) => {
           await set(state => ({
@@ -109,6 +113,7 @@ export const useStore = create<StoreState>()(
             sessionStartTime: null,
             sessionStartPage: null,
             selectedCity: null,
+            unreadNotificationCount: 0,
             notifications: {
               inAppPermissionAsked: false,
               inAppPermissionGranted: false,
@@ -306,6 +311,40 @@ export const useStore = create<StoreState>()(
                 expoPushToken: null,
               };
             }));
+          },
+          setUnreadNotificationCount: (count: number) => {
+            set({ unreadNotificationCount: Math.max(0, count) });
+          },
+          fetchUnreadNotificationCount: async () => {
+            const { userDetails } = get();
+
+            if (!userDetails?.length) return;
+
+            try {
+              const token = userDetails[0].accessToken;
+
+              const [friendRequestsResponse, unreadNotificationsResponse] =
+                await Promise.all([
+                  instance.get(requests.fetchFriendRequests, {
+                    headers: { Authorization: `Bearer ${token}` },
+                  }),
+                  instance.get(requests.getUnreadNotificationCount, {
+                    headers: { Authorization: `Bearer ${token}` },
+                  }),
+                ]);
+
+              const friendRequestCount =
+                friendRequestsResponse?.data?.data?.incomingRequests?.length || 0;
+
+              const notificationCount =
+                unreadNotificationsResponse?.data?.data?.unreadCount || 0;
+
+              set({
+                unreadNotificationCount: friendRequestCount + notificationCount,
+              });
+            } catch (error) {
+              console.error("Error fetching unread notifications:", error);
+            }
           },
       }),
       {

@@ -23,6 +23,13 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
 }) => {
   const navigation = useNavigation<any>();  
   const userDetails = useStore((state: any) => state.userDetails);
+  const unreadNotificationCount = useStore(
+    (state) => state.unreadNotificationCount
+  );
+
+  const fetchUnreadNotificationCount = useStore(
+    (state) => state.fetchUnreadNotificationCount
+  );
 
   const BackHandler = () => {
     if (navigation.canGoBack()) {
@@ -31,6 +38,14 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
       navigation.navigate('Tab');
     }
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (showNotifications) {
+        fetchUnreadNotificationCount();
+      }
+    }, [])
+  );
 
   return (
     <View style={styles.HeaderContainer}>
@@ -62,8 +77,16 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
       )}
 
       {showNotifications ? (
-        <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
+        <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={{ position: 'relative' }} >
           <Ionicons name="notifications" size={24} color={COLORS.primaryWhiteHex} />
+
+          {unreadNotificationCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>
+                {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       ) : (
         <View style={{ width: 24 }} /> // placeholder for layout balance
@@ -88,6 +111,24 @@ const styles = StyleSheet.create({
   Image: {
     height: SPACING.space_36,
     width: SPACING.space_36,
+  },
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: -6,
+    backgroundColor: "#FF3B30",
+    borderRadius: 10,
+    minWidth: 16,
+    height: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 3,
+  },
+
+  badgeText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold",
   },
 });
 
