@@ -59,6 +59,12 @@ interface Comment {
     liked_by_user: boolean;
 }
 
+const mergeUniqueById = (existing: Comment[], incoming: Comment[]) => {
+    const existingIds = new Set(existing.map(item => item.commentId));
+    const uniqueIncoming = incoming.filter(item => !existingIds.has(item.commentId));
+    return [...existing, ...uniqueIncoming];
+};
+
 const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyReadCommentsSectionProps>(({
     buddyReadId,
     currentUser,
@@ -125,6 +131,7 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
                 setComments(initialComments);
                 setHasMoreCommentsState(initialHasMoreComments);
                 setHasMoreReplies(initialHasMoreRepliesData);
+                setCommentPage(1);
             }
         } catch (err: any) {
             setError('Failed to fetch buddy read comments');
@@ -157,7 +164,8 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
             );
             if (response.status === 200) {
                 const newCommentsData = response.data.data;
-                setComments((prev) => [...prev, ...(newCommentsData.comments || [])]);
+                const incomingComments = newCommentsData.comments || [];
+                setComments((prev) => mergeUniqueById(prev, incomingComments));
                 setHasMoreCommentsState(newCommentsData.hasMoreComments || false);
                 setCommentPage(nextPage);
             } else {
@@ -203,7 +211,7 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
                     if (comment.commentId === parentCommentId) {
                         return {
                             ...comment,
-                            replies: [...(comment.replies || []), ...newReplies],
+                            replies: mergeUniqueById(comment.replies || [], newReplies),
                         };
                     }
                     if (comment.replies) {
@@ -236,7 +244,7 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
             if (reply.commentId === parentCommentId) {
                 return {
                     ...reply,
-                    replies: [...(reply.replies || []), ...newReplies],
+                    replies: mergeUniqueById(reply.replies || [], newReplies),
                 };
             }
             if (reply.replies) {
@@ -610,7 +618,7 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
                     )}
 
                     {/* Load More Replies */}
-                    {hasMoreReplies[comment.commentId] && (
+                    {hasMoreReplies[comment.commentId] && (comment.reply_count - (comment.replies?.length || 0)) > 0 && (
                         <Pressable 
                             onPress={() => loadReplies(comment.commentId)} 
                             style={styles.loadMoreRepliesButton}
