@@ -60,6 +60,11 @@ export default {
       "WRITE_EXTERNAL_STORAGE",
       "CAMERA"
     ],
+    "packageVisibility": {
+      "packages": [
+        "com.instagram.android"
+      ]
+    },
     "compileSdkVersion": 35,
     "targetSdkVersion": 35,
     "intentFilters": [

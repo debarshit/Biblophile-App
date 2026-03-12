@@ -366,9 +366,9 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
           title: buddyRead.book_title,
           message: `Doing a buddy read for this book on Biblophile`,
           url: `https://biblophile.com/social/buddy-reads/${buddyRead.buddyReadId}`,
-          image: buddyRead.book_photo,
+          image: convertHttpToHttps(buddyRead.book_photo),
         }}
-        imageUri={buddyRead.book_photo}
+        imageUri={convertHttpToHttps(buddyRead.book_photo)}
       />
     </SafeAreaView>
   );

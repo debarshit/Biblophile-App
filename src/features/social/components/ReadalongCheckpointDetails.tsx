@@ -255,6 +255,7 @@ const CommentItem = memo(({
                         <BlurView
                         intensity={30}
                         tint="dark"
+                        experimentalBlurMethod="dimezisBlurView"
                         style={StyleSheet.absoluteFill}
                         />
                     )}

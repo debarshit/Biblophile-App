@@ -325,9 +325,9 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
             title: readalong.book_title,
             message: `Readalong in progress on Biblophile`,
             url: `https://biblophile.com/social/readalong/${readalong.readalongId}`,
-            image: readalong.book_photo,
+            image: convertHttpToHttps(readalong.book_photo),
           }}
-          imageUri={readalong.book_photo}
+          imageUri={convertHttpToHttps(readalong.book_photo)}
         />
     </SafeAreaView>
   );
