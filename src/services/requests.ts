@@ -131,6 +131,8 @@ const requests = {
     markNotificationAsRead: (notificationId) => `${APIURL}notifications/${notificationId}/read`,
     markAllNotificationsAsRead: `${APIURL}notifications/mark-all-read`,
     getUnreadNotificationCount: `${APIURL}notifications/unread-count`,
+    getNotificationPreferences: `${APIURL}notifications/preferences`,
+    updateNotificationPreferences: `${APIURL}notifications/preferences`,
 
     //user-relations requests
     fetchUserRelations: (pageOwnerId) => `${APIURL}social/user-relations/${pageOwnerId}/relations`,
