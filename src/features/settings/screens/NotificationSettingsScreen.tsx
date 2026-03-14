@@ -10,37 +10,37 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 
 const CATEGORY_META = {
-  reading_activity: {
-    title: "Reading Activity",
-    description: "Replies and interactions",
-    icon: "💬",
-    channels: ["push"]   // only push
-  },
-
-  reading_milestones: {
-    title: "Reading Milestones",
-    description: "Achievements and prompts",
-    icon: "🔥",
-    channels: ["push", "email"]
-  },
-
   social: {
-    title: "Social",
-    description: "Followers and interactions",
+    title: "Social Interactions",
+    description: "Likes, replies, and follows",
     icon: "👥",
     channels: ["push"]
   },
 
-  clubs: {
-    title: "Clubs & Buddy Reads",
-    description: "Group reading updates",
+  group_reading: {
+    title: "Group Reading",
+    description: "Buddy reads and readalong activity",
     icon: "📚",
     channels: ["push"]
   },
 
+  challenges: {
+    title: "Reading Challenges",
+    description: "Challenge progress and completions",
+    icon: "🏁",
+    channels: ["push", "email"]
+  },
+
+  reading_updates: {
+    title: "Reading Updates",
+    description: "Book reviews, imports, and delivery updates",
+    icon: "📖",
+    channels: ["push", "email"]
+  },
+
   reminders: {
-    title: "Reading Reminders",
-    description: "Daily reading nudges",
+    title: "Reminders",
+    description: "Reading streaks and nudges",
     icon: "⏰",
     channels: ["push", "email"]
   }
@@ -113,23 +113,12 @@ const fetchPreferences = async () => {
   const handleNotificationToggle = async () => {
     if (notificationsEnabled) {
       // User wants to disable - direct them to settings
-      Alert.alert(
-        'Disable Notifications',
-        'To disable notifications, you\'ll need to turn them off in your device settings.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'Open Settings', 
-            onPress: () => notificationService.showPermissionSettingsAlert() 
-          }
-        ]
-      );
-      return;
+      notificationService.showPermissionSettingsAlert();
     }
     // User wants to enable
     const result = await notificationService.requestPermissions('general');
     
-    if (result.success) {
+    if (!notificationsEnabled && result.success) {
       await checkNotificationStatus();
       Toast.show({
         type: 'success',

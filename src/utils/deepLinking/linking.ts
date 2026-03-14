@@ -19,6 +19,9 @@ const config = {
         type: (type: string) => `${type}`,
       },
     },
+    History: {
+      path: 'dashboard/orders',
+    },
     SubmitReview: {
       path: 'books/Book/:bookId/:title?/review-form',
       parse: {
