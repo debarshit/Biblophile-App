@@ -44,6 +44,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const [loginMessage, setLoginMessage] = useState<{ text: string; color: string }>({ text: '', color: COLORS.primaryBlackHex });
     const [signupMessage, setSignupMessage] = useState<{ text: string; color: string }>({ text: '', color: COLORS.primaryBlackHex });
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [newsletterOptIn, setNewsletterOptIn] = useState<boolean>(true);
 
     const handleNotificationPermission = async (userData: any) => {
         try {
@@ -181,17 +182,18 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                 setIsLoading(true);
                 try {
                     const payload: any = {
-    name: signupName,
-    userName: signupUserName,
-    email: signupEmail,
-    password: signupPass,
-    signupPassCnf: signupPassCnf,
-    source: source,
-};
+                        name: signupName,
+                        userName: signupUserName,
+                        email: signupEmail,
+                        password: signupPass,
+                        signupPassCnf: signupPassCnf,
+                        source: source,
+                        newsletterOptIn: newsletterOptIn,
+                    };
 
-if (signupPhone) {
-    payload.phone = signupPhone;
-}
+                    if (signupPhone) {
+                        payload.phone = signupPhone;
+                    }
 
                     const signupResponse = await instance.post(requests.userSignup, payload);
 
@@ -208,6 +210,7 @@ if (signupPhone) {
                         setSignupPass("");
                         setSignupPassCnf("");
                         setSource(null);
+                        setNewsletterOptIn(true);
                         analytics.signup('email');
                     }
                     else
@@ -478,6 +481,21 @@ if (signupPhone) {
                             />
 
                         </View>
+                        <View style={styles.newsletterContainer}>
+                            <TouchableOpacity
+                                style={styles.checkboxRow}
+                                onPress={() => setNewsletterOptIn(!newsletterOptIn)}
+                            >
+                                <MdIcon
+                                name={newsletterOptIn ? "checkbox-marked" : "checkbox-blank-outline"}
+                                size={22}
+                                color={COLORS.primaryOrangeHex}
+                                />
+                                <Text style={styles.newsletterText}>
+                                Send me book recommendations & reader updates
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                         <TouchableOpacity onPress={handleSignup} style={styles.button} disabled={isLoading}>
                             {isLoading ? (
                                 <ActivityIndicator size='small' color={COLORS.primaryWhiteHex} />
@@ -613,6 +631,20 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.space_10,
         textAlign: 'center',
         color: COLORS.primaryWhiteHex,
+    },
+    newsletterContainer: {
+        width: 300,
+        marginBottom: 10,
+    },
+    checkboxRow: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    newsletterText: {
+        marginLeft: 8,
+        color: COLORS.primaryWhiteHex,
+        fontSize: FONTSIZE.size_14,
+        flex: 1,
     },
 });
 

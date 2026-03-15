@@ -505,7 +505,8 @@ channelButton: {
 },
 
 channelActive: {
-  backgroundColor: COLORS.primaryOrangeHex
+  borderWidth: 1,
+  borderColor: COLORS.primaryWhiteHex,
 },
 
 channelIcon: {
