@@ -1,0 +1,42 @@
+{
+  "RN Themed Screen": {
+    "scope": "typescriptreact",
+    "prefix": "rnpage",
+    "body": [
+    "import React, { useMemo } from 'react'",
+    "import { View, Text, ScrollView, StyleSheet } from 'react-native'",
+    "import { SafeAreaView } from 'react-native-safe-area-context'",
+    "import { useTheme } from '../../theme/useTheme'",
+    "",
+    "const ${1:ScreenName} = () => {",
+    "  const { COLORS } = useTheme()",
+    "  const styles = useMemo(() => createStyles(COLORS), [COLORS])",
+    "",
+    "  return (",
+    "    <SafeAreaView style={styles.safeArea}>",
+    "      <ScrollView style={styles.container}>",
+    "        <Text style={styles.text}>${1:ScreenName}</Text>",
+    "      </ScrollView>",
+    "    </SafeAreaView>",
+    "  )",
+    "}",
+    "",
+    "export default ${1:ScreenName}",
+    "",
+    "const createStyles = (COLORS) =>",
+    "  StyleSheet.create({",
+    "    safeArea: {",
+    "      flex: 1,",
+    "      backgroundColor: COLORS.primaryBlackHex,",
+    "    },",
+    "    container: {",
+    "      flex: 1,",
+    "    },",
+    "    text: {",
+    "      color: COLORS.primaryWhiteHex,",
+    "    },",
+    "  })"
+  ],
+    "description": "Create a themed React Native screen"
+  }
+}
