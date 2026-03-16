@@ -62,6 +62,36 @@ export const COLORS: Color = {
   secondaryBlackRGBA: 'rgba(0,0,0,0.7)',
 };
 
+export const DARK_COLORS: Color = {
+  primaryRedHex: '#DC3535',
+  primaryOrangeHex: '#D17842',
+  primaryBlackHex: '#0C0F14',
+  primaryDarkGreyHex: '#141921',
+  secondaryDarkGreyHex: '#21262E',
+  primaryGreyHex: '#252A32',
+  secondaryGreyHex: '#252A32',
+  primaryLightGreyHex: '#52555A',
+  secondaryLightGreyHex: '#AEAEAE',
+  primaryWhiteHex: '#FFFFFF',
+  primaryBlackRGBA: 'rgba(12,15,20,0.5)',
+  secondaryBlackRGBA: 'rgba(0,0,0,0.7)',
+};
+
+export const LIGHT_COLORS: Color = {
+  primaryRedHex: '#DC3535',
+  primaryOrangeHex: '#D17842',
+  primaryBlackHex: '#FFFFFF',
+  primaryDarkGreyHex: '#F6F6F6',
+  secondaryDarkGreyHex: '#ECECEC',
+  primaryGreyHex: '#DDDDDD',
+  secondaryGreyHex: '#DDDDDD',
+  primaryLightGreyHex: '#888888',
+  secondaryLightGreyHex: '#555555',
+  primaryWhiteHex: '#000000',
+  primaryBlackRGBA: 'rgba(255,255,255,0.5)',
+  secondaryBlackRGBA: 'rgba(255,255,255,0.7)',
+};
+
 interface FontFamily {
   poppins_black: string;
   poppins_bold: string;
