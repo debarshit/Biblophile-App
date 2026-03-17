@@ -43,6 +43,9 @@ interface BuddyReadCommentsSectionProps {
     onReplyPress: (commentId: number, username: string, pageNumber: number) => void;
     replyContextId: number | null;
     onCommentSubmit?: (commentText: string, progressPercentage?: number, parentCommentId?: number | null) => void;
+    onContinueThread?: (comment: Comment) => void;
+    rootCommentId? : number;
+    rootComment?: Comment; 
 }
 
 interface Comment {
@@ -73,6 +76,9 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
     onReplyPress,
     replyContextId,
     onCommentSubmit,
+    onContinueThread,
+    rootCommentId,
+    rootComment,
 }, ref) => {
     const [comments, setComments] = useState<Comment[]>([]);
     const [loadingInitialData, setLoadingInitialData] = useState<boolean>(true);
@@ -101,45 +107,69 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
     };
 
     const fetchComments = useCallback(async (currentSort: string = sort) => {
-        setLoadingInitialData(true);
-        setError(null);
-        try {    
-            let initialComments: Comment[] = [];
-            let initialHasMoreComments = false;
-            let initialHasMoreRepliesData: Record<number, boolean> = {};
+    setLoadingInitialData(true);
+    setError(null);
+    try {
+        if (accessToken) {
+            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-            if (accessToken) {
-                const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                const commentsResponse = await instance.get(
-                    `${requests.fetchComments(String(buddyReadId))}?page=${1}&order_by=${currentSort}&timezone=${userTimezone}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    }
+            if (rootCommentId) {
+                const res = await instance.get(
+                    `${requests.fetchReplies(rootCommentId)}?page=1&order_by=${currentSort}&timezone=${userTimezone}`,
+                    { headers: { Authorization: `Bearer ${accessToken}` } }
                 );
-                initialComments = commentsResponse.data.data.comments || [];
-                initialHasMoreComments = commentsResponse.data.data.hasMoreComments || false;
 
-                initialHasMoreRepliesData = initialComments.reduce((acc, comment) => {
-                    if (comment.reply_count > 0) {
-                        acc[comment.commentId] = true;
-                    }
+                // fetchReplies returns a list of replies — wrap the root comment
+                // as a shell so renderComments has a single root to work with
+                const replies: Comment[] = res.data.data.replies || [];
+                const hasMoreReplies = res.data.data.hasMoreReplies || false;
+
+                // Reconstruct root comment with its replies nested inside
+                const rootAsComment: Comment = {
+                    ...rootComment,         // passed in as prop
+                    replies,
+                    reply_count: rootComment.reply_count,
+                };
+
+                setComments([rootAsComment]);
+
+                // Seed hasMoreReplies for the root so "load more" still works
+                setHasMoreReplies({
+                    [rootCommentId]: hasMoreReplies,
+                    ...replies.reduce((acc, r) => {
+                        if (r.reply_count > 0) acc[r.commentId] = true;
+                        return acc;
+                    }, {} as Record<number, boolean>),
+                });
+
+                setCommentPage(1);
+            } else {
+                const commentsResponse = await instance.get(
+                    `${requests.fetchComments(String(buddyReadId))}?page=1&order_by=${currentSort}&timezone=${userTimezone}`,
+                    { headers: { Authorization: `Bearer ${accessToken}` } }
+                );
+
+                const initialComments: Comment[] = commentsResponse.data.data.comments || [];
+                const initialHasMoreComments: boolean = commentsResponse.data.data.hasMoreComments || false;
+
+                const initialHasMoreRepliesData = initialComments.reduce((acc, comment) => {
+                    if (comment.reply_count > 0) acc[comment.commentId] = true;
                     return acc;
-                }, {});
+                }, {} as Record<number, boolean>);
 
                 setComments(initialComments);
                 setHasMoreCommentsState(initialHasMoreComments);
                 setHasMoreReplies(initialHasMoreRepliesData);
                 setCommentPage(1);
             }
-        } catch (err: any) {
-            setError('Failed to fetch buddy read comments');
-            console.error('Error fetching buddy read comments:', err);
-        } finally {
-            setLoadingInitialData(false);
         }
-    }, [buddyReadId, sort]);
+    } catch (err: any) {
+        setError('Failed to fetch buddy read comments');
+        console.error('Error fetching buddy read comments:', err);
+    } finally {
+        setLoadingInitialData(false);
+    }
+}, [buddyReadId, sort, rootCommentId, rootComment]); // ← added rootCommentId + rootComment
 
     useEffect(() => {
         fetchComments();
@@ -612,16 +642,29 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
                     </View>
 
                     {/* Nested Replies */}
-                    {depth < maxDepth && Array.isArray(comment.replies) && comment.replies.length > 0 && (
-                        <View style={styles.repliesContainer}>
-                            {renderComments(comment.replies, depth + 1, maxDepth)}
-                        </View>
+                    {Array.isArray(comment.replies) && comment.replies.length > 0 && (
+                        depth < maxDepth ? (
+                            <View style={styles.repliesContainer}>
+                                {renderComments(comment.replies, depth + 1, maxDepth)}
+                            </View>
+                        ) : (
+                            <Pressable
+                                onPress={() => onContinueThread?.(comment)}
+                                style={styles.continueThreadButton}
+                            >
+                                <Ionicons name="arrow-forward" size={14} color={COLORS.primaryOrangeHex} />
+                                <Text style={styles.continueThreadText}>
+                                    Continue thread ({comment.reply_count} {comment.reply_count === 1 ? 'reply' : 'replies'})
+                                </Text>
+                            </Pressable>
+                        )
                     )}
 
                     {/* Load More Replies */}
-                    {hasMoreReplies[comment.commentId] && (comment.reply_count - (comment.replies?.length || 0)) > 0 && (
-                        <Pressable 
-                            onPress={() => loadReplies(comment.commentId)} 
+                    {depth < maxDepth && hasMoreReplies[comment.commentId] && 
+                    (comment.reply_count - (comment.replies?.length || 0)) > 0 && (
+                        <Pressable
+                            onPress={() => loadReplies(comment.commentId)}
                             style={styles.loadMoreRepliesButton}
                         >
                             <Ionicons name="add" size={16} color={COLORS.primaryOrangeHex} />
@@ -1032,6 +1075,23 @@ const styles = StyleSheet.create({
         padding: SPACING.space_8,
         borderRadius: BORDERRADIUS.radius_4,
         backgroundColor: COLORS.primaryGreyHex,
+    },
+    continueThreadButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: SPACING.space_12,
+        paddingVertical: SPACING.space_8,
+        paddingHorizontal: SPACING.space_12,
+        borderRadius: BORDERRADIUS.radius_4,
+        borderWidth: 1,
+        borderColor: COLORS.primaryOrangeHex,
+        alignSelf: 'flex-start',
+    },
+    continueThreadText: {
+        color: COLORS.primaryOrangeHex,
+        fontSize: FONTSIZE.size_12,
+        fontFamily: FONTFAMILY.poppins_medium,
+        marginLeft: SPACING.space_4,
     },
   });
 
