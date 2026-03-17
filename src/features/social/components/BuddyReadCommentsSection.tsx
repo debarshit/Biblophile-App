@@ -93,7 +93,8 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
     const [sort, setSort] = useState<string>('created_at_asc');
     const animatedValues = useRef<Record<number, Animated.Value>>({}).current;
     const scrollRef = useRef<ScrollView>(null);
-    const commentPositions = useRef<Record<number, number>>({});
+    const [loadingReplies, setLoadingReplies] = useState<Record<number, boolean>>({});
+    
 
     useImperativeHandle(ref, () => ({
         submitComment: handleCommentSubmit,
@@ -210,6 +211,7 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
 
     const loadReplies = async (parentCommentId: number) => {
         if (!accessToken || !currentUser.userId) return;
+        setLoadingReplies(prev => ({ ...prev, [parentCommentId]: true })); 
         const nextPage = replyPages[parentCommentId] || 1;
 
         try {
@@ -262,6 +264,8 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
                 ...prev,
                 [parentCommentId]: false,
             }));
+        } finally {
+            setLoadingReplies(prev => ({ ...prev, [parentCommentId]: false }));
         }
     };
 
@@ -524,7 +528,7 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
                     style={[
                         styles.commentContainer, 
                         { 
-                            marginLeft: depth * SPACING.space_12,
+                            marginLeft: depth * SPACING.space_2,
                             transform: [{ scale: animatedValue }]
                         }
                     ]}
@@ -632,11 +636,18 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
                             <Pressable 
                                 onPress={() => loadReplies(comment.commentId)}
                                 style={styles.actionButton}
+                                disabled={loadingReplies[comment.commentId]}
                             >
-                                <Ionicons name="arrow-down" size={16} color={COLORS.secondaryLightGreyHex} />
-                                <Text style={styles.actionText}>
-                                    {comment.reply_count} {comment.reply_count === 1 ? 'reply' : 'replies'}
-                                </Text>
+                                {loadingReplies[comment.commentId] ? (
+                                    <ActivityIndicator size="small" color={COLORS.primaryOrangeHex} />
+                                ) : (
+                                    <>
+                                        <Ionicons name="arrow-down" size={16} color={COLORS.secondaryLightGreyHex} />
+                                        <Text style={styles.actionText}>
+                                            {comment.reply_count} {comment.reply_count === 1 ? 'reply' : 'replies'}
+                                        </Text>
+                                    </>
+                                )}
                             </Pressable>
                         )}
                     </View>

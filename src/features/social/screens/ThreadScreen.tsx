@@ -1,4 +1,3 @@
-// screens/ThreadScreen.tsx
 import { View, Text, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import BuddyReadCommentsSection, { BuddyReadCommentsSectionRef } from '../components/BuddyReadCommentsSection';
@@ -84,12 +83,10 @@ export default function ThreadScreen() {
                         accessToken,
                     });
                 }}
-                // Override to only show this subtree —
-                // you'll need an additional prop or a modified
-                // fetch that scopes to rootComment.commentId
                 rootCommentId={rootComment.commentId}
                 rootComment={rootComment} 
             />
+            </ScrollView>
             <CommentInputForm
                 ref={commentInputRef}
                 onSubmit={handleCommentSubmit}
@@ -104,7 +101,6 @@ export default function ThreadScreen() {
                 replyContext={replyContext}
                 onCancelReply={() => setReplyContext(null)}
             />
-            </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
