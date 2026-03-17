@@ -335,6 +335,15 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
               accessToken={accessToken}
               onReplyPress={handleReplyPress}
               replyContextId={replyContext?.commentId ?? null}
+              onContinueThread={(comment) => {
+              navigation.navigate('ThreadScreen', {
+                  rootComment: comment,
+                  buddyReadId,
+                  currentUser,
+                  isHost,
+                  accessToken,
+              });
+          }}
             />
           </>
         )}
