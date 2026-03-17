@@ -67,6 +67,7 @@ export default function ThreadScreen() {
 
             {/* Reuse the comments section, but pass the single root comment */}
             <BuddyReadCommentsSection
+                ref={commentsSectionRef}
                 buddyReadId={buddyReadId}
                 currentUser={currentUser}
                 isHost={isHost}
