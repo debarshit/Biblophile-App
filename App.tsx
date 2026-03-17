@@ -60,6 +60,7 @@ import EditionsScreen from './src/features/discover/screens/EditionsScreen';
 import AddEditionScreen from './src/features/discover/screens/AddEditionScreen';
 import ReadalongCheckpointDiscussion from './src/features/social/screens/ReadalongDiscussionScreen';
 import ChallengePromptDetailsScreen from './src/features/challenges/screens/ChallengePromptDetailsScreen';
+import ThreadScreen from './src/features/social/screens/ThreadScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -314,7 +315,7 @@ const App = () => {
               <Stack.Screen name="Challenges" component={ChallengeScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="Editions" component={EditionsScreen} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="AddEdition" component={AddEditionScreen} options={{animation: 'slide_from_bottom'}} />
-
+              <Stack.Screen name="ThreadScreen" component={ThreadScreen} />
             </Stack.Navigator>
           </CityProvider>
         ) : (
