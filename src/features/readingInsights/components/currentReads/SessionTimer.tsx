@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { COLORS, FONTFAMILY, FONTSIZE } from '../../../../theme/theme';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 const SessionTimer = ({ timer }) => {
   const [showTimerTooltip, setShowTimerTooltip] = useState(false);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   
   return (
     <View style={styles.timer}>
@@ -23,7 +26,7 @@ const SessionTimer = ({ timer }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   timer: {
     flexDirection: 'row',
     alignItems: 'center',

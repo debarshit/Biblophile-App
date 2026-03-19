@@ -1,6 +1,8 @@
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { SPACING, FONTFAMILY, FONTSIZE, COLORS, BORDERRADIUS } from "../../../theme/theme";
 import MemberProgressCard from "./MemberProgressCard";
+import { useTheme } from "../../../contexts/ThemeContext";
+import { useMemo } from "react";
 
 interface Member {
   name: string;
@@ -34,6 +36,8 @@ const BuddyReadMembersSection: React.FC<BuddyReadMembersSectionProps> = ({ buddy
     if (b.userId === currentUserId) return 1;
     return 0;
   });
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     buddyRead && (
       <View style={styles.membersContainer}>
@@ -56,7 +60,7 @@ const BuddyReadMembersSection: React.FC<BuddyReadMembersSectionProps> = ({ buddy
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   membersContainer: {
       marginBottom: SPACING.space_20,
   },

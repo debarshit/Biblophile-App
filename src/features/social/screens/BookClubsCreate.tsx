@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import instance from '../../../services/axios';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 export default function CreateBookClubScreen() {
   const [clubName, setClubName] = useState('');
@@ -14,6 +15,8 @@ export default function CreateBookClubScreen() {
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0].accessToken;
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const handleCreateClub = async () => {
     if (!clubName.trim()) {
@@ -96,7 +99,7 @@ export default function CreateBookClubScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: COLORS.secondaryDarkGreyHex,

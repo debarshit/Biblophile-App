@@ -1,8 +1,9 @@
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import React, { useMemo } from 'react'
 import WebView from 'react-native-webview'
 import { COLORS, FONTSIZE } from '../../../theme/theme'
 import GradientBGIcon from '../../../components/GradientBGIcon'
+import { useTheme } from '../../../contexts/ThemeContext'
 
 const ResourceScreen = ({ navigation, route }: any) => {
   const rawPath = route.params?.url || 
@@ -22,6 +23,8 @@ const ResourceScreen = ({ navigation, route }: any) => {
   // We extract everything from params except the internal navigation keys
   const { url, path, ...otherParams } = route.params || {};
   delete otherParams['*']; 
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const queryParts = Object.keys(otherParams).map(
     key => `${key}=${encodeURIComponent(otherParams[key])}`
@@ -61,4 +64,4 @@ const ResourceScreen = ({ navigation, route }: any) => {
 
 export default ResourceScreen
 
-const styles = StyleSheet.create({})
+const createStyles = (COLORS) => StyleSheet.create({})

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Dimensions, 
   FlatList, 
@@ -23,6 +23,7 @@ import { useStore } from '../../../store/store';
 import { COLORS, FONTSIZE, FONTFAMILY, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { width } = Dimensions.get("window");
 
@@ -37,6 +38,8 @@ const SubscriptionScreen = ({ navigation }) => {
   const [refundRequested, setRefundRequested] = useState(false);
 
   const userDetails = useStore((state) => state.userDetails);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchActivePlan = async () => {
     try {
@@ -348,7 +351,7 @@ const SubscriptionScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     padding: SPACING.space_16,

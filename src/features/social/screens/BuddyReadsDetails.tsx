@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -26,6 +26,7 @@ import HeaderBar from '../../../components/HeaderBar';
 import { CommentInputForm, CommentInputFormRef } from '../components/CommentInputForm';
 import ShareModal from '../../../components/ShareModal';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 // Define the BuddyRead interface
 interface Member {
@@ -78,6 +79,8 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
     username?: string;
     pageNumber?: number;
   } | null>(null);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
@@ -383,7 +386,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableWithoutFeedback, TextInput, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
 import instance from '../../../../services/axios';
 import requests from '../../../../services/requests';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface PageStatsChartProps {
   pagesRead: any[];
@@ -24,6 +25,8 @@ const PageStatsChart: React.FC<PageStatsChartProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editPageCount, setEditPageCount] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+    const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const handleSave = async () => {
     try {
@@ -168,7 +171,7 @@ const PageStatsChart: React.FC<PageStatsChartProps> = ({
 
 export default PageStatsChart;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   statContainer: {
     backgroundColor: 'transparent',
     borderRadius: BORDERRADIUS.radius_8,

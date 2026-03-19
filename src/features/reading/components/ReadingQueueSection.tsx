@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
     View, 
     Text, 
@@ -11,6 +11,7 @@ import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../th
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Book {
     bookId: number;
@@ -46,6 +47,8 @@ const ReadingQueueSection: React.FC<ReadingQueueSectionProps> = ({
     const [queueBooks, setQueueBooks] = useState<Book[]>([]);
     const [queueLoading, setQueueLoading] = useState(false);
     const [isReordering, setIsReordering] = useState(false);
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const fetchReadingQueue = async () => {
         setQueueLoading(true);
@@ -195,7 +198,7 @@ const ReadingQueueSection: React.FC<ReadingQueueSectionProps> = ({
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     queueSection: {
         marginBottom: SPACING.space_24,
         paddingVertical: SPACING.space_16,

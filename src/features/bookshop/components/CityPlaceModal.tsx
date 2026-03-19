@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { useAnalytics } from '../../../utils/analytics';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface CityPlace {
   id: string;
@@ -35,6 +36,8 @@ interface CityPlaceModalProps {
 export default function CityPlaceModal({ visible, onClose, place }: CityPlaceModalProps) {
   const analytics = useAnalytics();
   if (!place) return null;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const openWebsite = () => {
     if (place.website) {
@@ -130,7 +133,7 @@ export default function CityPlaceModal({ visible, onClose, place }: CityPlaceMod
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.65)',

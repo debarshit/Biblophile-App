@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface EmotionStatsChartProps {
   userAverageEmotions: any[];
@@ -11,6 +12,8 @@ interface EmotionStatsChartProps {
 const EmotionStatsChart: React.FC<EmotionStatsChartProps> = ({ userAverageEmotions, timeFrame }) => {
   const screenWidth = Dimensions.get('window').width;
   const PIECOLORS = ['#FF7E5F', '#42D1D1', '#FFBC42', '#9C4DD4', '#45B69C'];
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   if (!Array.isArray(userAverageEmotions) || userAverageEmotions.length === 0) {
     return (
@@ -68,7 +71,7 @@ const EmotionStatsChart: React.FC<EmotionStatsChartProps> = ({ userAverageEmotio
 
 export default EmotionStatsChart;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   statContainer: {
     backgroundColor: 'transparent',
     borderRadius: BORDERRADIUS.radius_8,

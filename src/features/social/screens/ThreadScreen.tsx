@@ -3,9 +3,10 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import BuddyReadCommentsSection, { BuddyReadCommentsSectionRef } from '../components/BuddyReadCommentsSection';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { CommentInputForm, CommentInputFormRef } from '../components/CommentInputForm';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 export default function ThreadScreen() {
     const navigation = useNavigation<any>();
@@ -18,6 +19,8 @@ export default function ThreadScreen() {
         username?: string;
         pageNumber?: number;
       } | null>(null);
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const handleReplyPress = useCallback((commentId: number, username: string, pageNumber: number) => {
         setReplyContext({ commentId, username, pageNumber });
@@ -107,7 +110,7 @@ export default function ThreadScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.primaryBlackHex,

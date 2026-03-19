@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useStore } from '../../../store/store';
 import { useAnalytics } from '../../../utils/analytics';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const cities = [
   { value: "Bengaluru", label: "Bengaluru", icon: <FontAwesome5 name="city" size={20} color="#D17842" /> },
@@ -18,6 +19,8 @@ interface CityModalProps {
 const CityModal = ({ visibility, onClose, modalType=null }: CityModalProps) => {
   const { selectedCity, setSelectedCity } = useStore();
   const analytics = useAnalytics();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   
   const handleCitySelect = (cityName: string) => {
     // Track if user was detected in Bangalore and responded
@@ -95,7 +98,7 @@ const CityModal = ({ visibility, onClose, modalType=null }: CityModalProps) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   modalBackdrop: {
     flex: 1,
     justifyContent: 'center',

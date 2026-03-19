@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface StatsTabsProps {
   activeStat: string;
@@ -9,6 +10,8 @@ interface StatsTabsProps {
 }
 
 const StatsTabs: React.FC<StatsTabsProps> = ({ activeStat, setActiveStat }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.tabContainer}>
       <TouchableOpacity 
@@ -44,7 +47,7 @@ const StatsTabs: React.FC<StatsTabsProps> = ({ activeStat, setActiveStat }) => {
 
 export default StatsTabs;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: COLORS.primaryDarkGreyHex,

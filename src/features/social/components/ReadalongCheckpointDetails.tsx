@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, FlatList, ActivityIndicator, Pressable } from 'react-native';
-import React, { useState, useEffect, useCallback, memo, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useCallback, memo, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -7,6 +7,7 @@ import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import { useNavigation } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 // Types
 interface Host {
@@ -78,6 +79,9 @@ const useComments = (checkpointId: string, currentUser: CurrentUser,  userDetail
     });
     const [error, setError] = useState<string | null>(null);
     const [sort, setSort] = useState<string>(SORT_OPTIONS.OLDEST);
+
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const fetchComments = useCallback(async (page: number, currentSort: string, appending: boolean = true) => {
         if (pagination.loading) return;
@@ -597,7 +601,7 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
     );
 });
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.primaryDarkGreyHex,

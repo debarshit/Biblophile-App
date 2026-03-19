@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, Alert, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -8,6 +8,7 @@ import Mascot from '../../../components/Mascot';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useNavigation } from '@react-navigation/native';
 import { WysiwygRender } from '../../../components/wysiwyg/WysiwygRender';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface ReviewScreenProps {
     userData: {
@@ -25,6 +26,8 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
     const navigation = useNavigation<any>();
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0].accessToken;
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const fetchReviews = async (initial = false) => {
         if (loading || !hasMore) return;
@@ -129,7 +132,7 @@ const UserReviews: React.FC<ReviewScreenProps> = ({ userData }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         padding: SPACING.space_20,
         backgroundColor: COLORS.primaryBlackHex,

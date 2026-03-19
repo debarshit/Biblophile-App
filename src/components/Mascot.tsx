@@ -1,5 +1,6 @@
 import { StyleSheet, View, Image } from 'react-native';
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 
 // Define a mapping of emotions to image paths
 const emotionImages = {
@@ -14,7 +15,8 @@ const emotionImages = {
 const Mascot = ({ emotion }) => {
   // Get the image path based on the emotion prop
   const imagePath = emotionImages[emotion] || require('../assets/app_images/sleeping.png');
-
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View>
       <Image source={imagePath} style={styles.image} />
@@ -24,7 +26,7 @@ const Mascot = ({ emotion }) => {
 
 export default Mascot;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   image: {
     width: 200,
     height: 200,

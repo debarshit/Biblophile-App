@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
 import instance from '../../../../services/axios';
 import requests from '../../../../services/requests';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 const ReminderSection = ({ onReminderPress }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const handleTipsPress = async () => {
     try {
       const response = await instance(requests.fetchReadingTips);
@@ -31,7 +34,7 @@ const ReminderSection = ({ onReminderPress }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   reminders: {
     flexDirection: 'row',
     justifyContent: 'space-around',

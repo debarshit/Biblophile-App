@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { 
     View, 
     Text, 
@@ -11,6 +11,7 @@ import BookshelfCard from '../components/BookshelfCard';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { AntDesign } from '@expo/vector-icons';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const QUEUE_CARD_WIDTH = 120;
 const QUEUE_CARD_MARGIN = SPACING.space_12;
@@ -41,6 +42,8 @@ const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
     navigation,
     onRemove
 }) => {
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
     return (
         <TouchableWithoutFeedback
             onPressIn={onDragStart}
@@ -88,7 +91,7 @@ const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     queueCard: {
         backgroundColor: COLORS.primaryDarkGreyHex,
         borderRadius: BORDERRADIUS.radius_15,

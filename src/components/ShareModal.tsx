@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   Modal,
   View,
@@ -12,6 +12,7 @@ import { AntDesign, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-ic
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import { shareToplatform, SHARE_PLATFORMS, ShareContent, SharePlatform } from '../utils/share';
 import InstagramStoryTemplate from './InstagramStoryTemplate';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface ShareModalProps {
   visible: boolean;
@@ -26,6 +27,8 @@ const ShareModal: React.FC<ShareModalProps> = ({
   content,
   imageUri,
 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const [isGeneratingStory, setIsGeneratingStory] = React.useState(false);
   const storyRef = useRef<View>(null);
   const handleShare = async (platform: SharePlatform) => {
@@ -163,7 +166,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',

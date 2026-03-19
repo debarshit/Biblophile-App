@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {StyleSheet, Text, View, ImageProps, Image} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import {
@@ -9,6 +9,7 @@ import {
   SPACING,
 } from '../../../theme/theme';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface OrderItemCardProps {
   type: string;
@@ -27,6 +28,8 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
   ItemPrice,
   quantity,
 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <LinearGradient
       start={{x: 0, y: 0}}
@@ -78,7 +81,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   CardLinearGradient: {
     gap: SPACING.space_20,
     padding: SPACING.space_20,

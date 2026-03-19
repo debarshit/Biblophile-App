@@ -3,6 +3,7 @@ import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../theme/theme';
 import { sanitizeHTML } from '../../utils/wysiwyg/sanitize';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type WysiwygEditorProps = {
   value?: string;
@@ -16,6 +17,8 @@ export function WysiwygEditor({ value = '', onChange, maxChars = 5000 }: Wysiwyg
   const [html, setHtml] = useState<string>(sanitizeHTML(value));
   const [activeStates, setActiveStates] = useState<Record<string, boolean>>({});
   const remaining = useMemo(() => Math.max(0, maxChars - html.replace(/<[^>]*>/g, '').length), [html, maxChars]);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const injectedJS = `
     document.body.innerHTML = \`${sanitizeHTML(value) || '<p><br/></p>'}\`;
@@ -162,7 +165,7 @@ export function WysiwygEditor({ value = '', onChange, maxChars = 5000 }: Wysiwyg
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: { height: 400, borderRadius: BORDERRADIUS.radius_10, borderWidth: 1, borderColor: COLORS.primaryGreyHex, overflow: 'hidden' },
   toolbar: { padding: SPACING.space_8, backgroundColor: COLORS.primaryGreyHex, borderBottomWidth: 1, borderBottomColor: COLORS.primaryGreyHex },
   toolbarRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.space_4 },

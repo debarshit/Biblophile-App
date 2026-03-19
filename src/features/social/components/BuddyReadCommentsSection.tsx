@@ -1,4 +1,4 @@
-import { JSX, forwardRef, useEffect, useRef, useImperativeHandle } from "react";
+import { JSX, forwardRef, useEffect, useRef, useImperativeHandle, useMemo } from "react";
 import {
     View, Text, StyleSheet, ActivityIndicator,
     TouchableOpacity, Pressable, ScrollView, Platform, UIManager
@@ -8,6 +8,7 @@ import { COLORS, SPACING, BORDERRADIUS, FONTFAMILY, FONTSIZE } from "../../../th
 import { CommentSortDropdown } from "./CommentSortDropdown";
 import { CommentItem } from "./BuddyReadCommentItem";
 import { useComments, Comment } from "../hooks/useComments";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -48,6 +49,8 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
     rootComment,
 }, ref) => {
     const scrollRef = useRef<ScrollView>(null);
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const {
         comments,
@@ -195,7 +198,7 @@ const BuddyReadCommentsSection = forwardRef<BuddyReadCommentsSectionRef, BuddyRe
     );
 });
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     commentsSection: {
         backgroundColor: COLORS.primaryDarkGreyHex,
         borderRadius: BORDERRADIUS.radius_15,

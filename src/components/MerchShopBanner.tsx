@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 const MerchShopBanner = ({
   title = "Check Out Our Smart bookmarks!",
@@ -24,7 +25,8 @@ const MerchShopBanner = ({
   onPress=null,
   style = {},
 }) => {
-
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const handlePress = () => {
     if (onPress) {
       onPress();
@@ -52,7 +54,7 @@ const MerchShopBanner = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   merchShopSection: {
     marginVertical: SPACING.space_24,
     marginHorizontal: SPACING.space_4,

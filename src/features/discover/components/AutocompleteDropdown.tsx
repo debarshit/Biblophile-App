@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { COLORS, SPACING } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Props<T> {
   value: string;
@@ -31,6 +32,9 @@ export function AutocompleteDropdown<T>({
   const [suggestions, setSuggestions] = useState<T[]>([]);
   const [visible, setVisible] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout>();
+
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const handleChange = (text: string) => {
     onChange(text);
@@ -101,7 +105,7 @@ export function AutocompleteDropdown<T>({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   Input: {
     backgroundColor: COLORS.primaryGreyHex,
     color: COLORS.primaryWhiteHex,

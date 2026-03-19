@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import RenderHtml, { HTMLContentModel } from 'react-native-render-html';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../theme/theme';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type WysiwygRenderProps = {
   html: string;
@@ -11,6 +12,8 @@ type WysiwygRenderProps = {
 export function WysiwygRender({ html, maxWidth = 400 }: WysiwygRenderProps) {
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
   const [processedHtml, setProcessedHtml] = useState<string>('');
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     // Reset revealed spoilers when HTML content changes
@@ -87,7 +90,7 @@ export function WysiwygRender({ html, maxWidth = 400 }: WysiwygRenderProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     backgroundColor: COLORS.primaryBlackHex,
   },

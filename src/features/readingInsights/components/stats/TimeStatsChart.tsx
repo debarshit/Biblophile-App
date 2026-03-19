@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface TimeStatsChartProps {
   readingDurations: any[];
@@ -10,6 +11,8 @@ interface TimeStatsChartProps {
 
 const TimeStatsChart: React.FC<TimeStatsChartProps> = ({ readingDurations, timeFrame }) => {
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, value: '', date: '' });
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   if (!Array.isArray(readingDurations) || readingDurations.length === 0) {
     return (
@@ -101,7 +104,7 @@ const TimeStatsChart: React.FC<TimeStatsChartProps> = ({ readingDurations, timeF
 
 export default TimeStatsChart;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   statContainer: {
     backgroundColor: 'transparent',
     borderRadius: BORDERRADIUS.radius_8,

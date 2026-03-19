@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TouchableOpacity, Modal, ScrollView, StyleSheet } from 'react-native';
 import {
   BORDERRADIUS,
@@ -8,6 +8,7 @@ import {
   SPACING,
 } from '../../../theme/theme';
 import instance from '../../../services/axios';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface PickupLocation {
   locationId: string;
@@ -32,6 +33,8 @@ const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
 }) => {
   const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([]);
   const [showPickupModal, setShowPickupModal] = useState(false);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   // Fetch pickup locations when self-pickup is selected
   useEffect(() => {
@@ -152,7 +155,7 @@ const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   sectionContainer: {
     paddingHorizontal: SPACING.space_20,
     paddingVertical: SPACING.space_15,

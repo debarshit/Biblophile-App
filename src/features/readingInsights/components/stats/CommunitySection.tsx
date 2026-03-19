@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Share } from 'react-native';
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 const CommunitySection = ({ currentStreak = 0 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const handleDiscussionPress = () => {
     Alert.alert("Coming Soon", "This feature is coming soon!");
   };
@@ -37,7 +40,7 @@ const CommunitySection = ({ currentStreak = 0 }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   community: {
     flexDirection: 'row',
     justifyContent: 'space-around',

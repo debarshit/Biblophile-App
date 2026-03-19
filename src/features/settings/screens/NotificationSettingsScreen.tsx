@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, Switch, Alert, StyleSheet, TouchableOpacity, SafeAreaView, AppState, ScrollView } from 'react-native';
 import { notificationService } from '../../../utils/notificationUtils';
 import Toast from 'react-native-toast-message';
@@ -8,6 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const CATEGORY_META = {
   social: {
@@ -53,6 +54,8 @@ const NotificationSettingsScreen = () => {
   const [preferences, setPreferences] = useState({});
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0].accessToken;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useFocusEffect(
   useCallback(() => {
@@ -384,7 +387,7 @@ const fetchPreferences = async () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

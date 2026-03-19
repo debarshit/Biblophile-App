@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface MemberDetails {
   userId: string;
@@ -19,6 +20,8 @@ const MemberProgressCard: React.FC<Props> = ({ memberDetails }) => {
   const [currentProgress, setCurrentProgress] = useState<number>(0);
   const [readingStatus, setReadingStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0]?.accessToken;
@@ -62,7 +65,7 @@ const MemberProgressCard: React.FC<Props> = ({ memberDetails }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   card: {
     backgroundColor: COLORS.secondaryDarkGreyHex,
     padding: SPACING.space_12,

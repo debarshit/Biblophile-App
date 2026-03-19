@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -21,6 +21,7 @@ import { useStore } from '../../../store/store';
 import { AutocompleteDropdown } from '../components/AutocompleteDropdown';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 import HeaderBar from '../../../components/HeaderBar';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const Input = ({ label, value, onChange, placeholder, required = false, keyboardType = 'default', maxLength }: any) => (
   <View style={styles.Field}>
@@ -127,6 +128,9 @@ const AddWorkScreen = ({ navigation }: any) => {
   const [publisher, setPublisher] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const addContributor = () => {
     setContributors([...contributors, { name: '', role: 'narrator' }]);
@@ -573,7 +577,7 @@ const AddWorkScreen = ({ navigation }: any) => {
 
 export default AddWorkScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   Screen: { 
     flex: 1, 
     backgroundColor: COLORS.primaryBlackHex 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import requests from '../../../services/requests';
 import { SPACING, COLORS, FONTSIZE, FONTFAMILY, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import CreateMeetingModal from './CreateBookClubMeeting';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Member {
   name: string;
@@ -57,6 +58,8 @@ const BookClubMeetings: React.FC<Props> = ({
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0].accessToken;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const limit = 10;
 
@@ -193,7 +196,7 @@ const BookClubMeetings: React.FC<Props> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     padding: SPACING.space_16,

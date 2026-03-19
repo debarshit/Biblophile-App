@@ -1,5 +1,5 @@
 // MonthlyWrapScreen.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Image, TouchableOpacity, Share, Platform, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 // import * as MediaLibrary from 'expo-media-library';
@@ -7,12 +7,15 @@ import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const MonthlyWrapScreen = ({ route }) => {
   const { month, year } = route.params;
   const [wrap, setWrap] = useState(null);
   const [loading, setLoading] = useState(true);
   const userDetails = useStore(state => state.userDetails);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     fetchWrap();
@@ -107,7 +110,7 @@ const MonthlyWrapScreen = ({ route }) => {
 
 export default MonthlyWrapScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -19,6 +19,7 @@ import Constants from 'expo-constants';
 import HeaderBar from '../../../components/HeaderBar';
 import { useAnalytics } from '../../../utils/analytics';
 import CityModal from '../../bookshop/components/CityModal';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const SettingsScreen = ({navigation, route}: any) => {
   const [cityModalVisible, setCityModalVisible] = React.useState(false);
@@ -26,6 +27,8 @@ const SettingsScreen = ({navigation, route}: any) => {
   const logout = useStore((state: any) => state.logout); 
   const username = userDetails[0].userUniqueUserName;
   const analytics = useAnalytics();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const openWebView = (url: string) => {
     navigation.push('Resources', {
@@ -309,7 +312,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
 export default SettingsScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {COLORS, FONTFAMILY, FONTSIZE, SPACING} from '../theme/theme';
 import { useStore } from '../store/store';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import GradientBGIcon from './GradientBGIcon';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface HeaderBarProps {
   title?: string;
@@ -21,6 +22,8 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
   showNotifications = false,
   showUsername = false,
 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const navigation = useNavigation<any>();  
   const userDetails = useStore((state: any) => state.userDetails);
   const unreadNotificationCount = useStore(
@@ -95,7 +98,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   HeaderContainer: {
     padding: SPACING.space_30,
     flexDirection: 'row',

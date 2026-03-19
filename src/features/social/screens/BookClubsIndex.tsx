@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import instance from '../../../services/axios';
@@ -7,6 +7,7 @@ import requests from '../../../services/requests';
 import BookClubCard from '../components/BookClubCard';
 import { COLORS, SPACING, FONTSIZE, FONTFAMILY, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface User {
   name: string;
@@ -30,6 +31,8 @@ const BookClubsIndex = () => {
   const accessToken = userDetails[0].accessToken;
 
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchBookClubs = async () => {
     try {
@@ -119,7 +122,7 @@ const BookClubsIndex = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     padding: SPACING.space_16,
     backgroundColor: COLORS.primaryBlackHex,

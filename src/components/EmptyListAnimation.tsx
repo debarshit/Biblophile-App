@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import LottieView from 'lottie-react-native';
 import {COLORS, FONTFAMILY, FONTSIZE} from '../theme/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface EmptyListAnimationProps {
   title: string;
 }
 
 const EmptyListAnimation: React.FC<EmptyListAnimationProps> = ({title}) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.EmptyCartContainer}>
       <LottieView
@@ -21,7 +24,7 @@ const EmptyListAnimation: React.FC<EmptyListAnimationProps> = ({title}) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   EmptyCartContainer: {
     flex: 1,
     justifyContent: 'center',

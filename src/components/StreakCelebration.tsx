@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Modal } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 //in future incorporate milestones like 5 days, 7 days, 30 days, etc.
 const StreakCelebration = ({ 
@@ -13,7 +14,8 @@ const StreakCelebration = ({
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const bounceAnim = useRef(new Animated.Value(0)).current;
-
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   useEffect(() => {
     if (visible) {
       Animated.sequence([
@@ -103,7 +105,7 @@ const StreakCelebration = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',

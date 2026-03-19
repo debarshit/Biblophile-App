@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle, useMemo } from 'react';
 import {
     StyleSheet,
     View,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 export interface CommentInputFormRef {
     focus: () => void;
@@ -43,6 +44,8 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
     const [pageNumber, setPageNumber] = useState(initialPageNumber.toString());
     const [isFocused, setIsFocused] = useState(false);
     const textInputRef = useRef<TextInput>(null);
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     useEffect(() => {
         setPageNumber(initialPageNumber.toString());
@@ -176,7 +179,7 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
     );
 });
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         backgroundColor: COLORS.primaryDarkGreyHex,
         borderTopWidth: 1,

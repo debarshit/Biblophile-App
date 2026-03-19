@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import instance from '../../../../services/axios';
 import { COLORS, SPACING } from '../../../../theme/theme';
 import { useStore } from '../../../../store/store';
 import requests from '../../../../services/requests';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 const StreakCalendarView = () => {
   const userDetails = useStore((state) => state.userDetails);
@@ -13,6 +14,8 @@ const StreakCalendarView = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentMonth, setCurrentMonth] = useState('');
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   
   // Initialized current month once on component mount
   useEffect(() => {
@@ -109,7 +112,7 @@ const StreakCalendarView = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   calendarContainer: {
     backgroundColor: COLORS.primaryGreyHex,
     borderRadius: 15,

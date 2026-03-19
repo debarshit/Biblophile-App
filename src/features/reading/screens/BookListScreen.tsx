@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
     View, 
     Text, 
@@ -16,6 +16,7 @@ import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import HeaderBar from '../../../components/HeaderBar';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = SPACING.space_8;
@@ -44,6 +45,8 @@ const BookListScreen = ({ route, navigation }) => {
 
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0].accessToken;
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const updateBookList = (newBooks: Book[], limit: number) => {
         setBooks((prev) => {
@@ -180,7 +183,7 @@ const BookListScreen = ({ route, navigation }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.primaryDarkGreyHex,

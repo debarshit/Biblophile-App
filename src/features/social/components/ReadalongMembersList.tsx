@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -16,6 +16,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -58,6 +59,8 @@ const ReadalongMembersList: React.FC<Props> = ({ visible, onClose, readalongId, 
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchParticipants = useCallback(async (page: number = 1, isRefresh: boolean = false) => {
     if (!accessToken) return;
@@ -275,7 +278,7 @@ const ReadalongMembersList: React.FC<Props> = ({ visible, onClose, readalongId, 
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

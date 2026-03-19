@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 type PromptType = 'CustomGoal' | 'PagesRead' | 'BooksFinished';
 
@@ -17,6 +18,9 @@ const CreatePrompt = ({ challengeId, IsHost, onBack, onSuccess }) => {
 
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0]?.accessToken;
+
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const handleSubmit = async () => {
         if (!IsHost) {
@@ -160,7 +164,7 @@ const CreatePrompt = ({ challengeId, IsHost, onBack, onSuccess }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         flex: 1,
         padding: SPACING.space_20,

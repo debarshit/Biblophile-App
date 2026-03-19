@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, Alert, Modal, Platform, Pressable, Text } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
 import { COLORS } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const TimePicker = ({ visible, reminderTime, setReminderTime, setDatePickerVisible }) => {
   const [tempTime, setTempTime] = useState(reminderTime || new Date());
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   
   const scheduleNotification = async (date: Date) => {
     const now = new Date();
@@ -102,7 +105,7 @@ const TimePicker = ({ visible, reminderTime, setReminderTime, setDatePickerVisib
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'flex-end',

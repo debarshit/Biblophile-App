@@ -3,6 +3,7 @@ import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, StyleSheet
 import { FontAwesome } from '@expo/vector-icons';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
 import BookItem from './BookItemComponent';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface CurrentlyReadingBooksProps {
   currentReads: any[];
@@ -30,6 +31,8 @@ const CurrentlyReadingBooks: React.FC<CurrentlyReadingBooksProps> = ({
       />
     )), [currentReads, navigation, onUpdatePress]
   );
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   return (
     <View style={styles.currentReadsSection}>
@@ -69,7 +72,7 @@ const CurrentlyReadingBooks: React.FC<CurrentlyReadingBooksProps> = ({
 
 export default CurrentlyReadingBooks;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   currentReadsSection: {
     width: '100%',
     marginBottom: SPACING.space_20,

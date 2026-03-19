@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import {
   BORDERRADIUS,
 } from '../theme/theme';
 import { useCity } from '../contexts/CityContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface BookPickerProps {
   title?: string;
@@ -52,6 +53,9 @@ const BookPicker: React.FC<BookPickerProps> = ({
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const searchBooks = async (text: string) => {
     if (!text) {
@@ -163,7 +167,7 @@ const BookPicker: React.FC<BookPickerProps> = ({
 
 export default BookPicker;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     marginTop: SPACING.space_16,
   },

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {StyleSheet, Image, Platform} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import { MaterialIcons, FontAwesome5, FontAwesome, Entypo } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import ChallengesScreen from '../features/challenges/screens/ChallengesScreen';
 import ProfileSummaryScreen from '../features/profile/screens/ProfileSummaryScreen';
 import { useStore } from '../store/store';
 import DiscoverScreen from '../features/discover/screens/DiscoverScreen';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Tab = createBottomTabNavigator();
 
@@ -19,6 +20,8 @@ const TabNavigator = () => {
   const userDetails = useStore((state: any) => state.userDetails);
   const username = userDetails[0].userUniqueUserName;
   const profilePic = userDetails[0].profilePic;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
     
   return (
     <Tab.Navigator
@@ -130,7 +133,7 @@ const TabNavigator = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   tabBarStyle: {
     height:  Platform.OS === 'ios' ? 80 : 60,
     position: 'absolute',

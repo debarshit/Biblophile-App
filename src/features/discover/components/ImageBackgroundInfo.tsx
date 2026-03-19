@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import GradientBGIcon from '../../../components/GradientBGIcon';
@@ -11,6 +11,7 @@ import ReadingHistoryModal from '../../reading/components/ReadingHistoryModal';
 import MissingBookInfoModal from './MissingBookInfoModal';
 import ShareModal from '../../../components/ShareModal';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface ImageBackgroundInfoProps {
   EnableBackHandler: boolean;
@@ -55,6 +56,8 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const userDetails = useStore((state: any) => state.userDetails);
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const getBookId = async () => {
     if (type !== 'ExternalBook') return id;
@@ -309,7 +312,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.primaryBlackHex },
   header: { padding: SPACING.space_20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   bookCard: { marginHorizontal: SPACING.space_20, marginBottom: SPACING.space_20, padding: SPACING.space_20, backgroundColor: COLORS.primaryGreyHex, borderRadius: BORDERRADIUS.radius_20, flexDirection: 'row' },

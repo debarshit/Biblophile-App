@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import requests from '../../../services/requests';
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HeaderBar from '../../../components/HeaderBar';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const ReadAlongsCreate = ({ route }: any) => {
   const [description, setDescription] = useState('');
@@ -28,6 +29,8 @@ const ReadAlongsCreate = ({ route }: any) => {
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0].accessToken;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const bookId = route.params.bookId;
   const navigation = useNavigation<any>();
@@ -185,7 +188,7 @@ const ReadAlongsCreate = ({ route }: any) => {
 
 export default ReadAlongsCreate;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.secondaryDarkGreyHex,

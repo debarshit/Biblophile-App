@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -22,6 +22,7 @@ import { useStore } from '../../../store/store';
 import { AutocompleteDropdown } from '../components/AutocompleteDropdown';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 import HeaderBar from '../../../components/HeaderBar';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Contributor {
   name: string;
@@ -124,6 +125,8 @@ const AddEditionScreen = ({ navigation, route }: any) => {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -494,7 +497,7 @@ const ContributorAutocomplete = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   Screen: { 
     flex: 1, 
     backgroundColor: COLORS.primaryBlackHex 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Platform, KeyboardAvoidingView, ScrollView, Alert, SafeAreaView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -8,6 +8,7 @@ import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const ProfileScreen = ({navigation, route}: any) => {
     const userDetails = useStore((state: any) => state.userDetails);
@@ -17,6 +18,9 @@ const ProfileScreen = ({navigation, route}: any) => {
     const [avatar, setAvatar] = useState<string>(userDetails[0].profilePic);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const pickImage = async () => {
         // Ask for permission
@@ -382,7 +386,7 @@ const ProfileScreen = ({navigation, route}: any) => {
 
 export default ProfileScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     wrapper: {
         flex: 1,
         justifyContent: 'center',

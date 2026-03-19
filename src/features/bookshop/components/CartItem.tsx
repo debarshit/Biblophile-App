@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,6 +15,7 @@ import {
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface CartItemProps {
   id: string;
@@ -35,6 +36,8 @@ const CartItem: React.FC<CartItemProps> = ({
   incrementCartItemQuantityHandler,
   decrementCartItemQuantityHandler,
 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View>
       {prices.length != 1 ? (
@@ -180,7 +183,7 @@ const CartItem: React.FC<CartItemProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   CartItemLinearGradient: {
     flex: 1,
     gap: SPACING.space_12,

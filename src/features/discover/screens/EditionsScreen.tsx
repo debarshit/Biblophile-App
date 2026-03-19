@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -23,6 +23,7 @@ import GradientBGIcon from '../../../components/GradientBGIcon';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useStore } from '../../../store/store';
 import { secondsToHMS, hmsToSeconds } from '../../../utils/timeConversion';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Edition {
   bookId: number;
@@ -69,6 +70,8 @@ const EditionsScreen = ({ navigation, route }: any) => {
   const limit = 20;
 
   const userDetails = useStore((state: any) => state.userDetails);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     const fetchEditions = async () => {
@@ -409,7 +412,7 @@ const EditionCard = ({ edition, title, onPress, isCurrent, switchMode }: {
   </TouchableOpacity>
 );
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.primaryBlackHex },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scrollContent: { paddingBottom: SPACING.space_30 },

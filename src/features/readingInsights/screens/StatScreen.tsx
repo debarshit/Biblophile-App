@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
@@ -19,6 +19,7 @@ import PageStatsChart from '../components/stats/PageStatsChart';
 import TimeStatsChart from '../components/stats/TimeStatsChart';
 import EmotionStatsChart from '../components/stats/EmotionStatsChart';
 import ProgressStatsChart from '../components/stats/ProgressStatsChart';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -35,6 +36,8 @@ const StatScreen = () => {
   const userDetails = useStore((state) => state.userDetails);
   const { currentStreak, maxStreak } = useStreak(userDetails[0]?.accessToken);
   const analytics = useAnalytics();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchLeaderboard = async () => {
     try {
@@ -223,7 +226,7 @@ const StatScreen = () => {
 
 export default StatScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   ScrollViewFlex: { flexGrow: 1 },
   container: {
     flex: 1,

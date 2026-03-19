@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Platform, Modal } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 export interface PickerOption {
   label: string;
@@ -26,6 +27,8 @@ const CustomPicker: React.FC<CustomPickerProps> = ({
   style,
   disabled = false,
 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const [showOptions, setShowOptions] = useState(false);
 
   const selectedOption = options.find(option => option.value === selectedValue);
@@ -143,7 +146,7 @@ const CustomPicker: React.FC<CustomPickerProps> = ({
 
 export default CustomPicker;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     position: 'relative',
     zIndex: 1000,

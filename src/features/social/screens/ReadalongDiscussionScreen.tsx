@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useMemo } from 'react';
 import { StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SPACING } from '../../../theme/theme';
@@ -6,6 +6,7 @@ import { CommentInputForm } from '../components/CommentInputForm';
 import ReadalongCheckpointDetails, { type ReadalongCheckpointDetailsRef } from '../components/ReadalongCheckpointDetails';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Host {
     name: string;
@@ -48,6 +49,8 @@ const ReadalongCheckpointDiscussion: React.FC = () => {
     const { readalong, currentUser, isMember, isHost, checkpointId, checkpointPrompt } = route.params;
 
     const checkpointDetailsRef = useRef<ReadalongCheckpointDetailsRef>(null);
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const handleCommentSubmit = useCallback(async (text: string, progressPercentage: number) => {
         if (checkpointDetailsRef.current) {
@@ -90,7 +93,7 @@ const ReadalongCheckpointDiscussion: React.FC = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.primaryBlackHex,

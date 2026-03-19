@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -39,6 +39,7 @@ import StreakWeeklyProgress from '../../readingInsights/components/StreakWeeklyP
 import CurrentReadsSection from '../../readingInsights/components/currentReads/CurrentReadsSection';
 import MerchShopBanner from '../../../components/MerchShopBanner';
 import ChallengesBanner from '../components/ChallengesBanner';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Spotlight {
   Id: string;
@@ -65,6 +66,8 @@ const HomeScreen = ({navigation}: any) => {
   const ListRef: any = useRef<FlatList>();
   const scrollViewRef = useRef(null);
   const scrollOffset = useRef(new Animated.Value(0)).current;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const { selectedCity, latitude, longitude } = useCity();
 
@@ -242,7 +245,7 @@ const HomeScreen = ({navigation}: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   hidden: {
     display: 'none',
   },

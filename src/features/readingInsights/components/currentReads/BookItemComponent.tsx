@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
 import { convertHttpToHttps } from '../../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface BookItemProps {
   book: any;
@@ -9,29 +10,36 @@ interface BookItemProps {
   onUpdatePress: (book: any) => void;
 }
 
-const BookItem: React.FC<BookItemProps> = React.memo(({ book, navigation, onUpdatePress }) => (
-  <View style={styles.book}>
-    <TouchableOpacity
-      onPress={() => {
-        navigation.push('Details', {
-          id: book.BookId,
-          type: "Book",
-        });
-      }}>
-      <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
-    </TouchableOpacity>
-    <TouchableOpacity 
-      style={styles.updateButton}
-      onPress={() => onUpdatePress(book)}
-    >
-      <Text style={styles.updateButtonText}>Update Status</Text>
-    </TouchableOpacity>
-  </View>
-));
+const BookItem: React.FC<BookItemProps> = React.memo(({ book, navigation, onUpdatePress }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+
+  return (
+    <View style={styles.book}>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.push('Details', {
+            id: book.BookId,
+            type: "Book",
+          });
+        }}>
+        <Image source={{ uri: convertHttpToHttps(book.BookPhoto) }} style={styles.bookPhoto} />
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.updateButton}
+        onPress={() => onUpdatePress(book)}
+      >
+        <Text style={styles.updateButtonText}>Update Status</Text>
+      </TouchableOpacity>
+    </View>
+  );
+});
+
 
 export default BookItem;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   book: {
     flexDirection: 'column',
     alignItems: 'center',
