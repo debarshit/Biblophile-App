@@ -29,7 +29,7 @@ interface Contributor {
   role: string;
 }
 
-const Input = ({ label, value, onChange, placeholder, required = false, keyboardType = 'default' }: any) => (
+const Input = ({ styles, label, value, onChange, placeholder, required = false, keyboardType = 'default' }: any) => (
   <View style={styles.Field}>
     <Text style={styles.Label}>
       {label} {required && <Text style={styles.Required}>*</Text>}
@@ -45,7 +45,7 @@ const Input = ({ label, value, onChange, placeholder, required = false, keyboard
   </View>
 );
 
-const Multiline = ({ label, value, onChange, placeholder }: any) => (
+const Multiline = ({ styles, label, value, onChange, placeholder }: any) => (
   <View style={styles.Field}>
     <Text style={styles.Label}>{label}</Text>
     <TextInput
@@ -61,21 +61,21 @@ const Multiline = ({ label, value, onChange, placeholder }: any) => (
   </View>
 );
 
-const SectionTitle = ({ children }: any) => (
+const SectionTitle = ({ styles, children }: any) => (
   <Text style={styles.Section}>{children}</Text>
 );
 
-const HelperText = ({ children }: any) => (
+const HelperText = ({ styles, children }: any) => (
   <Text style={styles.HelperText}>{children}</Text>
 );
 
-const AddButton = ({ title, onPress }: any) => (
+const AddButton = ({ styles, title, onPress }: any) => (
   <TouchableOpacity onPress={onPress} style={styles.AddBtn}>
     <Text style={styles.AddText}>{title}</Text>
   </TouchableOpacity>
 );
 
-const PrimaryButton = ({ title, onPress, disabled = false }: any) => (
+const PrimaryButton = ({ styles, title, onPress, disabled = false }: any) => (
   <TouchableOpacity 
     onPress={onPress} 
     style={[styles.Submit, disabled && styles.SubmitDisabled]}
@@ -85,7 +85,7 @@ const PrimaryButton = ({ title, onPress, disabled = false }: any) => (
   </TouchableOpacity>
 );
 
-const SecondaryButton = ({ title, onPress }: any) => (
+const SecondaryButton = ({ styles, title, onPress }: any) => (
   <TouchableOpacity onPress={onPress} style={styles.CancelBtn}>
     <Text style={styles.CancelText}>{title}</Text>
   </TouchableOpacity>
@@ -248,6 +248,7 @@ const AddEditionScreen = ({ navigation, route }: any) => {
 
           {/* Title */}
           <Input 
+            styles={styles}
             label="Title" 
             value={bookTitle} 
             onChange={setBookTitle}
@@ -256,8 +257,8 @@ const AddEditionScreen = ({ navigation, route }: any) => {
           />
 
           {/* Contributors */}
-          <SectionTitle>Contributors</SectionTitle>
-          <HelperText>
+          <SectionTitle styles={styles} >Contributors</SectionTitle>
+          <HelperText styles={styles}>
             Add narrators, translators, illustrators, etc.
           </HelperText>
           
@@ -290,10 +291,11 @@ const AddEditionScreen = ({ navigation, route }: any) => {
             </View>
           ))}
           
-          <AddButton title="+ Add a contributor" onPress={addContributor} />
+          <AddButton styles={styles} title="+ Add a contributor" onPress={addContributor} />
 
           {/* Description/Blurb */}
           <Multiline 
+            styles={styles}
             label="Blurb" 
             value={description} 
             onChange={setDescription}
@@ -303,7 +305,7 @@ const AddEditionScreen = ({ navigation, route }: any) => {
           {/* Cover Image URL */}
           <View style={styles.Field}>
             <Text style={styles.Label}>Cover Image URL</Text>
-            <HelperText>
+            <HelperText styles={styles}>
               If you don't add a cover image, the cover image of another edition will be used.
             </HelperText>
             <TextInput
@@ -338,7 +340,7 @@ const AddEditionScreen = ({ navigation, route }: any) => {
           {/* ISBN */}
           <View style={styles.Field}>
             <Text style={styles.Label}>ISBN/Unique Identifier</Text>
-            <HelperText>
+            <HelperText styles={styles}>
               Only include numbers or capital letters, remove any spaces or hyphen characters
             </HelperText>
             <TextInput
@@ -366,7 +368,7 @@ const AddEditionScreen = ({ navigation, route }: any) => {
           {format !== 'audiobook' ? (
             <View style={styles.Field}>
               <Text style={styles.Label}>Number of Pages</Text>
-              <HelperText>Leave blank for audiobooks</HelperText>
+              <HelperText styles={styles}>Leave blank for audiobooks</HelperText>
               <TextInput
                 value={pageCount}
                 onChangeText={setPageCount}
@@ -379,7 +381,7 @@ const AddEditionScreen = ({ navigation, route }: any) => {
           ) : (
             <View style={styles.Field}>
               <Text style={styles.Label}>Audio Duration</Text>
-              <HelperText>Input the duration as hours, minutes, and seconds</HelperText>
+              <HelperText styles={styles}>Input the duration as hours, minutes, and seconds</HelperText>
               <View style={styles.AudioRow}>
                 <View style={styles.AudioField}>
                   <Text style={styles.AudioLabel}>Hours</Text>
@@ -420,6 +422,7 @@ const AddEditionScreen = ({ navigation, route }: any) => {
 
           {/* Publication Year */}
           <Input
+            styles={styles}
             label="Publication Year"
             value={publicationYear}
             onChange={setPublicationYear}
@@ -432,7 +435,7 @@ const AddEditionScreen = ({ navigation, route }: any) => {
             <Text style={styles.Label}>
               Language <Text style={styles.Required}>*</Text>
             </Text>
-            <HelperText>One language, written in English, e.g. 'English' or 'Italian'</HelperText>
+            <HelperText styles={styles}>One language, written in English, e.g. 'English' or 'Italian'</HelperText>
             <TextInput
               value={language}
               onChangeText={setLanguage}
@@ -444,6 +447,7 @@ const AddEditionScreen = ({ navigation, route }: any) => {
 
           {/* Publisher */}
           <Input
+            styles={styles}
             label="Publisher Name"
             value={publisher}
             onChange={setPublisher}
@@ -454,6 +458,7 @@ const AddEditionScreen = ({ navigation, route }: any) => {
           <View style={styles.ButtonRow}>
             <View style={styles.ButtonHalf}>
               <PrimaryButton
+                styles={styles}
                 title={loading ? 'Adding Edition...' : 'Add Edition'}
                 onPress={handleSubmit}
                 disabled={loading}
@@ -461,6 +466,7 @@ const AddEditionScreen = ({ navigation, route }: any) => {
             </View>
             <View style={styles.ButtonHalf}>
               <SecondaryButton
+                styles={styles}
                 title="Cancel"
                 onPress={handleBackPress}
               />

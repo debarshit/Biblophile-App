@@ -1,15 +1,16 @@
 import React, { useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, Linking, TouchableOpacity, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
+import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { FontAwesome5 } from '@expo/vector-icons';
 import TeamInfoComponent from '../components/TeamInfoComponent';
-import { useNavigation, useTheme } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import GradientBGIcon from '../../../components/GradientBGIcon';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const AboutScreen = () => {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   
   const navigation = useNavigation<any>();
 

@@ -99,7 +99,7 @@ const createStyles = (COLORS) => StyleSheet.create({
   spotlightTitle: {
     fontSize: FONTSIZE.size_18,
     fontFamily: FONTFAMILY.poppins_bold,
-    color: 'white',
+    color: COLORS.primaryWhiteHex,
     textAlign: 'center',
     marginVertical: SPACING.space_20,
   },

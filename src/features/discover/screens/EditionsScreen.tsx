@@ -211,6 +211,7 @@ const EditionsScreen = ({ navigation, route }: any) => {
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>CURRENT EDITION</Text>
             <EditionCard
+              styles={styles}
               edition={currentEdition}
               title={editionsData?.title || ''}
               onPress={() => handleEditionPress(currentEdition)}
@@ -226,6 +227,7 @@ const EditionsScreen = ({ navigation, route }: any) => {
           {currentEdition && <Text style={styles.sectionLabel}>OTHER AVAILABLE EDITIONS</Text>}
           {(currentEdition ? otherEditions : editionsData?.editions)?.map((edition) => (
             <EditionCard
+              styles={styles}
               key={edition.bookId}
               edition={edition}
               title={editionsData?.title || ''}
@@ -341,7 +343,8 @@ const EditionsScreen = ({ navigation, route }: any) => {
   );
 };
 
-const EditionCard = ({ edition, title, onPress, isCurrent, switchMode }: {
+const EditionCard = ({ styles, edition, title, onPress, isCurrent, switchMode }: {
+  styles: any;
   edition: Edition;
   title: string;
   onPress: () => void;

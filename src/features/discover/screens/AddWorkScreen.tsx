@@ -23,7 +23,7 @@ import CustomPicker, { PickerOption } from '../../../components/CustomPickerComp
 import HeaderBar from '../../../components/HeaderBar';
 import { useTheme } from '../../../contexts/ThemeContext';
 
-const Input = ({ label, value, onChange, placeholder, required = false, keyboardType = 'default', maxLength }: any) => (
+const Input = ({ styles, label, value, onChange, placeholder, required = false, keyboardType = 'default', maxLength }: any) => (
   <View style={styles.Field}>
     <Text style={styles.Label}>
       {label} {required && <Text style={styles.Required}>*</Text>}
@@ -40,7 +40,7 @@ const Input = ({ label, value, onChange, placeholder, required = false, keyboard
   </View>
 );
 
-const Multiline = ({ label, value, onChange, placeholder }: any) => (
+const Multiline = ({ styles, label, value, onChange, placeholder }: any) => (
   <View style={styles.Field}>
     <Text style={styles.Label}>{label}</Text>
     <TextInput
@@ -56,21 +56,21 @@ const Multiline = ({ label, value, onChange, placeholder }: any) => (
   </View>
 );
 
-const SectionTitle = ({ children }: any) => (
+const SectionTitle = ({ styles, children }: any) => (
   <Text style={styles.Section}>{children}</Text>
 );
 
-const HelperText = ({ children }: any) => (
+const HelperText = ({ styles, children }: any) => (
   <Text style={styles.HelperText}>{children}</Text>
 );
 
-const AddButton = ({ title, onPress }: any) => (
+const AddButton = ({ styles, title, onPress }: any) => (
   <TouchableOpacity onPress={onPress} style={styles.AddBtn}>
     <Text style={styles.AddText}>{title}</Text>
   </TouchableOpacity>
 );
 
-const PrimaryButton = ({ title, onPress, disabled = false }: any) => (
+const PrimaryButton = ({ styles, title, onPress, disabled = false }: any) => (
   <TouchableOpacity 
     onPress={onPress} 
     style={[styles.Submit, disabled && styles.SubmitDisabled]}
@@ -80,7 +80,7 @@ const PrimaryButton = ({ title, onPress, disabled = false }: any) => (
   </TouchableOpacity>
 );
 
-const SecondaryButton = ({ title, onPress }: any) => (
+const SecondaryButton = ({ styles, title, onPress }: any) => (
   <TouchableOpacity onPress={onPress} style={styles.CancelBtn}>
     <Text style={styles.CancelText}>{title}</Text>
   </TouchableOpacity>
@@ -253,6 +253,7 @@ const AddWorkScreen = ({ navigation }: any) => {
           ) : null}
 
           <Input 
+            styles={styles}
             label="Title" 
             value={title} 
             onChange={setTitle}
@@ -265,15 +266,15 @@ const AddWorkScreen = ({ navigation }: any) => {
             <Text style={styles.Label}>
               Author(s) <Text style={styles.Required}>*</Text>
             </Text>
-            <HelperText>
+            <HelperText styles={styles}>
               This field is for the main authors of the book. Other contributors can be listed separately below.
             </HelperText>
             <AuthorAutocomplete value={authors} onChange={setAuthors} />
           </View>
 
           {/* Contributors */}
-          <SectionTitle>Contributors</SectionTitle>
-          <HelperText>
+          <SectionTitle styles={styles}>Contributors</SectionTitle>
+          <HelperText styles={styles}>
             Add narrators, translators, illustrators, etc.
           </HelperText>
           
@@ -306,10 +307,10 @@ const AddWorkScreen = ({ navigation }: any) => {
             </View>
           ))}
           
-          <AddButton title="+ Add a contributor" onPress={addContributor} />
+          <AddButton styles={styles} title="+ Add a contributor" onPress={addContributor} />
 
           {/* Series */}
-          <SectionTitle>Series</SectionTitle>
+          <SectionTitle styles={styles}>Series</SectionTitle>
           <View style={styles.Field}>
             <Text style={styles.Label}>Series Name</Text>
             <SeriesAutocomplete value={seriesName} onChange={setSeriesName} />
@@ -318,7 +319,7 @@ const AddWorkScreen = ({ navigation }: any) => {
           <View style={styles.SeriesRow}>
             <View style={styles.SeriesHalf}>
               <Text style={styles.Label}>Series Position</Text>
-              <HelperText>Number, range, or non-consecutive numbers</HelperText>
+              <HelperText styles={styles}>Number, range, or non-consecutive numbers</HelperText>
               <TextInput
                 value={seriesPosition}
                 onChangeText={setSeriesPosition}
@@ -330,7 +331,7 @@ const AddWorkScreen = ({ navigation }: any) => {
             
             <View style={styles.SeriesHalf}>
               <Text style={styles.Label}>Display Label (Optional)</Text>
-              <HelperText>e.g., Book 1, Prequel or First book in series</HelperText>
+              <HelperText styles={styles}>e.g., Book 1, Prequel or First book in series</HelperText>
               <TextInput
                 value={seriesLabel}
                 onChangeText={setSeriesLabel}
@@ -342,6 +343,7 @@ const AddWorkScreen = ({ navigation }: any) => {
           </View>
 
           <Multiline 
+            styles={styles}
             label="Blurb" 
             value={description} 
             onChange={setDescription}
@@ -431,7 +433,7 @@ const AddWorkScreen = ({ navigation }: any) => {
           {/* ISBN */}
           <View style={styles.Field}>
             <Text style={styles.Label}>ISBN/Unique Identifier</Text>
-            <HelperText>
+            <HelperText styles={styles}>
               Only include numbers or capital letters, remove any spaces or hyphen characters
             </HelperText>
             <TextInput
@@ -459,7 +461,7 @@ const AddWorkScreen = ({ navigation }: any) => {
           {format !== 'audiobook' ? (
             <View style={styles.Field}>
               <Text style={styles.Label}>Number of Pages</Text>
-              <HelperText>Leave blank for audiobooks</HelperText>
+              <HelperText styles={styles}>Leave blank for audiobooks</HelperText>
               <TextInput
                 value={pageCount}
                 onChangeText={setPageCount}
@@ -472,7 +474,7 @@ const AddWorkScreen = ({ navigation }: any) => {
           ) : (
             <View style={styles.Field}>
               <Text style={styles.Label}>Audio Duration</Text>
-              <HelperText>Input the duration as hours, minutes, and seconds</HelperText>
+              <HelperText styles={styles}>Input the duration as hours, minutes, and seconds</HelperText>
               <View style={styles.AudioRow}>
                 <View style={styles.AudioField}>
                   <Text style={styles.AudioLabel}>Hours</Text>
@@ -512,6 +514,7 @@ const AddWorkScreen = ({ navigation }: any) => {
           )}
 
           <Input
+            styles={styles}
             label="Edition Publication Date"
             value={publicationYear}
             onChange={setPublicationYear}
@@ -521,7 +524,7 @@ const AddWorkScreen = ({ navigation }: any) => {
 
           <View style={styles.Field}>
             <Text style={styles.Label}>Original Publication Year</Text>
-            <HelperText>Put in '0' if the original publication year is unknown</HelperText>
+            <HelperText styles={styles}>Put in '0' if the original publication year is unknown</HelperText>
             <TextInput
               value={originalYear}
               onChangeText={setOriginalYear}
@@ -536,7 +539,7 @@ const AddWorkScreen = ({ navigation }: any) => {
             <Text style={styles.Label}>
               Language <Text style={styles.Required}>*</Text>
             </Text>
-            <HelperText>One language, written in English, e.g. 'English' or 'Italian'</HelperText>
+            <HelperText styles={styles}>One language, written in English, e.g. 'English' or 'Italian'</HelperText>
             <TextInput
               value={language}
               onChangeText={setLanguage}
@@ -547,6 +550,7 @@ const AddWorkScreen = ({ navigation }: any) => {
           </View>
 
           <Input
+            styles={styles}
             label="Publisher Name"
             value={publisher}
             onChange={setPublisher}
@@ -557,6 +561,7 @@ const AddWorkScreen = ({ navigation }: any) => {
           <View style={styles.ButtonRow}>
             <View style={styles.ButtonHalf}>
               <PrimaryButton
+                styles={styles}
                 title={loading ? 'Adding Book...' : 'Add Book'}
                 onPress={handleSubmit}
                 disabled={loading}
@@ -564,6 +569,7 @@ const AddWorkScreen = ({ navigation }: any) => {
             </View>
             <View style={styles.ButtonHalf}>
               <SecondaryButton
+                styles={styles}
                 title="Cancel"
                 onPress={() => navigation.goBack()}
               />
