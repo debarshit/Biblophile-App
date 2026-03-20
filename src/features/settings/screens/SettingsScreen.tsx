@@ -20,9 +20,11 @@ import HeaderBar from '../../../components/HeaderBar';
 import { useAnalytics } from '../../../utils/analytics';
 import CityModal from '../../bookshop/components/CityModal';
 import { useTheme } from '../../../contexts/ThemeContext';
+import ThemeModal from '../components/ThemeSwitcherModal';
 
 const SettingsScreen = ({navigation, route}: any) => {
   const [cityModalVisible, setCityModalVisible] = React.useState(false);
+  const [themeModalVisible, setThemeModalVisible] = React.useState(false);
   const userDetails = useStore((state: any) => state.userDetails);
   const logout = useStore((state: any) => state.logout); 
   const username = userDetails[0].userUniqueUserName;
@@ -64,25 +66,31 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           icon: <MaterialIcons name="history" size={20} color="#fff" />,
           label: 'My Order History',
           onPress: () => navigation.push('History'),
-          // bgColor: '#FF8C42',
+          bgColor: '#FF8C42',
         },
         {
           icon: <FontAwesome color="#fff" name="rupee" size={20} />,
           label: 'Manage Subscription',
           onPress: () => navigation.push('Subscription'),
-          // bgColor: '#FF8C42',
+          bgColor: '#FF8C42',
         },
         {
           icon: <MaterialIcons color="#fff" name="notifications-none" size={20} />,
           label: 'Manage Notifications',
           onPress: () => navigation.push('NotificationSettings'),
-          // bgColor: '#FF8C42',
+          bgColor: '#FF8C42',
         },
         {
           icon: <FontAwesome5 color="#fff" name="city" size={20} />,
           label: 'Manage City',
           onPress: () => setCityModalVisible(true),
-          // bgColor: '#FF8C42',
+          bgColor: '#FF8C42',
+        },
+        {
+          icon: <FontAwesome5 color="#fff" name="sun" size={20} />,
+          label: 'Manage Theme',
+          onPress: () => setThemeModalVisible(true),
+          bgColor: '#FF8C42',
         },
       ]
     },
@@ -99,19 +107,19 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           icon: <Entypo name="bar-graph" size={20} color="#fff" />,
           label: 'My Stats',
           onPress: () => navigation.push('Stats'),
-          // bgColor: '#4ECDC4',
+          bgColor: '#4ECDC4',
         },
         {
           icon: <Entypo name="feather" size={20} color="#fff" />,
           label: 'My Notes',
           onPress: () => navigation.push('Note'),
-          // bgColor: '#4ECDC4',
+          bgColor: '#4ECDC4',
         },
         {
           icon: <FontAwesome5 name="user-clock" size={20} color="#fff" />,
           label: 'Reading Sessions',
           onPress: () => navigation.push('Durations'),
-          // bgColor: '#4ECDC4',
+          bgColor: '#4ECDC4',
         },
       ]
     },
@@ -122,13 +130,13 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           icon: <MaterialIcons color="#fff" name="quiz" size={20} />,
           label: 'Quiz',
           onPress: () => openWebView('https://biblophile.com/quiz'),
-          // bgColor: '#FFD166',
+          bgColor: '#FFD166',
         },
         {
           icon: <MaterialIcons color="#fff" name="man" size={20} />,
           label: 'Hangman',
           onPress: () => openWebView('https://biblophile.com/hangman/index.php'),
-          // bgColor: '#FFD166',
+          bgColor: '#FFD166',
         },
       ]
     },
@@ -139,25 +147,25 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           icon: <FontAwesome color="#fff" name="question" size={20} />,
           label: 'FAQs',
           onPress: () => openWebView('https://biblophile.com/policies/faq.php'),
-          // bgColor: '#6A0572',
+          bgColor: '#6A0572',
         },
         {
           icon: <FontAwesome color="#fff" name="book" size={20} />,
           label: 'Solution articles',
           onPress: () => openWebView('https://biblophile.freshdesk.com/support/solutions'),
-          // bgColor: '#6A0572',
+          bgColor: '#6A0572',
         },
         {
           icon: <MaterialIcons color="#fff" name="feedback" size={20} />,
           label: 'Report an Issue/Feedback',
           onPress: () => openWebView('https://biblophile.freshdesk.com/support/home'),
-          // bgColor: '#6A0572',
+          bgColor: '#6A0572',
         },
         {
           icon: <Feather color="#fff" name="mail" size={20} />,
           label: 'Contact Us',
           onPress: () => openWebView('https://biblophile.com/policies/customer-support.php'),
-          // bgColor: '#6A0572',
+          bgColor: '#6A0572',
         },
       ]
     },
@@ -169,19 +177,19 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           icon: <Feather color="#fff" name="flag" size={20} />,
           label: 'Terms of Service',
           onPress: () => openWebView('https://biblophile.com/policies/terms-of-service.php'),
-          // bgColor: '#1A535C',
+          bgColor: '#1A535C',
         },
         {
           icon: <MaterialIcons color="#fff" name="privacy-tip" size={20} />,
           label: 'Privacy Policy',
           onPress: () => openWebView('https://biblophile.com/policies/privacy-policy.php'),
-          // bgColor: '#1A535C',
+          bgColor: '#1A535C',
         },
         {
           icon: <Feather color="#fff" name="flag" size={20} />,
           label: 'Return/Refund Policy',
           onPress: () => openWebView('https://biblophile.com/policies/refund.php'),
-          // bgColor: '#1A535C',
+          bgColor: '#1A535C',
         },
       ]
     },
@@ -192,19 +200,19 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           icon: <FontAwesome color="#fff" name="group" size={20} />,
           label: 'About Us',
           onPress: () => navigation.push('About'),
-          // bgColor: '#7209B7',
+          bgColor: '#7209B7',
         },
         {
           icon: <FontAwesome5 color="#fff" name="user-friends" size={20} />,
           label: 'Refer a Friend',
           onPress: handleRefer,
-          // bgColor: '#7209B7',
+          bgColor: '#7209B7',
         },
         {
           icon: <Feather color="#fff" name="star" size={20} />,
           label: 'Rate in App Store',
           onPress: rateApp,
-          // bgColor: '#7209B7',
+          bgColor: '#7209B7',
         },
         {
           icon: <MaterialIcons color="#fff" name="delete" size={20} />,
@@ -226,6 +234,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
               ],
               { cancelable: true }
             ),
+            bgColor: '#E71D36',
         },
         {
           icon: <MaterialIcons color="#fff" name="logout" size={20} />,
@@ -240,7 +249,7 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
 
             logout();
           },
-          // bgColor: '#E71D36',
+          bgColor: '#E71D36',
         },
       ]
     },
@@ -306,6 +315,10 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
         onClose={() => setCityModalVisible(false)}
         modalType={null}
       />
+      <ThemeModal
+        visibility={themeModalVisible}
+        onClose={() => setThemeModalVisible(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -345,7 +358,7 @@ const createStyles = (COLORS) => StyleSheet.create({
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#202020',
+    backgroundColor: COLORS.primaryDarkGreyHex,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,

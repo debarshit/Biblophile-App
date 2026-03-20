@@ -103,10 +103,10 @@ const createStyles = (COLORS) => StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: COLORS.secondaryBlackRGBA,
   },
   modalContainer: {
-    backgroundColor: '#0C0F14',
+    backgroundColor: COLORS.primaryBlackHex,
     borderRadius: 20,
     width: '80%',
     padding: 24,
@@ -114,12 +114,12 @@ const createStyles = (COLORS) => StyleSheet.create({
   header: {
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#252A32',
+    borderBottomColor: COLORS.primaryGreyHex,
     marginBottom: 16,
   },
   headerText: {
     fontSize: 20,
-    color: '#FFFFFF',
+    color: COLORS.primaryWhiteHex,
     fontFamily: 'Poppins-Bold',
   },
   body: {
@@ -127,7 +127,7 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   instructionText: {
     fontSize: 16,
-    color: '#AEAEAE',
+    color: COLORS.secondaryLightGreyHex,
     marginBottom: 16,
   },
   cityList: {
@@ -138,7 +138,7 @@ const createStyles = (COLORS) => StyleSheet.create({
   cityItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#252A32',
+    backgroundColor: COLORS.primaryGreyHex,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -147,7 +147,7 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   selectedCityItem: {
     borderWidth: 1,
-    borderColor: '#D17842',
+    borderColor: COLORS.primaryOrangeHex,
   },
   cityItemContent: {
     flexDirection: 'row',
@@ -157,7 +157,7 @@ const createStyles = (COLORS) => StyleSheet.create({
     marginRight: 8,
   },
   cityName: {
-    color: '#FFFFFF',
+    color: COLORS.primaryWhiteHex,
     fontSize: 12,
     fontFamily: 'Poppins-Regular',
     maxWidth: '100%',

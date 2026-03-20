@@ -80,7 +80,7 @@ export const DARK_COLORS: Color = {
 export const LIGHT_COLORS: Color = {
   primaryRedHex: '#DC3535',
   primaryOrangeHex: '#D17842',
-  primaryBlackHex: '#FFFFFF',
+  primaryBlackHex: '#f6eedb',
   primaryDarkGreyHex: '#F6F6F6',
   secondaryDarkGreyHex: '#ECECEC',
   primaryGreyHex: '#DDDDDD',
@@ -89,7 +89,7 @@ export const LIGHT_COLORS: Color = {
   secondaryLightGreyHex: '#555555',
   primaryWhiteHex: '#000000',
   primaryBlackRGBA: 'rgba(255,255,255,0.5)',
-  secondaryBlackRGBA: 'rgba(255,255,255,0.7)',
+  secondaryBlackRGBA: 'rgba(0,0,0,0.7)',
 };
 
 interface FontFamily {

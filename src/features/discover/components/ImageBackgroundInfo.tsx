@@ -29,7 +29,7 @@ interface ImageBackgroundInfoProps {
 }
 
 // Extracted chip component for reusability
-const Chip: React.FC<{ text: string; style?: any }> = ({ text, style }) => (
+const Chip: React.FC<{ styles: any; text: string; style?: any }> = ({ styles, text, style }) => (
   <View style={[styles.chip, style]}>
     <Text style={styles.chipText}>{text}</Text>
   </View>
@@ -198,7 +198,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
               <Text style={styles.sectionLabel}>Mood</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {bookData.topEmotions.map((emotion: any, i) => (
-                  <Chip key={i} text={emotion.emotion} style={styles.emotionChip} />
+                  <Chip key={i} styles={styles} text={emotion.emotion} style={styles.emotionChip} />
                 ))}
               </ScrollView>
             </View>
@@ -263,7 +263,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
               <Text style={styles.sectionLabel}>Tags</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {readingStatus.tags.map((tag: any) => (
-                  <Chip key={tag.tagId} text={tag.tagName} style={{ backgroundColor: tag.tagColor || COLORS.primaryGreyHex }} />
+                  <Chip key={tag.tagId} styles={styles} text={tag.tagName} style={{ backgroundColor: tag.tagColor || COLORS.primaryGreyHex }} />
                 ))}
               </ScrollView>
             </View>

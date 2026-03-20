@@ -265,13 +265,13 @@ const App = () => {
   };
 
   return (
-    <NavigationContainer ref={navigationRef} linking={linking}>
-      <PostHogProvider
-        apiKey="phc_FSNgN6xgRp56gSFZVhNVr0PWaPthNY3VjRRc8H6IUFo"
-        options={posthogOptions}
-      >
-        {isAuthenticated ? (
-          <ThemeProvider>
+    <ThemeProvider>
+      <NavigationContainer ref={navigationRef} linking={linking}>
+        <PostHogProvider
+          apiKey="phc_FSNgN6xgRp56gSFZVhNVr0PWaPthNY3VjRRc8H6IUFo"
+          options={posthogOptions}
+        >
+          {isAuthenticated ? (
             <CityProvider>
               <Stack.Navigator screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Tab" component={TabNavigator} options={{animation: 'slide_from_bottom'}} />
@@ -320,19 +320,17 @@ const App = () => {
                 <Stack.Screen name="ThreadScreen" component={ThreadScreen} />
               </Stack.Navigator>
             </CityProvider>
-          </ThemeProvider>
-        ) : (
-          <ThemeProvider>
+          ) : (
             <Stack.Navigator screenOptions={{ headerShown: false }}>
               <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{animation: 'slide_from_bottom'}} />
               <Stack.Screen name="SignupLogin" component={SignupLogin} options={{animation: 'slide_from_right'}} />
               <Stack.Screen name="Resources" component={ResourceScreen} options={{animation: 'slide_from_right'}} />
             </Stack.Navigator>
-          </ThemeProvider>
-        )}
-        <Toast />
-      </PostHogProvider>
-    </NavigationContainer>
+          )}
+          <Toast />
+        </PostHogProvider>
+      </NavigationContainer>
+    </ThemeProvider>
   );
 };
 

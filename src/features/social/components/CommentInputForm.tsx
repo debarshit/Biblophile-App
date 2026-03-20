@@ -181,7 +181,7 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
 
 const createStyles = (COLORS) => StyleSheet.create({
     container: {
-        backgroundColor: COLORS.primaryDarkGreyHex,
+        backgroundColor: COLORS.primaryGreyHex,
         borderTopWidth: 1,
         borderTopColor: '#2d3748',
         paddingTop: SPACING.space_10,
@@ -189,7 +189,7 @@ const createStyles = (COLORS) => StyleSheet.create({
         paddingHorizontal: SPACING.space_16,
     },
     inputWrapper: {
-        backgroundColor: '#2d3748',
+        backgroundColor: COLORS.primaryDarkGreyHex,
         borderRadius: BORDERRADIUS.radius_10,
         borderWidth: 2,
         borderColor: 'transparent',
@@ -197,7 +197,6 @@ const createStyles = (COLORS) => StyleSheet.create({
     },
     inputWrapperFocused: {
         borderColor: COLORS.primaryOrangeHex,
-        backgroundColor: '#1a2332',
     },
     textInputContainer: {
         paddingHorizontal: SPACING.space_12,
@@ -244,7 +243,7 @@ replyUser: {
     pageInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#374151',
+        backgroundColor: COLORS.primaryGreyHex,
         paddingHorizontal: SPACING.space_10,
         paddingVertical: SPACING.space_4,
         borderRadius: BORDERRADIUS.radius_8,

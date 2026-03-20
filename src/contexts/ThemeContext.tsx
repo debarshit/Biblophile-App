@@ -1,11 +1,18 @@
 import React, { createContext, useContext, useMemo } from 'react'
 import { useColorScheme } from 'react-native'
 import { BORDERRADIUS, DARK_COLORS, FONTFAMILY, FONTSIZE, LIGHT_COLORS, SPACING } from '../theme/theme';
+import { useStore } from '../store/store';
 
 const ThemeContext = createContext(null)
 
 export const ThemeProvider = ({ children }) => {
-  const scheme = useColorScheme();
+  const systemScheme = useColorScheme();
+  const themePreference = useStore(state => state.themePreference);
+
+  const scheme = useMemo(() => {
+    if (themePreference === 'system') return systemScheme;
+    return themePreference;
+  }, [themePreference, systemScheme]);
 
   const theme = useMemo(() => {
     const COLORS = scheme === 'dark' ? DARK_COLORS : LIGHT_COLORS
