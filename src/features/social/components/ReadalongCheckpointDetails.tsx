@@ -80,9 +80,6 @@ const useComments = (checkpointId: string, currentUser: CurrentUser,  userDetail
     const [error, setError] = useState<string | null>(null);
     const [sort, setSort] = useState<string>(SORT_OPTIONS.OLDEST);
 
-    const { COLORS } = useTheme();
-    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
-
     const fetchComments = useCallback(async (page: number, currentSort: string, appending: boolean = true) => {
         if (pagination.loading) return;
 
@@ -182,13 +179,15 @@ const useComments = (checkpointId: string, currentUser: CurrentUser,  userDetail
 };
 
 // CommentItem Component
-const CommentItem = memo(({ 
+const CommentItem = memo(({
+    styles,
     comment, 
     currentUser, 
     isHost,
     onToggleLike,
     onDeleteComment
 }: { 
+    styles: any;
     comment: Comment, 
     currentUser: CurrentUser, 
     isHost: boolean,
@@ -284,7 +283,7 @@ const CommentItem = memo(({
 });
 
 // Checkpoint Prompt Component
-const CheckpointPrompt = memo(({ prompt }: { prompt: string }) => (
+const CheckpointPrompt = memo(({ prompt, styles }: { prompt: string, styles: any }) => (
     <View style={styles.promptContainer}>
         <View style={styles.promptHeader}>
             <Ionicons name="chatbubbles-outline" size={20} color={COLORS.primaryOrangeHex} />
@@ -305,6 +304,8 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
 }, ref) => {
     const userDetails = useStore((state: any) => state.userDetails);
     const navigation = useNavigation<any>();
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
     const {
         comments,
         pagination,
@@ -479,7 +480,7 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
     const renderListHeader = useCallback(() => (
         <>
             {/* Checkpoint Prompt */}
-            <CheckpointPrompt prompt={checkpointPrompt} />
+            <CheckpointPrompt prompt={checkpointPrompt} styles={styles} />
 
             {/* Comments Header with Sort Button */}
             <View style={styles.commentsHeader}>
@@ -573,6 +574,7 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
                         data={comments}
                         renderItem={({ item }) => (
                             <CommentItem
+                                styles={styles}
                                 comment={item}
                                 currentUser={currentUser}
                                 isHost={isHost}

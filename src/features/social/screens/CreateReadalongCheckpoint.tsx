@@ -89,7 +89,7 @@ const CreateReadalongCheckpoint: React.FC = () => {
     const [maxBookPages, setMaxBookPages] = useState<number | null>(readalong?.book_pages ?? null);
     const [currentUserId, setCurrentUserId] = useState<string | null>(currentUser?.userId ?? null);
     const { COLORS } = useTheme();
-  c onst styles = useMemo(() => createStyles(COLORS), [COLORS]);
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     // --- Effect to fetch existing checkpoint data (if updating) and initial context data ---
     useEffect(() => {
