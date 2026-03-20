@@ -11,7 +11,7 @@ import CustomPicker from '../../../components/CustomPickerComponent';
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
 
-const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible, onPress }) => {
+const EyeIcon: React.FC<{ visible: boolean; onPress: () => void, styles:any }> = ({ visible, onPress, styles }) => {
     return (
         <TouchableOpacity onPress={onPress}>
             {visible ? (
@@ -353,7 +353,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                                     value={loginPass} 
                                     onChangeText={(text) => handleLoginPass(text)}
                                 />
-                                <EyeIcon visible={passwordVisible} onPress={togglePasswordVisibility} />
+                                <EyeIcon visible={passwordVisible} onPress={togglePasswordVisibility} styles={styles} />
                             </View>
                         </View>
                         <TouchableOpacity onPress={() => forgotPassword()}>
