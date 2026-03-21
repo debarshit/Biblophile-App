@@ -14,6 +14,7 @@ export function WysiwygRender({ html, maxWidth = 400 }: WysiwygRenderProps) {
   const [processedHtml, setProcessedHtml] = useState<string>('');
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const tagStyles = useMemo(() => createTagStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     // Reset revealed spoilers when HTML content changes
@@ -80,7 +81,7 @@ export function WysiwygRender({ html, maxWidth = 400 }: WysiwygRenderProps) {
       <RenderHtml
         contentWidth={maxWidth}
         source={{ html: processedHtml }}
-        tagsStyles={tagsStyles}
+        tagsStyles={tagStyles}
         renderers={renderers}
         defaultTextProps={{
           selectable: true,
@@ -92,7 +93,7 @@ export function WysiwygRender({ html, maxWidth = 400 }: WysiwygRenderProps) {
 
 const createStyles = (COLORS) => StyleSheet.create({
   container: {
-    backgroundColor: COLORS.primaryBlackHex,
+    backgroundColor: 'transparent',
   },
   spoilerContainer: {
     alignSelf: 'flex-start',
@@ -114,9 +115,9 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
 });
 
-const tagsStyles = {
+const createTagStyles = (COLORS) => ({
   body: {
-    backgroundColor: COLORS.primaryBlackHex,
+    backgroundColor: COLORS.primaryBlackRGBA,
     color: COLORS.primaryWhiteHex,
   },
   p: {
@@ -142,7 +143,7 @@ const tagsStyles = {
   },
   blockquote: {
     color: COLORS.primaryBlackHex,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: COLORS.primaryWhiteHex, // better for theme
     fontStyle: 'italic',
     paddingLeft: SPACING.space_16,
     paddingRight: SPACING.space_16,
@@ -187,4 +188,4 @@ const tagsStyles = {
     textDecorationLine: 'line-through',
     color: COLORS.secondaryLightGreyHex,
   },
-};
+});

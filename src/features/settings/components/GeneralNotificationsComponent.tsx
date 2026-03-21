@@ -256,7 +256,7 @@ const createStyles = (COLORS) => StyleSheet.create({
   emptyMessage: { fontSize: FONTSIZE.size_18, fontFamily: FONTFAMILY.poppins_semibold, textAlign: 'center', color: COLORS.primaryWhiteHex },
   listContainer: { paddingTop: SPACING.space_16 },
   headerContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.space_16, paddingHorizontal: SPACING.space_4 },
-  unreadCountText: { fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_medium, color: COLORS.primaryGreyHex },
+  unreadCountText: { fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_medium, color: COLORS.secondaryLightGreyHex },
   markAllButton: { paddingHorizontal: SPACING.space_12, paddingVertical: SPACING.space_4 },
   markAllButtonText: { fontSize: FONTSIZE.size_12, fontFamily: FONTFAMILY.poppins_medium, color: COLORS.primaryOrangeHex },
   notificationCard: { backgroundColor: COLORS.primaryDarkGreyHex, borderRadius: SPACING.space_12, padding: SPACING.space_16, marginBottom: SPACING.space_12 },
