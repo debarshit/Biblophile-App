@@ -1,50 +1,118 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
 import { useTheme } from '../../../../contexts/ThemeContext';
+import { useStore } from '../../../../store/store';
+import instance from '../../../../services/axios';
+import requests from '../../../../services/requests';
 
 interface GenreBreakdownChartProps {
   timeFrame: string;
 }
 
-const SAMPLE_GENRES = [
-  { genre: 'Fantasy', count: 12 },
-  { genre: 'Literary Fiction', count: 9 },
-  { genre: 'Sci-Fi', count: 7 },
-  { genre: 'Mystery', count: 5 },
-  { genre: 'Non-Fiction', count: 4 },
-  { genre: 'Romance', count: 3 },
-];
+interface GenreItem {
+  genreId: number;
+  genreName: string;
+  count: number;
+}
 
-const CHART_COLORS = ['#FF7E5F', '#42D1D1', '#FFBC42', '#9C4DD4', '#45B69C', '#F06292'];
+const CHART_COLORS = ['#FF7E5F', '#42D1D1', '#FFBC42', '#9C4DD4', '#45B69C', '#F06292', '#64B5F6', '#FFD54F'];
+
+function timeFrameToFrom(timeFrame: string): string | undefined {
+  const now = new Date();
+  if (timeFrame === 'last-week') {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 7);
+    return d.toISOString().split('T')[0];
+  }
+  if (timeFrame === 'last-month') {
+    const d = new Date(now);
+    d.setMonth(d.getMonth() - 1);
+    return d.toISOString().split('T')[0];
+  }
+  return undefined;
+}
 
 const GenreBreakdownChart: React.FC<GenreBreakdownChartProps> = ({ timeFrame }) => {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const screenWidth = Dimensions.get('window').width;
+  const userDetails = useStore((state) => state.userDetails);
+
+  const [genres, setGenres] = useState<GenreItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [view, setView] = useState<'bar' | 'pie'>('bar');
 
-  const total = SAMPLE_GENRES.reduce((s, g) => s + g.count, 0);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(false);
+      try {
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const from = timeFrameToFrom(timeFrame);
+        const params = new URLSearchParams({ timezone: userTimezone });
+        if (from) params.set('from', from);
 
-  const barData = {
-    labels: SAMPLE_GENRES.map(g => g.genre.length > 8 ? g.genre.slice(0, 8) + '…' : g.genre),
-    datasets: [{ data: SAMPLE_GENRES.map(g => g.count) }],
-  };
+        const response = await instance.get(
+          `${requests.fetchGenreStats}?${params.toString()}`,
+          { headers: { Authorization: `Bearer ${userDetails[0].accessToken}` } },
+        );
 
-  const pieData = SAMPLE_GENRES.map((g, i) => ({
-    name: g.genre,
-    population: g.count,
-    color: CHART_COLORS[i % CHART_COLORS.length],
-    legendFontColor: COLORS.primaryWhiteHex,
-    legendFontSize: 13,
-  }));
+        const raw: GenreItem[] = response.data?.data?.items ?? [];
+        setGenres(raw.filter(g => g.count > 0));
+      } catch (e) {
+        console.error('Failed to fetch genre stats:', e);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [timeFrame]);
+
+  const total = genres.reduce((s, g) => s + g.count, 0);
+
+  // Bar chart truncates long genre names
+  const barData = useMemo(() => ({
+    labels:   genres.map(g => g.genreName.length > 8 ? g.genreName.slice(0, 8) + '…' : g.genreName),
+    datasets: [{ data: genres.map(g => g.count) }],
+  }), [genres]);
+
+  const pieData = useMemo(() =>
+    genres.map((g, i) => ({
+      name: g.genreName,
+      population: g.count,
+      color: CHART_COLORS[i % CHART_COLORS.length],
+      legendFontColor: COLORS.primaryWhiteHex,
+      legendFontSize: 13,
+    })),
+  [genres, COLORS]);
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator color={COLORS.primaryOrangeHex} />
+      </View>
+    );
+  }
+
+  if (error || genres.length === 0) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.emptyText}>
+          {error ? 'Failed to load data.' : 'No genre data yet.'}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.statContainer}>
       <Text style={styles.title}>Genre Breakdown</Text>
 
-      {/* Toggle */}
       <View style={styles.toggle}>
         {(['bar', 'pie'] as const).map(v => (
           <TouchableOpacity
@@ -97,11 +165,13 @@ const GenreBreakdownChart: React.FC<GenreBreakdownChartProps> = ({ timeFrame }) 
             />
             <View style={styles.legendContainer}>
               {pieData.map((item, i) => (
-                <View key={i} style={styles.legendRow}>
+                <View key={genres[i].genreId} style={styles.legendRow}>
                   <View style={[styles.dot, { backgroundColor: item.color }]} />
-                  <Text style={styles.legendText}>
+                  <Text style={styles.legendText} numberOfLines={1}>
                     {item.name}
-                    <Text style={styles.legendPct}> — {Math.round(item.population / total * 100)}%</Text>
+                    <Text style={styles.legendPct}>
+                      {' '}— {total > 0 ? Math.round((item.population / total) * 100) : 0}%
+                    </Text>
                   </Text>
                 </View>
               ))}
@@ -120,6 +190,17 @@ const createStyles = (COLORS: any) => StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: BORDERRADIUS.radius_8,
     padding: SPACING.space_8,
+  },
+  centered: {
+    paddingVertical: SPACING.space_36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
   },
   title: {
     fontSize: FONTSIZE.size_24,
