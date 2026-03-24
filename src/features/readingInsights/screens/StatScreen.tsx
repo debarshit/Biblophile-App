@@ -138,10 +138,6 @@ const StatScreen = () => {
     );
   };
 
-  const handleReminderPress = () => {
-    setDatePickerVisible(true);
-  };
-
   // const navigateToMonthlyWrap = () => {
   //   // Navigation logic would go here
   //   console.log("Navigate to monthly wrap");
