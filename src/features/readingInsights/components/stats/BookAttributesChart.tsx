@@ -1,99 +1,244 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
 import { useTheme } from '../../../../contexts/ThemeContext';
+import { useStore } from '../../../../store/store';
+import instance from '../../../../services/axios';
+import requests from '../../../../services/requests';
 
 interface BookAttributesChartProps {
   timeFrame: string;
 }
 
-// Sample data — replace with real API data
-const FICTION_DATA = [
-  { name: 'Fiction', count: 42, color: '#FF7E5F' },
-  { name: 'Non-Fiction', count: 18, color: '#42D1D1' },
-];
+interface FictionItem {
+  name: string;
+  count: number;
+  color: string;
+}
 
-const LENGTH_BUCKETS = [
-  { label: 'Short\n(<150 pg)', count: 8, color: '#FFBC42' },
-  { label: 'Medium\n(150–350)', count: 26, color: '#FF7E5F' },
-  { label: 'Long\n(350–600)', count: 18, color: '#42D1D1' },
-  { label: 'Epic\n(600+)', count: 8, color: '#9C4DD4' },
-];
+interface LengthBucket {
+  label: string;
+  count: number;
+  color: string;
+}
+
+const FICTION_COLORS: Record<string, string> = {
+  fiction:     '#FF7E5F',
+  'non-fiction': '#42D1D1',
+};
+
+const LENGTH_COLORS: Record<string, string> = {
+  'short (<150)':    '#FFBC42',
+  'medium (150–299)': '#FF7E5F',
+  'long (300–499)':  '#42D1D1',
+  'very long (500+)': '#9C4DD4',
+  'unknown':         '#888888',
+};
+
+// Display labels matching the backend's pageLengthBucket() output
+const LENGTH_DISPLAY: Record<string, string> = {
+  'short (<150)':     'Short\n(<150 pg)',
+  'medium (150–299)': 'Medium\n(150–299)',
+  'long (300–499)':   'Long\n(300–499)',
+  'very long (500+)': 'Epic\n(500+)',
+  'unknown':          'Unknown',
+};
+
+// Map timeFrame string → from date string (to= is omitted = today)
+function timeFrameToFrom(timeFrame: string): string | undefined {
+  const now = new Date();
+  if (timeFrame === 'last-week') {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 7);
+    return d.toISOString().split('T')[0];
+  }
+  if (timeFrame === 'last-month') {
+    const d = new Date(now);
+    d.setMonth(d.getMonth() - 1);
+    return d.toISOString().split('T')[0];
+  }
+  return undefined; // all-time
+}
 
 const BookAttributesChart: React.FC<BookAttributesChartProps> = ({ timeFrame }) => {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const screenWidth = Dimensions.get('window').width;
+  const userDetails = useStore((state) => state.userDetails);
 
-  const totalFiction = FICTION_DATA.reduce((s, f) => s + f.count, 0);
-  const totalLength = LENGTH_BUCKETS.reduce((s, l) => s + l.count, 0);
-  const allPageCounts = [80, 120, 200, 320, 450, 540, 720, 900]; // mock for avg
-  const avgPages = Math.round(allPageCounts.reduce((a, b) => a + b, 0) / allPageCounts.length);
+  const [fictionData, setFictionData]   = useState<FictionItem[]>([]);
+  const [lengthBuckets, setLengthBuckets] = useState<LengthBucket[]>([]);
+  const [avgPages, setAvgPages]         = useState<number | null>(null);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState(false);
 
-  const fictionPieData = FICTION_DATA.map(f => ({
-    name: f.name,
-    population: f.count,
-    color: f.color,
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(false);
+      try {
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const from = timeFrameToFrom(timeFrame);
+        const params = new URLSearchParams({ timezone: userTimezone });
+        if (from) params.set('from', from);
+        const authHeader = { Authorization: `Bearer ${userDetails[0].accessToken}` };
+
+        const [filteredRes, lengthRes] = await Promise.all([
+          // Fiction/non-fiction split — reuse getFilteredStats with bookType grouping
+          // We call it twice: once for fiction, once for non-fiction
+          instance.get(`${requests.fetchFilteredStats}?${params.toString()}`, { headers: authHeader }),
+          instance.get(`${requests.fetchLengthStats}?${params.toString()}`, { headers: authHeader }),
+        ]);
+
+        // --- Fiction vs Non-Fiction ---
+        // fetchFilteredStats returns booksCount for the whole slice.
+        // We need two calls: one filtered to fiction, one to non-fiction.
+        const [fictionRes, nonFictionRes] = await Promise.all([
+          instance.get(
+            `${requests.fetchFilteredStats}?${params.toString()}&bookType=fiction`,
+            { headers: authHeader },
+          ),
+          instance.get(
+            `${requests.fetchFilteredStats}?${params.toString()}&bookType=non-fiction`,
+            { headers: authHeader },
+          ),
+        ]);
+
+        const fictionCount    = fictionRes.data?.data?.booksCount ?? 0;
+        const nonFictionCount = nonFictionRes.data?.data?.booksCount ?? 0;
+
+        const newFictionData: FictionItem[] = [];
+        if (fictionCount > 0)    newFictionData.push({ name: 'Fiction',     count: fictionCount,    color: FICTION_COLORS['fiction'] });
+        if (nonFictionCount > 0) newFictionData.push({ name: 'Non-Fiction', count: nonFictionCount, color: FICTION_COLORS['non-fiction'] });
+        setFictionData(newFictionData);
+
+        // --- Length buckets ---
+        const rawBuckets: { label: string; count: number }[] = lengthRes.data?.data?.buckets ?? [];
+        const buckets: LengthBucket[] = rawBuckets
+          .filter(b => b.label !== 'unknown' && b.count > 0)
+          .map(b => ({
+            label: LENGTH_DISPLAY[b.label] ?? b.label,
+            count: b.count,
+            color: LENGTH_COLORS[b.label] ?? '#888888',
+          }));
+        setLengthBuckets(buckets);
+        setAvgPages(lengthRes.data?.data?.averagePages ?? null);
+
+      } catch (e) {
+        console.error('Failed to fetch book attributes:', e);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [timeFrame]);
+
+  const totalFiction = fictionData.reduce((s, f) => s + f.count, 0);
+  const totalLength  = lengthBuckets.reduce((s, b) => s + b.count, 0);
+
+  const fictionPieData = fictionData.map(f => ({
+    name:            f.name,
+    population:      f.count,
+    color:           f.color,
     legendFontColor: COLORS.primaryWhiteHex,
-    legendFontSize: 13,
+    legendFontSize:  13,
   }));
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator color={COLORS.primaryOrangeHex} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.emptyText}>Failed to load data.</Text>
+      </View>
+    );
+  }
+
+  const hasFiction = fictionData.length > 0;
+  const hasLength  = lengthBuckets.length > 0;
+
+  if (!hasFiction && !hasLength) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.emptyText}>No book data yet.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.statContainer}>
 
       {/* Fiction vs Non-Fiction */}
-      <Text style={styles.title}>Fiction vs Non-Fiction</Text>
-      <View style={styles.card}>
-        <View style={styles.halfPieRow}>
-          <PieChart
-            data={fictionPieData}
-            width={screenWidth / 2}
-            height={160}
-            chartConfig={{ color: () => COLORS.primaryOrangeHex }}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="10"
-            center={[20, 0]}
-            hasLegend={false}
-            absolute
-          />
-          <View style={styles.fictionLegend}>
-            {FICTION_DATA.map((f, i) => (
-              <View key={i} style={styles.fictionRow}>
-                <View style={[styles.dot, { backgroundColor: f.color }]} />
-                <View>
-                  <Text style={styles.fictionLabel}>{f.name}</Text>
-                  <Text style={styles.fictionPct}>
-                    {Math.round((f.count / totalFiction) * 100)}% · {f.count} books
-                  </Text>
-                </View>
+      {hasFiction && (
+        <>
+          <Text style={styles.title}>Fiction vs Non-Fiction</Text>
+          <View style={styles.card}>
+            <View style={styles.halfPieRow}>
+              <PieChart
+                data={fictionPieData}
+                width={screenWidth / 2}
+                height={160}
+                chartConfig={{ color: () => COLORS.primaryOrangeHex }}
+                accessor="population"
+                backgroundColor="transparent"
+                paddingLeft="10"
+                center={[20, 0]}
+                hasLegend={false}
+                absolute
+              />
+              <View style={styles.fictionLegend}>
+                {fictionData.map((f, i) => (
+                  <View key={i} style={styles.fictionRow}>
+                    <View style={[styles.dot, { backgroundColor: f.color }]} />
+                    <View>
+                      <Text style={styles.fictionLabel}>{f.name}</Text>
+                      <Text style={styles.fictionPct}>
+                        {totalFiction > 0 ? Math.round((f.count / totalFiction) * 100) : 0}% · {f.count} books
+                      </Text>
+                    </View>
+                  </View>
+                ))}
               </View>
-            ))}
+            </View>
           </View>
-        </View>
-      </View>
+        </>
+      )}
 
       {/* Length Breakdown */}
-      <Text style={[styles.title, { marginTop: SPACING.space_20 }]}>Book Length</Text>
-      <View style={styles.card}>
-        <View style={styles.avgRow}>
-          <Text style={styles.avgValue}>{avgPages}</Text>
-          <Text style={styles.avgUnit}>avg pages</Text>
-        </View>
-        <View style={styles.lengthGrid}>
-          {LENGTH_BUCKETS.map((b, i) => {
-            const pct = Math.round((b.count / totalLength) * 100);
-            return (
-              <View key={i} style={[styles.lengthBox, { borderTopColor: b.color, borderTopWidth: 3 }]}>
-                <Text style={[styles.lengthPct, { color: b.color }]}>{pct}%</Text>
-                <Text style={styles.lengthCount}>{b.count} books</Text>
-                <Text style={styles.lengthLabel}>{b.label}</Text>
+      {hasLength && (
+        <>
+          <Text style={[styles.title, { marginTop: SPACING.space_20 }]}>Book Length</Text>
+          <View style={styles.card}>
+            {avgPages !== null && (
+              <View style={styles.avgRow}>
+                <Text style={styles.avgValue}>{avgPages}</Text>
+                <Text style={styles.avgUnit}>avg pages</Text>
               </View>
-            );
-          })}
-        </View>
-      </View>
+            )}
+            <View style={styles.lengthGrid}>
+              {lengthBuckets.map((b, i) => {
+                const pct = totalLength > 0 ? Math.round((b.count / totalLength) * 100) : 0;
+                return (
+                  <View key={i} style={[styles.lengthBox, { borderTopColor: b.color, borderTopWidth: 3 }]}>
+                    <Text style={[styles.lengthPct, { color: b.color }]}>{pct}%</Text>
+                    <Text style={styles.lengthCount}>{b.count} books</Text>
+                    <Text style={styles.lengthLabel}>{b.label}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        </>
+      )}
 
     </View>
   );
@@ -106,6 +251,17 @@ const createStyles = (COLORS: any) => StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: BORDERRADIUS.radius_8,
     padding: SPACING.space_8,
+  },
+  centered: {
+    paddingVertical: SPACING.space_36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
   },
   title: {
     fontSize: FONTSIZE.size_24,

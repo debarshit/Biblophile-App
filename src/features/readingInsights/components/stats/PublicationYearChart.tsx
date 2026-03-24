@@ -90,7 +90,6 @@ const PublicationYearChart: React.FC<PublicationYearChartProps> = ({ timeFrame }
 
         const raw: ScatterPoint[] = response.data?.data?.points ?? [];
         setPoints(raw);
-        console.log(response.data.data);
       } catch (e) {
         console.error('Failed to fetch publication vs read stats:', e);
         setError(true);
