@@ -64,6 +64,8 @@ const MonthlyWrapLink = ({ onPress, currentMonth = 'November' }) => {
 };
 
 const MonthlyWrapMinimal = ({ onPress, currentMonth = 'November' }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <TouchableOpacity
       style={styles.minimalContainer}
@@ -98,6 +100,8 @@ const MonthlyWrapBanner = ({
   currentMonth = 'November',
   booksRead = 12,
 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <TouchableOpacity
       style={styles.bannerContainer}

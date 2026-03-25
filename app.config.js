@@ -29,8 +29,9 @@ export default {
     "infoPlist": {
       "NSCameraUsageDescription": "We need camera access to let you take a profile photo.",
       "NSPhotoLibraryUsageDescription": "We need photo library access so you can choose a profile picture.",
+      "NSPhotoLibraryAddUsageDescription": "This app needs access to save images to your library.",
       "UIBackgroundModes": ["fetch", "remote-notification"],
-      "ITSAppUsesNonExemptEncryption": false
+      "ITSAppUsesNonExemptEncryption": false,
     },
     "bundleIdentifier": IS_DEV
       ? "com.biblophile.biblophile.dev"
@@ -56,8 +57,6 @@ export default {
       : "com.debar_shit.BiblophileApp",
     "permissions": [
       "NOTIFICATIONS",
-      "READ_EXTERNAL_STORAGE",
-      "WRITE_EXTERNAL_STORAGE",
       "CAMERA"
     ],
     "packageVisibility": {

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
 import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
@@ -27,6 +27,8 @@ import FormatBreakdownChart from '../components/stats/FormatBreakdownChart';
 import PublicationYearChart from '../components/stats/PublicationYearChart';
 import BookAttributesChart from '../components/stats/BookAttributesChart';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -40,6 +42,7 @@ const StatScreen = () => {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState(null);
 
+  const navigation = useNavigation<any>();
   const userDetails = useStore((state) => state.userDetails);
   const { currentStreak, maxStreak } = useStreak(userDetails[0]?.accessToken);
   const analytics = useAnalytics();
@@ -113,6 +116,17 @@ const StatScreen = () => {
     }
   };
 
+  const getPreviousMonth = () => {
+    const now = new Date();
+    const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    const monthName = prevMonthDate.toLocaleString('default', { month: 'long' });
+    const monthNumber = prevMonthDate.toLocaleString('default', { month: 'numeric' });
+    const year = prevMonthDate.getFullYear();
+
+    return { monthName, monthNumber, year };
+  };
+
   useEffect(() => {
     setLoading(true);
     setUserAverageEmotions([]);
@@ -138,10 +152,10 @@ const StatScreen = () => {
     );
   };
 
-  // const navigateToMonthlyWrap = () => {
-  //   // Navigation logic would go here
-  //   console.log("Navigate to monthly wrap");
-  // };
+  const navigateToMonthlyWrap = () => {
+    const { monthNumber, monthName, year } = getPreviousMonth();
+    navigation.navigate('MonthlyWrap', { monthNumber, monthName, year });
+  };
 
   if (loading) {
     return (
@@ -187,20 +201,20 @@ const StatScreen = () => {
         return null;
     }
   };
-
+  const { monthName, year } = getPreviousMonth();
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* try insights or progress inplace of stats */}
         <HeaderBar showBackButton={true} title="Stats" />
         {/* Monthly Wrap Link */}
-        {/* <TouchableOpacity 
+        <TouchableOpacity 
           style={styles.wrapButton}
           onPress={navigateToMonthlyWrap}>
           <Ionicons name="calendar-outline" size={24} color={COLORS.primaryWhiteHex} />
-          <Text style={styles.wrapButtonText}>View Monthly Reading Wrap</Text>
+          <Text style={styles.wrapButtonText}>View {monthName} {year} Reading Wrap</Text>
           <Ionicons name="chevron-forward" size={24} color={COLORS.primaryWhiteHex} />
-        </TouchableOpacity> */}
+        </TouchableOpacity>
 
         {/* <Text style={styles.title}>Reading Streak Leaderboard</Text>
         <FlatList
