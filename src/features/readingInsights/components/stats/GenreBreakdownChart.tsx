@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
 import { useTheme } from '../../../../contexts/ThemeContext';
@@ -18,6 +18,7 @@ interface GenreItem {
 }
 
 const CHART_COLORS = ['#FF7E5F', '#42D1D1', '#FFBC42', '#9C4DD4', '#45B69C', '#F06292', '#64B5F6', '#FFD54F'];
+const TOP_N = 6;
 
 function timeFrameToFrom(timeFrame: string): string | undefined {
   const now = new Date();
@@ -32,6 +33,16 @@ function timeFrameToFrom(timeFrame: string): string | undefined {
     return d.toISOString().split('T')[0];
   }
   return undefined;
+}
+
+// Smart truncation
+function smartShorten(name: string) {
+  if (name.length <= 10) return name;
+
+  const words = name.split(' ');
+  if (words.length > 1) return words[0];
+
+  return name.slice(0, 10) + '…';
 }
 
 const GenreBreakdownChart: React.FC<GenreBreakdownChartProps> = ({ timeFrame }) => {
@@ -63,7 +74,7 @@ const GenreBreakdownChart: React.FC<GenreBreakdownChartProps> = ({ timeFrame }) 
         const raw: GenreItem[] = response.data?.data?.items ?? [];
         setGenres(raw.filter(g => g.count > 0));
       } catch (e) {
-        console.error('Failed to fetch genre stats:', e);
+        console.error(e);
         setError(true);
       } finally {
         setLoading(false);
@@ -73,23 +84,38 @@ const GenreBreakdownChart: React.FC<GenreBreakdownChartProps> = ({ timeFrame }) 
     fetchData();
   }, [timeFrame]);
 
-  const total = genres.reduce((s, g) => s + g.count, 0);
+  // Top N + Others
+  const processedGenres = useMemo(() => {
+    const sorted = [...genres].sort((a, b) => b.count - a.count);
+    const top = sorted.slice(0, TOP_N);
+    const rest = sorted.slice(TOP_N);
 
-  // Bar chart truncates long genre names
+    if (rest.length === 0) return top;
+
+    const othersCount = rest.reduce((sum, g) => sum + g.count, 0);
+
+    return [
+      ...top,
+      { genreId: -1, genreName: 'Others', count: othersCount },
+    ];
+  }, [genres]);
+
+  const total = processedGenres.reduce((s, g) => s + g.count, 0);
+
   const barData = useMemo(() => ({
-    labels:   genres.map(g => g.genreName.length > 8 ? g.genreName.slice(0, 8) + '…' : g.genreName),
-    datasets: [{ data: genres.map(g => g.count) }],
-  }), [genres]);
+    labels: processedGenres.map(g => smartShorten(g.genreName)),
+    datasets: [{ data: processedGenres.map(g => g.count) }],
+  }), [processedGenres]);
 
   const pieData = useMemo(() =>
-    genres.map((g, i) => ({
+    processedGenres.map((g, i) => ({
       name: g.genreName,
       population: g.count,
       color: CHART_COLORS[i % CHART_COLORS.length],
       legendFontColor: COLORS.primaryWhiteHex,
       legendFontSize: 13,
     })),
-  [genres, COLORS]);
+  [processedGenres, COLORS]);
 
   if (loading) {
     return (
@@ -99,7 +125,7 @@ const GenreBreakdownChart: React.FC<GenreBreakdownChartProps> = ({ timeFrame }) 
     );
   }
 
-  if (error || genres.length === 0) {
+  if (error || processedGenres.length === 0) {
     return (
       <View style={styles.centered}>
         <Text style={styles.emptyText}>
@@ -129,26 +155,30 @@ const GenreBreakdownChart: React.FC<GenreBreakdownChartProps> = ({ timeFrame }) 
 
       <View style={styles.chartCard}>
         {view === 'bar' ? (
-          <BarChart
-            data={barData}
-            width={screenWidth - SPACING.space_16 * 4}
-            height={220}
-            yAxisLabel=""
-            yAxisSuffix=""
-            chartConfig={{
-              backgroundColor: 'transparent',
-              backgroundGradientFrom: COLORS.primaryDarkGreyHex,
-              backgroundGradientTo: COLORS.primaryDarkGreyHex,
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(66, 209, 209, ${opacity})`,
-              labelColor: () => COLORS.primaryWhiteHex,
-              barPercentage: 0.55,
-            }}
-            style={{ borderRadius: BORDERRADIUS.radius_8 }}
-            showValuesOnTopOfBars
-            fromZero
-            verticalLabelRotation={30}
-          />
+          <>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <BarChart
+                data={barData}
+                width={screenWidth - SPACING.space_16 * 4}
+                height={300}
+                yAxisLabel=""
+                yAxisSuffix=""
+                chartConfig={{
+                  backgroundColor: 'transparent',
+                  backgroundGradientFrom: COLORS.primaryDarkGreyHex,
+                  backgroundGradientTo: COLORS.primaryDarkGreyHex,
+                  decimalPlaces: 0,
+                  color: (opacity = 1) => `rgba(66, 209, 209, ${opacity})`,
+                  labelColor: () => COLORS.primaryWhiteHex,
+                  barPercentage: 0.55,
+                }}
+                style={{ borderRadius: BORDERRADIUS.radius_8 }}
+                showValuesOnTopOfBars
+                fromZero
+                verticalLabelRotation={30}
+              />
+            </ScrollView>
+          </>
         ) : (
           <>
             <PieChart
@@ -165,7 +195,7 @@ const GenreBreakdownChart: React.FC<GenreBreakdownChartProps> = ({ timeFrame }) 
             />
             <View style={styles.legendContainer}>
               {pieData.map((item, i) => (
-                <View key={genres[i].genreId} style={styles.legendRow}>
+                <View key={processedGenres[i].genreId} style={styles.legendRow}>
                   <View style={[styles.dot, { backgroundColor: item.color }]} />
                   <Text style={styles.legendText} numberOfLines={1}>
                     {item.name}

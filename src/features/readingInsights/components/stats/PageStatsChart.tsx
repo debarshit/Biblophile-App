@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableWithoutFeedback, TextInput, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableWithoutFeedback, TextInput, Dimensions, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
 import instance from '../../../../services/axios';
@@ -91,17 +91,22 @@ const PageStatsChart: React.FC<PageStatsChartProps> = ({
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayFormatted = yesterday.toISOString().split('T')[0];
 
+  const chartWidth = Math.max(
+    Dimensions.get('window').width,
+    dataPoints.length * 50 + 40
+  );
+
   return (
     <View style={styles.statContainer}>
       <Text style={styles.title}>Pages Read in Last {timeFrame === 'last-week' ? '7 Days' : '30 Days'}</Text>
       <TouchableWithoutFeedback onPress={() => setTooltipPos({ ...tooltipPos, visible: false })}>
-        <View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <LineChart
             data={{
               labels: adjustedLabels,
               datasets: [{ data: dataPoints }],
             }}
-            width={Dimensions.get('window').width - SPACING.space_16 * 2}
+            width={chartWidth}
             height={220}
             yAxisLabel=""
             yAxisSuffix=" pgs"
@@ -163,7 +168,7 @@ const PageStatsChart: React.FC<PageStatsChartProps> = ({
               )}
             </View>
           )}
-        </View>
+        </ScrollView>
       </TouchableWithoutFeedback>
     </View>
   );

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
 import { useTheme } from '../../../../contexts/ThemeContext';
@@ -50,16 +50,21 @@ const TimeStatsChart: React.FC<TimeStatsChartProps> = ({ readingDurations, timeF
     return '';
   });
 
+  const chartWidth = Math.max(
+    Dimensions.get('window').width,
+    dataPointsDurations.length * 50 + 40
+  );
+
   return (
     <View style={styles.statContainer}>
       <Text style={styles.title}>Minutes Read in Last {timeFrame === 'last-week' ? '7 Days' : '30 Days'}</Text>
-      <View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <LineChart
           data={{
             labels: adjustedLabels,
             datasets: [{ data: dataPointsDurations }],
           }}
-          width={Dimensions.get('window').width - SPACING.space_16 * 2}
+          width={chartWidth}
           height={220}
           yAxisLabel=""
           yAxisSuffix=" mins"
@@ -97,7 +102,7 @@ const TimeStatsChart: React.FC<TimeStatsChartProps> = ({ readingDurations, timeF
             <Text style={styles.tooltipText}>{tooltipPos.date}</Text>
           </View>
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 };
