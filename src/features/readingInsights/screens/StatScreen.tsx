@@ -208,13 +208,13 @@ const StatScreen = () => {
         {/* try insights or progress inplace of stats */}
         <HeaderBar showBackButton={true} title="Stats" />
         {/* Monthly Wrap Link */}
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
           style={styles.wrapButton}
           onPress={navigateToMonthlyWrap}>
           <Ionicons name="calendar-outline" size={24} color={COLORS.primaryWhiteHex} />
           <Text style={styles.wrapButtonText}>View {monthName} {year} Reading Wrap</Text>
           <Ionicons name="chevron-forward" size={24} color={COLORS.primaryWhiteHex} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* <Text style={styles.title}>Reading Streak Leaderboard</Text>
         <FlatList

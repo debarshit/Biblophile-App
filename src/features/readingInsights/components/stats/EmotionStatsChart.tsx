@@ -24,14 +24,14 @@ const EmotionStatsChart: React.FC<EmotionStatsChartProps> = ({ userAverageEmotio
     );
   }
 
-  const formattedEmotions = userAverageEmotions.map(emotion => ({
-    ...emotion,
-    AvgScore: parseFloat(emotion.AvgScore)
-  }));
+  const total = userAverageEmotions.reduce(
+    (sum, item) => sum + item.EmotionCount,
+    0
+  );
 
-  const chartData = formattedEmotions.map((item, index) => ({
+  const chartData = userAverageEmotions.map((item, index) => ({
     name: item.Emotion,
-    population: item.AvgScore,
+    population: ((item.EmotionCount / total) * 100), // convert to %
     color: PIECOLORS[index % PIECOLORS.length],
     legendFontColor: COLORS.primaryWhiteHex,
     legendFontSize: 15,
@@ -60,7 +60,7 @@ const EmotionStatsChart: React.FC<EmotionStatsChartProps> = ({ userAverageEmotio
           {chartData.map((item, index) => (
             <View key={index} style={styles.labelRow}>
               <View style={[styles.colorBox, { backgroundColor: item.color }]} />
-              <Text style={styles.labelText}>{item.name}: {item.population}%</Text>
+              <Text style={styles.labelText}>{item.name}: {item.population.toFixed(2)}%</Text>
             </View>
           ))}
         </View>

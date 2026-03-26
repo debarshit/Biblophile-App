@@ -46,24 +46,24 @@ export const SHARE_PLATFORMS = [
 //     icon: 'threads',
 //     requiresImage: false,
 //   },
-  {
-    id: 'whatsapp' as SharePlatform,
-    name: 'WhatsApp',
-    icon: 'whatsapp',
-    requiresImage: false,
-  },
+  // {
+  //   id: 'whatsapp' as SharePlatform,
+  //   name: 'WhatsApp',
+  //   icon: 'whatsapp',
+  //   requiresImage: false,
+  // },
   {
     id: 'facebook' as SharePlatform,
     name: 'Facebook',
     icon: 'facebook',
     requiresImage: false,
   },
-  {
-    id: 'bluesky' as SharePlatform,
-    name: 'Bluesky',
-    icon: 'cloud',
-    requiresImage: false,
-  },
+  // {
+  //   id: 'bluesky' as SharePlatform,
+  //   name: 'Bluesky',
+  //   icon: 'cloud',
+  //   requiresImage: false,
+  // },
 ];
 
 export async function shareToplatform(config: ShareConfig): Promise<void> {

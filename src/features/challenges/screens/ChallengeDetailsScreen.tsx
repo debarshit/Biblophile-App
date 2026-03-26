@@ -64,7 +64,7 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
   const handleShare = async () => {
     if (!state.challenge) return;
     try {
-      await Share.share({ message: `Checkout this challenge at https://biblophile.com/challenges/${challengeId}/${challenge.challengeTitle}}` });
+      await Share.share({ message: `Checkout this challenge at https://biblophile.com/challenges/${challengeId}/${encodeURIComponent(challenge.challengeTitle)}` });
     } catch {
       Alert.alert('Error', 'Failed to share.');
     }
