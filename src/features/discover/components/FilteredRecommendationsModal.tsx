@@ -15,6 +15,7 @@ import requests from "../../../services/requests";
 import { useNavigation } from "@react-navigation/native";
 import { useAnalytics } from "../../../utils/analytics";
 import { useTheme } from "../../../contexts/ThemeContext";
+import { convertHttpToHttps } from "../../../utils/convertHttpToHttps";
 
 interface FilteredDiscoveryModalProps {
   visible: boolean;
@@ -258,7 +259,7 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
                           });
                         }}>
                         <Image
-                          source={{ uri: b.imagelink_square }}
+                          source={{ uri: convertHttpToHttps(b.imagelink_square) }}
                           style={styles.bookImage}
                         />
                         <Text numberOfLines={1} style={styles.bookTitle}>
