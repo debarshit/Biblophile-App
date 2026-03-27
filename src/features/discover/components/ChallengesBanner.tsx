@@ -1,11 +1,14 @@
-import React, { use } from 'react';
+import React, { use, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { Entypo } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const ChallengesBanner = () => {
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -30,7 +33,7 @@ const ChallengesBanner = () => {
 
 export default ChallengesBanner;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     marginHorizontal: SPACING.space_20,
     marginTop: SPACING.space_12,

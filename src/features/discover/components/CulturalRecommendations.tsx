@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.8;
@@ -32,6 +33,9 @@ const CulturalRecommendations = () => {
   const [loading, setLoading] = useState(true);
 
   const navigation = useNavigation<any>();
+
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     const fetchIndianBooks = async () => {
@@ -140,7 +144,7 @@ const CulturalRecommendations = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     marginVertical: SPACING.space_20,
   },

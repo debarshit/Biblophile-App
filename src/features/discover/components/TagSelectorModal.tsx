@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
   View, 
   Text, 
@@ -20,6 +20,7 @@ import {
 } from "../../../theme/theme";
 import requests from "../../../services/requests";
 import instance from "../../../services/axios";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 interface Tag {
   tagId: number;
@@ -52,6 +53,8 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchData = async (endpoint: string, setter?: (data: any) => void) => {
     try {
@@ -241,7 +244,7 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
 
 export default TagSelectorModal;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: COLORS.secondaryBlackRGBA,

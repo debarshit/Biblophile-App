@@ -9,7 +9,7 @@ const prefixes = [
 const config = {
   screens: {
     Stats: {
-      path: 'streak/:action?',
+      path: ':type(streak|readingStreaks)/:action?',
       parse: { action: (action: string) => `${action}` },
     },
     Details: {
@@ -18,6 +18,9 @@ const config = {
         id: (id: string) => `${id}`,
         type: (type: string) => `${type}`,
       },
+    },
+    History: {
+      path: 'dashboard/orders',
     },
     SubmitReview: {
       path: 'books/Book/:bookId/:title?/review-form',

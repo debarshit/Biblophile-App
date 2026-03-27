@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../th
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useAnalytics } from '../../../utils/analytics';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface CityEvent {
   id: string;
@@ -44,6 +45,8 @@ export default function CityEventCard({ event, accessToken }: CityEventCardProps
   const [userStatus, setUserStatus] = useState<'interested' | 'going' | null>(
     event.userStatus || null
   );
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const handleStatus = async (status: 'interested' | 'going') => {
     if (!accessToken) {
@@ -221,7 +224,7 @@ export default function CityEventCard({ event, accessToken }: CityEventCardProps
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   card: {
     borderRadius: BORDERRADIUS.radius_20,
     backgroundColor: COLORS.secondaryDarkGreyHex,

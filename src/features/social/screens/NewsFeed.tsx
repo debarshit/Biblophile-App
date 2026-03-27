@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { ActivityIndicator, FlatList, Image, Linking, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme'
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface FeedItem {
   title: string;
@@ -17,6 +18,8 @@ const NewsFeed = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const rssUrl = 'https://bookriot.com/feed/';
 
@@ -96,7 +99,7 @@ const NewsFeed = () => {
 
 export default NewsFeed;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

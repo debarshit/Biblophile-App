@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { useStore } from '../../../store/store';
 import requests from '../../../services/requests';
 import instance from '../../../services/axios';
 import { COLORS } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface BookClub {
   clubId: number;
@@ -35,6 +36,8 @@ const BookClubAbout: React.FC<Props> = ({
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0].accessToken;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const handleUpdate = async (field: 'about' | 'code') => {
     const url =
@@ -127,7 +130,7 @@ const BookClubAbout: React.FC<Props> = ({
 
 export default BookClubAbout;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: '#121212',

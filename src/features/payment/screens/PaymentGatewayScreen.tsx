@@ -1,9 +1,12 @@
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import React from 'react';
+import React, { useMemo } from 'react';
 import WebView from 'react-native-webview';
 import { COLORS } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const PaymentGatewayScreen = ({navigation, route}: any) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}>
         <WebView
@@ -16,4 +19,4 @@ const PaymentGatewayScreen = ({navigation, route}: any) => {
 
 export default PaymentGatewayScreen;
 
-const styles = StyleSheet.create({})
+const createStyles = (COLORS) => StyleSheet.create({})

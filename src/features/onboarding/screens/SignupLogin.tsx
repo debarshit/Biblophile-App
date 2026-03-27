@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Platform, Alert } from 'react-native';
 import { notificationService } from '../../../utils/notificationUtils';
 import { FontAwesome as FaIcon, MaterialCommunityIcons as MdIcon } from '@expo/vector-icons';
@@ -9,8 +9,9 @@ import { COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
 import CustomPicker from '../../../components/CustomPickerComponent';
 import { useAnalytics } from '../../../utils/analytics';
+import { useTheme } from '../../../contexts/ThemeContext';
 
-const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible, onPress }) => {
+const EyeIcon: React.FC<{ visible: boolean; onPress: () => void, styles:any }> = ({ visible, onPress, styles }) => {
     return (
         <TouchableOpacity onPress={onPress}>
             {visible ? (
@@ -25,6 +26,8 @@ const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible,
 const SignupLogin: React.FC = ({ navigation }: any) => {
     const login = useStore((state: any) => state.login);
     const analytics = useAnalytics();
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const [isRegistration, setIsRegistration] = useState<boolean>(false);
     const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -44,6 +47,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const [loginMessage, setLoginMessage] = useState<{ text: string; color: string }>({ text: '', color: COLORS.primaryBlackHex });
     const [signupMessage, setSignupMessage] = useState<{ text: string; color: string }>({ text: '', color: COLORS.primaryBlackHex });
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [newsletterOptIn, setNewsletterOptIn] = useState<boolean>(true);
 
     const handleNotificationPermission = async (userData: any) => {
         try {
@@ -181,17 +185,18 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                 setIsLoading(true);
                 try {
                     const payload: any = {
-    name: signupName,
-    userName: signupUserName,
-    email: signupEmail,
-    password: signupPass,
-    signupPassCnf: signupPassCnf,
-    source: source,
-};
+                        name: signupName,
+                        userName: signupUserName,
+                        email: signupEmail,
+                        password: signupPass,
+                        signupPassCnf: signupPassCnf,
+                        source: source,
+                        newsletterOptIn: newsletterOptIn,
+                    };
 
-if (signupPhone) {
-    payload.phone = signupPhone;
-}
+                    if (signupPhone) {
+                        payload.phone = signupPhone;
+                    }
 
                     const signupResponse = await instance.post(requests.userSignup, payload);
 
@@ -208,6 +213,7 @@ if (signupPhone) {
                         setSignupPass("");
                         setSignupPassCnf("");
                         setSource(null);
+                        setNewsletterOptIn(true);
                         analytics.signup('email');
                     }
                     else
@@ -347,7 +353,7 @@ if (signupPhone) {
                                     value={loginPass} 
                                     onChangeText={(text) => handleLoginPass(text)}
                                 />
-                                <EyeIcon visible={passwordVisible} onPress={togglePasswordVisibility} />
+                                <EyeIcon visible={passwordVisible} onPress={togglePasswordVisibility} styles={styles} />
                             </View>
                         </View>
                         <TouchableOpacity onPress={() => forgotPassword()}>
@@ -478,6 +484,21 @@ if (signupPhone) {
                             />
 
                         </View>
+                        <View style={styles.newsletterContainer}>
+                            <TouchableOpacity
+                                style={styles.checkboxRow}
+                                onPress={() => setNewsletterOptIn(!newsletterOptIn)}
+                            >
+                                <MdIcon
+                                name={newsletterOptIn ? "checkbox-marked" : "checkbox-blank-outline"}
+                                size={22}
+                                color={COLORS.primaryOrangeHex}
+                                />
+                                <Text style={styles.newsletterText}>
+                                Send me book recommendations & reader updates
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                         <TouchableOpacity onPress={handleSignup} style={styles.button} disabled={isLoading}>
                             {isLoading ? (
                                 <ActivityIndicator size='small' color={COLORS.primaryWhiteHex} />
@@ -508,7 +529,7 @@ if (signupPhone) {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     contentContainer: {
         flexGrow: 1,
         justifyContent: 'center',
@@ -613,6 +634,20 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.space_10,
         textAlign: 'center',
         color: COLORS.primaryWhiteHex,
+    },
+    newsletterContainer: {
+        width: 300,
+        marginBottom: 10,
+    },
+    checkboxRow: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    newsletterText: {
+        marginLeft: 8,
+        color: COLORS.primaryWhiteHex,
+        fontSize: FONTSIZE.size_14,
+        flex: 1,
     },
 });
 

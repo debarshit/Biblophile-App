@@ -1,27 +1,111 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Switch, Alert, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, Text, Switch, Alert, StyleSheet, TouchableOpacity, SafeAreaView, AppState, ScrollView } from 'react-native';
 import { notificationService } from '../../../utils/notificationUtils';
 import Toast from 'react-native-toast-message';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
+import { useFocusEffect } from '@react-navigation/native';
+import { useStore } from '../../../store/store';
+import instance from '../../../services/axios';
+import requests from '../../../services/requests';
+import { useTheme } from '../../../contexts/ThemeContext';
+
+const CATEGORY_META = {
+  social: {
+    title: "Social Interactions",
+    description: "Likes, replies, and follows",
+    icon: "👥",
+    channels: ["push"]
+  },
+
+  group_reading: {
+    title: "Group Reading",
+    description: "Buddy reads and readalong activity",
+    icon: "📚",
+    channels: ["push"]
+  },
+
+  challenges: {
+    title: "Reading Challenges",
+    description: "Challenge progress and completions",
+    icon: "🏁",
+    channels: ["push", "email"]
+  },
+
+  reading_updates: {
+    title: "Reading Updates",
+    description: "Book reviews, imports, and delivery updates",
+    icon: "📖",
+    channels: ["push", "email"]
+  },
+
+  reminders: {
+    title: "Reminders",
+    description: "Reading streaks and nudges",
+    icon: "⏰",
+    channels: ["push", "email"]
+  }
+};
 
 const NotificationSettingsScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [permissionStatus, setPermissionStatus] = useState('not_asked');
+  const [preferences, setPreferences] = useState({});
+  const userDetails = useStore((state: any) => state.userDetails);
+  const accessToken = userDetails[0].accessToken;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
-  useEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
     checkNotificationStatus();
-  }, []);
+    fetchPreferences();
+  }, [])
+);
+
+useEffect(() => {
+
+  const subscription = AppState.addEventListener('change', state => {
+
+    if (state === 'active') {
+      checkNotificationStatus();
+    }
+
+  });
+
+  return () => subscription.remove();
+
+}, []);
+
+const fetchPreferences = async () => {
+  try {
+
+    const res = await instance.get(
+      requests.getNotificationPreferences,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      }
+    );
+
+    setPreferences(res.data.data.preferences);
+
+  } catch (error) {
+    console.log('Failed to load preferences', error);
+  }
+};
 
   const checkNotificationStatus = async () => {
-    try {
+  try {
       setLoading(true);
-      const enabled = await notificationService.areNotificationsEnabled();
-      const inAppStatus = await notificationService.getInAppPermissionStatus();
-      
-      setNotificationsEnabled(enabled);
-      setPermissionStatus(inAppStatus);
+
+      const status = await notificationService.getFullPermissionStatus();
+
+      setNotificationsEnabled(status.enabled);
+      setPermissionStatus(status.inApp);
+
     } catch (error) {
       console.error('Error checking notification status:', error);
     } finally {
@@ -32,28 +116,21 @@ const NotificationSettingsScreen = () => {
   const handleNotificationToggle = async () => {
     if (notificationsEnabled) {
       // User wants to disable - direct them to settings
-      Alert.alert(
-        'Disable Notifications',
-        'To disable notifications, you\'ll need to turn them off in your device settings.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'Open Settings', 
-            onPress: () => notificationService.showPermissionSettingsAlert() 
-          }
-        ]
-      );
+      notificationService.showPermissionSettingsAlert();
+    }
+    // User wants to enable
+    const result = await notificationService.requestPermissions('general');
+    
+    if (!notificationsEnabled && result.success) {
+      await checkNotificationStatus();
+      Toast.show({
+        type: 'success',
+        text1: 'Notifications Enabled! 🎉',
+        text2: 'You\'ll now receive reading updates and reminders'
+      });
     } else {
-      // User wants to enable
-      const result = await notificationService.requestPermissions('general');
-      
-      if (result.success) {
-        setNotificationsEnabled(true);
-        Toast.show({
-          type: 'success',
-          text1: 'Notifications Enabled! 🎉',
-          text2: 'You\'ll now receive reading updates and reminders'
-        });
+      if (result.reason === 'device_denied') {
+        notificationService.showPermissionSettingsAlert();
       } else {
         handlePermissionDenied(result.reason);
       }
@@ -144,9 +221,44 @@ const NotificationSettingsScreen = () => {
     return COLORS.primaryRedHex;
   };
 
+ const toggleChannel = async (category, channel, currentValue) => {
+
+  const newValue = !currentValue;
+
+  // optimistic update
+  setPreferences(prev => ({
+    ...prev,
+    [category]: {
+      ...prev[category],
+      [channel]: newValue
+    }
+  }));
+
+  try {
+
+    await instance.patch(requests.updateNotificationPreferences, {
+      updates: [
+        {
+          category,
+          channel,
+          enabled: newValue
+        }
+      ]
+    }, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+    });
+
+  } catch (err) {
+    console.log("Update failed", err);
+  }
+};
+
   return (
     <SafeAreaView style={styles.container}>
       <HeaderBar title='Notification Settings' showBackButton={true} />
+      <ScrollView style={{ flex: 1 }}>
       <View style={styles.header}>
         <Text style={styles.title}>Notification Settings</Text>
         <Text style={styles.subtitle}>
@@ -174,35 +286,70 @@ const NotificationSettingsScreen = () => {
 
         {/* Notification types */}
         {notificationsEnabled && (
-          <View style={styles.typesContainer}>
-            <Text style={styles.typesTitle}>You'll receive notifications for:</Text>
-            
-            <View style={styles.typeRow}>
-              <Text style={styles.typeIcon}>📚</Text>
-              <Text style={styles.typeText}>Daily reading reminders</Text>
-            </View>
-            
-            <View style={styles.typeRow}>
-              <Text style={styles.typeIcon}>🔥</Text>
-              <Text style={styles.typeText}>Reading streak milestones</Text>
-            </View>
-            
-            <View style={styles.typeRow}>
-              <Text style={styles.typeIcon}>👥</Text>
-              <Text style={styles.typeText}>Buddy read invitations and updates</Text>
-            </View>
-            
-            <View style={styles.typeRow}>
-              <Text style={styles.typeIcon}>⏱️</Text>
-              <Text style={styles.typeText}>Reading session progress</Text>
-            </View>
-            
-            <View style={styles.typeRow}>
-              <Text style={styles.typeIcon}>🎯</Text>
-              <Text style={styles.typeText}>Challenge updates and achievements</Text>
-            </View>
-          </View>
-        )}
+  <View style={styles.preferencesGroup}>
+    {Object.keys(preferences).map((category, index) => {
+
+  const meta = CATEGORY_META[category];
+
+  const pushEnabled = preferences[category]?.push;
+  const emailEnabled = preferences[category]?.email;
+  const supportedChannels = meta.channels;
+
+  return (
+
+    <View
+  key={category}
+  style={[
+    styles.preferenceRow,
+    index !== Object.keys(preferences).length - 1 && styles.rowDivider
+  ]}
+>
+  <View style={styles.preferenceText}>
+    <Text style={styles.preferenceTitle}>
+      {meta.icon} {meta.title}
+    </Text>
+
+    <Text style={styles.preferenceDescription}>
+      {meta.description}
+    </Text>
+  </View>
+
+  <View style={styles.channelContainer}>
+  {supportedChannels.includes("push") && (
+    <TouchableOpacity
+      style={[
+        styles.channelButton,
+        pushEnabled && styles.channelActive
+      ]}
+      onPress={() =>
+        toggleChannel(category, "push", pushEnabled)
+      }
+    >
+      <Text style={styles.channelIcon}>📱</Text>
+    </TouchableOpacity>
+  )}
+
+  {supportedChannels.includes("email") && (
+    <TouchableOpacity
+      style={[
+        styles.channelButton,
+        emailEnabled && styles.channelActive
+      ]}
+      onPress={() =>
+        toggleChannel(category, "email", emailEnabled)
+      }
+    >
+      <Text style={styles.channelIcon}>✉️</Text>
+    </TouchableOpacity>
+  )}
+
+</View>
+</View>
+  );
+
+})}
+</View>
+)}
 
         {/* Troubleshooting */}
         {!notificationsEnabled && permissionStatus !== 'not_asked' && (
@@ -235,11 +382,12 @@ const NotificationSettingsScreen = () => {
           </Text>
         </View>
       </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
@@ -289,35 +437,6 @@ const styles = StyleSheet.create({
   settingStatus: {
     fontSize: FONTSIZE.size_14,
     fontFamily: FONTFAMILY.poppins_medium,
-  },
-  typesContainer: {
-    backgroundColor: COLORS.secondaryDarkGreyHex,
-    padding: SPACING.space_20,
-    borderRadius: BORDERRADIUS.radius_15,
-    marginBottom: SPACING.space_16,
-    borderWidth: 1,
-    borderColor: COLORS.primaryGreyHex,
-  },
-  typesTitle: {
-    fontSize: FONTSIZE.size_16,
-    fontFamily: FONTFAMILY.poppins_semibold,
-    color: COLORS.primaryWhiteHex,
-    marginBottom: SPACING.space_16,
-  },
-  typeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.space_12,
-  },
-  typeIcon: {
-    fontSize: FONTSIZE.size_20,
-    marginRight: SPACING.space_12,
-  },
-  typeText: {
-    fontSize: FONTSIZE.size_16,
-    fontFamily: FONTFAMILY.poppins_regular,
-    color: COLORS.secondaryLightGreyHex,
-    flex: 1,
   },
   troubleshootContainer: {
     backgroundColor: COLORS.secondaryDarkGreyHex,
@@ -373,6 +492,67 @@ const styles = StyleSheet.create({
     color: COLORS.secondaryLightGreyHex,
     lineHeight: SPACING.space_20,
   },
+  channelContainer: {
+  flexDirection: "row",
+  gap: 12,
+   minWidth: 70,
+  justifyContent: "flex-end"
+},
+
+channelButton: {
+  padding: 10,
+  borderRadius: 10,
+  backgroundColor: COLORS.primaryGreyHex,
+  alignItems: "center",
+  justifyContent: "center"
+},
+
+channelActive: {
+  borderWidth: 1,
+  borderColor: COLORS.primaryWhiteHex,
+},
+
+channelIcon: {
+  fontSize: 18
+},
+preferencesGroup: {
+  backgroundColor: COLORS.secondaryDarkGreyHex,
+  borderRadius: BORDERRADIUS.radius_15,
+  borderWidth: 1,
+  borderColor: COLORS.primaryGreyHex,
+  marginBottom: SPACING.space_16,
+},
+
+preferenceRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  paddingVertical: SPACING.space_15,
+  paddingHorizontal: SPACING.space_20,
+},
+
+rowDivider: {
+  borderBottomWidth: 1,
+  borderBottomColor: COLORS.primaryGreyHex,
+},
+
+preferenceText: {
+  flex: 1,
+  paddingRight: 10,
+},
+
+preferenceTitle: {
+  fontSize: FONTSIZE.size_16,
+  fontFamily: FONTFAMILY.poppins_semibold,
+  color: COLORS.primaryWhiteHex,
+},
+
+preferenceDescription: {
+  fontSize: FONTSIZE.size_12,
+  fontFamily: FONTFAMILY.poppins_regular,
+  color: COLORS.secondaryLightGreyHex,
+  marginTop: 2,
+},
 });
 
 export default NotificationSettingsScreen;

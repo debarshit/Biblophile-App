@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView, ActivityIndicator, SafeAreaView, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
@@ -10,6 +10,7 @@ import BookPicker from '../../../components/BookPicker';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Prompt {
     promptId: string;
@@ -43,6 +44,8 @@ const ChallengePromptDetailsScreen = ({ route }) => {
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0]?.accessToken;
     const navigation = useNavigation<any>();
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const hasQuantifiableTarget = promptData?.promptValue !== null;
     const progressPercentage = hasQuantifiableTarget 
@@ -577,7 +580,7 @@ const ChallengePromptDetailsScreen = ({ route }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: { flex: 1, backgroundColor: COLORS.primaryBlackHex },
     scrollContent: { padding: SPACING.space_20, paddingBottom: 100 },
     centerContainer: { flex: 1, backgroundColor: COLORS.primaryBlackHex, justifyContent: 'center', alignItems: 'center', padding: SPACING.space_32 },

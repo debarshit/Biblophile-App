@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Alert, Platform, ToastAndroid } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import Toast from 'react-native-toast-message';
 import { useCity } from '../../../contexts/CityContext';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const RequestBookButton = ({ id, isGoogleBook, product, userDetails, actualPrice }) => {
   const { selectedCity } = useCity();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   
 const submitBookRequest = async () => {
   if (userDetails) {
@@ -108,7 +111,7 @@ const submitBookRequest = async () => {
   }
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   SizeBox: {
     flex: 1,
     backgroundColor: COLORS.primaryDarkGreyHex,

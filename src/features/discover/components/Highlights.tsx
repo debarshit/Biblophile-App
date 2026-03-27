@@ -1,14 +1,17 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { FlatList, TouchableOpacity, Image, View, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SPACING } from '../../../theme/theme';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const Highlights = ({ highlights }) => {
   const flatListRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const listLength = highlights.length;
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   //to autoscroll the list
   useEffect(() => {
@@ -61,7 +64,7 @@ const Highlights = ({ highlights }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   carouselContainer: {
     alignItems: 'center',
     justifyContent: 'center',

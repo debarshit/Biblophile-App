@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, Alert, FlatList, StyleSheet, ActivityIndicator, SafeAreaView } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -7,6 +7,7 @@ import { useStore } from '../../../store/store';
 import Mascot from '../../../components/Mascot';
 import HeaderBar from '../../../components/HeaderBar';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const NotesScreen: React.FC = ({navigation}: any) => {
     const [notes, setNotes] = useState([]);
@@ -18,6 +19,8 @@ const NotesScreen: React.FC = ({navigation}: any) => {
 
     const userDetails = useStore((state: any) => state.userDetails);
     const userId = userDetails[0].userId;
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const fetchNotes = async (initial = false) => {
         if (loading || !hasMore) return;
@@ -181,7 +184,7 @@ const NotesScreen: React.FC = ({navigation}: any) => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: COLORS.primaryBlackHex,

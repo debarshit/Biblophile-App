@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -24,6 +24,7 @@ import requests from '../../../services/requests';
 import HeaderBar from '../../../components/HeaderBar';
 import EmptyListAnimation from '../../../components/EmptyListAnimation';
 import OrderHistoryCard from '../components/OrderHistoryCard';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { width } = Dimensions.get("window");
 
@@ -32,6 +33,8 @@ const OrderHistoryScreen = ({navigation}: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
 
   const [showAnimation, setShowAnimation] = useState(false);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const [loading, setLoading] = useState(true);
   const [offset, setOffset] = useState(0);
@@ -163,7 +166,7 @@ if (loading) {
 }
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     padding: SPACING.space_16, 

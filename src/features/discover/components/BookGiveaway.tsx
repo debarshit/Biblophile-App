@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -19,10 +19,14 @@ import {
 } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const BookGiveaway = () => {
   const [giveawayBook, setGiveawayBook] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     const fetchGiveawayBook = async () => {
@@ -93,7 +97,7 @@ const BookGiveaway = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     marginVertical: SPACING.space_20,
     paddingHorizontal: SPACING.space_30,

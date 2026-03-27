@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Animated,
 } from 'react-native';
@@ -11,6 +11,7 @@ import CustomPicker, { PickerOption } from '../../../components/CustomPickerComp
 import { useAnalytics } from '../../../utils/analytics';
 import { useNavigation } from '@react-navigation/native';
 import { hmsToSeconds, secondsToHMS } from '../../../utils/timeConversion';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface BookStatusModalProps {
   visible: boolean;
@@ -46,6 +47,8 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
   const userDetails = useStore((state: any) => state.userDetails);
   const analytics = useAnalytics();
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const statusOptions: PickerOption[] = [
     { label: 'Currently reading', value: 'Currently reading', icon: 'menu-book' },
@@ -100,8 +103,17 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
       }, {
         headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
       });
-      setUpdateMessage(data.data.status === "success" ? "Dates updated successfully!" : data.data.message);
-      if (data.data.status === "success") onUpdate();
+      if (data.data.status === "success") {
+        setUpdateMessage("Dates updated successfully!");
+        // close first
+        handleClose();
+        // then refresh parent
+        setTimeout(() => {
+          onUpdate();
+        }, 300);
+      } else {
+        setUpdateMessage(data.data.message);
+      }
     } catch (error) {
       setUpdateMessage("Uh oh! Please try again");
     }
@@ -334,7 +346,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
 
 export default BookStatusModal;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: SPACING.space_20 },
   modalContent: { width: '100%', maxWidth: 400, maxHeight: '90%', backgroundColor: COLORS.primaryGreyHex, borderRadius: BORDERRADIUS.radius_20, padding: 0, elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.space_20, paddingVertical: SPACING.space_16, borderBottomWidth: 1, borderBottomColor: COLORS.secondaryDarkGreyHex },

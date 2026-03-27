@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Dimensions,
   ImageBackground,
@@ -17,6 +17,7 @@ import {
   SPACING,
 } from '../theme/theme';
 import BGIcon from './BGIcon';
+import { useTheme } from '../contexts/ThemeContext';
 
 const CARD_WIDTH = Dimensions.get('window').width * 0.42;
 
@@ -43,6 +44,8 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
   rentPrice,
   buttonPressHandler,
 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <LinearGradient
       start={{x: 0, y: 0}}
@@ -102,7 +105,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   CardLinearGradientContainer: {
     padding: SPACING.space_15,
     borderRadius: BORDERRADIUS.radius_25,

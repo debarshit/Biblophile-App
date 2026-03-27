@@ -1,5 +1,5 @@
 import * as Notifications from 'expo-notifications';
-import { Platform, Alert } from 'react-native';
+import { Platform, Alert, Linking } from 'react-native';
 import { useStore } from '../store/store'; // Adjust path to your store
 
 // In-app permission states
@@ -98,6 +98,23 @@ class NotificationService {
     if (notifications.inAppPermissionGranted) return PERMISSION_STATES.GRANTED;
     if (notifications.inAppPermissionAsked) return PERMISSION_STATES.DENIED;
     return PERMISSION_STATES.NOT_ASKED;
+  }
+
+  async getFullPermissionStatus() {
+    const device = await Notifications.getPermissionsAsync();
+    const inApp = this.getInAppPermissionStatus();
+
+    let deviceStatus = device.status;
+
+    if (device.status !== 'granted' && !device.canAskAgain) {
+      deviceStatus = PERMISSION_STATES.DEVICE_DENIED;
+    }
+
+    return {
+      device: deviceStatus,
+      inApp,
+      enabled: deviceStatus === 'granted' && inApp === PERMISSION_STATES.GRANTED
+    };
   }
 
   // Check if we should show in-app permission request
@@ -274,7 +291,7 @@ class NotificationService {
         { text: 'Cancel', style: 'cancel' },
         { 
           text: 'Open Settings', 
-          onPress: () => Notifications.openSettingsAsync() 
+          onPress: () => Linking.openSettings()
         },
       ]
     );
@@ -288,6 +305,7 @@ class NotificationService {
     const notificationId = 'reading-timer-notification';
     
     try {
+      await Notifications.dismissNotificationAsync(notificationId);
       await Notifications.scheduleNotificationAsync({
         content: {
           title: 'Reading Session',
@@ -296,9 +314,6 @@ class NotificationService {
             type: 'timer',
             urlScheme: 'biblophile://streak/updateReadingStreak/'
           },
-          sticky: true,
-          autoDismiss: false,
-          priority: 'high',
           categoryIdentifier: 'timer',
         },
         trigger: null,

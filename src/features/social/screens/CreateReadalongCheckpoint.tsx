@@ -9,13 +9,14 @@ import {
     Alert,
     Platform,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 // --- Interface Definitions (Ensure consistency) ---
 interface Host {
@@ -87,6 +88,8 @@ const CreateReadalongCheckpoint: React.FC = () => {
     const [hostStatus, setHostStatus] = useState<boolean | null>(isHost ?? null);
     const [maxBookPages, setMaxBookPages] = useState<number | null>(readalong?.book_pages ?? null);
     const [currentUserId, setCurrentUserId] = useState<string | null>(currentUser?.userId ?? null);
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     // --- Effect to fetch existing checkpoint data (if updating) and initial context data ---
     useEffect(() => {
@@ -332,7 +335,7 @@ const CreateReadalongCheckpoint: React.FC = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#1a202c', // Example background

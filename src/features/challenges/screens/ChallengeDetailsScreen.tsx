@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -22,6 +22,7 @@ import HeaderBar from '../../../components/HeaderBar';
 import ChallengePrompts from '../components/ChallengePrompts';
 import CreatePrompt from '../components/CreatePrompt';
 import GradientBGIcon from '../../../components/GradientBGIcon';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -45,6 +46,9 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
   const userDetails = useStore((state) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
 
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+
   const updateState = (updates) => setState(prev => ({ ...prev, ...updates }));
 
   const showToast = (type, text1, text2) => Toast.show({ type, text1, text2 });
@@ -60,7 +64,7 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
   const handleShare = async () => {
     if (!state.challenge) return;
     try {
-      await Share.share({ message: `Checkout this challenge at https://biblophile.com/challenges/${challengeId}/${challenge.challengeTitle}}` });
+      await Share.share({ message: `Checkout this challenge at https://biblophile.com/challenges/${challengeId}/${encodeURIComponent(challenge.challengeTitle)}` });
     } catch {
       Alert.alert('Error', 'Failed to share.');
     }
@@ -318,7 +322,7 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

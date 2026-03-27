@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { SPACING, COLORS, FONTSIZE, FONTFAMILY, BORDERRADIUS } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface MeetingModalProps {
   visible: boolean;
@@ -49,6 +50,8 @@ const CreateMeetingModal: React.FC<MeetingModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     if (existingMeeting) {
@@ -218,7 +221,7 @@ const CreateMeetingModal: React.FC<MeetingModalProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   centeredView: {
     flex: 1,
     justifyContent: 'center',

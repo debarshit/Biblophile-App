@@ -114,6 +114,15 @@ const requests = {
     fetchReadingDurationGraph: `${APIURL}reading/reading-insights/duration-graph`,
     fetchReadingStreakLeaderboard: `${APIURL}reading/reading-insights/leaderboard`,
     fetchReadingTips: `${APIURL}reading/reading-insights/tips`,
+    fetchPublicationVsReadStats: `${APIURL}reading/reading-insights/publication-vs-read`,
+    fetchFilteredStats: `${APIURL}reading/reading-insights/filtered`,
+    fetchLengthStats: `${APIURL}reading/reading-insights/lengths`,
+    fetchFormatStats: `${APIURL}reading/reading-insights/formats`,
+    fetchAuthorStats: `${APIURL}reading/reading-insights/authors`,
+    fetchRatingStats: `${APIURL}reading/reading-insights/ratings`,
+    fetchGenreStats: `${APIURL}reading/reading-insights/genres`,
+    fetchBooksFinishedByDay: `${APIURL}reading/reading-insights/books-finished-by-day`,
+    fetchReadingOverview: `${APIURL}reading/reading-insights/overview`,
 
     //give-away requests
     fetchGiveawayBooks: `${APIURL}giveaways/books`,
@@ -131,6 +140,8 @@ const requests = {
     markNotificationAsRead: (notificationId) => `${APIURL}notifications/${notificationId}/read`,
     markAllNotificationsAsRead: `${APIURL}notifications/mark-all-read`,
     getUnreadNotificationCount: `${APIURL}notifications/unread-count`,
+    getNotificationPreferences: `${APIURL}notifications/preferences`,
+    updateNotificationPreferences: `${APIURL}notifications/preferences`,
 
     //user-relations requests
     fetchUserRelations: (pageOwnerId) => `${APIURL}social/user-relations/${pageOwnerId}/relations`,

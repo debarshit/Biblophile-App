@@ -1,14 +1,17 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme'
 import requests from '../../../services/requests';
 import instance from '../../../services/axios';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const GenreScreen = () => {
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const convertHttpToHttps = (url) => {
     if (url && url.startsWith('http://')) {
@@ -78,7 +81,7 @@ const GenreScreen = () => {
 
 export default GenreScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

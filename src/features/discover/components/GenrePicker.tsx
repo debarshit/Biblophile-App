@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, memo } from 'react';
+import React, { useEffect, useRef, useState, memo, useMemo } from 'react';
 import { 
   Dimensions, 
   FlatList, 
@@ -25,6 +25,7 @@ import {
   SPACING 
 } from '../../../theme/theme';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const MAX_GENRES_PER_ROW = 3;
 
@@ -49,6 +50,8 @@ const GenrePicker = ({ genres = ['All'], CoffeeCardAddToCart }) => {
 
   const navigation = useNavigation<any>();
   const listRef = useRef(null);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   // Fetch books when genre changes
   useEffect(() => {
@@ -180,7 +183,7 @@ const GenrePicker = ({ genres = ['All'], CoffeeCardAddToCart }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   sectionTitle: {
     fontSize: FONTSIZE.size_18,
     fontFamily: FONTFAMILY.poppins_bold,

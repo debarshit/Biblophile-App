@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle, useMemo } from 'react';
 import {
     StyleSheet,
     View,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 export interface CommentInputFormRef {
     focus: () => void;
@@ -43,6 +44,8 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
     const [pageNumber, setPageNumber] = useState(initialPageNumber.toString());
     const [isFocused, setIsFocused] = useState(false);
     const textInputRef = useRef<TextInput>(null);
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     useEffect(() => {
         setPageNumber(initialPageNumber.toString());
@@ -176,9 +179,9 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
     );
 });
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
-        backgroundColor: COLORS.primaryDarkGreyHex,
+        backgroundColor: COLORS.primaryGreyHex,
         borderTopWidth: 1,
         borderTopColor: '#2d3748',
         paddingTop: SPACING.space_10,
@@ -186,7 +189,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: SPACING.space_16,
     },
     inputWrapper: {
-        backgroundColor: '#2d3748',
+        backgroundColor: COLORS.primaryDarkGreyHex,
         borderRadius: BORDERRADIUS.radius_10,
         borderWidth: 2,
         borderColor: 'transparent',
@@ -194,7 +197,6 @@ const styles = StyleSheet.create({
     },
     inputWrapperFocused: {
         borderColor: COLORS.primaryOrangeHex,
-        backgroundColor: '#1a2332',
     },
     textInputContainer: {
         paddingHorizontal: SPACING.space_12,
@@ -241,7 +243,7 @@ replyUser: {
     pageInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#374151',
+        backgroundColor: COLORS.primaryGreyHex,
         paddingHorizontal: SPACING.space_10,
         paddingVertical: SPACING.space_4,
         borderRadius: BORDERRADIUS.radius_8,

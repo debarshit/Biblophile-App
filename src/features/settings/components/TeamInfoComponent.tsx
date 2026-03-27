@@ -1,13 +1,16 @@
 import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { SPACING, COLORS, BORDERRADIUS, FONTSIZE, FONTFAMILY } from '../../../theme/theme';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const TeamInfoComponent = () => {
     const [currentReads, setCurrentReads] = useState({});
     const navigation = useNavigation<any>();
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const fetchCurrentReads = async (userId) => {
         try {
@@ -100,7 +103,7 @@ const TeamInfoComponent = () => {
 
 export default TeamInfoComponent;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     section: {
         marginHorizontal: SPACING.space_16,
         marginBottom: SPACING.space_24,

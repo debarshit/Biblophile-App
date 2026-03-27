@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useStore } from '../../../store/store';
 import { useAnalytics } from '../../../utils/analytics';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const cities = [
   { value: "Bengaluru", label: "Bengaluru", icon: <FontAwesome5 name="city" size={20} color="#D17842" /> },
@@ -18,6 +19,8 @@ interface CityModalProps {
 const CityModal = ({ visibility, onClose, modalType=null }: CityModalProps) => {
   const { selectedCity, setSelectedCity } = useStore();
   const analytics = useAnalytics();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   
   const handleCitySelect = (cityName: string) => {
     // Track if user was detected in Bangalore and responded
@@ -95,15 +98,15 @@ const CityModal = ({ visibility, onClose, modalType=null }: CityModalProps) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   modalBackdrop: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: COLORS.secondaryBlackRGBA,
   },
   modalContainer: {
-    backgroundColor: '#0C0F14',
+    backgroundColor: COLORS.primaryBlackHex,
     borderRadius: 20,
     width: '80%',
     padding: 24,
@@ -111,12 +114,12 @@ const styles = StyleSheet.create({
   header: {
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#252A32',
+    borderBottomColor: COLORS.primaryGreyHex,
     marginBottom: 16,
   },
   headerText: {
     fontSize: 20,
-    color: '#FFFFFF',
+    color: COLORS.primaryWhiteHex,
     fontFamily: 'Poppins-Bold',
   },
   body: {
@@ -124,7 +127,7 @@ const styles = StyleSheet.create({
   },
   instructionText: {
     fontSize: 16,
-    color: '#AEAEAE',
+    color: COLORS.secondaryLightGreyHex,
     marginBottom: 16,
   },
   cityList: {
@@ -135,7 +138,7 @@ const styles = StyleSheet.create({
   cityItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#252A32',
+    backgroundColor: COLORS.primaryGreyHex,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -144,7 +147,7 @@ const styles = StyleSheet.create({
   },
   selectedCityItem: {
     borderWidth: 1,
-    borderColor: '#D17842',
+    borderColor: COLORS.primaryOrangeHex,
   },
   cityItemContent: {
     flexDirection: 'row',
@@ -154,7 +157,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   cityName: {
-    color: '#FFFFFF',
+    color: COLORS.primaryWhiteHex,
     fontSize: 12,
     fontFamily: 'Poppins-Regular',
     maxWidth: '100%',

@@ -1,11 +1,12 @@
 import { StyleSheet, Text, View, FlatList, ActivityIndicator, Pressable } from 'react-native';
-import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { Feather } from '@expo/vector-icons';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import ReadalongCheckpointDetails, { ReadalongCheckpointDetailsRef } from './ReadalongCheckpointDetails'; // Adjust path
 import { useNavigation } from '@react-navigation/native';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 export interface ReadalongCheckpointsRef {
     getCurrentCheckpointId: () => string | null;
@@ -62,6 +63,8 @@ const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckp
 
     const navigation = useNavigation<any>();
     const checkpointDetailsRef = useRef<ReadalongCheckpointDetailsRef>(null);
+    const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     useImperativeHandle(ref, () => ({
         getCurrentCheckpointId: () => selectedCheckpointId,
@@ -280,7 +283,7 @@ const ReadalongCheckpoints = forwardRef<ReadalongCheckpointsRef, ReadalongCheckp
     );
 });
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         flex: 1,
         padding: SPACING.space_16,

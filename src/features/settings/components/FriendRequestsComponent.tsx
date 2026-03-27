@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface FriendRequest {
   sender_user_data: { userId: number; userName: string; userProfilePic: string | null; };
@@ -26,6 +27,8 @@ const FriendRequestsComponent: React.FC<FriendRequestsComponentProps> = ({ onReq
   const [hasMoreData, setHasMoreData] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const userDetails = useStore((state: any) => state.userDetails);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchFriendRequests = async (page: number = 0, isLoadMore: boolean = false) => {
     if (isLoadMore && !hasMoreData) return;
@@ -225,7 +228,7 @@ const FriendRequestsComponent: React.FC<FriendRequestsComponentProps> = ({ onReq
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: SPACING.space_16,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, use } from 'react';
+import React, { useState, useEffect, useCallback, useRef, use, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -25,6 +25,7 @@ import HeaderBar from '../../../components/HeaderBar';
 import ReadalongParticipants from '../components/ReadalongParticipants';
 import ShareModal from '../../../components/ShareModal';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 // Define the Readalong interface
 interface Host {
@@ -77,6 +78,8 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
 
   const navigation = useNavigation<any>();
   const scrollViewRef = useRef<ScrollView>(null);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchReadalongDetails = useCallback(async () => {
     setLoadingInitialData(true);
@@ -325,15 +328,15 @@ const ReadAlongDetails: React.FC<Props> = ({ route }) => {
             title: readalong.book_title,
             message: `Readalong in progress on Biblophile`,
             url: `https://biblophile.com/social/readalong/${readalong.readalongId}`,
-            image: readalong.book_photo,
+            image: convertHttpToHttps(readalong.book_photo),
           }}
-          imageUri={readalong.book_photo}
+          imageUri={convertHttpToHttps(readalong.book_photo)}
         />
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

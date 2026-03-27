@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS, FONTSIZE, FONTFAMILY, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface User {
   name: string;
@@ -22,6 +23,8 @@ interface Props {
 
 const BuddyReadCard: React.FC<Props> = ({ buddyRead, onPress }) => {
   const { book_title, book_photo, endDate, users, buddyReadId } = buddyRead;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   let readingWithText = '';
   if (users.length === 1) {
@@ -49,7 +52,7 @@ const BuddyReadCard: React.FC<Props> = ({ buddyRead, onPress }) => {
 
 export default BuddyReadCard;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   cardContainer: {
     backgroundColor: COLORS.primaryDarkGreyHex,
     borderRadius: BORDERRADIUS.radius_15,

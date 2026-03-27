@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -39,6 +39,7 @@ import CulturalRecommendations from '../components/CulturalRecommendations';
 import MerchShopBanner from '../../../components/MerchShopBanner';
 import FilteredRecommendationsModal from '../components/FilteredRecommendationsModal';
 import { useAnalytics } from '../../../utils/analytics';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const DiscoverScreen = ({ navigation }) => {
   // Global state from store
@@ -56,6 +57,8 @@ const DiscoverScreen = ({ navigation }) => {
 
   const analytics = useAnalytics();
   const tabBarHeight = useBottomTabBarHeight();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   // Add to cart handler
   const handleAddToCart = (bookData) => {
@@ -238,7 +241,7 @@ const DiscoverScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   screenContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

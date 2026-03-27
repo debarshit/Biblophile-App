@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { BackHandler } from "react-native";
 import { View, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
 import { useStore } from "../../../store/store";
 import { useNavigation } from "@react-navigation/native";
 import { useAnalytics } from "../../../utils/analytics";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 const CommonWebViewScreen = ({ route, navigation }: any) => {
   const { url } = route.params;
@@ -20,6 +21,8 @@ const CommonWebViewScreen = ({ route, navigation }: any) => {
 
   navigation = useNavigation();
   const webViewRef = useRef(null);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
       if (accessToken && refreshToken) {
@@ -122,6 +125,6 @@ const CommonWebViewScreen = ({ route, navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({});
+const createStyles = (COLORS) => StyleSheet.create({});
 
 export default CommonWebViewScreen;

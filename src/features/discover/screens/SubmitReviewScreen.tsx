@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { useAnalytics } from '../../../utils/analytics';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface SubmitReviewScreenProps {
   route: any;
@@ -55,6 +56,8 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
   const ratingId = route.params?.ratingId || null;
   const userDetails = useStore((state: any) => state.userDetails);
   const analytics = useAnalytics();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   
   const [currentStep, setCurrentStep] = useState(1);
   const [rating, setRating] = useState(0);
@@ -421,7 +424,7 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

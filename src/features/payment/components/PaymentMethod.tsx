@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {StyleSheet, Text, View, Image} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import { Entypo } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import {
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface PaymentMethodProps {
   paymentMode: string;
@@ -23,6 +24,8 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   icon,
   isIcon,
 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View
       style={[
@@ -52,7 +55,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   PaymentCardContainer: {
     borderRadius: BORDERRADIUS.radius_15 * 2,
     backgroundColor: COLORS.primaryGreyHex,

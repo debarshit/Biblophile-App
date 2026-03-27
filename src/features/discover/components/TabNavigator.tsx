@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const TabNavigator = ({ activeTab, setActiveTab, type }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.TabBar}>
       <TouchableOpacity 
@@ -39,7 +42,7 @@ const TabNavigator = ({ activeTab, setActiveTab, type }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   TabBar: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',

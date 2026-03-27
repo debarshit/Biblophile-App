@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, Linking, TouchableOpacity, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
+import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { FontAwesome5 } from '@expo/vector-icons';
 import TeamInfoComponent from '../components/TeamInfoComponent';
 import { useNavigation } from '@react-navigation/native';
 import GradientBGIcon from '../../../components/GradientBGIcon';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const AboutScreen = () => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  
   const navigation = useNavigation<any>();
 
   const BackHandler = () => {
@@ -145,7 +149,7 @@ const AboutScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import { AntDesign } from '@expo/vector-icons';
 import {COLORS, SPACING} from '../theme/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface GradientBGIconProps {
   name: string;
@@ -11,6 +12,8 @@ interface GradientBGIconProps {
 }
 
 const GradientBGIcon: React.FC<GradientBGIconProps> = ({name, color, size}) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.Container}>
       <LinearGradient
@@ -24,7 +27,7 @@ const GradientBGIcon: React.FC<GradientBGIconProps> = ({name, color, size}) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   Container: {
     top: SPACING.space_10,
     borderWidth: 2,

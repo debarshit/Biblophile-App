@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
 import CustomPicker, { PickerOption } from '../../../../components/CustomPickerComponent';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface TimeFramePickerProps {
   timeFrame: string;
@@ -13,6 +14,8 @@ const TimeFramePicker: React.FC<TimeFramePickerProps> = ({ timeFrame, setTimeFra
     { label: 'Last week', value: 'last-week', icon: 'calendar-today' },
     { label: 'Last month', value: 'last-month', icon: 'calendar-view-month' },
   ];
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   return (
     <View style={styles.statusDropdown}>
@@ -30,7 +33,7 @@ const TimeFramePicker: React.FC<TimeFramePickerProps> = ({ timeFrame, setTimeFra
 
 export default TimeFramePicker;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   statusDropdown: {
     flexDirection: 'row',
     alignItems: 'center',

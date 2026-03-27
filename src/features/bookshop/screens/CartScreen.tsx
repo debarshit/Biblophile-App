@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -13,6 +13,7 @@ import HeaderBar from '../../../components/HeaderBar';
 import EmptyListAnimation from '../../../components/EmptyListAnimation';
 import PaymentFooter from '../../payment/components/PaymentFooter';
 import CartItem from '../components/CartItem';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface DeliveryOptionsData {
   deliveryOption: "delivery" | "self-pickup";
@@ -30,6 +31,9 @@ const CartScreen = ({navigation, route}: any) => {
     (state: any) => state.decrementCartItemQuantity,
   );
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
+  
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const buttonPressHandler = (finalPrice: string, securityDeposit: string, deliveryOptions: DeliveryOptionsData) => {
     if (CartList.length != 0) {
@@ -112,7 +116,7 @@ const CartScreen = ({navigation, route}: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   ScreenContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

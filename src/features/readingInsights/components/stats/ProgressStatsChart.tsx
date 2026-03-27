@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface ProgressStatsChartProps {
   readingStatusData: any[];
@@ -10,6 +11,8 @@ interface ProgressStatsChartProps {
 const ProgressStatsChart: React.FC<ProgressStatsChartProps> = ({ readingStatusData }) => {
   const screenWidth = Dimensions.get('window').width;
   const PIECOLORS = ['#FF7E5F', '#42D1D1', '#FFBC42', '#9C4DD4', '#45B69C'];
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   if (!Array.isArray(readingStatusData) || readingStatusData.length === 0) {
     return (
@@ -76,7 +79,7 @@ const ProgressStatsChart: React.FC<ProgressStatsChartProps> = ({ readingStatusDa
 
 export default ProgressStatsChart;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   statContainer: {
     backgroundColor: 'transparent',
     borderRadius: BORDERRADIUS.radius_8,

@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, FlatList, LayoutChangeEvent } from 'react-native';
 import { COLORS, FONTSIZE, FONTFAMILY, BORDERRADIUS, SPACING } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface DropdownItem {
   label: string;
@@ -31,6 +32,8 @@ export const CommentSortDropdown: React.FC<Props> = ({
   const [dropdownPosition, setDropdownPosition] = useState({ x: 0, y: 0 });
   const [labelLayout, setLabelLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const labelRef = useRef(null);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const toggleDropdown = () => {
     setIsVisible(!isVisible);
@@ -90,7 +93,7 @@ export const CommentSortDropdown: React.FC<Props> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   labelContainer: {
     padding: SPACING.space_8,
   },

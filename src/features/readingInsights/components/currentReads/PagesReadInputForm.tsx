@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface PagesReadInputFormProps {
   pagesRead: string;
@@ -15,6 +16,8 @@ const PagesReadInputForm: React.FC<PagesReadInputFormProps> = ({
   onUpdate,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const toggleTooltip = useCallback(() => {
     setShowTooltip(prev => !prev);
@@ -58,7 +61,7 @@ const PagesReadInputForm: React.FC<PagesReadInputFormProps> = ({
 
 export default PagesReadInputForm;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   inputBox: {
     alignItems: 'center',
     gap: SPACING.space_10,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Dimensions,
   ImageBackground,
@@ -17,6 +17,7 @@ import {
 } from '../../../theme/theme';
 import BookStatusModal from './BookStatusModal';
 import ReadingHistoryModal from './ReadingHistoryModal';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface BookshelfCardProps {
   id: string;
@@ -48,6 +49,8 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
   const [statusModalVisible, setStatusModalVisible] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedInstance, setSelectedInstance] = useState<any>(null);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -165,7 +168,7 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
 
 export default BookshelfCard;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   cardWrapper: {
     width: '100%',
   },

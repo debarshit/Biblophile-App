@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   View, Text, TextInput, StyleSheet, TouchableOpacity, Platform, ToastAndroid, ScrollView,
   Modal, ActivityIndicator,
@@ -14,6 +14,7 @@ import { useAnalytics } from '../../../utils/analytics';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 import TagSelectorModal from './TagSelectorModal';
 import { hmsToSeconds, secondsToHMS } from '../../../utils/timeConversion';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface ReadingStatusModalProps {
   visible: boolean;
@@ -48,6 +49,8 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
 
   const userDetails = useStore((state: any) => state.userDetails);
   const analytics = useAnalytics();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const isCompletedBook = initialStatus === 'Read' || initialStatus === 'Did not finish';
   
@@ -385,7 +388,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   overlay: { flex: 1, backgroundColor: COLORS.secondaryBlackRGBA, justifyContent: 'flex-end' },
   content: { backgroundColor: COLORS.primaryGreyHex, borderTopLeftRadius: BORDERRADIUS.radius_25, borderTopRightRadius: BORDERRADIUS.radius_25, padding: SPACING.space_24, maxHeight: '85%' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.space_20 },

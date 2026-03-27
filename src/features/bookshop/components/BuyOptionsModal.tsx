@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Modal,
   View,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { useAnalytics } from '../../../utils/analytics';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const BuyOptionsModal = ({
   isVisible,
@@ -36,7 +37,8 @@ const BuyOptionsModal = ({
     
     onClose();
   };
-
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   // Handle direct purchase through the app
   const handleDirectPurchase = () => {
     onOptionSelect("direct");
@@ -104,7 +106,7 @@ const BuyOptionsModal = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

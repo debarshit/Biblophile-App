@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { COLORS, FONTFAMILY, SPACING } from '../../../../theme/theme';
 import SessionTimer from './SessionTimer';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface SessionControlsProps {
   startingTime: any;
@@ -14,6 +15,8 @@ const SessionControls: React.FC<SessionControlsProps> = ({
   timer,
   onStartSession,
 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   if (startingTime) {
     return <SessionTimer timer={timer} />;
   }
@@ -32,7 +35,7 @@ const SessionControls: React.FC<SessionControlsProps> = ({
 
 export default SessionControls;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   sessionButtonContainer: {
     paddingHorizontal: 20,
     paddingVertical: 16,

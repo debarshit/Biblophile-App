@@ -1,11 +1,12 @@
 import { Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import instance from '../../../../services/axios';
 import requests from '../../../../services/requests';
 import { useStore } from '../../../../store/store';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
 import CustomPicker, { PickerOption } from '../../../../components/CustomPickerComponent';
 import { useAnalytics } from '../../../../utils/analytics';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 const goalTypeOptions: PickerOption[] = [
   { label: 'Books', value: 'books', icon: 'menu-book' },
@@ -17,6 +18,8 @@ const ReadingGoals = () => {
   const userDetails = useStore((state: any) => state.userDetails);
   const userId = userDetails[0].userId;
   const token = userDetails[0].accessToken;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const [state, setState] = useState({
     books: { goal: '', progress: 0 },
@@ -223,7 +226,7 @@ export default ReadingGoals;
 const { width } = Dimensions.get('window');
 const containerWidth = Math.min(380, width - SPACING.space_32);
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     backgroundColor: COLORS.primaryDarkGreyHex,
     padding: SPACING.space_16,

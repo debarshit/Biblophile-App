@@ -5,6 +5,7 @@ import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../th
 import { useStreak } from '../../../hooks/useStreak';
 import StreakCelebration from '../../../components/StreakCelebration';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
   const navigation = useNavigation<any>();
@@ -20,6 +21,9 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
   } = useStreak(userDetails[0]?.accessToken, null, handleCelebration);
 
   const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
+
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   // ✅ Check if the user has already logged for today
   const hasLoggedToday = useMemo(() => {
@@ -167,7 +171,7 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
 
 export default StreakWeeklyProgress;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   progressContainer: {
     backgroundColor: COLORS.primaryGreyHex,
     borderRadius: BORDERRADIUS.radius_10,

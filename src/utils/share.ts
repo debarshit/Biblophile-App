@@ -46,24 +46,24 @@ export const SHARE_PLATFORMS = [
 //     icon: 'threads',
 //     requiresImage: false,
 //   },
-  {
-    id: 'whatsapp' as SharePlatform,
-    name: 'WhatsApp',
-    icon: 'whatsapp',
-    requiresImage: false,
-  },
+  // {
+  //   id: 'whatsapp' as SharePlatform,
+  //   name: 'WhatsApp',
+  //   icon: 'whatsapp',
+  //   requiresImage: false,
+  // },
   {
     id: 'facebook' as SharePlatform,
     name: 'Facebook',
     icon: 'facebook',
     requiresImage: false,
   },
-  {
-    id: 'bluesky' as SharePlatform,
-    name: 'Bluesky',
-    icon: 'cloud',
-    requiresImage: false,
-  },
+  // {
+  //   id: 'bluesky' as SharePlatform,
+  //   name: 'Bluesky',
+  //   icon: 'cloud',
+  //   requiresImage: false,
+  // },
 ];
 
 export async function shareToplatform(config: ShareConfig): Promise<void> {
@@ -78,18 +78,16 @@ export async function shareToplatform(config: ShareConfig): Promise<void> {
           throw new Error('Instagram Stories requires screenshotRef');
         }
 
-        const base64 = await viewShot.default.captureRef(screenshotRef, {
+        const uri = await viewShot.default.captureRef(screenshotRef, {
           format: 'png',
           quality: 0.9,
-          result: 'base64',
+          result: 'tmpfile',
         });
 
-        const image = `data:image/png;base64,${base64}`;
-
         await Share.shareSingle({
-          appId: META_APP_ID,
           social: Social.InstagramStories,
-          backgroundImage: image,
+          appId: META_APP_ID,
+          backgroundImage: uri,
           attributionURL: content.url,
         });
 

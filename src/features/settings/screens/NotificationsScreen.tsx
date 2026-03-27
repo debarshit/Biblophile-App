@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HeaderBar from '../../../components/HeaderBar';
 import TabSelector from '../../../components/TabSelector';
@@ -9,6 +9,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const NotificationsScreen = () => {
   const [activeTab, setActiveTab] = useState('notifications');
@@ -16,6 +17,16 @@ const NotificationsScreen = () => {
   const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
   const [countsLoading, setCountsLoading] = useState(true);
   const userDetails = useStore((state: any) => state.userDetails);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+
+  const setUnreadNotificationCount = useStore(
+    (state) => state.setUnreadNotificationCount
+  );
+
+  useEffect(() => {
+    setUnreadNotificationCount(0);
+  }, []);
 
   const fetchCounts = async () => {
     try {
@@ -29,13 +40,22 @@ const NotificationsScreen = () => {
         })
       ]);
 
+      let friendCount = 0;
+      let notificationCount = 0;
+
       if (friendRequestsResponse.status === 200) {
-        setFriendRequestCount(friendRequestsResponse.data.data?.incomingRequests?.length || 0);
+        friendCount = friendRequestsResponse.data.data?.incomingRequests?.length || 0;
       }
 
       if (unreadNotificationsResponse.status === 200) {
-        setNotificationUnreadCount(unreadNotificationsResponse.data.data?.unreadCount || 0);
+        notificationCount = unreadNotificationsResponse.data.data?.unreadCount || 0;
       }
+
+      setFriendRequestCount(friendCount);
+      setNotificationUnreadCount(notificationCount);
+
+      // update global badge correctly
+      setUnreadNotificationCount(friendCount + notificationCount);
     } catch (error) {
       console.error('Failed to fetch counts:', error);
       setFriendRequestCount(0);
@@ -91,7 +111,7 @@ const NotificationsScreen = () => {
 
 export default NotificationsScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     screenContainer: {
       flex: 1,
       backgroundColor: COLORS.primaryBlackHex,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, Image, TextInput, TouchableOpacity, Alert, FlatList, StyleSheet, ActivityIndicator, SafeAreaView } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -6,6 +6,7 @@ import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../th
 import { useStore } from '../../../store/store';
 import Mascot from '../../../components/Mascot';
 import HeaderBar from '../../../components/HeaderBar';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const DurationTrackScreen: React.FC = ({navigation}: any) => {
     const [durations, setDurations] = useState([]);
@@ -15,6 +16,8 @@ const DurationTrackScreen: React.FC = ({navigation}: any) => {
 
     const userDetails = useStore((state: any) => state.userDetails);
     const userId = userDetails[0].userId;
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const fetchDurations = async (initial = false) => {
         if (loading || !hasMore) return;
@@ -77,7 +80,7 @@ const DurationTrackScreen: React.FC = ({navigation}: any) => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: COLORS.primaryBlackHex,
