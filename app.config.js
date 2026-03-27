@@ -96,6 +96,15 @@ export default {
         }
       }
     ],
+    [
+      "expo-media-library",
+      {
+        "photosPermission": "Allow Bibliophile to save wrap images to your photo library.",
+        "savePhotosPermission": "Allow Bibliophile to save wrap images to your photo library.",
+        "isAccessMediaLocationEnabled": false,
+        "granularPermissions": []
+      }
+    ]
   ],
   "extra": {
     "eas": {
