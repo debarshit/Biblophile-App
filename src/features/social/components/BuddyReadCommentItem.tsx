@@ -1,10 +1,11 @@
-import { JSX } from "react";
+import { JSX, useMemo } from "react";
 import { View, Text, StyleSheet, Pressable, Animated } from "react-native";
 import { Ionicons, FontAwesome6 } from "@expo/vector-icons";
 import { ActivityIndicator } from "react-native";
 import { BlurView } from "expo-blur";
 import { COLORS, SPACING, BORDERRADIUS, FONTFAMILY, FONTSIZE } from "../../../theme/theme";
 import { Comment } from "../hooks/useComments";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 interface CommentItemProps {
     comment: Comment;
@@ -49,6 +50,8 @@ export const CommentItem = ({
 }: CommentItemProps) => {
     const isBlurred = currentUser.readingStatus !== 'Read' 
         && currentUser.progressPercentage < comment.progressPercentage;
+    const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     return (
         <Animated.View
@@ -196,7 +199,7 @@ export const CommentItem = ({
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     commentContainer: {
         backgroundColor: COLORS.primaryGreyHex,
         padding: SPACING.space_15,

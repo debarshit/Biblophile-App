@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const ProductOptions = ({ prices, selectedPrice, onSelectPrice, type }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.SizeOuterContainer}>
       {prices.map((data, index) => (
@@ -37,7 +40,7 @@ const ProductOptions = ({ prices, selectedPrice, onSelectPrice, type }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   SizeOuterContainer: {
     flex: 1,
     flexDirection: 'row',

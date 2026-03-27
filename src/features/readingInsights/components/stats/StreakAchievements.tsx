@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 const StreakAchievements = ({ maxStreak }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.achievements}>
       <Text style={styles.sectionTitle}>Highest Streak:</Text>
@@ -11,7 +14,7 @@ const StreakAchievements = ({ maxStreak }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   achievements: {
     backgroundColor: COLORS.primaryGreyHex,
     borderRadius: 15,

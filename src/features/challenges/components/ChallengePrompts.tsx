@@ -1,8 +1,9 @@
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Prompt {
     promptId: string;
@@ -26,6 +27,8 @@ const ChallengePrompts = ({ ChallengeId, IsHost, onCreatePrompt, onViewPrompt }:
     const [error, setError] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState<boolean>(true);
     const [offset, setOffset] = useState<number>(0);
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const fetchPrompts = useCallback(async (isRefreshing = false) => {
         try {
@@ -133,7 +136,7 @@ const ChallengePrompts = ({ ChallengeId, IsHost, onCreatePrompt, onViewPrompt }:
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.primaryBlackHex,

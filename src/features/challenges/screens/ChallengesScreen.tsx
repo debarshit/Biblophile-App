@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useMemo} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -20,6 +20,7 @@ import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../th
 import HeaderBar from '../../../components/HeaderBar';
 import ChallengeCard from '../components/ChallengeCard';
 import CreateChallengeForm from '../components/CreateChallengeForm';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const ChallengeScreen = ({navigation}: any) => {
   // Consolidated state
@@ -42,6 +43,9 @@ const ChallengeScreen = ({navigation}: any) => {
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
+
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   // Helper to update state
   const updateState = (updates: any) => setState(prev => ({ ...prev, ...updates }));
@@ -379,7 +383,7 @@ const ChallengeScreen = ({navigation}: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   screenContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

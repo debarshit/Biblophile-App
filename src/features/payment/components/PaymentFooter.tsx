@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import {
   BORDERRADIUS,
@@ -14,6 +14,7 @@ import requests from '../../../services/requests';
 import instance from '../../../services/axios';
 import { useStore } from '../../../store/store';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface PriceProps {
   price: string;
@@ -44,6 +45,8 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
   const [securityDeposit, setSecurityDeposit] = useState("0.00");
   const [totalPrice, setTotalPrice] = useState("0.00");
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   
   // Delivery and pickup states
   const [pickupDropOption, setPickupDropOption] = useState<"delivery" | "self-pickup">("delivery");
@@ -262,7 +265,7 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   priceFooterContainer: {
     backgroundColor: COLORS.primaryBlackHex,
     borderTopWidth: 1,

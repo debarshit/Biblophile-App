@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, FlatList, ActivityIndicator, Pressable } from 'react-native';
-import React, { useState, useEffect, useCallback, memo, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useCallback, memo, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -7,6 +7,7 @@ import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import { useNavigation } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 // Types
 interface Host {
@@ -178,13 +179,15 @@ const useComments = (checkpointId: string, currentUser: CurrentUser,  userDetail
 };
 
 // CommentItem Component
-const CommentItem = memo(({ 
+const CommentItem = memo(({
+    styles,
     comment, 
     currentUser, 
     isHost,
     onToggleLike,
     onDeleteComment
 }: { 
+    styles: any;
     comment: Comment, 
     currentUser: CurrentUser, 
     isHost: boolean,
@@ -280,7 +283,7 @@ const CommentItem = memo(({
 });
 
 // Checkpoint Prompt Component
-const CheckpointPrompt = memo(({ prompt }: { prompt: string }) => (
+const CheckpointPrompt = memo(({ prompt, styles }: { prompt: string, styles: any }) => (
     <View style={styles.promptContainer}>
         <View style={styles.promptHeader}>
             <Ionicons name="chatbubbles-outline" size={20} color={COLORS.primaryOrangeHex} />
@@ -301,6 +304,8 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
 }, ref) => {
     const userDetails = useStore((state: any) => state.userDetails);
     const navigation = useNavigation<any>();
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
     const {
         comments,
         pagination,
@@ -475,7 +480,7 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
     const renderListHeader = useCallback(() => (
         <>
             {/* Checkpoint Prompt */}
-            <CheckpointPrompt prompt={checkpointPrompt} />
+            <CheckpointPrompt prompt={checkpointPrompt} styles={styles} />
 
             {/* Comments Header with Sort Button */}
             <View style={styles.commentsHeader}>
@@ -569,6 +574,7 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
                         data={comments}
                         renderItem={({ item }) => (
                             <CommentItem
+                                styles={styles}
                                 comment={item}
                                 currentUser={currentUser}
                                 isHost={isHost}
@@ -597,7 +603,7 @@ const ReadalongCheckpointDetails = forwardRef<ReadalongCheckpointDetailsRef, Rea
     );
 });
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.primaryDarkGreyHex,

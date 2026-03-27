@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
 import instance from '../../../../services/axios';
 import requests from '../../../../services/requests';
 import CustomPicker from '../../../../components/CustomPickerComponent';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface NoteBottomSheetProps {
   visible: boolean;
@@ -16,6 +17,8 @@ const DailyNoteBottomSheet = ({ visible, onClose, userDetails }: NoteBottomSheet
   const [note, setNote] = useState("");
   const [selectedUserBook, setSelectedUserBook] = useState("");
   const [readingBooks, setReadingBooks] = useState([]);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     if (visible) {
@@ -156,7 +159,7 @@ const DailyNoteBottomSheet = ({ visible, onClose, userDetails }: NoteBottomSheet
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',

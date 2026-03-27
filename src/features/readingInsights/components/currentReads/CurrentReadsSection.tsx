@@ -16,6 +16,7 @@ import PagesReadInputForm from './PagesReadInputForm';
 import SessionControls from './SessionControls';
 import DailyNoteBottomSheet from './DailyNoteBottomSheet';
 import ReadingHistoryModal from '../../../reading/components/ReadingHistoryModal';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const navigation = useNavigation<any>();
@@ -55,6 +56,8 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const clearSession = useStore((state: any) => state.clearSession);
 
   const { updateStreak } = useStreak(userDetails[0]?.accessToken);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   // Memoized values
   const userTimezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
@@ -421,7 +424,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
 
 export default CurrentReadsSection;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   pagesReadContainer: {
     marginBottom: SPACING.space_10,
     alignItems: 'center',

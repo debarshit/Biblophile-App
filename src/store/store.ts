@@ -5,6 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import instance from '../services/axios';
 import requests from '../services/requests';
 
+type ThemePreference = 'light' | 'dark' | 'system';
+
 interface StoreState {
   user: string | null;
   isAuthenticated: boolean;
@@ -25,7 +27,8 @@ interface StoreState {
     expoPushToken: string | null;
   };
   unreadNotificationCount: number;
-  
+  themePreference: ThemePreference;
+
   login: (userData: any) => Promise<void>;
   logout: () => void;
   updateProfile: (name: string, email: string, phone: string, address: string) => void;
@@ -49,6 +52,7 @@ interface StoreState {
   resetNotificationPermissions: () => void;
   setUnreadNotificationCount: (count: number) => void;
   fetchUnreadNotificationCount: () => Promise<void>;
+  setThemePreference: (theme: ThemePreference) => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -73,6 +77,7 @@ export const useStore = create<StoreState>()(
           expoPushToken: null,
         },
         unreadNotificationCount: 0,
+        themePreference: 'system',
         
         login: async (userData) => {
           await set(state => ({
@@ -345,6 +350,9 @@ export const useStore = create<StoreState>()(
             } catch (error) {
               console.error("Error fetching unread notifications:", error);
             }
+          },
+          setThemePreference: (theme) => {
+            set({ themePreference: theme });
           },
       }),
       {

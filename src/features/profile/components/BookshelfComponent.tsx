@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -20,6 +20,7 @@ import {
 import Mascot from '../../../components/Mascot';
 import { useNavigation } from '@react-navigation/native';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface BookshelfScreenProps {
   userData:{
@@ -38,6 +39,8 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
   const [tagOffset, setTagOffset] = useState(0);
   const [hasMoreTags, setHasMoreTags] = useState(true);
   const navigation:any = useNavigation();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchTags = async (offset: number = 0, append: boolean = false) => {
     if (offset === 0) {
@@ -268,7 +271,7 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   screenContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

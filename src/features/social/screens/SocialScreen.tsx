@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import React from 'react';
+import React, { useMemo } from 'react';
 import Swiper from "react-native-screens-swiper";
 import NewsFeed from './NewsFeed';
 import buddyReadsIndex from './BuddyReadsIndex';
@@ -8,9 +8,12 @@ import BookClubsIndex from './BookClubsIndex';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BORDERRADIUS, COLORS } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const SocialScreen = ({ route }) => {
   const { initialTab } = route.params || {};
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const data = [
     {
@@ -53,7 +56,7 @@ const SocialScreen = ({ route }) => {
 
 export default SocialScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   pillButton: {
     backgroundColor: COLORS.primaryGreyHex,
     borderRadius: BORDERRADIUS.radius_10,

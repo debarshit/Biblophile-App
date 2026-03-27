@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -13,6 +13,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import ReadalongMembersList from './ReadalongMembersList';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Participant {
   userId: number;
@@ -60,6 +61,8 @@ const ReadalongParticipants: React.FC<Props> = ({ readalongId }) => {
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchStatistics = useCallback(async () => {
     if (!accessToken) return;
@@ -173,7 +176,7 @@ const ReadalongParticipants: React.FC<Props> = ({ readalongId }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

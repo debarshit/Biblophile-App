@@ -1,14 +1,17 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { FlatList, TouchableOpacity, Image, View, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const Spotlights = ({ spotlights }) => {
   const flatListRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const listLength = spotlights.length;
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   // Auto-scroll the list
   useEffect(() => {
@@ -92,11 +95,11 @@ const Spotlights = ({ spotlights }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   spotlightTitle: {
     fontSize: FONTSIZE.size_18,
     fontFamily: FONTFAMILY.poppins_bold,
-    color: 'white',
+    color: COLORS.primaryWhiteHex,
     textAlign: 'center',
     marginVertical: SPACING.space_20,
   },

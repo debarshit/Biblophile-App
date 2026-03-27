@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useNavigation } from '@react-navigation/native';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface SeasonalRecommendationsProps {
   latitude?: number | null;
@@ -36,6 +37,8 @@ const SeasonalRecommendations: React.FC<SeasonalRecommendationsProps> = ({
   const [loading, setLoading] = useState(true);
 
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     const fetchSeasonalBooks = async () => {
@@ -126,7 +129,7 @@ const SeasonalRecommendations: React.FC<SeasonalRecommendationsProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     marginVertical: SPACING.space_20,
   },

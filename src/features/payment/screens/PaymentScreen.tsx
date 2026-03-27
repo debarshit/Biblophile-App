@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -22,6 +22,7 @@ import PaymentMethod from '../components/PaymentMethod';
 import PaymentFooter from '../components/PaymentFooter';
 import PopUpAnimation from '../../../components/PopUpAnimation';
 import { useAnalytics } from '../../../utils/analytics';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const PaymentList = [
   {
@@ -49,6 +50,8 @@ const PaymentScreen = ({navigation, route}: any) => {
     (state: any) => state.clearCart,
   );
   const userDetails = useStore((state: any) => state.userDetails);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const [paymentMode, setPaymentMode] = useState('Online');
   const [showAnimation, setShowAnimation] = useState(false);
@@ -337,7 +340,7 @@ const PaymentScreen = ({navigation, route}: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   ScreenContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -26,6 +26,7 @@ import TabNavigator from '../components/TabNavigator';
 import BuyOptionsModal from '../../bookshop/components/BuyOptionsModal';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useAnalytics } from '../../../utils/analytics';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
@@ -42,6 +43,8 @@ const DetailsScreen = ({navigation, route}: any) => {
   const [product, setProduct] = useState<any>({});
   const [activeTab, setActiveTab] = useState('description');
   const [buyModalVisible, setBuyModalVisible] = useState(false);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const getPrices = () => {
     if (type === 'Book' || type === 'ExternalBook' ) {
@@ -330,7 +333,7 @@ const DetailsScreen = ({navigation, route}: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   ScreenContainer: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

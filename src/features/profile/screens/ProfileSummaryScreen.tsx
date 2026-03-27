@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -9,6 +9,7 @@ import UserReviews from '../../reading/components/UserReviews';
 import GradientBGIcon from '../../../components/GradientBGIcon';
 import { AntDesign, Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStreak } from '../../../hooks/useStreak';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const [userData, setUserData] = useState(null);
@@ -26,6 +27,8 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const username = route.params.username;
 
   const { currentStreak } = useStreak(userDetails[0]?.accessToken);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -295,7 +298,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

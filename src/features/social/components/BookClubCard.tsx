@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { COLORS, SPACING, FONTSIZE, FONTFAMILY, BORDERRADIUS } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface User {
   name: string;
@@ -22,6 +23,8 @@ interface BookClubCardProps {
 const BookClubCard: React.FC<BookClubCardProps> = ({ bookClub }) => {
   const navigation = useNavigation<any>();
   const { clubId, clubName, host } = bookClub;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   let runByText = '';
   if (host.length === 1) {
@@ -51,7 +54,7 @@ const BookClubCard: React.FC<BookClubCardProps> = ({ bookClub }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   cardContainer: {
     backgroundColor: COLORS.primaryDarkGreyHex,
     borderRadius: BORDERRADIUS.radius_10,

@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { useTheme } from "../../../contexts/ThemeContext";
 
 interface Challenge {
   challengeId: number;
@@ -24,6 +25,8 @@ interface ChallengeCardProps {
 const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge }) => {
   const { challengeId, challengeTitle, challengeDescription, challengeType, endDate, startDate, Host, Category, Keywords = [] } = challenge;
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   // Status logic
   const now = new Date();
@@ -106,7 +109,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   card: {
     backgroundColor: COLORS.primaryDarkGreyHex,
     borderRadius: BORDERRADIUS.radius_15,

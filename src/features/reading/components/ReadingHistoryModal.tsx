@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Modal, StyleSheet, Text, TouchableOpacity, View, ScrollView, Animated, ActivityIndicator,
 } from 'react-native';
@@ -7,6 +7,7 @@ import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../th
 import instance from '../../../services/axios';
 import { useStore } from '../../../store/store';
 import requests from '../../../services/requests';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface ReadingInstance {
   userBookId: number;
@@ -38,7 +39,8 @@ const ReadingHistoryModal: React.FC<ReadingHistoryModalProps> = ({
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails?.[0].accessToken;
-
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     if (visible) {
@@ -267,7 +269,7 @@ const ReadingHistoryModal: React.FC<ReadingHistoryModalProps> = ({
 
 export default ReadingHistoryModal;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',

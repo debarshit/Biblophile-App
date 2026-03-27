@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Platform, Alert } from 'react-native';
 import { notificationService } from '../../../utils/notificationUtils';
 import { FontAwesome as FaIcon, MaterialCommunityIcons as MdIcon } from '@expo/vector-icons';
@@ -9,8 +9,9 @@ import { COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
 import CustomPicker from '../../../components/CustomPickerComponent';
 import { useAnalytics } from '../../../utils/analytics';
+import { useTheme } from '../../../contexts/ThemeContext';
 
-const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible, onPress }) => {
+const EyeIcon: React.FC<{ visible: boolean; onPress: () => void, styles:any }> = ({ visible, onPress, styles }) => {
     return (
         <TouchableOpacity onPress={onPress}>
             {visible ? (
@@ -25,6 +26,8 @@ const EyeIcon: React.FC<{ visible: boolean; onPress: () => void }> = ({ visible,
 const SignupLogin: React.FC = ({ navigation }: any) => {
     const login = useStore((state: any) => state.login);
     const analytics = useAnalytics();
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const [isRegistration, setIsRegistration] = useState<boolean>(false);
     const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -350,7 +353,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                                     value={loginPass} 
                                     onChangeText={(text) => handleLoginPass(text)}
                                 />
-                                <EyeIcon visible={passwordVisible} onPress={togglePasswordVisibility} />
+                                <EyeIcon visible={passwordVisible} onPress={togglePasswordVisibility} styles={styles} />
                             </View>
                         </View>
                         <TouchableOpacity onPress={() => forgotPassword()}>
@@ -526,7 +529,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     contentContainer: {
         flexGrow: 1,
         justifyContent: 'center',

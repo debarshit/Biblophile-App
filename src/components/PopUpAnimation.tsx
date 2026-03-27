@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import LottieView from 'lottie-react-native';
 import {COLORS} from '../theme/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface PopUpAnimationProps {
   style: any;
@@ -9,6 +10,8 @@ interface PopUpAnimationProps {
 }
 
 const PopUpAnimation: React.FC<PopUpAnimationProps> = ({style, source}) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.LottieAnimationContainer}>
       <LottieView style={style} source={source} autoPlay loop={false} />
@@ -16,7 +19,7 @@ const PopUpAnimation: React.FC<PopUpAnimationProps> = ({style, source}) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   LottieAnimationContainer: {
     flex: 1,
     position: 'absolute',

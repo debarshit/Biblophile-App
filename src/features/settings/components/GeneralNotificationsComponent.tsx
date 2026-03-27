@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
@@ -6,6 +6,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { navigateFromUrl } from '../../../utils/deepLinking/deepLinking';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface NotificationContent {
   urlScheme: any;
@@ -44,6 +45,8 @@ const GeneralNotificationsComponent: React.FC<NotificationsComponentProps> = ({
   const userDetails = useStore((state: any) => state.userDetails);
 
   const authHeaders = { 'Authorization': `Bearer ${userDetails[0].accessToken}` };
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchNotifications = async (page: number = 1, refresh: boolean = false) => {
     try {
@@ -245,7 +248,7 @@ const GeneralNotificationsComponent: React.FC<NotificationsComponentProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: { flex: 1, paddingHorizontal: SPACING.space_16 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_medium, color: COLORS.primaryGreyHex, marginTop: SPACING.space_12 },
@@ -253,7 +256,7 @@ const styles = StyleSheet.create({
   emptyMessage: { fontSize: FONTSIZE.size_18, fontFamily: FONTFAMILY.poppins_semibold, textAlign: 'center', color: COLORS.primaryWhiteHex },
   listContainer: { paddingTop: SPACING.space_16 },
   headerContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.space_16, paddingHorizontal: SPACING.space_4 },
-  unreadCountText: { fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_medium, color: COLORS.primaryGreyHex },
+  unreadCountText: { fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_medium, color: COLORS.secondaryLightGreyHex },
   markAllButton: { paddingHorizontal: SPACING.space_12, paddingVertical: SPACING.space_4 },
   markAllButtonText: { fontSize: FONTSIZE.size_12, fontFamily: FONTFAMILY.poppins_medium, color: COLORS.primaryOrangeHex },
   notificationCard: { backgroundColor: COLORS.primaryDarkGreyHex, borderRadius: SPACING.space_12, padding: SPACING.space_16, marginBottom: SPACING.space_12 },

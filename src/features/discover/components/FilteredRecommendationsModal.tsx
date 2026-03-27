@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Modal,
   View,
@@ -14,6 +14,8 @@ import instance from "../../../services/axios";
 import requests from "../../../services/requests";
 import { useNavigation } from "@react-navigation/native";
 import { useAnalytics } from "../../../utils/analytics";
+import { useTheme } from "../../../contexts/ThemeContext";
+import { convertHttpToHttps } from "../../../utils/convertHttpToHttps";
 
 interface FilteredDiscoveryModalProps {
   visible: boolean;
@@ -55,6 +57,8 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
 
   const analytics = useAnalytics();
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const handleDiscover = async () => {
     analytics.track('discover_filter_applied', {
@@ -255,7 +259,7 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
                           });
                         }}>
                         <Image
-                          source={{ uri: b.imagelink_square }}
+                          source={{ uri: convertHttpToHttps(b.imagelink_square) }}
                           style={styles.bookImage}
                         />
                         <Text numberOfLines={1} style={styles.bookTitle}>
@@ -280,7 +284,7 @@ const FilteredRecommendationsModal: React.FC<FilteredDiscoveryModalProps> = ({
 
 export default FilteredRecommendationsModal;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackRGBA,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import {
   COLORS,
@@ -6,6 +6,7 @@ import {
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface PriceBreakdownProps {
   subtotal: string;
@@ -24,6 +25,8 @@ const PriceBreakdownTable: React.FC<PriceBreakdownProps> = ({
   const freeDeliveryThreshold = 120;
   const amountForFreeDelivery = (freeDeliveryThreshold - parseFloat(subtotal)).toFixed(2);
   const showFreeDeliveryHint = !isDeliveryFree && parseFloat(subtotal) < freeDeliveryThreshold;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   
   return (
     <View style={styles.breakdownContainer}>
@@ -65,7 +68,7 @@ const PriceBreakdownTable: React.FC<PriceBreakdownProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   breakdownContainer: {
     paddingHorizontal: SPACING.space_20,
     paddingBottom: SPACING.space_10,

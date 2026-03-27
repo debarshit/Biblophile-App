@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -35,6 +35,7 @@ import MerchShopBanner from '../../../components/MerchShopBanner';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import CityPlacesSection from '../components/CityPlacesSection';
 import CityEventCard from '../components/CityEventCard';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const getGenresFromData = (data: any) => {
   const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
@@ -60,6 +61,9 @@ const LibraryScreen = ({navigation}: any) => {
   const CartList = useStore((state: any) => state.CartList);
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
+
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   //useState variables
   const [genres, setGenres] = useState(
@@ -426,7 +430,7 @@ const LibraryScreen = ({navigation}: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   ShimmerPlaceholder: {
     width: 150, 
     height: 200, 

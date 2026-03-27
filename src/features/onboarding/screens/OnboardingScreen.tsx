@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View, Dimensions, Text} from 'react-native';
 import Onboarding from 'react-native-onboarding-swiper';
 import LottieView from 'lottie-react-native';
 import { COLORS, FONTSIZE } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get("window");
 
 const OnboardingScreen = ({ navigation }: any) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <Onboarding
       onDone={() => navigation.navigate('SignupLogin')}
@@ -104,7 +107,7 @@ const OnboardingScreen = ({ navigation }: any) => {
 
 export default OnboardingScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'flex-start',

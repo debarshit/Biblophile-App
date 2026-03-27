@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableWithoutFeedback, StyleSheet } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import ProductOptions from './ProductOptions';
 import RequestBookButton from './RequestBookButton';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const DescriptionTab = ({ 
   product, 
@@ -19,6 +20,8 @@ const DescriptionTab = ({
   stripHtmlTags
 }) => {
   const hasRentOption = prices.some(p => p.size === 'Rent');
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   return (
     <View style={styles.TabContent}>
@@ -56,7 +59,7 @@ const DescriptionTab = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   TabContent: {
     flexGrow: 1,
     padding: SPACING.space_20,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import {
     BORDERRADIUS,
@@ -6,6 +6,7 @@ import {
     FONTSIZE,
     SPACING,
   } from '../../../../theme/theme';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface SessionPromptProps {
   message: string;
@@ -15,6 +16,8 @@ interface SessionPromptProps {
 }
 
 const SessionPrompt: React.FC<SessionPromptProps> = ({ message, visible, onConfirm, onCancel }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <Modal transparent={true} animationType="slide" visible={visible}>
       <View style={styles.overlay}>
@@ -34,7 +37,7 @@ const SessionPrompt: React.FC<SessionPromptProps> = ({ message, visible, onConfi
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'center',

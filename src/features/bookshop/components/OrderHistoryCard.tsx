@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Linking,
@@ -12,6 +12,7 @@ import OrderItemCard from './OrderItemCard';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface OrderHistoryCardProps {
   order: any;
@@ -23,6 +24,8 @@ const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const [showPickupDetails, setShowPickupDetails] = useState(false);
   const userDetails = useStore((state: any) => state.userDetails);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const handleReturnRequest = async () => {
     setButtonDisabled(true);
@@ -165,7 +168,7 @@ const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   CardContainer: {
     gap: SPACING.space_10,
   },

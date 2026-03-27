@@ -1,65 +1,196 @@
-import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+// import React, { useMemo } from 'react';
+// import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+// import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
+// import { useTheme } from '../../../../contexts/ThemeContext';
+
+// export type StatTab =
+//   | 'page-stats'
+//   | 'time-stats'
+//   | 'emotion-stats'
+//   | 'progress-stats'
+//   | 'books-read'
+//   | 'genres'
+//   | 'ratings'
+//   | 'authors'
+//   | 'format'
+//   | 'publication'
+//   | 'book-attributes';
+
+// interface StatsTabsProps {
+//   activeStat: StatTab;
+//   setActiveStat: (tab: StatTab) => void;
+// }
+
+// const TABS: { key: StatTab; label: string; icon: string }[] = [
+//   { key: 'page-stats',      label: 'Pages',       icon: '📄' },
+//   { key: 'time-stats',      label: 'Time',        icon: '⏱️' },
+//   { key: 'emotion-stats',   label: 'Moods',       icon: '😊' },
+//   { key: 'progress-stats',  label: 'Status',      icon: '📚' },
+//   { key: 'books-read',      label: 'Books',       icon: '📖' },
+//   { key: 'genres',          label: 'Genres',      icon: '🗂️' },
+//   { key: 'ratings',         label: 'Ratings',     icon: '⭐' },
+//   { key: 'authors',         label: 'Authors',     icon: '✍️' },
+//   { key: 'format',          label: 'Format',      icon: '📱' },
+//   { key: 'publication',     label: 'Era',         icon: '🗓️' },
+//   { key: 'book-attributes', label: 'Type/Length', icon: '📏' },
+// ];
+
+// const StatsTabs: React.FC<StatsTabsProps> = ({ activeStat, setActiveStat }) => {
+//   const { COLORS } = useTheme();
+//   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+
+//   return (
+//     <ScrollView
+//       horizontal
+//       showsHorizontalScrollIndicator={false}
+//       contentContainerStyle={styles.container}
+//     >
+//       {TABS.map(tab => {
+//         const isActive = activeStat === tab.key;
+//         return (
+//           <TouchableOpacity
+//             key={tab.key}
+//             style={[styles.tab, isActive && styles.tabActive]}
+//             onPress={() => setActiveStat(tab.key)}
+//             activeOpacity={0.7}
+//           >
+//             <Text style={styles.tabIcon}>{tab.icon}</Text>
+//             <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
+//               {tab.label}
+//             </Text>
+//           </TouchableOpacity>
+//         );
+//       })}
+//     </ScrollView>
+//   );
+// };
+
+// export default StatsTabs;
+
+// const createStyles = (COLORS: any) => StyleSheet.create({
+//   container: {
+//     flexDirection: 'row',
+//     paddingVertical: SPACING.space_8,
+//     paddingHorizontal: SPACING.space_4,
+//     gap: SPACING.space_8,
+//   },
+//   tab: {
+//     alignItems: 'center',
+//     backgroundColor: COLORS.primaryDarkGreyHex,
+//     paddingVertical: SPACING.space_8,
+//     paddingHorizontal: SPACING.space_12,
+//     borderRadius: BORDERRADIUS.radius_10,
+//     minWidth: 64,
+//     borderWidth: 1,
+//     borderColor: 'transparent',
+//   },
+//   tabActive: {
+//     backgroundColor: COLORS.primaryOrangeHex,
+//     borderColor: COLORS.primaryOrangeHex,
+//   },
+//   tabIcon: {
+//     fontSize: 18,
+//     marginBottom: 2,
+//   },
+//   tabLabel: {
+//     fontSize: FONTSIZE.size_10,
+//     fontFamily: FONTFAMILY.poppins_medium,
+//     color: COLORS.secondaryLightGreyHex,
+//     textAlign: 'center',
+//   },
+//   tabLabelActive: {
+//     color: COLORS.primaryWhiteHex,
+//   },
+// });
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
+import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
+import { useTheme } from '../../../../contexts/ThemeContext';
+
+export type StatTab =
+  | 'page-stats'
+  | 'time-stats'
+  | 'emotion-stats'
+  | 'progress-stats'
+  | 'books-read'
+  | 'genres'
+  | 'ratings'
+  | 'authors'
+  | 'format'
+  | 'publication'
+  | 'book-attributes';
 
 interface StatsTabsProps {
-  activeStat: string;
-  setActiveStat: (stat: string) => void;
+  activeStat: StatTab;
+  setActiveStat: (tab: StatTab) => void;
 }
 
+const TABS: { key: StatTab; label: string; icon: string }[] = [
+  { key: 'page-stats',      label: 'Pages',      icon: 'book-outline' },
+  { key: 'time-stats',      label: 'Time',       icon: 'time-outline' },
+  { key: 'emotion-stats',   label: 'Emotions',   icon: 'heart-outline' },
+  { key: 'progress-stats',  label: 'Progress',   icon: 'stats-chart-outline' },
+  { key: 'books-read',      label: 'Books Read', icon: 'checkmark-circle-outline' },
+  { key: 'genres',          label: 'Genres',     icon: 'library-outline' },
+  { key: 'ratings',         label: 'Ratings',    icon: 'star-outline' },
+  { key: 'authors',         label: 'Authors',    icon: 'person-outline' },
+  { key: 'format',          label: 'Format',     icon: 'phone-portrait-outline' },
+  { key: 'publication',     label: 'Era',        icon: 'calendar-outline' },
+  { key: 'book-attributes', label: 'Type',       icon: 'layers-outline' },
+];
+
 const StatsTabs: React.FC<StatsTabsProps> = ({ activeStat, setActiveStat }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+
   return (
-    <View style={styles.tabContainer}>
-      <TouchableOpacity 
-        style={[styles.tabButton, activeStat === 'page-stats' ? styles.activeTab : null]}
-        onPress={() => setActiveStat('page-stats')}>
-        <Ionicons name="book-outline" size={24} color={activeStat === 'page-stats' ? COLORS.primaryOrangeHex : COLORS.primaryWhiteHex} />
-        <Text style={[styles.tabText, activeStat === 'page-stats' ? styles.activeTabText : null]}>Page Stats</Text>
-      </TouchableOpacity>
-      
-      {/* <TouchableOpacity 
-        style={[styles.tabButton, activeStat === 'time-stats' ? styles.activeTab : null]}
-        onPress={() => setActiveStat('time-stats')}>
-        <Ionicons name="time-outline" size={24} color={activeStat === 'time-stats' ? COLORS.primaryOrangeHex : COLORS.primaryWhiteHex} />
-        <Text style={[styles.tabText, activeStat === 'time-stats' ? styles.activeTabText : null]}>Time Stats</Text>
-      </TouchableOpacity> */}
-      
-      <TouchableOpacity 
-        style={[styles.tabButton, activeStat === 'emotion-stats' ? styles.activeTab : null]}
-        onPress={() => setActiveStat('emotion-stats')}>
-        <Ionicons name="heart-outline" size={24} color={activeStat === 'emotion-stats' ? COLORS.primaryOrangeHex : COLORS.primaryWhiteHex} />
-        <Text style={[styles.tabText, activeStat === 'emotion-stats' ? styles.activeTabText : null]}>Emotions</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity 
-        style={[styles.tabButton, activeStat === 'progress-stats' ? styles.activeTab : null]}
-        onPress={() => setActiveStat('progress-stats')}>
-        <Ionicons name="stats-chart-outline" size={24} color={activeStat === 'progress-stats' ? COLORS.primaryOrangeHex : COLORS.primaryWhiteHex} />
-        <Text style={[styles.tabText, activeStat === 'progress-stats' ? styles.activeTabText : null]}>Progress</Text>
-      </TouchableOpacity>
-    </View>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.tabContainer}
+    >
+      {TABS.map(tab => {
+        const isActive = activeStat === tab.key;
+        return (
+          <TouchableOpacity
+            key={tab.key}
+            style={[styles.tabButton, isActive && styles.activeTab]}
+            onPress={() => setActiveStat(tab.key)}
+          >
+            <Ionicons
+              name={tab.icon as any}
+              size={24}
+              color={isActive ? COLORS.primaryOrangeHex : COLORS.primaryWhiteHex}
+            />
+            <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
   );
 };
 
 export default StatsTabs;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS: any) => StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: COLORS.primaryDarkGreyHex,
     borderRadius: BORDERRADIUS.radius_10,
     marginVertical: SPACING.space_16,
     padding: SPACING.space_4,
-    overflow: 'hidden',
-    justifyContent: 'space-between',
+    gap: SPACING.space_4,
   },
   tabButton: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: SPACING.space_10,
+    paddingHorizontal: SPACING.space_12,
     flexDirection: 'column',
+    borderRadius: BORDERRADIUS.radius_8,
   },
   activeTab: {
     backgroundColor: COLORS.primaryBlackHex,

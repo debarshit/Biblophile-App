@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -21,12 +21,15 @@ import requests from '../../../services/requests';
 import instance from '../../../services/axios';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const HotRecommendations = () => {
   const [newBooks, setNewBooks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     const fetchNewReleases = async () => {
@@ -117,7 +120,7 @@ const HotRecommendations = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     marginVertical: SPACING.space_20,
   },

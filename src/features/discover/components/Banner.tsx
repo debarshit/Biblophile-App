@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Image, StyleSheet, TouchableOpacity } from "react-native";
 import requests from "../../../services/requests";
 import instance from "../../../services/axios";
 import { COLORS } from "../../../theme/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 interface BannerItem {
   smallImage: string;
@@ -16,6 +17,8 @@ interface BannerItem {
 const Banner: React.FC = ( navigation: any) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [bannerItems, setBannerItems] = useState<BannerItem[]>([]);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   navigation = useNavigation();
   
@@ -68,7 +71,7 @@ const Banner: React.FC = ( navigation: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   bannerContainer: {
     width: '100%',
     // height: '25%', when banner outside scrollview in bg

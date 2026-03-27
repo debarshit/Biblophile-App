@@ -25,6 +25,7 @@ import {
 } from '../../../theme/theme';
 import ReadAlongCard from '../components/ReadAlongCard';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -72,6 +73,8 @@ const ReadAlongsIndex = () => {
   const [searchType, setSearchType] = useState<SearchType>('all');
   const [showSearchFilters, setShowSearchFilters] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   // Consolidated state for both tabs
   const [tabState, setTabState] = useState<Record<TabType, TabState>>({
@@ -315,7 +318,7 @@ const ReadAlongsIndex = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

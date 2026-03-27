@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,12 +10,15 @@ import {
   FONTSIZE,
   BORDERRADIUS,
 } from '../theme/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 /* -------------------------------------------------------------------------- */
 /*                                COMPONENTS                                  */
 /* -------------------------------------------------------------------------- */
 
 const MonthlyWrapLink = ({ onPress, currentMonth = 'November' }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <TouchableOpacity
       style={styles.wrapContainer}
@@ -61,6 +64,8 @@ const MonthlyWrapLink = ({ onPress, currentMonth = 'November' }) => {
 };
 
 const MonthlyWrapMinimal = ({ onPress, currentMonth = 'November' }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <TouchableOpacity
       style={styles.minimalContainer}
@@ -95,6 +100,8 @@ const MonthlyWrapBanner = ({
   currentMonth = 'November',
   booksRead = 12,
 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <TouchableOpacity
       style={styles.bannerContainer}
@@ -141,7 +148,7 @@ const MonthlyWrapBanner = ({
 /*                                   STYLES                                   */
 /* -------------------------------------------------------------------------- */
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   wrapContainer: {
     marginBottom: SPACING.space_16,
     borderRadius: BORDERRADIUS.radius_20,

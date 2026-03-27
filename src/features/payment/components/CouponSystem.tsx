@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Alert, StyleSheet } from 'react-native';
 import {
   BORDERRADIUS,
@@ -7,6 +7,7 @@ import {
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface CouponDetails {
   type: string;
@@ -29,6 +30,8 @@ const CouponSystem: React.FC<CouponSystemProps> = ({
   const [couponCode, setCouponCode] = useState<string>("");
   const [couponError, setCouponError] = useState<string>("");
   const [showCouponSection, setShowCouponSection] = useState(false);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const handleApplyCoupon = () => {
     setCouponError("");
@@ -111,7 +114,7 @@ const CouponSystem: React.FC<CouponSystemProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   sectionContainer: {
     paddingHorizontal: SPACING.space_20,
     paddingVertical: SPACING.space_15,

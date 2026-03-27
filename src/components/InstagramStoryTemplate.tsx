@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { COLORS, FONTFAMILY } from '../theme/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 const STORY_WIDTH = 1080;
 const STORY_HEIGHT = 1920;
@@ -19,6 +20,8 @@ interface InstagramStoryTemplateProps {
 
 const InstagramStoryTemplate = forwardRef<View, InstagramStoryTemplateProps>(
   ({ image, title, message }, ref) => {
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
     return (
       <View
         ref={ref}
@@ -65,7 +68,7 @@ const InstagramStoryTemplate = forwardRef<View, InstagramStoryTemplateProps>(
 
 export default InstagramStoryTemplate;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     width: STORY_WIDTH,
     height: STORY_HEIGHT,

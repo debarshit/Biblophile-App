@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import GradientBGIcon from '../../../components/GradientBGIcon';
 import BookClubTabNavigator from '../components/BookClubTabNavigator';
 import BookClubMeetings from '../components/BookClubMeetings';
 import BookClubAbout from '../components/BookClubAbout';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Member {
   name: string;
@@ -50,6 +51,8 @@ export default function BookClubDetailsScreen() {
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0].accessToken;
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     fetchBookClubDetails();
@@ -228,7 +231,7 @@ export default function BookClubDetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: COLORS.secondaryDarkGreyHex,

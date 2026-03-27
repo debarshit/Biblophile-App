@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Text, View, StyleSheet, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
 import instance from "../../../services/axios";
 import requests from "../../../services/requests";
 import { useNavigation } from '@react-navigation/native';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface ReadTogetherProps {
     id: string;
@@ -14,6 +15,8 @@ interface ReadTogetherProps {
 const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, product }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchBookId = async (): Promise<string | null> => {
     setIsLoading(true);
@@ -104,7 +107,7 @@ const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, prod
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flexDirection: 'column',
     gap: SPACING.space_16,

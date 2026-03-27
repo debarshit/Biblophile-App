@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { useAnalytics } from '../../../utils/analytics';
 import CityPlaceModal from './CityPlaceModal';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface CityPlace {
   id: string;
@@ -39,6 +40,8 @@ export default function CityPlacesSection({ cityPlaces }: CityPlacesSectionProps
   const [scrollProgress, setScrollProgress] = useState(0);
   const [selectedPlace, setSelectedPlace] = useState<CityPlace | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const openModal = (place: CityPlace) => {
     setSelectedPlace(place);
@@ -158,7 +161,7 @@ export default function CityPlacesSection({ cityPlaces }: CityPlacesSectionProps
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     marginBottom: SPACING.space_24,
     backgroundColor: COLORS.primaryBlackHex,

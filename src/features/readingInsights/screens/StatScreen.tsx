@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
-import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
+import React, { useEffect, useMemo, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
+import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -14,11 +14,21 @@ import ReminderSection from '../components/stats/ReminderSection';
 import TimePicker from '../components/TimePicker';
 import CommunitySection from '../components/stats/CommunitySection';
 import TimeFramePicker from '../components/stats/TimeFramePicker';
-import StatsTabs from '../components/stats/StatsTabs';
+import StatsTabs, { StatTab } from '../components/stats/StatsTabs';
 import PageStatsChart from '../components/stats/PageStatsChart';
 import TimeStatsChart from '../components/stats/TimeStatsChart';
 import EmotionStatsChart from '../components/stats/EmotionStatsChart';
 import ProgressStatsChart from '../components/stats/ProgressStatsChart';
+import BooksReadChart from '../components/stats/BooksReadChart';
+import GenreBreakdownChart from '../components/stats/GenreBreakdownChart';
+import RatingsDistributionChart from '../components/stats/RatingsDistributionChart';
+import TopAuthorsChart from '../components/stats/TopAuthorsChart';
+import FormatBreakdownChart from '../components/stats/FormatBreakdownChart';
+import PublicationYearChart from '../components/stats/PublicationYearChart';
+import BookAttributesChart from '../components/stats/BookAttributesChart';
+import { useTheme } from '../../../contexts/ThemeContext';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const StatScreen = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -28,13 +38,16 @@ const StatScreen = () => {
   const [readingStatusData, setReadingStatusData] = useState([]);
   const [timeFrame, setTimeFrame] = useState('last-week');
   const [loading, setLoading] = useState(true);
-  const [activeStat, setActiveStat] = useState('page-stats');
+  const [activeStat, setActiveStat] = useState<StatTab>('page-stats');
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState(null);
 
+  const navigation = useNavigation<any>();
   const userDetails = useStore((state) => state.userDetails);
   const { currentStreak, maxStreak } = useStreak(userDetails[0]?.accessToken);
   const analytics = useAnalytics();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const fetchLeaderboard = async () => {
     try {
@@ -57,12 +70,11 @@ const StatScreen = () => {
   const fetchPagesRead = async () => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const response = await instance(`${requests.fetchPagesRead}?${userDetails[0].userId}&timeFrame=${timeFrame}&timezone=${userTimezone}`, {
-        headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
-      });
-      if (Array.isArray(response.data.data)) {
-        setPagesRead(response.data.data);
-      }
+      const response = await instance(
+        `${requests.fetchPagesRead}?${userDetails[0].userId}&timeFrame=${timeFrame}&timezone=${userTimezone}`,
+        { headers: { Authorization: `Bearer ${userDetails[0].accessToken}` } },
+      );
+      if (Array.isArray(response.data.data)) setPagesRead(response.data.data);
     } catch (error) {
       console.error('Failed to fetch pages read:', error);
     }
@@ -71,20 +83,21 @@ const StatScreen = () => {
   const fetchReadingDurations = async () => {
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const response = await instance.get(`${requests.fetchReadingDurationGraph}?${userDetails[0].userId}&timeFrame=${timeFrame}&timezone=${userTimezone}`, {
-        headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
-      });
-      if (Array.isArray(response.data.data)) {
-        setReadingDurations(response.data.data);
-      }
+      const response = await instance.get(
+        `${requests.fetchReadingDurationGraph}?${userDetails[0].userId}&timeFrame=${timeFrame}&timezone=${userTimezone}`,
+        { headers: { Authorization: `Bearer ${userDetails[0].accessToken}` } },
+      );
+      if (Array.isArray(response.data.data)) setReadingDurations(response.data.data);
     } catch (error) {
       console.error('Failed to fetch reading durations:', error);
     }
   };
 
-   const fetchAverageEmotionsByUser = async () => {
+  const fetchAverageEmotionsByUser = async () => {
     try {
-      const response = await instance.get(`${requests.fetchAverageEmotionsByUser}${userDetails[0].userId}&timeFrame=${timeFrame}`);
+      const response = await instance.get(
+        `${requests.fetchAverageEmotionsByUser}${userDetails[0].userId}&timeFrame=${timeFrame}`,
+      );
       setUserAverageEmotions(response.data.data.topEmotions);
     } catch (error) {
       console.error('Failed to fetch user emotions:', error);
@@ -97,12 +110,21 @@ const StatScreen = () => {
         params: { userId: userDetails[0].userId, timeFrame: 'all-time' },
       });
       const books = response.data.data.userBooks;
-      if (Array.isArray(books)) {
-        setReadingStatusData(books);
-      }
+      if (Array.isArray(books)) setReadingStatusData(books);
     } catch (error) {
       console.error('Failed to fetch user books:', error);
     }
+  };
+
+  const getPreviousMonth = () => {
+    const now = new Date();
+    const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    const monthName = prevMonthDate.toLocaleString('default', { month: 'long' });
+    const monthNumber = prevMonthDate.toLocaleString('default', { month: 'numeric' });
+    const year = prevMonthDate.getFullYear();
+
+    return { monthName, monthNumber, year };
   };
 
   useEffect(() => {
@@ -130,14 +152,10 @@ const StatScreen = () => {
     );
   };
 
-  const handleReminderPress = () => {
-    setDatePickerVisible(true);
+  const navigateToMonthlyWrap = () => {
+    const { monthNumber, monthName, year } = getPreviousMonth();
+    navigation.navigate('MonthlyWrap', { monthNumber, monthName, year });
   };
-
-  // const navigateToMonthlyWrap = () => {
-  //   // Navigation logic would go here
-  //   console.log("Navigate to monthly wrap");
-  // };
 
   if (loading) {
     return (
@@ -147,19 +165,54 @@ const StatScreen = () => {
     );
   }
 
+  const renderChart = () => {
+    switch (activeStat) {
+      case 'page-stats':
+        return (
+          <PageStatsChart
+            pagesRead={pagesRead}
+            timeFrame={timeFrame}
+            userDetails={userDetails}
+            fetchPagesRead={fetchPagesRead}
+            analytics={analytics}
+          />
+        );
+      case 'time-stats':
+        return <TimeStatsChart readingDurations={readingDurations} timeFrame={timeFrame} />;
+      case 'emotion-stats':
+        return <EmotionStatsChart userAverageEmotions={userAverageEmotions} timeFrame={timeFrame} />;
+      case 'progress-stats':
+        return <ProgressStatsChart readingStatusData={readingStatusData} />;
+      case 'books-read':
+        return <BooksReadChart timeFrame={timeFrame} />;
+      case 'genres':
+        return <GenreBreakdownChart timeFrame={timeFrame} />;
+      case 'ratings':
+        return <RatingsDistributionChart timeFrame={timeFrame} />;
+      case 'authors':
+        return <TopAuthorsChart timeFrame={timeFrame} />;
+      case 'format':
+        return <FormatBreakdownChart timeFrame={timeFrame} />;
+      case 'publication':
+        return <PublicationYearChart timeFrame={timeFrame} />;
+      case 'book-attributes':
+        return <BookAttributesChart timeFrame={timeFrame} />;
+      default:
+        return null;
+    }
+  };
+  const { monthName, year } = getPreviousMonth();
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.ScrollViewFlex}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* try insights or progress inplace of stats */}
-        <HeaderBar showBackButton={true} title='Stats' /> 
-        <ReadingGoals />
-        
+        <HeaderBar showBackButton={true} title="Stats" />
         {/* Monthly Wrap Link */}
         {/* <TouchableOpacity 
           style={styles.wrapButton}
           onPress={navigateToMonthlyWrap}>
           <Ionicons name="calendar-outline" size={24} color={COLORS.primaryWhiteHex} />
-          <Text style={styles.wrapButtonText}>View Monthly Reading Wrap</Text>
+          <Text style={styles.wrapButtonText}>View {monthName} {year} Reading Wrap</Text>
           <Ionicons name="chevron-forward" size={24} color={COLORS.primaryWhiteHex} />
         </TouchableOpacity> */}
 
@@ -173,37 +226,24 @@ const StatScreen = () => {
 
         <StreakAchievements maxStreak={maxStreak} />
         <StreakCalendarView />
-        
-        <TimeFramePicker timeFrame={timeFrame} setTimeFrame={setTimeFrame} />
-        <StatsTabs activeStat={activeStat} setActiveStat={setActiveStat} />
-        
-        {activeStat === 'page-stats' && (
-          <PageStatsChart 
-            pagesRead={pagesRead} 
-            timeFrame={timeFrame}
-            userDetails={userDetails}
-            fetchPagesRead={fetchPagesRead}
-            analytics={analytics}
-          />
-        )}
-        
-        {/* {activeStat === 'time-stats' && (
-          <TimeStatsChart 
-            readingDurations={readingDurations} 
-            timeFrame={timeFrame}
-          />
-        )} */}
-        
-        {activeStat === 'emotion-stats' && (
-          <EmotionStatsChart 
-            userAverageEmotions={userAverageEmotions} 
-            timeFrame={timeFrame}
-          />
-        )}
-        
-        {activeStat === 'progress-stats' && (
-          <ProgressStatsChart readingStatusData={readingStatusData} />
-        )}
+
+        <View style={styles.section}>
+          <ReadingGoals />
+        </View>
+
+        <View style={styles.section}>
+          <TimeFramePicker timeFrame={timeFrame} setTimeFrame={setTimeFrame} />
+          <StatsTabs activeStat={activeStat} setActiveStat={setActiveStat} />
+          <View style={styles.chartArea}>{renderChart()}</View>
+        </View>
+
+        {/* ── Social / Reminders ── */}
+        <View style={styles.section}>
+          <ReminderSection onReminderPress={() => setDatePickerVisible(true)} />
+        </View>
+        <View style={styles.section}>
+          <CommunitySection currentStreak={currentStreak} />
+        </View>
 
         {datePickerVisible && (
           <TimePicker
@@ -213,9 +253,6 @@ const StatScreen = () => {
             setDatePickerVisible={setDatePickerVisible}
           />
         )}
-
-        <ReminderSection onReminderPress={handleReminderPress} />
-        <CommunitySection currentStreak={currentStreak} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -223,21 +260,14 @@ const StatScreen = () => {
 
 export default StatScreen;
 
-const styles = StyleSheet.create({
-  ScrollViewFlex: { flexGrow: 1 },
+const createStyles = (COLORS: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
-    padding: SPACING.space_16,
   },
-  title: {
-    fontSize: FONTSIZE.size_24,
-    fontFamily: FONTFAMILY.poppins_bold,
-    color: COLORS.primaryWhiteHex,
-    marginBottom: SPACING.space_16,
-    textAlign: 'center',
-  },
-  listContainer: {
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: SPACING.space_16,
     paddingBottom: SPACING.space_20,
   },
   itemContainer: {
@@ -248,6 +278,21 @@ const styles = StyleSheet.create({
     padding: SPACING.space_12,
     borderRadius: BORDERRADIUS.radius_8,
     marginBottom: SPACING.space_8,
+  },
+  section: {
+    marginTop: SPACING.space_16,
+  },
+  chartArea: {
+    marginTop: SPACING.space_8,
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_12,
+    // subtle inner glow
+    shadowColor: COLORS.primaryOrangeHex,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   rank: {
     fontSize: FONTSIZE.size_16,

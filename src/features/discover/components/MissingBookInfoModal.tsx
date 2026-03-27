@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     StyleSheet, Text, TouchableOpacity, View, Modal, TextInput,
     Button, ScrollView, ActivityIndicator
@@ -9,6 +9,7 @@ import {
 import Toast from 'react-native-toast-message';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Props {
     modalVisible: boolean;
@@ -33,6 +34,8 @@ const MissingBookInfoModal: React.FC<Props> = ({
         reason: ''
     });
     const [loading, setLoading] = useState(false);
+    const { COLORS } = useTheme();
+    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const updateFormData = (key: string, value: string) => {
         setFormData(prev => ({ ...prev, [key]: value }));
@@ -243,7 +246,7 @@ const MissingBookInfoModal: React.FC<Props> = ({
 
 export default MissingBookInfoModal;
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
     modalOverlay: {
         flex: 1,
         justifyContent: 'center',

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -23,6 +23,7 @@ import GradientBGIcon from '../../../components/GradientBGIcon';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useStore } from '../../../store/store';
 import { secondsToHMS, hmsToSeconds } from '../../../utils/timeConversion';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Edition {
   bookId: number;
@@ -69,6 +70,8 @@ const EditionsScreen = ({ navigation, route }: any) => {
   const limit = 20;
 
   const userDetails = useStore((state: any) => state.userDetails);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   useEffect(() => {
     const fetchEditions = async () => {
@@ -208,6 +211,7 @@ const EditionsScreen = ({ navigation, route }: any) => {
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>CURRENT EDITION</Text>
             <EditionCard
+              styles={styles}
               edition={currentEdition}
               title={editionsData?.title || ''}
               onPress={() => handleEditionPress(currentEdition)}
@@ -223,6 +227,7 @@ const EditionsScreen = ({ navigation, route }: any) => {
           {currentEdition && <Text style={styles.sectionLabel}>OTHER AVAILABLE EDITIONS</Text>}
           {(currentEdition ? otherEditions : editionsData?.editions)?.map((edition) => (
             <EditionCard
+              styles={styles}
               key={edition.bookId}
               edition={edition}
               title={editionsData?.title || ''}
@@ -338,7 +343,8 @@ const EditionsScreen = ({ navigation, route }: any) => {
   );
 };
 
-const EditionCard = ({ edition, title, onPress, isCurrent, switchMode }: {
+const EditionCard = ({ styles, edition, title, onPress, isCurrent, switchMode }: {
+  styles: any;
   edition: Edition;
   title: string;
   onPress: () => void;
@@ -409,7 +415,7 @@ const EditionCard = ({ edition, title, onPress, isCurrent, switchMode }: {
   </TouchableOpacity>
 );
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.primaryBlackHex },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scrollContent: { paddingBottom: SPACING.space_30 },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -7,6 +7,7 @@ import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../th
 import StarRating from 'react-native-star-rating-widget';
 import { WysiwygRender } from '../../../components/wysiwyg/WysiwygRender';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface ProductReviewProps {
   id: string;
@@ -33,6 +34,8 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
   const reviewsLimit = 10;
 
   const userDetails = useStore((state: any) => state.userDetails);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   async function fetchReviews(newOffset: number = offset) {
     if (isLoading) return;
@@ -174,7 +177,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     backgroundColor: COLORS.primaryDarkGreyHex,
     padding: SPACING.space_20,

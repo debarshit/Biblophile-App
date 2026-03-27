@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface Tab {
   key: string;
@@ -29,6 +30,8 @@ const TabSelector: React.FC<TabSelectorProps> = ({
   activeTabStyle,
   tabTextStyle
 }) => {
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={[styles.tabs, containerStyle]}>
       {tabs.map((tab) => (
@@ -49,7 +52,7 @@ const TabSelector: React.FC<TabSelectorProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   tabs: {
     flexDirection: 'row',
     justifyContent: 'center',

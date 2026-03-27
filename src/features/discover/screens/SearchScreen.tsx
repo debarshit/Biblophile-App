@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { 
   Dimensions, 
   FlatList, 
@@ -32,6 +32,7 @@ import {
 import { useCity } from '../../../contexts/CityContext';
 import SeasonalRecommendations from '../components/SeasonalRecommendations';
 import HeaderBar from '../../../components/HeaderBar';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 // Debounce search for better performance
 const useDebounce = (callback, delay) => {
@@ -61,6 +62,8 @@ const SearchScreen = ({ route }) => {
   const navigation = useNavigation<any>();
   const localBooksListRef = useRef(null);
   const externalBooksListRef = useRef(null);
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const { selectedCity } = useCity();
 
@@ -245,7 +248,7 @@ const SearchScreen = ({ route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,

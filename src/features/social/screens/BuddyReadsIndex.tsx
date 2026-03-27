@@ -25,6 +25,7 @@ import {
 } from '../../../theme/theme';
 import BuddyReadCard from '../components/BuddyReadCard';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -75,6 +76,8 @@ const BuddyReadsIndex = () => {
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
   const navigation = useNavigation<any>();
+  const { COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   // Generic fetch function for both tabs
   const fetchBuddyReads = useCallback(async (
@@ -308,7 +311,7 @@ const BuddyReadsIndex = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
