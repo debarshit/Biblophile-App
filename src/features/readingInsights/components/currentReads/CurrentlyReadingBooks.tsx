@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, StyleSheet, Linking } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
 import BookItem from './BookItemComponent';
@@ -33,6 +33,11 @@ const CurrentlyReadingBooks: React.FC<CurrentlyReadingBooksProps> = ({
   );
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const handlePress = () => {
+    Linking.openURL('https://biblophile.com/goodreads-import').catch((err) =>
+      console.error('An error occurred while opening the URL', err)
+    );
+  };
 
   return (
     <View style={styles.currentReadsSection}>
@@ -54,15 +59,22 @@ const CurrentlyReadingBooks: React.FC<CurrentlyReadingBooksProps> = ({
             No books in your current reads yet
           </Text>
           {showDiscoverLink && (
-            <TouchableOpacity 
-              style={styles.discoverButton}
-              onPress={() => navigation.navigate('Discover')}
-            >
-              <Text style={styles.discoverButtonText}>
-                Discover Books to Add
-              </Text>
-              <FontAwesome name="arrow-right" style={styles.discoverButtonIcon} />
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity 
+                style={styles.discoverButton}
+                onPress={() => navigation.navigate('Discover')}
+              >
+                <Text style={styles.discoverButtonText}>
+                  Discover Books to Add
+                </Text>
+                <FontAwesome name="arrow-right" style={styles.discoverButtonIcon} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handlePress} style={styles.secondaryCTA}>
+                <Text style={styles.secondaryCTAText}>
+                  Or, import from Goodreads
+                </Text>
+              </TouchableOpacity>
+            </>
           )}
         </View>
       )}
@@ -129,5 +141,12 @@ const createStyles = (COLORS) => StyleSheet.create({
   discoverButtonIcon: {
     color: COLORS.primaryWhiteHex,
     fontSize: FONTSIZE.size_12,
+  },
+  secondaryCTA: {
+    alignItems: 'center',
+    marginTop: SPACING.space_4,
+  },
+  secondaryCTAText: {
+    color: COLORS.primaryOrangeHex,
   },
 });
