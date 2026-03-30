@@ -49,7 +49,7 @@ export default {
       "backgroundColor": "#0C0F14"
     },
     "googleServicesFile": "./google-services.json",
-    "versionCode": 16,
+    "versionCode": 17,
     package: IS_DEV
       ? "com.debar_shit.BiblophileApp.dev"
       : IS_PREVIEW
@@ -59,7 +59,11 @@ export default {
       "NOTIFICATIONS",
       "CAMERA"
     ],
-    "packageVisibility": {
+    "blockedPermissions": [
+      "android.permission.READ_MEDIA_IMAGES",
+      "android.permission.READ_MEDIA_VIDEO",
+    ],
+      "packageVisibility": {
       "packages": [
         "com.instagram.android"
       ]
@@ -96,15 +100,6 @@ export default {
         }
       }
     ],
-    [
-      "expo-media-library",
-      {
-        "photosPermission": "Allow Bibliophile to save wrap images to your photo library.",
-        "savePhotosPermission": "Allow Bibliophile to save wrap images to your photo library.",
-        "isAccessMediaLocationEnabled": false,
-        "granularPermissions": []
-      }
-    ]
   ],
   "extra": {
     "eas": {
