@@ -1,11 +1,15 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
+import { AntDesign } from '@expo/vector-icons';
+import { captureRef } from 'react-native-view-shot';
 import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { useStore } from '../../../../store/store';
 import instance from '../../../../services/axios';
 import requests from '../../../../services/requests';
+import { shareToplatform } from '../../../../utils/share';
+import StatsStoryTemplate from '../../../../components/StatsStoryTemplate';
 
 interface BookAttributesChartProps {
   timeFrame: string;
@@ -45,6 +49,11 @@ const LENGTH_DISPLAY: Record<string, string> = {
   'unknown':          'Unknown',
 };
 
+const TIME_FRAME_LABEL: Record<string, string> = {
+  'last-week':  'This Week',
+  'last-month': 'This Month',
+  'all-time':   'All Time',
+};
 // Map timeFrame string → from date string (to= is omitted = today)
 function timeFrameToFrom(timeFrame: string): string | undefined {
   const now = new Date();
@@ -72,69 +81,109 @@ const BookAttributesChart: React.FC<BookAttributesChartProps> = ({ timeFrame }) 
   const [avgPages, setAvgPages]         = useState<number | null>(null);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState(false);
+  const [isSharing, setIsSharing]         = useState(false);
+
+  const storyRef = useRef<View>(null);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setLoading(true);
+  //     setError(false);
+  //     try {
+  //       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  //       const from = timeFrameToFrom(timeFrame);
+  //       const params = new URLSearchParams({ timezone: userTimezone });
+  //       if (from) params.set('from', from);
+  //       const authHeader = { Authorization: `Bearer ${userDetails[0].accessToken}` };
+
+  //       const [lengthRes, fictionRes, nonFictionRes] = await Promise.all([
+  //         instance.get(`${requests.fetchLengthStats}?${params.toString()}`, { headers: authHeader }),
+  //         instance.get(`${requests.fetchFilteredStats}?${params.toString()}&bookType=fiction`, { headers: authHeader }),
+  //         instance.get(`${requests.fetchFilteredStats}?${params.toString()}&bookType=non-fiction`, { headers: authHeader }),
+  //       ]);
+
+  //       const fictionCount    = fictionRes.data?.data?.booksCount ?? 0;
+  //       const nonFictionCount = nonFictionRes.data?.data?.booksCount ?? 0;
+
+  //       const newFictionData: FictionItem[] = [];
+  //       if (fictionCount > 0)    newFictionData.push({ name: 'Fiction',     count: fictionCount,    color: FICTION_COLORS['fiction'] });
+  //       if (nonFictionCount > 0) newFictionData.push({ name: 'Non-Fiction', count: nonFictionCount, color: FICTION_COLORS['non-fiction'] });
+  //       setFictionData(newFictionData);
+
+  //       const rawBuckets: { label: string; count: number }[] = lengthRes.data?.data?.buckets ?? [];
+  //       const buckets: LengthBucket[] = rawBuckets
+  //         .filter(b => b.label !== 'unknown' && b.count > 0)
+  //         .map(b => ({
+  //           label: LENGTH_DISPLAY[b.label] ?? b.label,
+  //           count: b.count,
+  //           color: LENGTH_COLORS[b.label] ?? '#888888',
+  //         }));
+  //       setLengthBuckets(buckets);
+  //       setAvgPages(lengthRes.data?.data?.averagePages ?? null);
+  //     } catch (e) {
+  //       console.error('Failed to fetch book attributes:', e);
+  //       setError(true);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, [timeFrame]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(false);
-      try {
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const from = timeFrameToFrom(timeFrame);
-        const params = new URLSearchParams({ timezone: userTimezone });
-        if (from) params.set('from', from);
-        const authHeader = { Authorization: `Bearer ${userDetails[0].accessToken}` };
+  // Simulate loading delay (optional)
+  setLoading(true);
 
-        const [filteredRes, lengthRes] = await Promise.all([
-          // Fiction/non-fiction split — reuse getFilteredStats with bookType grouping
-          // We call it twice: once for fiction, once for non-fiction
-          instance.get(`${requests.fetchFilteredStats}?${params.toString()}`, { headers: authHeader }),
-          instance.get(`${requests.fetchLengthStats}?${params.toString()}`, { headers: authHeader }),
-        ]);
+  setTimeout(() => {
+    // ✅ Fiction vs Non-Fiction mock
+    const mockFictionData: FictionItem[] = [
+      { name: 'Fiction', count: 18, color: FICTION_COLORS['fiction'] },
+      { name: 'Non-Fiction', count: 12, color: FICTION_COLORS['non-fiction'] },
+    ];
 
-        // --- Fiction vs Non-Fiction ---
-        // fetchFilteredStats returns booksCount for the whole slice.
-        // We need two calls: one filtered to fiction, one to non-fiction.
-        const [fictionRes, nonFictionRes] = await Promise.all([
-          instance.get(
-            `${requests.fetchFilteredStats}?${params.toString()}&bookType=fiction`,
-            { headers: authHeader },
-          ),
-          instance.get(
-            `${requests.fetchFilteredStats}?${params.toString()}&bookType=non-fiction`,
-            { headers: authHeader },
-          ),
-        ]);
+    // ✅ Length buckets mock
+    const mockLengthBuckets: LengthBucket[] = [
+      { label: LENGTH_DISPLAY['short (<150)'], count: 5, color: LENGTH_COLORS['short (<150)'] },
+      { label: LENGTH_DISPLAY['medium (150–299)'], count: 10, color: LENGTH_COLORS['medium (150–299)'] },
+      { label: LENGTH_DISPLAY['long (300–499)'], count: 9, color: LENGTH_COLORS['long (300–499)'] },
+      { label: LENGTH_DISPLAY['very long (500+)'], count: 6, color: LENGTH_COLORS['very long (500+)'] },
+    ];
 
-        const fictionCount    = fictionRes.data?.data?.booksCount ?? 0;
-        const nonFictionCount = nonFictionRes.data?.data?.booksCount ?? 0;
+setFictionData(mockFictionData || []);
+setLengthBuckets(mockLengthBuckets || []);
+    setAvgPages(312); // realistic number
 
-        const newFictionData: FictionItem[] = [];
-        if (fictionCount > 0)    newFictionData.push({ name: 'Fiction',     count: fictionCount,    color: FICTION_COLORS['fiction'] });
-        if (nonFictionCount > 0) newFictionData.push({ name: 'Non-Fiction', count: nonFictionCount, color: FICTION_COLORS['non-fiction'] });
-        setFictionData(newFictionData);
+    setLoading(false);
+  }, 500); // remove delay if not needed
+}, [timeFrame]);
+  const handleShare = async () => {
+    if (!storyRef.current) return;
+    try {
+      setIsSharing(true);
+      await new Promise(res => requestAnimationFrame(res));
 
-        // --- Length buckets ---
-        const rawBuckets: { label: string; count: number }[] = lengthRes.data?.data?.buckets ?? [];
-        const buckets: LengthBucket[] = rawBuckets
-          .filter(b => b.label !== 'unknown' && b.count > 0)
-          .map(b => ({
-            label: LENGTH_DISPLAY[b.label] ?? b.label,
-            count: b.count,
-            color: LENGTH_COLORS[b.label] ?? '#888888',
-          }));
-        setLengthBuckets(buckets);
-        setAvgPages(lengthRes.data?.data?.averagePages ?? null);
+      const uri = await captureRef(storyRef, {
+        format: 'png',
+        quality: 1,
+        result: 'tmpfile',
+      });
 
-      } catch (e) {
-        console.error('Failed to fetch book attributes:', e);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [timeFrame]);
+      await shareToplatform({
+        platform: 'instagram-stories',
+        content: {
+          title: 'My Reading Stats',
+          message: '',
+          image: uri,
+        },
+        screenshotRef: storyRef,
+      });
+    } catch (err) {
+      console.error('Share failed:', err);
+    } finally {
+      setIsSharing(false);
+    }
+  };
 
   const totalFiction = fictionData.reduce((s, f) => s + f.count, 0);
   const totalLength  = lengthBuckets.reduce((s, b) => s + b.count, 0);
@@ -174,10 +223,10 @@ const BookAttributesChart: React.FC<BookAttributesChartProps> = ({ timeFrame }) 
     );
   }
 
-  return (
-    <View style={styles.statContainer}>
-
-      {/* Fiction vs Non-Fiction */}
+  // Extracted so it renders identically both on-screen and in the story template
+  const chartContent = (
+    <>
+    {/* Fiction vs Non-Fiction */}
       {hasFiction && (
         <>
           <Text style={styles.title}>Fiction vs Non-Fiction</Text>
@@ -239,7 +288,37 @@ const BookAttributesChart: React.FC<BookAttributesChartProps> = ({ timeFrame }) 
           </View>
         </>
       )}
+    </>
+  );
 
+  return (
+    <View>
+      {/* ── Visible UI ── */}
+      <TouchableOpacity
+        style={styles.shareButton}
+        onPress={handleShare}
+        disabled={isSharing}
+      >
+        <AntDesign name="sharealt" size={FONTSIZE.size_16} color={COLORS.primaryOrangeHex} />
+        <Text style={styles.shareButtonText}>
+          {isSharing ? 'Capturing…' : 'Share Stats'}
+        </Text>
+      </TouchableOpacity>
+
+      <View style={styles.statContainer}>
+        {chartContent}
+      </View>
+
+      {/* ── Off-screen story canvas — captured by view-shot ── */}
+      <View style={styles.offscreen}>
+        <StatsStoryTemplate
+          ref={storyRef}
+          title="My Reading Stats"
+          subtitle={TIME_FRAME_LABEL[timeFrame] ?? 'All Time'}
+        >
+          {chartContent}
+        </StatsStoryTemplate>
+      </View>
     </View>
   );
 };
@@ -248,7 +327,7 @@ export default BookAttributesChart;
 
 const createStyles = (COLORS: any) => StyleSheet.create({
   statContainer: {
-    backgroundColor: 'transparent',
+    backgroundColor: COLORS.primaryDarkGreyHex,//why not transparent
     borderRadius: BORDERRADIUS.radius_8,
     padding: SPACING.space_8,
   },
@@ -262,6 +341,22 @@ const createStyles = (COLORS: any) => StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_regular,
     color: COLORS.secondaryLightGreyHex,
     textAlign: 'center',
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    gap: SPACING.space_4,
+    paddingHorizontal: SPACING.space_12,
+    paddingVertical: SPACING.space_8,
+    borderRadius: BORDERRADIUS.radius_15,
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    marginBottom: SPACING.space_8,
+  },
+  shareButtonText: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_12,
+    color: COLORS.primaryOrangeHex,
   },
   title: {
     fontSize: FONTSIZE.size_24,
@@ -350,5 +445,10 @@ const createStyles = (COLORS: any) => StyleSheet.create({
     color: COLORS.secondaryLightGreyHex,
     textAlign: 'center',
     marginTop: 2,
+  },
+  offscreen: {
+    position: 'absolute',
+    left: -9999,
+    top: 0,
   },
 });
