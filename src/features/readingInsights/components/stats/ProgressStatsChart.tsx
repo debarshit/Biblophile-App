@@ -1,18 +1,26 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
-import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
+import { AntDesign } from '@expo/vector-icons';
+import { captureRef } from 'react-native-view-shot';
+import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
 import { useTheme } from '../../../../contexts/ThemeContext';
+import { shareToplatform } from '../../../../utils/share';
+import StatsStoryTemplate from '../../../../components/StatsStoryTemplate';
 
 interface ProgressStatsChartProps {
   readingStatusData: any[];
 }
 
+const PIECOLORS = ['#FF7E5F', '#42D1D1', '#FFBC42', '#9C4DD4', '#45B69C'];
+
 const ProgressStatsChart: React.FC<ProgressStatsChartProps> = ({ readingStatusData }) => {
   const screenWidth = Dimensions.get('window').width;
-  const PIECOLORS = ['#FF7E5F', '#42D1D1', '#FFBC42', '#9C4DD4', '#45B69C'];
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const [isSharing, setIsSharing] = useState(false);
+
+  const storyRef = useRef<View>(null);
 
   if (!Array.isArray(readingStatusData) || readingStatusData.length === 0) {
     return (
@@ -43,8 +51,37 @@ const ProgressStatsChart: React.FC<ProgressStatsChartProps> = ({ readingStatusDa
     legendFontSize: 15,
   }));
 
-  return (
-    <View style={styles.statContainer}>
+  const handleShare = async () => {
+    if (!storyRef.current) return;
+    try {
+      setIsSharing(true);
+      await new Promise(res => requestAnimationFrame(res));
+
+      const uri = await captureRef(storyRef, {
+        format: 'png',
+        quality: 1,
+        result: 'tmpfile',
+      });
+
+      await shareToplatform({
+        platform: 'instagram-stories',
+        content: {
+          title: 'My Reading Progress',
+          message: '',
+          image: uri,
+        },
+        screenshotRef: storyRef,
+      });
+    } catch (err) {
+      console.error('Share failed:', err);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  // Extracted so it renders identically both on-screen and in the story template
+  const chartContent = (
+    <>
       <Text style={styles.title}>Reading Progress</Text>
       <View style={styles.chartCard}>
         <PieChart
@@ -73,6 +110,36 @@ const ProgressStatsChart: React.FC<ProgressStatsChartProps> = ({ readingStatusDa
           ))}
         </View>
       </View>
+    </>
+  );
+
+  return (
+    <View>
+      {/* ── Visible UI ── */}
+      <TouchableOpacity
+        style={styles.shareButton}
+        onPress={handleShare}
+        disabled={isSharing}
+      >
+        <AntDesign name="sharealt" size={FONTSIZE.size_16} color={COLORS.primaryOrangeHex} />
+        <Text style={styles.shareButtonText}>
+          {isSharing ? 'Capturing…' : 'Share Stats'}
+        </Text>
+      </TouchableOpacity>
+
+      <View style={styles.statContainer}>
+        {chartContent}
+      </View>
+
+      {/* ── Off-screen story canvas ── */}
+      <View style={styles.offscreen}>
+        <StatsStoryTemplate
+          ref={storyRef}
+          title="Reading Progress"
+        >
+          {chartContent}
+        </StatsStoryTemplate>
+      </View>
     </View>
   );
 };
@@ -84,6 +151,22 @@ const createStyles = (COLORS) => StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: BORDERRADIUS.radius_8,
     padding: SPACING.space_8,
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    gap: SPACING.space_4,
+    paddingHorizontal: SPACING.space_12,
+    paddingVertical: SPACING.space_8,
+    borderRadius: BORDERRADIUS.radius_15,
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    marginBottom: SPACING.space_8,
+  },
+  shareButtonText: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_12,
+    color: COLORS.primaryOrangeHex,
   },
   title: {
     fontSize: FONTSIZE.size_24,
@@ -129,5 +212,10 @@ const createStyles = (COLORS) => StyleSheet.create({
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_regular,
     fontSize: FONTSIZE.size_16,
+  },
+  offscreen: {
+    position: 'absolute',
+    left: -9999,
+    top: 0,
   },
 });
