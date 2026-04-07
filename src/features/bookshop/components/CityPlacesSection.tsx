@@ -97,13 +97,13 @@ export default function CityPlacesSection({ cityPlaces }: CityPlacesSectionProps
         contentContainerStyle={styles.scrollContent}
       >
         {groupedPlaces.map((group, groupIdx) => {
-          const groupProgress = scrollProgress * 100;
 
           return (
             <View key={groupIdx} style={styles.groupContainer}>
               {group.map((place, idx) => {
-                const cardOffset = (groupIdx * 2 + idx) * -10;
-                const imageTransform = groupProgress + cardOffset;
+                const cardOffset = (groupIdx * 2 + idx) * -5;
+                const rawTransform = scrollProgress * 30 + cardOffset;
+                const imageTransform = Math.max(-15, Math.min(15, rawTransform));
 
                 return (
                   <TouchableOpacity onPress={() => openModal(place)} activeOpacity={0.8}>
