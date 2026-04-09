@@ -51,6 +51,13 @@ const config = {
         readalongId: (id: string) => parseInt(id, 10),
       },
     },
+    Library: {
+      path: 'city/:citySlug/:type?/:id?',
+      parse: {
+        type: (type: string) => `${type}`, // places | events
+        id: (id: string) => `${id}`,
+      },
+    },
     Resources: {
       path: ':*', // The asterisk acts as a wildcard
     },
