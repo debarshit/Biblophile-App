@@ -8,10 +8,12 @@ import {
   Linking,
   StyleSheet,
   ScrollView,
+  Share,
 } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { AntDesign } from '@expo/vector-icons';
 
 interface CityPlace {
   id: string;
@@ -63,6 +65,28 @@ export default function CityPlaceModal({ visible, onClose, place }: CityPlaceMod
     }
   };
 
+  const sharePlace = () => {
+    const url = `https://biblophile.com/city/bengaluru/places/${place.id}`;
+
+    const message =
+      `Checkout this reading spot 👇\n\n` +
+      `${place.name}\n` +
+      `${place.address || ''}\n\n` +
+      `${url}`;
+
+    Share.share({
+      title: place.name,
+      message,
+    });
+
+     analytics.track('place_modal_share', {
+      place_id: place.id,
+      name: place.name,
+      type: place.type,
+    });
+  };
+
+
   return (
     <Modal
       visible={visible}
@@ -78,11 +102,18 @@ export default function CityPlaceModal({ visible, onClose, place }: CityPlaceMod
           >
             {/* Image */}
             {place.photo && (
-              <Image
-                source={{ uri: place.photo }}
-                style={styles.image}
-                resizeMode="cover"
-              />
+              <View style={styles.imageContainer}>
+                <Image
+                  source={{ uri: place.photo }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+
+                {/* Share Button */}
+                <TouchableOpacity style={styles.shareButton} onPress={sharePlace}>
+                  <AntDesign name="sharealt" size={16} color="#fff" />
+                </TouchableOpacity>
+              </View>
             )}
 
             {/* Content */}
@@ -151,6 +182,17 @@ const createStyles = (COLORS) => StyleSheet.create({
   image: {
     width: '100%',
     height: 200,
+  },
+  imageContainer: {
+    position: 'relative',
+  },
+  shareButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 20,
+    padding: 10,
   },
   content: {
     padding: SPACING.space_16,

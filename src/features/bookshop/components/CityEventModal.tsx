@@ -8,6 +8,7 @@ import {
   Linking,
   StyleSheet,
   ScrollView,
+  Share,
 } from 'react-native';
 import { useTheme } from '../../../contexts/ThemeContext';
 import {
@@ -17,6 +18,7 @@ import {
   BORDERRADIUS,
 } from '../../../theme/theme';
 import { useAnalytics } from '../../../utils/analytics';
+import { AntDesign } from '@expo/vector-icons';
 
 interface CityEvent {
   id: string;
@@ -102,14 +104,21 @@ export default function EventModal({
   const shareEvent = () => {
     const url = `https://biblophile.com/city/bengaluru/events/${event.id}`;
 
+    const message =
+          `Check this bookish event 👇\n\n` +
+          `${event.title}\n` +
+          `${event.location || ''}\n\n` +
+          `${url}`;
+    
+        Share.share({
+          title: event.title,
+          message,
+        });
+
     analytics.track('event_modal_share', {
       event_id: event.id,
       title: event.title,
     });
-
-    Linking.openURL(`https://wa.me/?text=${encodeURIComponent(
-      `Check this bookish event 👇\n\n${event.title}\n${url}`
-    )}`);
   };
 
   return (
@@ -125,13 +134,19 @@ export default function EventModal({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: SPACING.space_20 }}
           >
-            {/* 📸 Image */}
+            {/* Image */}
             {event.photo && (
-              <Image
-                source={{ uri: event.photo }}
-                style={styles.image}
-                resizeMode="cover"
-              />
+              <View style={styles.imageContainer}>
+                <Image
+                  source={{ uri: event.photo }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+                {/* Share Button */}
+                  <TouchableOpacity style={styles.shareButton} onPress={shareEvent}>
+                    <AntDesign name="sharealt" size={16} color="#fff" />
+                  </TouchableOpacity>
+              </View>
             )}
 
             {/* 📄 Content */}
@@ -171,10 +186,6 @@ export default function EventModal({
                 <TouchableOpacity onPress={addToCalendar}>
                   <Text style={styles.link}>📅 Add to Calendar</Text>
                 </TouchableOpacity>
-
-                <TouchableOpacity onPress={shareEvent}>
-                  <Text style={styles.link}>📤 Share Event</Text>
-                </TouchableOpacity>
               </View>
             </View>
 
@@ -208,6 +219,17 @@ const createStyles = (COLORS: any) =>
     image: {
       width: '100%',
       height: 200,
+    },
+    imageContainer: {
+      position: 'relative',
+    },
+    shareButton: {
+      position: 'absolute',
+      top: 12,
+      right: 12,
+      backgroundColor: 'rgba(0,0,0,0.6)',
+      borderRadius: 20,
+      padding: 10,
     },
     content: {
       padding: SPACING.space_16,
