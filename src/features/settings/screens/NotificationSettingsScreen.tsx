@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, Switch, Alert, StyleSheet, TouchableOpacity, SafeAreaView, AppState, ScrollView } from 'react-native';
+import { View, Text, Switch, Alert, StyleSheet, TouchableOpacity, SafeAreaView, AppState, ScrollView, Platform } from 'react-native';
 import { notificationService } from '../../../utils/notificationUtils';
 import Toast from 'react-native-toast-message';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -123,6 +123,18 @@ const fetchPreferences = async () => {
     
     if (!notificationsEnabled && result.success) {
       await checkNotificationStatus();
+      const token = notificationService.getPushToken();
+      if (token) {
+        try {
+          await instance.post(requests.registerNotificationToken, {
+            userId: userDetails[0].userId,
+            token: token,
+            device: Platform.OS,
+          });
+        } catch (err) {
+          console.log("Failed to register token", err);
+        }
+      }
       Toast.show({
         type: 'success',
         text1: 'Notifications Enabled! 🎉',
