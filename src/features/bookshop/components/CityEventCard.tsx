@@ -35,9 +35,10 @@ interface CityEvent {
 interface CityEventCardProps {
   event: CityEvent;
   accessToken?: string;
+  onPress?: (event: CityEvent) => void;
 }
 
-export default function CityEventCard({ event, accessToken }: CityEventCardProps) {
+export default function CityEventCard({ event, accessToken, onPress }: CityEventCardProps) {
   const analytics = useAnalytics();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [interested, setInterested] = useState(event.interested || 0);
@@ -131,6 +132,7 @@ export default function CityEventCard({ event, accessToken }: CityEventCardProps
   };
 
   return (
+    <TouchableOpacity onPress={() => onPress?.(event)}>
     <View style={styles.card}>
       {event.photo && (
         <Image
@@ -221,6 +223,7 @@ export default function CityEventCard({ event, accessToken }: CityEventCardProps
         )}
       </View>
     </View>
+    </TouchableOpacity>
   );
 }
 

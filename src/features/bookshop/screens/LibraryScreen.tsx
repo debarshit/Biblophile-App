@@ -10,7 +10,6 @@ import {
   View,
   Platform,
   ToastAndroid,
-  Linking,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {FlatList} from 'react-native';
@@ -36,6 +35,9 @@ import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import CityPlacesSection from '../components/CityPlacesSection';
 import CityEventCard from '../components/CityEventCard';
 import { useTheme } from '../../../contexts/ThemeContext';
+import CityPlaceModal from '../components/CityPlaceModal';
+import EventModal from '../components/CityEventModal';
+import { useRoute } from '@react-navigation/native';
 
 const getGenresFromData = (data: any) => {
   const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
@@ -62,6 +64,9 @@ const LibraryScreen = ({navigation}: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
 
+  const route = useRoute<any>();
+  const { type, id } = route.params || {};
+
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
@@ -80,6 +85,13 @@ const LibraryScreen = ({navigation}: any) => {
   const [cityPlaces, setCityPlaces] = useState([]);
   const [cityEvents, setCityEvents] = useState([]);
   const [cityDataLoading, setCityDataLoading] = useState(true);
+  const [deepLinkModal, setDeepLinkModal] = useState<{
+    type: 'place' | 'event' | null;
+    id: string | null;
+  }>({
+    type: null,
+    id: null,
+  });
 
   const ListRef: any = useRef<FlatList>();
 
@@ -224,6 +236,43 @@ const LibraryScreen = ({navigation}: any) => {
   
     fetchBookList();
   }, [genreIndex]);
+
+  const selectedPlaceFromLink = useMemo(() => {
+    if (deepLinkModal.type !== 'place') return null;
+    return cityPlaces.find(p => String(p.id) === String(deepLinkModal.id));
+  }, [deepLinkModal, cityPlaces]);
+
+  const selectedEventFromLink = useMemo(() => {
+    if (deepLinkModal.type !== 'event') return null;
+    return cityEvents.find(e => String(e.id) === String(deepLinkModal.id));
+  }, [deepLinkModal, cityEvents]);
+
+  useEffect(() => {
+    if (!type || !id) return;
+
+    if (type === 'places') {
+      setDeepLinkModal({
+        type: 'place',
+        id,
+      });
+    }
+
+    if (type === 'events') {
+      setDeepLinkModal({
+        type: 'event',
+        id,
+      });
+    }
+  }, [type, id]);
+
+  useEffect(() => {
+    if (!cityDataLoading && type && id) {
+      setDeepLinkModal({
+        type: type === 'places' ? 'place' : 'event',
+        id,
+      });
+    }
+  }, [cityDataLoading, type, id]);
 
   return (
     <SafeAreaView style={styles.ScreenContainer}>
@@ -386,7 +435,15 @@ const LibraryScreen = ({navigation}: any) => {
 
         {/* Cafes & Reading Spots */}
         {!cityDataLoading && cityPlaces.length > 0 && (
-          <CityPlacesSection cityPlaces={cityPlaces} />
+          <CityPlacesSection
+            cityPlaces={cityPlaces}
+            onSelectPlace={(place) => {
+              setDeepLinkModal({
+                type: 'place',
+                id: place.id,
+              });
+            }}
+          />
         )}
 
         {/* City Events Section */}
@@ -412,7 +469,16 @@ const LibraryScreen = ({navigation}: any) => {
               >
                 {events.map(event => (
                   <View key={event.id} style={styles.eventCardWrapper}>
-                    <CityEventCard event={event} accessToken={accessToken} />
+                    <CityEventCard
+                      event={event}
+                      accessToken={accessToken}
+                      onPress={(event) => {
+                        setDeepLinkModal({
+                          type: 'event',
+                          id: event.id,
+                        });
+                      }}
+                    />
                   </View>
                 ))}
               </ScrollView>
@@ -425,6 +491,16 @@ const LibraryScreen = ({navigation}: any) => {
         <MerchShopBanner /> */}
 
       </ScrollView>
+      <CityPlaceModal
+        visible={!!selectedPlaceFromLink}
+        place={selectedPlaceFromLink}
+        onClose={() => setDeepLinkModal({ type: null, id: null })}
+      />
+      <EventModal
+        visible={!!selectedEventFromLink}
+        event={selectedEventFromLink}
+        onClose={() => setDeepLinkModal({ type: null, id: null })}
+      />
       {CartList.length > 0 && <FloatingIcon />}
     </SafeAreaView>
   );

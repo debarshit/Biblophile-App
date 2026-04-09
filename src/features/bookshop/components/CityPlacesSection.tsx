@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { useAnalytics } from '../../../utils/analytics';
-import CityPlaceModal from './CityPlaceModal';
 import { useTheme } from '../../../contexts/ThemeContext';
 
 interface CityPlace {
@@ -29,28 +28,21 @@ interface CityPlace {
 
 interface CityPlacesSectionProps {
   cityPlaces: CityPlace[];
+  onSelectPlace?: (place: CityPlace) => void;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.85;
 
-export default function CityPlacesSection({ cityPlaces }: CityPlacesSectionProps) {
+export default function CityPlacesSection({ cityPlaces, onSelectPlace }: CityPlacesSectionProps) {
   const analytics = useAnalytics();
   const scrollViewRef = useRef<ScrollView>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [selectedPlace, setSelectedPlace] = useState<CityPlace | null>(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const openModal = (place: CityPlace) => {
-    setSelectedPlace(place);
-    setIsModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setIsModalVisible(false);
-    setSelectedPlace(null);
+    onSelectPlace?.(place);
   };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -97,13 +89,13 @@ export default function CityPlacesSection({ cityPlaces }: CityPlacesSectionProps
         contentContainerStyle={styles.scrollContent}
       >
         {groupedPlaces.map((group, groupIdx) => {
-          const groupProgress = scrollProgress * 100;
 
           return (
             <View key={groupIdx} style={styles.groupContainer}>
               {group.map((place, idx) => {
-                const cardOffset = (groupIdx * 2 + idx) * -10;
-                const imageTransform = groupProgress + cardOffset;
+                const cardOffset = (groupIdx * 2 + idx) * -5;
+                const rawTransform = scrollProgress * 30 + cardOffset;
+                const imageTransform = Math.max(-15, Math.min(15, rawTransform));
 
                 return (
                   <TouchableOpacity onPress={() => openModal(place)} activeOpacity={0.8}>
@@ -152,11 +144,6 @@ export default function CityPlacesSection({ cityPlaces }: CityPlacesSectionProps
           );
         })}
       </ScrollView>
-      <CityPlaceModal
-        visible={isModalVisible}
-        onClose={closeModal}
-        place={selectedPlace}
-      />
     </View>
   );
 }
