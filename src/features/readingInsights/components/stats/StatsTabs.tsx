@@ -1,107 +1,3 @@
-// import React, { useMemo } from 'react';
-// import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-// import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
-// import { useTheme } from '../../../../contexts/ThemeContext';
-
-// export type StatTab =
-//   | 'page-stats'
-//   | 'time-stats'
-//   | 'emotion-stats'
-//   | 'progress-stats'
-//   | 'books-read'
-//   | 'genres'
-//   | 'ratings'
-//   | 'authors'
-//   | 'format'
-//   | 'publication'
-//   | 'book-attributes';
-
-// interface StatsTabsProps {
-//   activeStat: StatTab;
-//   setActiveStat: (tab: StatTab) => void;
-// }
-
-// const TABS: { key: StatTab; label: string; icon: string }[] = [
-//   { key: 'page-stats',      label: 'Pages',       icon: '📄' },
-//   { key: 'time-stats',      label: 'Time',        icon: '⏱️' },
-//   { key: 'emotion-stats',   label: 'Moods',       icon: '😊' },
-//   { key: 'progress-stats',  label: 'Status',      icon: '📚' },
-//   { key: 'books-read',      label: 'Books',       icon: '📖' },
-//   { key: 'genres',          label: 'Genres',      icon: '🗂️' },
-//   { key: 'ratings',         label: 'Ratings',     icon: '⭐' },
-//   { key: 'authors',         label: 'Authors',     icon: '✍️' },
-//   { key: 'format',          label: 'Format',      icon: '📱' },
-//   { key: 'publication',     label: 'Era',         icon: '🗓️' },
-//   { key: 'book-attributes', label: 'Type/Length', icon: '📏' },
-// ];
-
-// const StatsTabs: React.FC<StatsTabsProps> = ({ activeStat, setActiveStat }) => {
-//   const { COLORS } = useTheme();
-//   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
-
-//   return (
-//     <ScrollView
-//       horizontal
-//       showsHorizontalScrollIndicator={false}
-//       contentContainerStyle={styles.container}
-//     >
-//       {TABS.map(tab => {
-//         const isActive = activeStat === tab.key;
-//         return (
-//           <TouchableOpacity
-//             key={tab.key}
-//             style={[styles.tab, isActive && styles.tabActive]}
-//             onPress={() => setActiveStat(tab.key)}
-//             activeOpacity={0.7}
-//           >
-//             <Text style={styles.tabIcon}>{tab.icon}</Text>
-//             <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
-//               {tab.label}
-//             </Text>
-//           </TouchableOpacity>
-//         );
-//       })}
-//     </ScrollView>
-//   );
-// };
-
-// export default StatsTabs;
-
-// const createStyles = (COLORS: any) => StyleSheet.create({
-//   container: {
-//     flexDirection: 'row',
-//     paddingVertical: SPACING.space_8,
-//     paddingHorizontal: SPACING.space_4,
-//     gap: SPACING.space_8,
-//   },
-//   tab: {
-//     alignItems: 'center',
-//     backgroundColor: COLORS.primaryDarkGreyHex,
-//     paddingVertical: SPACING.space_8,
-//     paddingHorizontal: SPACING.space_12,
-//     borderRadius: BORDERRADIUS.radius_10,
-//     minWidth: 64,
-//     borderWidth: 1,
-//     borderColor: 'transparent',
-//   },
-//   tabActive: {
-//     backgroundColor: COLORS.primaryOrangeHex,
-//     borderColor: COLORS.primaryOrangeHex,
-//   },
-//   tabIcon: {
-//     fontSize: 18,
-//     marginBottom: 2,
-//   },
-//   tabLabel: {
-//     fontSize: FONTSIZE.size_10,
-//     fontFamily: FONTFAMILY.poppins_medium,
-//     color: COLORS.secondaryLightGreyHex,
-//     textAlign: 'center',
-//   },
-//   tabLabelActive: {
-//     color: COLORS.primaryWhiteHex,
-//   },
-// });
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -128,7 +24,7 @@ interface StatsTabsProps {
 
 const TABS: { key: StatTab; label: string; icon: string }[] = [
   { key: 'page-stats',      label: 'Pages',      icon: 'book-outline' },
-  { key: 'time-stats',      label: 'Time',       icon: 'time-outline' },
+  // { key: 'time-stats',      label: 'Time',       icon: 'time-outline' },
   { key: 'emotion-stats',   label: 'Emotions',   icon: 'heart-outline' },
   { key: 'progress-stats',  label: 'Progress',   icon: 'stats-chart-outline' },
   { key: 'books-read',      label: 'Books Read', icon: 'checkmark-circle-outline' },
