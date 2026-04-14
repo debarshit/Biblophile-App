@@ -92,15 +92,23 @@ export const updateReadingStreak = async ({
 //Fetches the current reading streak
 export const fetchReadingStreak = async ({
   accessToken,
+  userId = null,
   onSuccess = null,
   onError = null,
   showAlert = true
 }) => {
   try {
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    
-    const response = await instance(
-      `${requests.fetchReadingStreak}?timezone=${userTimezone}`,
+    const queryParams: Record<string, string> = {
+      timezone: userTimezone,
+    };
+    if (userId) {
+      queryParams.userId = String(userId);
+    }
+    const query = new URLSearchParams(queryParams).toString();
+
+     const response = await instance(
+      `${requests.fetchReadingStreak}?${query}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -115,10 +123,7 @@ export const fetchReadingStreak = async ({
       latestUpdateTime: data.latestUpdateTime,
     };
 
-    if (onSuccess) {
-      onSuccess(streakData);
-    }
-
+    onSuccess?.(streakData);
     return streakData;
   } catch (error) {
     console.error('Error fetching reading streak:', error);

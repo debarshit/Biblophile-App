@@ -6,6 +6,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useNavigation } from '@react-navigation/native';
 
 interface FriendRequest {
   sender_user_data: { userId: number; userName: string; userProfilePic: string | null; };
@@ -29,6 +30,7 @@ const FriendRequestsComponent: React.FC<FriendRequestsComponentProps> = ({ onReq
   const userDetails = useStore((state: any) => state.userDetails);
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const navigation = useNavigation<any>();
 
   const fetchFriendRequests = async (page: number = 0, isLoadMore: boolean = false) => {
     if (isLoadMore && !hasMoreData) return;
@@ -141,15 +143,22 @@ const FriendRequestsComponent: React.FC<FriendRequestsComponentProps> = ({ onReq
 
     return (
       <View style={styles.requestCard}>
-        <View style={styles.userInfo}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('ProfileSummary', {
+              username: sender_user_data.userName,
+            })
+          }
+          style={styles.userInfo}
+        >
           <View style={styles.profilePicContainer}>
             {sender_user_data.userProfilePic ? (
               <Image source={{ uri: sender_user_data.userProfilePic }} style={styles.profilePic} />
             ) : (
               <View style={[styles.profilePic, styles.defaultProfilePic]}>
-                <Text style={styles.defaultProfilePicText}>
-                  {sender_user_data.userName?.charAt(0)?.toUpperCase() || '?'}
-                </Text>
+                  <Text style={styles.defaultProfilePicText}>
+                    {sender_user_data.userName?.charAt(0)?.toUpperCase() || '?'}
+                  </Text>
               </View>
             )}
           </View>
@@ -157,7 +166,7 @@ const FriendRequestsComponent: React.FC<FriendRequestsComponentProps> = ({ onReq
             <Text style={styles.userName}>{sender_user_data.userName}</Text>
             <Text style={styles.requestText}>wants to be friends</Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.actionButtons}>
           {['reject', 'confirm'].map(action => (

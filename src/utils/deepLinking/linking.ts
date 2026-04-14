@@ -8,6 +8,12 @@ const prefixes = [
 
 const config = {
   screens: {
+    ProfileSummary: {
+      path: 'profile/:username',
+      parse: {
+        username: (username: string) => `${username}`,
+      },
+    },
     Stats: {
       path: ':type(streak|readingStreaks)/:action?',
       parse: { action: (action: string) => `${action}` },
