@@ -1,11 +1,11 @@
 // hooks/useStreak.js
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   fetchReadingStreak,
   updateReadingStreak,
 } from '../utils/streakUtils';
 
-export const useStreak = (accessToken, initialAction = null, onCelebration = null) => {
+export const useStreak = (accessToken, userId = null, initialAction = null, onCelebration = null) => {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
   const [latestUpdateTime, setLatestUpdateTime] = useState("");
@@ -26,6 +26,7 @@ export const useStreak = (accessToken, initialAction = null, onCelebration = nul
 
     const result = await fetchReadingStreak({
       accessToken,
+      userId,
       onSuccess: updateStreakState,
       onError: setError,
       showAlert: false,
@@ -33,7 +34,7 @@ export const useStreak = (accessToken, initialAction = null, onCelebration = nul
 
     setLoading(false);
     return result;
-  }, [accessToken, updateStreakState]);
+  }, [accessToken, userId, updateStreakState]);
 
   const updateStreak = useCallback(async (onCelebrationCallback) => {
     if (!accessToken) return null;
@@ -68,22 +69,23 @@ export const useStreak = (accessToken, initialAction = null, onCelebration = nul
   }, [accessToken, updateStreakState]);
 
   // Auto-fetch on mount + handle 'updateReadingStreak' if needed
+  const hasInitialized = useRef(false);
+
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken || hasInitialized.current) return;
 
     const initializeStreak = async () => {
       await fetchStreak();
 
       if (initialAction === 'updateReadingStreak') {
-        // Give time for state to apply
-        setTimeout(() => {
-          updateStreak(onCelebration);
-        }, 100);
+        await updateStreak(onCelebration);
       }
+
+      hasInitialized.current = true;
     };
 
     initializeStreak();
-  }, [accessToken, initialAction]);
+  }, [accessToken, initialAction, fetchStreak, updateStreak, onCelebration]);
 
   return {
     currentStreak,

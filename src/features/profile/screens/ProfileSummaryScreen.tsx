@@ -25,8 +25,9 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0].accessToken;
   const username = route.params.username;
+  const pageOwnerUserId = userData?.userId;
 
-  const { currentStreak } = useStreak(userDetails[0]?.accessToken);
+  const { currentStreak } = useStreak(userDetails[0]?.accessToken, pageOwnerUserId);
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
@@ -47,13 +48,21 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
         setUserData(userData);
         setIsPageOwner(userData.isPageOwner || false);
 
+        // if (!userData.isPageOwner) {
+        //   const [userRelationsResponse, privacyStatusResponse] = await Promise.all([
+        //     instance(requests.fetchUserRelations(userData.userId), { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }),
+        //     instance.post(requests.fetchPrivacyStatus, { pageOwner: userData.userId }, { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } })
+        //   ]);
+        //   setUserRelations(userRelationsResponse.data.data);
+        //   console.log('Fetched user relations:', userRelationsResponse.data.data);
+        //   setPrivacyStatus(privacyStatusResponse.data.data);
+        // }
+        
         if (!userData.isPageOwner) {
-          const [userRelationsResponse, privacyStatusResponse] = await Promise.all([
+          const [userRelationsResponse] = await Promise.all([
             instance(requests.fetchUserRelations(userData.userId), { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }),
-            instance.post(requests.fetchPrivacyStatus, { pageOwner: userData.userId }, { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } })
           ]);
           setUserRelations(userRelationsResponse.data.data);
-          setPrivacyStatus(privacyStatusResponse.data.data);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -88,57 +97,87 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   }, [userData]);
 
   const handleFriendRequest = async (action:string) => {
+    const prevState = userRelations;
+    // optimistic update
+    setUserRelations((prev) => {
+      if (!prev) return prev;
+      switch (action) {
+        case 'add':
+          return { ...prev, isPendingRequest: true };
+
+        case 'cancel':
+          return { ...prev, isPendingRequest: false };
+
+        case 'unfriend':
+          return { ...prev, isFriends: false };
+
+        case 'confirm':
+          return {
+            ...prev,
+            isFriends: true,
+            isReversePendingRequest: false,
+          };
+
+        case 'reject':
+          return {
+            ...prev,
+            isReversePendingRequest: false,
+          };
+
+        default:
+          return prev;
+      }
+    });
     try {
       let apiEndpoint = requests.toggleFriend;
-      const requestData = {
-        sender_user_id: userData.userId,
-        action,
-      };
+      let requestData;
   
-      if (action === 'add') {
-        apiEndpoint = requests.toggleFriend;
-      } else if (action === 'unfriend') {
-        apiEndpoint = requests.toggleFriend;
-      } else if (action === 'cancel') {
-        apiEndpoint = requests.toggleFriend;
-      } else if (action === 'confirm') {
+      if (action === 'confirm' || action === 'reject') {
         apiEndpoint = requests.confirmRejectFriend;
-        action = 'confirm';
-      } else if (action === 'reject') {
-        apiEndpoint = requests.confirmRejectFriend;
-        action = 'reject';
+
+        requestData = {
+          sender_user_id: userData.userId,
+          action,
+        };
+      } else {
+        apiEndpoint = requests.toggleFriend;
+
+        requestData = {
+          receiver_user_id: userData.userId,
+        };
       }
   
-      const response = await instance.post(apiEndpoint, requestData, {
+      await instance.post(apiEndpoint, requestData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      
-      console.log(response.data.data);
-      // Optionally, update the UI to reflect the new relationship state
-      // You might want to refresh or update `userRelations` based on the response
     } catch (error) {
       console.error('Error handling friend request:', error);
+      // rollback
+      setUserRelations(prevState);
     }
   };
 
   const handleFollowRequest = async () => {
+    const prevState = userRelations;
+    // optimistic update
+    setUserRelations((prev) => ({
+      ...prev,
+      isFollowing: !prev?.isFollowing,
+    }));
     try {
-      const response = await instance.post(
+      await instance.post(
         requests.toggleFollow,
+        { following_id: userData.userId },
         {
-          following_id: userData.userId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
-      alert(response.data.data.message);
     } catch (error) {
       console.error('Error handling follow request:', error);
+      // rollback if failed
+      setUserRelations(prevState);
     }
   };
 
@@ -203,20 +242,22 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
       <ScrollView style={styles.container}>
         <View style={styles.headerContainer}>
           <TouchableOpacity
-            onPress={() => navigation.push('Profile')}
+            onPress={isPageOwner ? () => navigation.push('Profile') : undefined}
             style={styles.profileContainer}>
             <View style={styles.profileImageContainer}>
               <Image
-                source={{ uri: userDetails[0].profilePic }}
+                source={{ uri: userData?.profilePic }}
                 style={styles.profileImage}
               />
-              <View style={styles.editBadge}>
-                <Feather name="edit-3" size={12} color="#fff" />
-              </View>
+              {isPageOwner && (
+                <View style={styles.editBadge}>
+                  <Feather name="edit-3" size={12} color="#fff" />
+                </View>
+              )}
             </View>
           </TouchableOpacity>
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{userDetails[0].userName}</Text>
+            <Text style={styles.profileName}>{userData?.name}</Text>
             <Text style={styles.profileUsername}>
               {username}
             </Text>
