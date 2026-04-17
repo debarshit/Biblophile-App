@@ -145,11 +145,11 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
   );
 
   const renderBooksByStatus = (status) => {
-    const books = userBooks.filter((book) => book.Status === status);
+    const books = userBooks.filter((book) => book.status === status);
     if (books.length === 0) return null;
 
     const bookImages = books
-      .map((book) => convertHttpToHttps(book.BookPhoto))
+      .map((book) => convertHttpToHttps(book.bookPhoto))
       .filter((image) => image !== null) as string[];
 
     const displayImages = bookImages.slice(0, 3);
