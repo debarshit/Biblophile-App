@@ -89,7 +89,10 @@ export async function shareToplatform(config: ShareConfig): Promise<void> {
           appId: META_APP_ID,
           backgroundImage: uri,
           attributionURL: content.url,
-        });
+          // Android-specific
+          forceDialog: false,
+          packageName: 'com.instagram.android',
+        } as ShareSingleOptions);
 
         break;
       }
