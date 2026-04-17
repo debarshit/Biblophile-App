@@ -14,7 +14,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const [userData, setUserData] = useState(null);
   const [userRelations, setUserRelations] = useState(null);
-  const [privacyStatus, setPrivacyStatus] = useState('public');
+  const [privacyStatus, setPrivacyStatus] = useState<boolean>(true);
   const [isPageOwner, setIsPageOwner] = useState(false);
   const [userAverageRating, setUserAverageRating] = useState<number | null>(null);
   const [userAverageEmotions, setUserAverageEmotions] = useState([]);
@@ -48,21 +48,21 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
         setUserData(userData);
         setIsPageOwner(userData.isPageOwner || false);
 
-        // if (!userData.isPageOwner) {
-        //   const [userRelationsResponse, privacyStatusResponse] = await Promise.all([
-        //     instance(requests.fetchUserRelations(userData.userId), { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }),
-        //     instance.post(requests.fetchPrivacyStatus, { pageOwner: userData.userId }, { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } })
-        //   ]);
-        //   setUserRelations(userRelationsResponse.data.data);
-        //   console.log('Fetched user relations:', userRelationsResponse.data.data);
-        //   setPrivacyStatus(privacyStatusResponse.data.data);
-        // }
-        
         if (!userData.isPageOwner) {
-          const [userRelationsResponse] = await Promise.all([
-            instance(requests.fetchUserRelations(userData.userId), { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }),
+          const [userRelationsResponse, privacyResponse] = await Promise.all([
+            instance(requests.fetchUserRelations(userData.userId), {
+              headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' }
+            }),
+            instance.get(
+              `${requests.fetchPrivacyView}?userId=${userData.userId}`,
+              {
+                headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' }
+              }
+            )
           ]);
+
           setUserRelations(userRelationsResponse.data.data);
+          setPrivacyStatus(privacyResponse.data.data.canViewProfile);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -324,6 +324,8 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
         </View>
 
         <View style={styles.horizontalLine} />
+        {privacyStatus ? (
+        <>
         <View style={styles.TabBar}>
           <TouchableOpacity onPress={() => setActiveTab('bookshelf')} style={[styles.TabButton, activeTab === 'bookshelf' && styles.TabButtonActive]}>
             <Text style={[styles.TabLabel, activeTab === 'bookshelf' && styles.TabLabelActive]}>Bookshelf</Text>
@@ -332,8 +334,15 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
             <Text style={[styles.TabLabel, activeTab === 'reviews' && styles.TabLabelActive]}>Reviews</Text>
           </TouchableOpacity>
         </View>
-
         {renderContent()}
+        </>
+        ) : (
+          <View style={styles.privateContainer}>
+            <Text style={styles.privateText}>
+              🔒 This profile is private
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -551,6 +560,14 @@ const createStyles = (COLORS) => StyleSheet.create({
   TabContent: {
     flexGrow: 1,
     padding: SPACING.space_20,
+  },
+  privateContainer: {
+    alignItems: "center",
+    marginTop: 40,
+  },
+  privateText: {
+    color: COLORS.secondaryLightGreyHex,
+    fontSize: 16,
   },
 });
 

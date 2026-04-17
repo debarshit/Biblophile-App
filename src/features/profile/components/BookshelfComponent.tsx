@@ -21,6 +21,7 @@ import Mascot from '../../../components/Mascot';
 import { useNavigation } from '@react-navigation/native';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useStore } from '../../../store/store';
 
 interface BookshelfScreenProps {
   userData:{
@@ -41,6 +42,8 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
   const navigation:any = useNavigation();
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const userDetails = useStore((state: any) => state.userDetails);
+  const accessToken = userDetails[0].accessToken;
 
   const fetchTags = async (offset: number = 0, append: boolean = false) => {
     if (offset === 0) {
@@ -52,8 +55,12 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
     try {
       const response = await instance.get(requests.fetchUserBookshelfTags, {
         params: {
+          userId: userData.userId,
           limit: TAGS_PER_PAGE,
           offset: offset,
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       const newTags = response.data.data.tags || [];
@@ -84,6 +91,9 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
       const response = await instance.get(requests.fetchUserBooks, {
         params: {
           userId: userData.userId,
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 

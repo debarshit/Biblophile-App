@@ -14,10 +14,6 @@ const config = {
         username: (username: string) => `${username}`,
       },
     },
-    Stats: {
-      path: ':type(streak|readingStreaks)/:action?',
-      parse: { action: (action: string) => `${action}` },
-    },
     Details: {
       path: 'books/:type/:id/:title?',
       parse: {
@@ -63,6 +59,10 @@ const config = {
         type: (type: string) => `${type}`, // places | events
         id: (id: string) => `${id}`,
       },
+    },
+    Stats: {
+      path: ':type(streak|readingStreaks)/:action?',
+      parse: { action: (action: string) => `${action}` },
     },
     Resources: {
       path: ':*', // The asterisk acts as a wildcard

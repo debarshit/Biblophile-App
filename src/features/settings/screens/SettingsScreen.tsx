@@ -81,6 +81,12 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           bgColor: '#FF8C42',
         },
         {
+          icon: <MaterialIcons color="#fff" name="notifications-none" size={20} />,
+          label: 'Manage Privacy',
+          onPress: () => navigation.push('PrivacySettings'),
+          bgColor: '#FF8C42',
+        },
+        {
           icon: <FontAwesome5 color="#fff" name="city" size={20} />,
           label: 'Manage City',
           onPress: () => setCityModalVisible(true),

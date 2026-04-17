@@ -6,7 +6,9 @@ import {
     FlatList, 
     Dimensions, 
     SafeAreaView, 
-    Platform
+    Platform,
+    TouchableOpacity,
+    Modal
 } from 'react-native';
 import BookshelfCard from '../components/BookshelfCard';
 import ReadingQueueSection from '../components/ReadingQueueSection';
@@ -42,6 +44,7 @@ const BookListScreen = ({ route, navigation }) => {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(0);
+    const [showShelfMenu, setShowShelfMenu] = useState(false);
 
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0].accessToken;
@@ -58,6 +61,24 @@ const BookListScreen = ({ route, navigation }) => {
         if (newBooks.length < limit) setHasMore(false);
     };
 
+    const updateShelfPrivacy = async (visibility: string) => {
+        try {
+            await instance.put(
+            requests.updateShelfPrivacy,
+            tagId
+                ? { tagId, visibility }
+                : { shelfType: status, visibility },
+            {
+                headers: {
+                Authorization: `Bearer ${accessToken}`,
+                },
+            }
+            );
+        } catch (err) {
+            console.log("Failed to update shelf privacy", err);
+        }
+        };
+
     const fetchBooks = async (page: number) => {
         setLoading(true);
         try {
@@ -69,7 +90,10 @@ const BookListScreen = ({ route, navigation }) => {
             if (tagId) {
                 // Fetch books for tag
                 response = await instance.get(
-                    `${requests.fetchBooksByTag(tagId)}?limit=${limit}&offset=${offset}`
+                    `${requests.fetchBooksByTag(tagId)}?userId=${userData.userId}&limit=${limit}&offset=${offset}`,
+                    {
+                        headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' }
+                    }
                 );
                 const newBooks = response.data.data.books || [];
                 updateBookList(newBooks, limit);
@@ -83,7 +107,11 @@ const BookListScreen = ({ route, navigation }) => {
                     offset: offset.toString(),
                 });
 
-                response = await instance(`${requests.fetchBookShelf}?${query}`);
+                response = await instance(`${requests.fetchBookShelf}?${query}`,
+                    {
+                        headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' }
+                    }
+                );
                 const newBooks = response.data.data.userBooks || [];
                 updateBookList(newBooks, limit);
             }
@@ -154,7 +182,17 @@ const BookListScreen = ({ route, navigation }) => {
       
     return (
         <SafeAreaView style={styles.container}>
-            <HeaderBar showBackButton={true} title={tagId ? tagName : status} />
+            <HeaderBar
+                showBackButton={true}
+                title={tagId ? tagName : status}
+                rightComponent={
+                    userData.isPageOwner && (
+                    <TouchableOpacity onPress={() => setShowShelfMenu(true)}>
+                        <Text style={{ color: COLORS.primaryWhiteHex, fontSize: 18 }}>⋮</Text>
+                    </TouchableOpacity>
+                    )
+                }
+                />
             
             <ReadingQueueSection 
                 status={status}
@@ -179,6 +217,30 @@ const BookListScreen = ({ route, navigation }) => {
                 showsVerticalScrollIndicator={false}
                 columnWrapperStyle={styles.row}
             />
+            <Modal
+                visible={showShelfMenu}
+                transparent
+                animationType="fade"
+                >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    onPress={() => setShowShelfMenu(false)}
+                >
+                    <View style={styles.modalContent}>
+                    {["only_me", "friends", "followers", "everyone"].map((option) => (
+                        <TouchableOpacity
+                        key={option}
+                        onPress={() => {
+                            updateShelfPrivacy(option);
+                            setShowShelfMenu(false);
+                        }}
+                        >
+                        <Text style={styles.modalText}>{option}</Text>
+                        </TouchableOpacity>
+                    ))}
+                    </View>
+                </TouchableOpacity>
+                </Modal>
         </SafeAreaView>
     );
 };
@@ -259,6 +321,31 @@ const createStyles = (COLORS) => StyleSheet.create({
         fontSize: FONTSIZE.size_14,
         textAlign: 'center',
         lineHeight: 22,
+    },
+    shelfMenu: {
+        position: "absolute",
+        top: 80,
+        right: 20,
+        backgroundColor: "#222",
+        padding: 12,
+        borderRadius: 10,
+        zIndex: 100,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        justifyContent: "flex-end",
+    },
+    modalContent: {
+        backgroundColor: "#222",
+        padding: 20,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+    },
+    modalText: {
+        color: "white",
+        paddingVertical: 12,
+        fontSize: 16,
     },
 });
 

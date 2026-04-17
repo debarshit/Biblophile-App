@@ -13,6 +13,7 @@ interface HeaderBarProps {
   showLogo?: boolean;
   showNotifications?: boolean;
   showUsername?: boolean;
+  rightComponent?: React.ReactNode;
 }
 
 const HeaderBar: React.FC<HeaderBarProps> = ({
@@ -21,6 +22,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
   showLogo = false,
   showNotifications = false,
   showUsername = false,
+  rightComponent,
 }) => {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
@@ -79,8 +81,13 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
         <View />
       )}
 
-      {showNotifications ? (
-        <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={{ position: 'relative' }} >
+      {rightComponent ? (
+        rightComponent
+      ) : showNotifications ? (
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Notifications')}
+          style={{ position: 'relative' }}
+        >
           <Ionicons name="notifications" size={24} color={COLORS.primaryWhiteHex} />
 
           {unreadNotificationCount > 0 && (
@@ -92,7 +99,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
           )}
         </TouchableOpacity>
       ) : (
-        <View style={{ width: 24 }} /> // placeholder for layout balance
+        <View style={{ width: 24 }} />
       )}
     </View>
   );

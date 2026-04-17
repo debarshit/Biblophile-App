@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   Dimensions,
   ImageBackground,
+  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -18,6 +19,9 @@ import {
 import BookStatusModal from './BookStatusModal';
 import ReadingHistoryModal from './ReadingHistoryModal';
 import { useTheme } from '../../../contexts/ThemeContext';
+import instance from '../../../services/axios';
+import requests from '../../../services/requests';
+import { useStore } from '../../../store/store';
 
 interface BookshelfCardProps {
   id: string;
@@ -49,8 +53,11 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
   const [statusModalVisible, setStatusModalVisible] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedInstance, setSelectedInstance] = useState<any>(null);
+  const [showPrivacyOptions, setShowPrivacyOptions] = useState(false);
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const userDetails = useStore((state: any) => state.userDetails);
+  const accessToken = userDetails[0].accessToken;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -66,6 +73,25 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
         return COLORS.primaryRedHex;
       default:
         return COLORS.secondaryLightGreyHex;
+    }
+  };
+
+  const updateBookPrivacy = async (visibility: string) => {
+    try {
+      await instance.put(
+        requests.updateBookPrivacy,
+        {
+          userBookId,
+          visibility,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+    } catch (err) {
+      console.log("Failed to update book privacy", err);
     }
   };
 
@@ -125,6 +151,15 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
                 </Text>
               </View>
             )}
+
+            {isPageOwner && (
+              <TouchableOpacity
+                style={styles.menuButton}
+                onPress={() => setShowPrivacyOptions(true)}
+              >
+                <Text style={{ color: "white", fontSize: 16 }}>⋮</Text>
+              </TouchableOpacity>
+            )}
             
             {/* Progress indicator for currently reading - now clickable to open modal */}
             {isPageOwner && status === 'Currently reading' && (
@@ -162,6 +197,41 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
           onEditInstance={handleEditInstance}
         />
       </LinearGradient>
+        <Modal
+          visible={showPrivacyOptions}
+          transparent
+          animationType="fade"
+        >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowPrivacyOptions(false)}
+        >
+          <View style={styles.modalContent}>
+            
+            <Text style={styles.modalTitle}>Book Privacy</Text>
+
+            {[
+              { label: "🔒 Only Me", value: "only_me" },
+              { label: "👥 Friends", value: "friends" },
+              { label: "👤 Followers", value: "followers" },
+              { label: "🌍 Everyone", value: "everyone" },
+            ].map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={styles.modalOption}
+                onPress={() => {
+                  updateBookPrivacy(option.value);
+                  setShowPrivacyOptions(false);
+                }}
+              >
+                <Text style={styles.modalText}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -214,5 +284,39 @@ const createStyles = (COLORS) => StyleSheet.create({
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_10,
+  },
+  menuButton: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    zIndex: 10,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    padding: 6,
+    borderRadius: 6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    padding: SPACING.space_20,
+    borderTopLeftRadius: BORDERRADIUS.radius_20,
+    borderTopRightRadius: BORDERRADIUS.radius_20,
+  },
+  modalTitle: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    marginBottom: SPACING.space_12,
+  },
+  modalOption: {
+    paddingVertical: SPACING.space_12,
+  },
+  modalText: {
+    color: COLORS.primaryWhiteHex,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_medium,
   },
 });
