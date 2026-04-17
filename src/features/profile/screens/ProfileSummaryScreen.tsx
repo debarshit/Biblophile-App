@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView, Share } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -95,6 +95,20 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
       fetchAdditionalData();
     }
   }, [userData]);
+
+  const handleShareProfile = async () => {
+    try {
+      const profileUrl = `https://yourapp.com/user/${username}`;
+
+      await Share.share({
+        message: `Check out this profile: ${profileUrl}`,
+        url: profileUrl, // iOS
+        title: `${userData?.name}'s Profile`,
+      });
+    } catch (error) {
+      console.error('Error sharing profile:', error);
+    }
+  };
 
   const handleFriendRequest = async (action:string) => {
     const prevState = userRelations;
@@ -262,15 +276,24 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
               {username}
             </Text>
           </View>
-          {isPageOwner && (
-            <TouchableOpacity style={styles.headerIcon} onPress={() => navigation.navigate('Settings')}>
-              <GradientBGIcon 
-                name="menufold"
-                color={COLORS.primaryWhiteHex}
-                size={FONTSIZE.size_16}
-              />
+            {/* Share Button */}
+            <TouchableOpacity onPress={handleShareProfile} style={{marginRight: SPACING.space_10}}>
+              <Feather name="share-2" size={20} color={COLORS.primaryWhiteHex} />
             </TouchableOpacity>
-          )}
+
+            {/* Settings (only owner) */}
+            {isPageOwner && (
+              <TouchableOpacity
+                style={styles.headerIcon}
+                onPress={() => navigation.navigate('Settings')}
+              >
+                <GradientBGIcon 
+                  name="menufold"
+                  color={COLORS.primaryWhiteHex}
+                  size={FONTSIZE.size_16}
+                />
+              </TouchableOpacity>
+            )}
         </View>
 
         {!isPageOwner && (

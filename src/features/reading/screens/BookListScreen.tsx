@@ -19,6 +19,7 @@ import { useStore } from '../../../store/store';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import HeaderBar from '../../../components/HeaderBar';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = SPACING.space_8;
@@ -188,17 +189,10 @@ const BookListScreen = ({ route, navigation }) => {
                 rightComponent={
                     userData.isPageOwner && (
                     <TouchableOpacity onPress={() => setShowShelfMenu(true)}>
-                        <Text style={{ color: COLORS.primaryWhiteHex, fontSize: 18 }}>⋮</Text>
+                        <Ionicons name="menu" size={24} color={COLORS.primaryWhiteHex} />
                     </TouchableOpacity>
                     )
                 }
-                />
-            
-            <ReadingQueueSection 
-                status={status}
-                userData={userData}
-                navigation={navigation}
-                accessToken={accessToken}
             />
 
             <FlatList
@@ -208,6 +202,16 @@ const BookListScreen = ({ route, navigation }) => {
                 renderItem={renderBookItem}
                 onEndReached={loadMoreBooks}
                 onEndReachedThreshold={0.5}
+                ListHeaderComponent={
+                    userData.isPageOwner ? (
+                        <ReadingQueueSection 
+                            status={status}
+                            userData={userData}
+                            navigation={navigation}
+                            accessToken={accessToken}
+                        />
+                    ) : null
+                }
                 ListFooterComponent={renderLoadingFooter}
                 ListEmptyComponent={books.length === 0 && !loading ? renderEmptyState : null}
                 contentContainerStyle={[
