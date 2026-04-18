@@ -8,7 +8,9 @@ import {
     SafeAreaView, 
     Platform,
     TouchableOpacity,
-    Modal
+    Modal,
+    Share,
+    Alert
 } from 'react-native';
 import BookshelfCard from '../components/BookshelfCard';
 import ReadingQueueSection from '../components/ReadingQueueSection';
@@ -27,6 +29,8 @@ const CONTAINER_PADDING = SPACING.space_16;
 const AVAILABLE_WIDTH = width - (CONTAINER_PADDING * 2);
 const CARD_WIDTH = (AVAILABLE_WIDTH - (CARD_MARGIN * 2)) / 3;
 
+const APP_BASE_URL = 'https://yourapp.com';
+
 interface Book {
     bookId: number;
     userBookId: number;
@@ -35,7 +39,7 @@ interface Book {
     startDate: string;
     endDate: string;
     progressUnit?: 'pages' | 'percentage' | 'seconds';
-    progressValue: number|null;
+    progressValue: number | null;
     position?: number;
     visibility: 'only_me' | 'friends' | 'followers' | 'everyone';
 }
@@ -54,54 +58,73 @@ const BookListScreen = ({ route, navigation }) => {
     const { COLORS } = useTheme();
     const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
+    // ─── Share handler (available to everyone) ───────────────────────────────
+    const handleShare = async () => {
+        try {
+            // Build a deep link. Adjust the path structure to match your router.
+            const params = new URLSearchParams({ userId: userData.userId });
+            if (tagId) {
+                params.set('tagId', tagId);
+                params.set('tagName', tagName ?? '');
+            } else {
+                params.set('status', status);
+            }
+
+            const shareUrl = `${APP_BASE_URL}/bookshelf?${params.toString()}`;
+            const shelfLabel = tagId ? tagName : status;
+
+            await Share.share({
+                title: `${userData.username ?? 'A user'}'s ${shelfLabel} shelf`,
+                message: `Check out this reading shelf: ${shareUrl}`,
+                url: shareUrl,   // iOS uses `url`; Android uses `message`
+            });
+        } catch (error: any) {
+            // User dismissed the sheet — no need to alert
+            if (error?.message !== 'User did not share') {
+                Alert.alert('Could not share', 'Please try again.');
+            }
+        }
+    };
+
     const updateBookList = (newBooks: Book[], limit: number) => {
         setBooks((prev) => {
             const ids = new Set(prev.map((b) => b.bookId));
             const filtered = newBooks.filter((b) => !ids.has(b.bookId));
             return [...prev, ...filtered];
         });
-
         if (newBooks.length < limit) setHasMore(false);
     };
 
     const updateShelfPrivacy = async (visibility: string) => {
         try {
             await instance.put(
-            requests.updateShelfPrivacy,
-            tagId
-                ? { tagId, visibility }
-                : { shelfType: status, visibility },
-            {
-                headers: {
-                Authorization: `Bearer ${accessToken}`,
-                },
-            }
+                requests.updateShelfPrivacy,
+                tagId
+                    ? { tagId, visibility }
+                    : { shelfType: status, visibility },
+                { headers: { Authorization: `Bearer ${accessToken}` } }
             );
         } catch (err) {
-            console.log("Failed to update shelf privacy", err);
+            console.log('Failed to update shelf privacy', err);
         }
-        };
+    };
 
     const fetchBooks = async (page: number) => {
         setLoading(true);
         try {
             const limit = 10;
             const offset = page * limit;
-
             let response;
 
             if (tagId) {
                 // Fetch books for tag
                 response = await instance.get(
                     `${requests.fetchBooksByTag(tagId)}?userId=${userData.userId}&limit=${limit}&offset=${offset}`,
-                    {
-                        headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' }
-                    }
+                    { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }
                 );
                 const newBooks = response.data.data.books || [];
                 setCurrentVisibility(response.data.data.tagVisibility || 'everyone');
                 updateBookList(newBooks, limit);
-            
             } else {
                 // Fetch status-based bookshelf
                 const query = new URLSearchParams({
@@ -110,19 +133,16 @@ const BookListScreen = ({ route, navigation }) => {
                     limit: limit.toString(),
                     offset: offset.toString(),
                 });
-
-                response = await instance(`${requests.fetchBookShelf}?${query}`,
-                    {
-                        headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' }
-                    }
+                response = await instance(
+                    `${requests.fetchBookShelf}?${query}`,
+                    { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }
                 );
                 const newBooks = response.data.data.userBooks || [];
                 setCurrentVisibility(response.data.data.shelfVisibility || 'everyone');
                 updateBookList(newBooks, limit);
             }
-
         } catch (error) {
-            console.error("Failed to fetch books:", error);
+            console.error('Failed to fetch books:', error);
         } finally {
             setLoading(false);
         }
@@ -133,9 +153,7 @@ const BookListScreen = ({ route, navigation }) => {
     }, [page, status]);
 
     const loadMoreBooks = () => {
-        if (hasMore && !loading) {
-            setPage((prevPage) => prevPage + 1);
-        }
+        if (hasMore && !loading) setPage((prev) => prev + 1);
     };
 
     const renderBookItem = ({ item, index }: { item: Book; index: number }) => (
@@ -185,19 +203,30 @@ const BookListScreen = ({ route, navigation }) => {
             </Text>
         </View>
     );
-      
+
+    // ─── Right header icons ───────────────────────────────────────────────────
+    const renderHeaderRight = () => (
+        <View style={styles.headerActions}>
+            {/* Share — visible to everyone */}
+            <TouchableOpacity onPress={handleShare} style={styles.headerIconBtn}>
+                <Ionicons name="share-social-outline" size={22} color={COLORS.primaryWhiteHex} />
+            </TouchableOpacity>
+
+            {/* Privacy menu — owner only */}
+            {userData.isPageOwner && (
+                <TouchableOpacity onPress={() => setShowShelfMenu(true)} style={styles.headerIconBtn}>
+                    <Ionicons name="lock-closed-outline" size={20} color={COLORS.primaryWhiteHex} />
+                </TouchableOpacity>
+            )}
+        </View>
+    );
+
     return (
         <SafeAreaView style={styles.container}>
             <HeaderBar
                 showBackButton={true}
                 title={tagId ? tagName : status}
-                rightComponent={
-                    userData.isPageOwner && (
-                    <TouchableOpacity onPress={() => setShowShelfMenu(true)}>
-                        <Ionicons name="menu" size={24} color={COLORS.primaryWhiteHex} />
-                    </TouchableOpacity>
-                    )
-                }
+                rightComponent={renderHeaderRight()}
             />
 
             <FlatList
@@ -209,7 +238,7 @@ const BookListScreen = ({ route, navigation }) => {
                 onEndReachedThreshold={0.5}
                 ListHeaderComponent={
                     userData.isPageOwner ? (
-                        <ReadingQueueSection 
+                        <ReadingQueueSection
                             status={status}
                             userData={userData}
                             navigation={navigation}
@@ -226,51 +255,38 @@ const BookListScreen = ({ route, navigation }) => {
                 showsVerticalScrollIndicator={false}
                 columnWrapperStyle={styles.row}
             />
-            <Modal
-                visible={showShelfMenu}
-                transparent
-                animationType="fade"
-                >
+
+            <Modal visible={showShelfMenu} transparent animationType="fade">
                 <TouchableOpacity
                     style={styles.modalOverlay}
                     activeOpacity={1}
                     onPress={() => setShowShelfMenu(false)}
                 >
                     <View style={styles.modalContent}>
-                    
-                    <Text style={styles.modalTitle}>Shelf Privacy</Text>
-
-                    {[
-                    { label: "🔒 Only Me", value: "only_me" },
-                    { label: "👥 Friends", value: "friends" },
-                    { label: "👤 Followers", value: "followers" },
-                    { label: "🌍 Everyone", value: "everyone" },
-                    ].map((option) => {
-                    const isSelected = option.value === currentVisibility;
-
-                    return (
-                        <TouchableOpacity
-                        key={option.value}
-                        style={[
-                            styles.modalOption,
-                            isSelected && styles.selectedOption
-                        ]}
-                        onPress={() => {
-                            updateShelfPrivacy(option.value);
-                            setCurrentVisibility(option.value); // 👈 instant UI feedback
-                            setShowShelfMenu(false);
-                        }}
-                        >
-                        <Text style={[
-                            styles.modalText,
-                            isSelected && styles.selectedText
-                        ]}>
-                            {option.label}
-                        </Text>
-                        </TouchableOpacity>
-                    );
-                    })}
-
+                        <Text style={styles.modalTitle}>Shelf Privacy</Text>
+                        {[
+                            { label: '🔒 Only Me',   value: 'only_me'   },
+                            { label: '👥 Friends',   value: 'friends'   },
+                            { label: '👤 Followers', value: 'followers' },
+                            { label: '🌍 Everyone',  value: 'everyone'  },
+                        ].map((option) => {
+                            const isSelected = option.value === currentVisibility;
+                            return (
+                                <TouchableOpacity
+                                    key={option.value}
+                                    style={[styles.modalOption, isSelected && styles.selectedOption]}
+                                    onPress={() => {
+                                        updateShelfPrivacy(option.value);
+                                        setCurrentVisibility(option.value as any);
+                                        setShowShelfMenu(false);
+                                    }}
+                                >
+                                    <Text style={[styles.modalText, isSelected && styles.selectedText]}>
+                                        {option.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
                     </View>
                 </TouchableOpacity>
             </Modal>
@@ -284,6 +300,14 @@ const createStyles = (COLORS) => StyleSheet.create({
         backgroundColor: COLORS.primaryDarkGreyHex,
         paddingHorizontal: CONTAINER_PADDING,
         paddingTop: SPACING.space_16,
+    },
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SPACING.space_8,
+    },
+    headerIconBtn: {
+        padding: SPACING.space_4,
     },
     listContent: {
         paddingBottom: SPACING.space_24,
@@ -303,10 +327,7 @@ const createStyles = (COLORS) => StyleSheet.create({
         borderRadius: BORDERRADIUS.radius_15,
         overflow: 'hidden',
         shadowColor: COLORS.primaryBlackHex,
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
         shadowRadius: 8,
         elevation: 6,
@@ -322,10 +343,7 @@ const createStyles = (COLORS) => StyleSheet.create({
         paddingVertical: SPACING.space_12,
         borderRadius: BORDERRADIUS.radius_10,
         shadowColor: COLORS.primaryBlackHex,
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
@@ -355,19 +373,10 @@ const createStyles = (COLORS) => StyleSheet.create({
         textAlign: 'center',
         lineHeight: 22,
     },
-    shelfMenu: {
-        position: "absolute",
-        top: 80,
-        right: 20,
-        backgroundColor: "#222",
-        padding: 12,
-        borderRadius: 10,
-        zIndex: 100,
-    },
     modalOverlay: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.5)",
-        justifyContent: "flex-end",
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
     },
     modalContent: {
         backgroundColor: COLORS.primaryDarkGreyHex,
