@@ -33,6 +33,7 @@ interface BookshelfCardProps {
   endDate?: string;
   progressUnit?: 'pages' | 'percentage' | 'seconds';
   progressValue: number|null;
+  visibility: 'only_me' | 'friends' | 'followers' | 'everyone';
   onUpdate: () => void;
   navigation: any;
 }
@@ -47,6 +48,7 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
   endDate,
   progressUnit,
   progressValue,
+  visibility,
   onUpdate,
   navigation
 }) => {
@@ -54,6 +56,7 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedInstance, setSelectedInstance] = useState<any>(null);
   const [showPrivacyOptions, setShowPrivacyOptions] = useState(false);
+  const [currentVisibility, setCurrentVisibility] = useState(visibility);
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const userDetails = useStore((state: any) => state.userDetails);
@@ -216,18 +219,32 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
               { label: "👥 Friends", value: "friends" },
               { label: "👤 Followers", value: "followers" },
               { label: "🌍 Everyone", value: "everyone" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.modalOption}
-                onPress={() => {
-                  updateBookPrivacy(option.value);
-                  setShowPrivacyOptions(false);
-                }}
-              >
-                <Text style={styles.modalText}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
+            ].map((option) => {
+              const isSelected = option.value === currentVisibility;
+
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.modalOption,
+                    isSelected && styles.selectedOption
+                  ]}
+                  onPress={() => {
+                    updateBookPrivacy(option.value);
+                    setCurrentVisibility(option.value); // 👈 instant feedback
+                    setShowPrivacyOptions(false);
+                    onUpdate?.(); // 👈 refresh parent if needed
+                  }}
+                >
+                  <Text style={[
+                    styles.modalText,
+                    isSelected && styles.selectedText
+                  ]}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
 
           </View>
         </TouchableOpacity>
@@ -318,5 +335,13 @@ const createStyles = (COLORS) => StyleSheet.create({
     color: COLORS.primaryWhiteHex,
     fontSize: FONTSIZE.size_14,
     fontFamily: FONTFAMILY.poppins_medium,
+  },
+  selectedOption: {
+    backgroundColor: COLORS.primaryGreyHex,
+    borderRadius: BORDERRADIUS.radius_8,
+    paddingHorizontal: SPACING.space_8,
+  },
+  selectedText: {
+    color: COLORS.primaryOrangeHex,
   },
 });

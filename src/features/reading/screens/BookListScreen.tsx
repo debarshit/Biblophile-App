@@ -37,6 +37,7 @@ interface Book {
     progressUnit?: 'pages' | 'percentage' | 'seconds';
     progressValue: number|null;
     position?: number;
+    visibility: 'only_me' | 'friends' | 'followers' | 'everyone';
 }
 
 const BookListScreen = ({ route, navigation }) => {
@@ -46,6 +47,7 @@ const BookListScreen = ({ route, navigation }) => {
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(0);
     const [showShelfMenu, setShowShelfMenu] = useState(false);
+    const [currentVisibility, setCurrentVisibility] = useState<'only_me' | 'friends' | 'followers' | 'everyone'>('everyone');
 
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0].accessToken;
@@ -97,6 +99,7 @@ const BookListScreen = ({ route, navigation }) => {
                     }
                 );
                 const newBooks = response.data.data.books || [];
+                setCurrentVisibility(response.data.data.tagVisibility || 'everyone');
                 updateBookList(newBooks, limit);
             
             } else {
@@ -114,6 +117,7 @@ const BookListScreen = ({ route, navigation }) => {
                     }
                 );
                 const newBooks = response.data.data.userBooks || [];
+                setCurrentVisibility(response.data.data.shelfVisibility || 'everyone');
                 updateBookList(newBooks, limit);
             }
 
@@ -152,6 +156,7 @@ const BookListScreen = ({ route, navigation }) => {
                 endDate={item.endDate}
                 progressUnit={item.progressUnit}
                 progressValue={item.progressValue}
+                visibility={item.visibility}
                 onUpdate={null}
                 navigation={navigation}
             />
@@ -228,23 +233,47 @@ const BookListScreen = ({ route, navigation }) => {
                 >
                 <TouchableOpacity
                     style={styles.modalOverlay}
+                    activeOpacity={1}
                     onPress={() => setShowShelfMenu(false)}
                 >
                     <View style={styles.modalContent}>
-                    {["only_me", "friends", "followers", "everyone"].map((option) => (
+                    
+                    <Text style={styles.modalTitle}>Shelf Privacy</Text>
+
+                    {[
+                    { label: "🔒 Only Me", value: "only_me" },
+                    { label: "👥 Friends", value: "friends" },
+                    { label: "👤 Followers", value: "followers" },
+                    { label: "🌍 Everyone", value: "everyone" },
+                    ].map((option) => {
+                    const isSelected = option.value === currentVisibility;
+
+                    return (
                         <TouchableOpacity
-                        key={option}
+                        key={option.value}
+                        style={[
+                            styles.modalOption,
+                            isSelected && styles.selectedOption
+                        ]}
                         onPress={() => {
-                            updateShelfPrivacy(option);
+                            updateShelfPrivacy(option.value);
+                            setCurrentVisibility(option.value); // 👈 instant UI feedback
                             setShowShelfMenu(false);
                         }}
                         >
-                        <Text style={styles.modalText}>{option}</Text>
+                        <Text style={[
+                            styles.modalText,
+                            isSelected && styles.selectedText
+                        ]}>
+                            {option.label}
+                        </Text>
                         </TouchableOpacity>
-                    ))}
+                    );
+                    })}
+
                     </View>
                 </TouchableOpacity>
-                </Modal>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -341,15 +370,32 @@ const createStyles = (COLORS) => StyleSheet.create({
         justifyContent: "flex-end",
     },
     modalContent: {
-        backgroundColor: "#222",
-        padding: 20,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        backgroundColor: COLORS.primaryDarkGreyHex,
+        padding: SPACING.space_20,
+        borderTopLeftRadius: BORDERRADIUS.radius_20,
+        borderTopRightRadius: BORDERRADIUS.radius_20,
+    },
+    modalTitle: {
+        color: COLORS.primaryWhiteHex,
+        fontSize: FONTSIZE.size_16,
+        fontFamily: FONTFAMILY.poppins_semibold,
+        marginBottom: SPACING.space_12,
+    },
+    modalOption: {
+        paddingVertical: SPACING.space_12,
     },
     modalText: {
-        color: "white",
-        paddingVertical: 12,
-        fontSize: 16,
+        color: COLORS.primaryWhiteHex,
+        fontSize: FONTSIZE.size_14,
+        fontFamily: FONTFAMILY.poppins_medium,
+    },
+    selectedOption: {
+        backgroundColor: COLORS.primaryGreyHex,
+        borderRadius: BORDERRADIUS.radius_8,
+        paddingHorizontal: SPACING.space_8,
+    },
+    selectedText: {
+        color: COLORS.primaryOrangeHex,
     },
 });
 
