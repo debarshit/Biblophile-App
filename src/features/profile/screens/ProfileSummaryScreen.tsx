@@ -206,14 +206,14 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
       </TouchableOpacity>);
     } else if (userRelations?.isReversePendingRequest) {
       return (
-        <>
+        <View style={{flexDirection: 'row', gap: SPACING.space_8, justifyContent: 'space-around'}}>
         <TouchableOpacity style={styles.addFriendButton} onPress={() => handleFriendRequest('confirm')}>
           <Text style={styles.buttonText}>Confirm Friend</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.addFriendButton} onPress={() => handleFriendRequest('reject')}>
           <Text style={styles.buttonText}>Reject Friend</Text>
         </TouchableOpacity>
-        </>
+        </View>
       );
     } else {
       return (<TouchableOpacity style={styles.addFriendButton} onPress={() => handleFriendRequest('add')}>
@@ -298,12 +298,10 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
 
         {!isPageOwner && (
           <View style={styles.buttonsSection}>
-            <TouchableOpacity style={styles.addFriendButton}>
               <Text style={styles.buttonText}>{getFriendButtonText()}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.followButton} onPress={() => handleFollowRequest()}>
+            {/* <TouchableOpacity style={styles.followButton} onPress={() => handleFollowRequest()}>
               <Text style={styles.buttonText}>{userRelations?.isFollowing ? "Unfollow" : "Follow"}</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         )}
 
@@ -453,6 +451,7 @@ const createStyles = (COLORS) => StyleSheet.create({
 
   addFriendButton: {
     backgroundColor: COLORS.primaryOrangeHex,
+    paddingVertical: SPACING.space_8,
     borderRadius: BORDERRADIUS.radius_10,
     alignItems: 'center',
     justifyContent: 'center',
