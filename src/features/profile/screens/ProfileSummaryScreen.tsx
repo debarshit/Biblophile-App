@@ -98,11 +98,10 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
 
   const handleShareProfile = async () => {
     try {
-      const profileUrl = `https://yourapp.com/user/${username}`;
+      const profileUrl = `https://biblophile.com/profile/${username}`;
 
       await Share.share({
         message: `Check out this profile: ${profileUrl}`,
-        url: profileUrl, // iOS
         title: `${userData?.name}'s Profile`,
       });
     } catch (error) {

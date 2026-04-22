@@ -29,7 +29,7 @@ const CONTAINER_PADDING = SPACING.space_16;
 const AVAILABLE_WIDTH = width - (CONTAINER_PADDING * 2);
 const CARD_WIDTH = (AVAILABLE_WIDTH - (CARD_MARGIN * 2)) / 3;
 
-const APP_BASE_URL = 'https://yourapp.com';
+const APP_BASE_URL = 'https://biblophile.com';
 
 interface Book {
     bookId: number;
@@ -60,26 +60,34 @@ const BookListScreen = ({ route, navigation }) => {
 
     // ─── Share handler (available to everyone) ───────────────────────────────
     const handleShare = async () => {
-        try {
-            // Build a deep link. Adjust the path structure to match your router.
-            const params = new URLSearchParams({ userId: userData.userId });
+    try {
+            let shareUrl = '';
+
             if (tagId) {
-                params.set('tagId', tagId);
-                params.set('tagName', tagName ?? '');
+                // Tag-based shelf
+                shareUrl = `${APP_BASE_URL}/profile/${userData.userName}/tags/${tagId}/${encodeURIComponent(tagName ?? '')}`;
             } else {
-                params.set('status', status);
+                // Status-based shelf
+                const statusSlugMap: Record<string, string> = {
+                    'Currently reading': 'currently-reading',
+                    'To be read': 'to-be-read',
+                    'Did not finish': 'did-not-finish',
+                    'Read': 'read',
+                };
+
+                const slug = statusSlugMap[status] || status.toLowerCase().replace(/\s+/g, '-');
+
+                shareUrl = `${APP_BASE_URL}/profile/${userData.userName}/${slug}`;
             }
 
-            const shareUrl = `${APP_BASE_URL}/bookshelf?${params.toString()}`;
             const shelfLabel = tagId ? tagName : status;
 
             await Share.share({
-                title: `${userData.username ?? 'A user'}'s ${shelfLabel} shelf`,
+                title: `${userData.userName}'s ${shelfLabel} shelf`,
                 message: `Check out this reading shelf: ${shareUrl}`,
-                url: shareUrl,   // iOS uses `url`; Android uses `message`
             });
+
         } catch (error: any) {
-            // User dismissed the sheet — no need to alert
             if (error?.message !== 'User did not share') {
                 Alert.alert('Could not share', 'Please try again.');
             }
