@@ -158,7 +158,7 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
       <View style={styles.sectionContainer}>
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('BookListScreen', {
+            navigation.navigate('BookListStatus', {
               status: status,
               userData: userData,
             });
@@ -206,7 +206,7 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
       <View style={styles.sectionContainer} key={tag.tagId}>
         <TouchableOpacity
           onPress={() =>
-            navigation.navigate("BookListScreen", {
+            navigation.navigate("BookListTag", {
               tagId: tag.tagId,
               tagName: tag.tagName,
               userData,
