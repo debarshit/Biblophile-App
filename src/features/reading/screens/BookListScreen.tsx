@@ -45,28 +45,46 @@ interface Book {
 }
 
 const BookListScreen = ({ route, navigation }) => {
-    const { status, tagId, tagName, userData } = route.params;
+        const params = route.params ?? {};
+        const rawStatus = params.status;
+        const statusSlug = params.statusSlug;
+        const tagId = params.tagId;
+        const tagName = params.tagName;
+        const userData = params.userData;
+        const username = params.username;
+        const statusMap: Record<string, string> = {
+    'currently-reading': 'Currently reading',
+    'to-be-read': 'To be read',
+    'did-not-finish': 'Did not finish',
+    'read': 'Read',
+    };
+
+    const status = rawStatus ?? statusMap[statusSlug] ?? statusSlug;
     const [books, setBooks] = useState<Book[]>([]);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(0);
     const [showShelfMenu, setShowShelfMenu] = useState(false);
     const [currentVisibility, setCurrentVisibility] = useState<'only_me' | 'friends' | 'followers' | 'everyone'>('everyone');
+    const [localUserData, setLocalUserData] = useState(userData || null);
+    const [isFetchingUser, setIsFetchingUser] = useState(!userData && !!username);
 
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0].accessToken;
     const { COLORS } = useTheme();
     const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+    const resolvedUserData = localUserData || userData;
 
     // ─── Share handler (available to everyone) ───────────────────────────────
     const handleShare = async () => {
-    try {
+        if (!resolvedUserData) return;
+        try {
             let shareUrl = '';
 
             if (tagId) {
                 // Tag-based shelf
-                shareUrl = `${APP_BASE_URL}/profile/${userData.userName}/tags/${tagId}/${encodeURIComponent(tagName ?? '')}`;
-            } else {
+                shareUrl = `${APP_BASE_URL}/profile/${resolvedUserData?.userName}/tags/${tagId}/${encodeURIComponent(tagName ?? '')}`;
+            } else if (status) {
                 // Status-based shelf
                 const statusSlugMap: Record<string, string> = {
                     'Currently reading': 'currently-reading',
@@ -75,15 +93,20 @@ const BookListScreen = ({ route, navigation }) => {
                     'Read': 'read',
                 };
 
-                const slug = statusSlugMap[status] || status.toLowerCase().replace(/\s+/g, '-');
+                const slug =
+                    statusSlug ??
+                    statusSlugMap[status] ??
+                    status?.toLowerCase().replace(/\s+/g, '-');
 
-                shareUrl = `${APP_BASE_URL}/profile/${userData.userName}/${slug}`;
+                shareUrl = `${APP_BASE_URL}/profile/${resolvedUserData?.userName}/${slug}`;
+            } else {
+                return; // or fallback
             }
 
             const shelfLabel = tagId ? tagName : status;
 
             await Share.share({
-                title: `${userData.userName}'s ${shelfLabel} shelf`,
+                title: `${resolvedUserData?.userName}'s ${shelfLabel} shelf`,
                 message: `Check out this reading shelf: ${shareUrl}`,
             });
 
@@ -118,6 +141,7 @@ const BookListScreen = ({ route, navigation }) => {
     };
 
     const fetchBooks = async (page: number) => {
+        if (!resolvedUserData?.userId) return;
         setLoading(true);
         try {
             const limit = 10;
@@ -127,16 +151,16 @@ const BookListScreen = ({ route, navigation }) => {
             if (tagId) {
                 // Fetch books for tag
                 response = await instance.get(
-                    `${requests.fetchBooksByTag(tagId)}?userId=${userData.userId}&limit=${limit}&offset=${offset}`,
+                    `${requests.fetchBooksByTag(tagId)}?userId=${resolvedUserData?.userId}&limit=${limit}&offset=${offset}`,
                     { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }
                 );
                 const newBooks = response.data.data.books || [];
                 setCurrentVisibility(response.data.data.tagVisibility || 'everyone');
                 updateBookList(newBooks, limit);
-            } else {
+            } else if (status) {
                 // Fetch status-based bookshelf
                 const query = new URLSearchParams({
-                    userId: userData.userId,
+                    userId: resolvedUserData?.userId,
                     status,
                     limit: limit.toString(),
                     offset: offset.toString(),
@@ -148,6 +172,8 @@ const BookListScreen = ({ route, navigation }) => {
                 const newBooks = response.data.data.userBooks || [];
                 setCurrentVisibility(response.data.data.shelfVisibility || 'everyone');
                 updateBookList(newBooks, limit);
+            } else {
+                return;
             }
         } catch (error) {
             console.error('Failed to fetch books:', error);
@@ -157,8 +183,38 @@ const BookListScreen = ({ route, navigation }) => {
     };
 
     useEffect(() => {
+        if (!resolvedUserData?.userId) return;
         fetchBooks(page);
-    }, [page, status]);
+    }, [page, status, tagId, resolvedUserData?.userId]);
+
+    useEffect(() => {
+        if (localUserData || !username) return;
+
+        const fetchUserData = async () => {
+            try {
+            setIsFetchingUser(true);
+
+            const response = await instance(
+                requests.fetchUserDataFromUsername(username),
+                {
+                headers: {
+                    Authorization: accessToken ? `Bearer ${accessToken}` : '',
+                },
+                }
+            );
+
+            const fetchedUser = response.data?.data;
+
+            setLocalUserData(fetchedUser);
+            } catch (error) {
+            console.error('Error fetching user data:', error);
+            } finally {
+            setIsFetchingUser(false);
+            }
+        };
+
+        fetchUserData();
+    }, [username]);
 
     const loadMoreBooks = () => {
         if (hasMore && !loading) setPage((prev) => prev + 1);
@@ -175,7 +231,7 @@ const BookListScreen = ({ route, navigation }) => {
             <BookshelfCard
                 id={item.bookId.toString()}
                 userBookId={item.userBookId}
-                isPageOwner={userData.isPageOwner}
+                isPageOwner={resolvedUserData?.isPageOwner}
                 photo={convertHttpToHttps(item.bookPhoto)}
                 status={item.status}
                 startDate={item.startDate}
@@ -221,7 +277,7 @@ const BookListScreen = ({ route, navigation }) => {
             </TouchableOpacity>
 
             {/* Privacy menu — owner only */}
-            {userData.isPageOwner && (
+            {resolvedUserData?.isPageOwner && (
                 <TouchableOpacity onPress={() => setShowShelfMenu(true)} style={styles.headerIconBtn}>
                     <Ionicons name="lock-closed-outline" size={20} color={COLORS.primaryWhiteHex} />
                 </TouchableOpacity>
@@ -233,7 +289,7 @@ const BookListScreen = ({ route, navigation }) => {
         <SafeAreaView style={styles.container}>
             <HeaderBar
                 showBackButton={true}
-                title={tagId ? tagName : status}
+                title={tagId ? tagName : status ?? ''}
                 rightComponent={renderHeaderRight()}
             />
 
@@ -245,10 +301,10 @@ const BookListScreen = ({ route, navigation }) => {
                 onEndReached={loadMoreBooks}
                 onEndReachedThreshold={0.5}
                 ListHeaderComponent={
-                    userData.isPageOwner ? (
+                    resolvedUserData?.isPageOwner ? (
                         <ReadingQueueSection
                             status={status}
-                            userData={userData}
+                            userData={resolvedUserData}
                             navigation={navigation}
                             accessToken={accessToken}
                         />

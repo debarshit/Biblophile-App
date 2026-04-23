@@ -14,6 +14,13 @@ const config = {
         username: (username: string) => `${username}`,
       },
     },
+    BookListStatus: {
+      path: 'profile/:username/:statusSlug',
+    },
+
+    BookListTag: {
+      path: 'profile/:username/tags/:tagId/:tagName',
+    },
     Details: {
       path: 'books/:type/:id/:title?',
       parse: {
