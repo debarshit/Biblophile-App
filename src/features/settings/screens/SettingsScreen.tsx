@@ -41,9 +41,7 @@ const SettingsScreen = ({navigation, route}: any) => {
   const handleRefer = async () => {
     try {
       const result = await Share.share({
-        message: `📚 Discover the Ultimate library App! 📚
-
-Join me on Biblophile, the app that brings together book lovers, offering a seamless experience for buying, selling, renting books, and more! Explore our extensive collection and enjoy exclusive features today.
+        message: `Join me on Biblophile and let's tackle our reading goals together.
 
 📲 Download now: https://onelink.to/dxjdkb`,
       });

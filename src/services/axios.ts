@@ -3,44 +3,39 @@ import jwt_decode from "jwt-decode";
 import { useStore } from "../store/store";
 
 const isDevelopment = __DEV__;
+const baseURL = isDevelopment ? "http://192.168.10.8:3000/" : "https://biblophile.com/";
 
-const baseURL = isDevelopment ? "http://192.168.1.42:3000/" : "https://biblophile.com/";
-
-// Main axios instance
-const instance = axios.create({
-  baseURL,
-});
-
-// Separate instance for refresh token calls to avoid infinite loops
-const refreshInstance = axios.create({
-  baseURL,
-});
+const instance = axios.create({ baseURL });
+const refreshInstance = axios.create({ baseURL });
 
 interface DecodedToken {
   exp: number;
 }
 
-// Helper to check if token is expired or about to expire (within 60 seconds)
 const isTokenExpiringSoon = (token: string): boolean => {
   try {
     const decoded = jwt_decode<DecodedToken>(token);
     const currentTime = Date.now() / 1000;
     return decoded.exp - currentTime < 60;
   } catch (e) {
-    return true; // Treat decoding failure as "expired"
+    return true;
   }
 };
 
-// Track refresh state to prevent race conditions
 let isRefreshing = false;
-let refreshSubscribers = [];
+let refreshSubscribers: ((token: string) => void)[] = [];
 
-const subscribeTokenRefresh = (cb) => {
+const subscribeTokenRefresh = (cb: (token: string) => void) => {
   refreshSubscribers.push(cb);
 };
 
-const onRefreshed = (token) => {
-  refreshSubscribers.map(cb => cb(token));
+const onRefreshed = (token: string) => {
+  refreshSubscribers.forEach(cb => cb(token));
+  refreshSubscribers = [];
+};
+
+const onRefreshFailed = (error: any) => {
+  refreshSubscribers.forEach(cb => cb(null));
   refreshSubscribers = [];
 };
 
@@ -50,101 +45,149 @@ instance.interceptors.request.use(
     const { userDetails, login, logout } = useStore.getState();
     const user = userDetails?.[0];
 
-    if (user?.accessToken && user?.refreshToken) {
-      const isExpiring = isTokenExpiringSoon(user.accessToken);
-
-      if (isExpiring) {
-        if (isRefreshing) {
-          // If refresh is already in progress, queue this request
-          return new Promise((resolve) => {
-            subscribeTokenRefresh((token) => {
-              config.headers["Authorization"] = `Bearer ${token}`;
-              resolve(config);
-            });
-          });
-        }
-
-        isRefreshing = true;
-
-        try {
-          const response = await refreshInstance.post(
-            isDevelopment
-              ? "api/v0/auth/refresh-token"
-              : "backend/api/v0/auth/refresh-token",
-            { refreshToken: user.refreshToken }
-          );
-
-          const data = response.data;
-
-          if (data.data.message === 1 && data.data.accessToken) {
-            const updatedUser = { ...user, accessToken: data.data.accessToken };
-            login(updatedUser);
-
-            config.headers["Authorization"] = `Bearer ${data.data.accessToken}`;
-            onRefreshed(data.data.accessToken);
-          } else {
-            throw new Error("Invalid refresh response");
-          }
-        } catch (err) {
-          console.error("Failed to refresh token proactively", err);
-          logout();
-          return Promise.reject(err);
-        } finally {
-          isRefreshing = false;
-        }
-      } else {
-        config.headers["Authorization"] = `Bearer ${user.accessToken}`;
-      }
+    if (!user?.accessToken || !user?.refreshToken) {
+      return config;
     }
 
-    return config;
+    const isExpiring = isTokenExpiringSoon(user.accessToken);
+
+    if (!isExpiring) {
+      config.headers["Authorization"] = `Bearer ${user.accessToken}`;
+      return config;
+    }
+
+    // Token is expiring — need to refresh
+    if (isRefreshing) {
+      // Queue this request until refresh completes
+      return new Promise((resolve, reject) => {
+        subscribeTokenRefresh((token) => {
+          if (!token) {
+            // Refresh failed — let the request through with the old token
+            // The response interceptor will handle the 401 if it comes
+            config.headers["Authorization"] = `Bearer ${user.accessToken}`;
+          } else {
+            config.headers["Authorization"] = `Bearer ${token}`;
+          }
+          resolve(config);
+        });
+      });
+    }
+
+    isRefreshing = true;
+
+    try {
+      const response = await refreshInstance.post(
+        isDevelopment
+          ? "api/v0/auth/refresh-token"
+          : "backend/api/v0/auth/refresh-token",
+        { refreshToken: user.refreshToken }
+      );
+
+      const data = response.data;
+
+      if (data.data.message === 1 && data.data.accessToken) {
+        const newToken = data.data.accessToken;
+        const updatedUser = { ...user, accessToken: newToken };
+        login(updatedUser);
+        config.headers["Authorization"] = `Bearer ${newToken}`;
+        onRefreshed(newToken);
+        return config;
+      } else {
+        throw new Error("Invalid refresh response");
+      }
+    } catch (err) {
+      const isNetworkError = !err.response; // No response = network issue, not auth failure
+
+      if (isNetworkError) {
+        // Don't logout — just proceed with the existing token
+        // The server will return 401 if it's truly expired,
+        // and the response interceptor will handle it
+        console.warn("Token refresh failed due to network error, proceeding with existing token");
+        config.headers["Authorization"] = `Bearer ${user.accessToken}`;
+        onRefreshFailed(err);
+        return config;
+      } else {
+        // Server explicitly rejected the refresh (400, 403, etc.) — auth is truly invalid
+        console.error("Token refresh rejected by server, logging out", err);
+        onRefreshFailed(err);
+        logout();
+        return Promise.reject(err);
+      }
+    } finally {
+      isRefreshing = false;
+    }
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Optional: keep response interceptor if backend sometimes sends 401 even if token looks valid
+// === Response Interceptor ===
 instance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      const { userDetails, login, logout } = useStore.getState();
-      const refreshToken = userDetails?.[0]?.refreshToken;
-
-      if (!refreshToken) {
-        logout();
-        return Promise.reject(error);
-      }
-
-      try {
-        const { data } = await refreshInstance.post(
-          isDevelopment
-            ? "api/v0/auth/refresh-token"
-            : "backend/api/v0/auth/refresh-token",
-          { refreshToken }
-        );
-
-        if (data.data.message === 1 && data.data.accessToken) {
-          const updatedUser = { ...userDetails[0], accessToken: data.data.accessToken };
-          await login(updatedUser);
-
-          originalRequest.headers["Authorization"] = `Bearer ${data.data.accessToken}`;
-          return instance(originalRequest);
-        } else {
-          throw new Error("Refresh failed");
-        }
-      } catch (refreshError) {
-        console.error("Token refresh failed after 401:", refreshError);
-        logout();
-        return Promise.reject(refreshError);
-      }
+    // Only retry on 401, and only once
+    if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error);
+    originalRequest._retry = true;
+    const { userDetails, login, logout } = useStore.getState();
+    const user = userDetails?.[0];
+
+    if (!user?.refreshToken) {
+      logout();
+      return Promise.reject(error);
+    }
+
+    // If a refresh is already happening (from request interceptor), wait for it
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        subscribeTokenRefresh((token) => {
+          if (!token) return reject(error);
+          originalRequest.headers["Authorization"] = `Bearer ${token}`;
+          resolve(instance(originalRequest));
+        });
+      });
+    }
+
+    isRefreshing = true;
+
+    try {
+      const { data } = await refreshInstance.post(
+        isDevelopment
+          ? "api/v0/auth/refresh-token"
+          : "backend/api/v0/auth/refresh-token",
+        { refreshToken: user.refreshToken }
+      );
+
+      if (data.data.message === 1 && data.data.accessToken) {
+        const newToken = data.data.accessToken;
+        login({ ...user, accessToken: newToken });
+        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+        onRefreshed(newToken);
+        return instance(originalRequest);
+      } else {
+        throw new Error("Refresh failed");
+      }
+    } catch (refreshError) {
+      const isNetworkError = !refreshError.response;
+
+      if (isNetworkError) {
+        // Network is down — don't logout, just fail this request
+        console.warn("Token refresh failed due to network error on 401 retry");
+        onRefreshFailed(refreshError);
+        return Promise.reject(error); // reject with original error
+      }
+
+      // Server rejected refresh — truly logged out
+      console.error("Token refresh rejected after 401, logging out");
+      onRefreshFailed(refreshError);
+      logout();
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
   }
 );
 

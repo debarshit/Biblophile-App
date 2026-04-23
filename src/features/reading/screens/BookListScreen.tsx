@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { 
     View, 
     Text, 
@@ -45,21 +45,22 @@ interface Book {
 }
 
 const BookListScreen = ({ route, navigation }) => {
-        const params = route.params ?? {};
-        const rawStatus = params.status;
-        const statusSlug = params.statusSlug;
-        const tagId = params.tagId;
-        const tagName = params.tagName;
-        const userData = params.userData;
-        const username = params.username;
-        const statusMap: Record<string, string> = {
-    'currently-reading': 'Currently reading',
-    'to-be-read': 'To be read',
-    'did-not-finish': 'Did not finish',
-    'read': 'Read',
-    };
+    const params = route.params ?? {};
+    const rawStatus = params.status;
+    const statusSlug = params.statusSlug;
+    const tagId = params.tagId;
+    const tagName = params.tagName;
+    const userData = params.userData;
+    const username = params.username;
 
+    const statusMap: Record<string, string> = {
+        'currently-reading': 'Currently reading',
+        'to-be-read': 'To be read',
+        'did-not-finish': 'Did not finish',
+        'read': 'Read',
+    };
     const status = rawStatus ?? statusMap[statusSlug] ?? statusSlug;
+
     const [books, setBooks] = useState<Book[]>([]);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -73,47 +74,83 @@ const BookListScreen = ({ route, navigation }) => {
     const accessToken = userDetails[0].accessToken;
     const { COLORS } = useTheme();
     const styles = useMemo(() => createStyles(COLORS), [COLORS]);
-    const resolvedUserData = localUserData || userData;
 
-    // ─── Share handler (available to everyone) ───────────────────────────────
-    const handleShare = async () => {
-        if (!resolvedUserData) return;
+    // Stable reference — avoids recreation on every render
+    const resolvedUserData = useMemo(
+        () => localUserData || userData,
+        [localUserData, userData]
+    );
+
+    // ── Step 1: fetch user if we only have a username (deep-link case) ────────
+    useEffect(() => {
+        if (localUserData || !username) return;
+
+        let cancelled = false;
+        const fetchUserData = async () => {
+            try {
+                setIsFetchingUser(true);
+                const response = await instance(
+                    requests.fetchUserDataFromUsername(username),
+                    { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }
+                );
+                if (!cancelled) setLocalUserData(response.data?.data);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            } finally {
+                if (!cancelled) setIsFetchingUser(false);
+            }
+        };
+
+        fetchUserData();
+        return () => { cancelled = true; };
+    }, [username]); // intentionally only username — runs once
+
+    // ── Step 2: reset list when the shelf identity changes ────────────────────
+    useEffect(() => {
+        setBooks([]);
+        setHasMore(true);
+        setPage(0); // triggers the fetch effect below
+    }, [status, tagId, resolvedUserData?.userId]);
+
+    // ── Step 3: fetch a page whenever page/shelf/user is ready ───────────────
+    useEffect(() => {
+        if (!resolvedUserData?.userId) return; // wait until user is resolved
+        fetchBooks(page);
+    }, [page, status, tagId, resolvedUserData?.userId]);
+
+    const fetchBooks = async (pageNum: number) => {
+        setLoading(true);
         try {
-            let shareUrl = '';
+            const limit = 10;
+            const offset = pageNum * limit;
 
             if (tagId) {
-                // Tag-based shelf
-                shareUrl = `${APP_BASE_URL}/profile/${resolvedUserData?.userName}/tags/${tagId}/${encodeURIComponent(tagName ?? '')}`;
+                const response = await instance.get(
+                    `${requests.fetchBooksByTag(tagId)}?userId=${resolvedUserData.userId}&limit=${limit}&offset=${offset}`,
+                    { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }
+                );
+                const newBooks = response.data.data.books || [];
+                setCurrentVisibility(response.data.data.tagVisibility || 'everyone');
+                updateBookList(newBooks, limit);
             } else if (status) {
-                // Status-based shelf
-                const statusSlugMap: Record<string, string> = {
-                    'Currently reading': 'currently-reading',
-                    'To be read': 'to-be-read',
-                    'Did not finish': 'did-not-finish',
-                    'Read': 'read',
-                };
-
-                const slug =
-                    statusSlug ??
-                    statusSlugMap[status] ??
-                    status?.toLowerCase().replace(/\s+/g, '-');
-
-                shareUrl = `${APP_BASE_URL}/profile/${resolvedUserData?.userName}/${slug}`;
-            } else {
-                return; // or fallback
+                const query = new URLSearchParams({
+                    userId: resolvedUserData.userId,
+                    status,
+                    limit: limit.toString(),
+                    offset: offset.toString(),
+                });
+                const response = await instance(
+                    `${requests.fetchBookShelf}?${query}`,
+                    { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }
+                );
+                const newBooks = response.data.data.userBooks || [];
+                setCurrentVisibility(response.data.data.shelfVisibility || 'everyone');
+                updateBookList(newBooks, limit);
             }
-
-            const shelfLabel = tagId ? tagName : status;
-
-            await Share.share({
-                title: `${resolvedUserData?.userName}'s ${shelfLabel} shelf`,
-                message: `Check out this reading shelf: ${shareUrl}`,
-            });
-
-        } catch (error: any) {
-            if (error?.message !== 'User did not share') {
-                Alert.alert('Could not share', 'Please try again.');
-            }
+        } catch (error) {
+            console.error('Failed to fetch books:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -126,13 +163,15 @@ const BookListScreen = ({ route, navigation }) => {
         if (newBooks.length < limit) setHasMore(false);
     };
 
+    const loadMoreBooks = () => {
+        if (hasMore && !loading) setPage((prev) => prev + 1);
+    };
+
     const updateShelfPrivacy = async (visibility: string) => {
         try {
             await instance.put(
                 requests.updateShelfPrivacy,
-                tagId
-                    ? { tagId, visibility }
-                    : { shelfType: status, visibility },
+                tagId ? { tagId, visibility } : { shelfType: status, visibility },
                 { headers: { Authorization: `Bearer ${accessToken}` } }
             );
         } catch (err) {
@@ -140,87 +179,49 @@ const BookListScreen = ({ route, navigation }) => {
         }
     };
 
-    const fetchBooks = async (page: number) => {
-        if (!resolvedUserData?.userId) return;
-        setLoading(true);
+    const handleShare = async () => {
+        if (!resolvedUserData) return;
         try {
-            const limit = 10;
-            const offset = page * limit;
-            let response;
-
+            let shareUrl = '';
             if (tagId) {
-                // Fetch books for tag
-                response = await instance.get(
-                    `${requests.fetchBooksByTag(tagId)}?userId=${resolvedUserData?.userId}&limit=${limit}&offset=${offset}`,
-                    { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }
-                );
-                const newBooks = response.data.data.books || [];
-                setCurrentVisibility(response.data.data.tagVisibility || 'everyone');
-                updateBookList(newBooks, limit);
+                shareUrl = `${APP_BASE_URL}/profile/${resolvedUserData.userName}/tags/${tagId}/${encodeURIComponent(tagName ?? '')}`;
             } else if (status) {
-                // Fetch status-based bookshelf
-                const query = new URLSearchParams({
-                    userId: resolvedUserData?.userId,
-                    status,
-                    limit: limit.toString(),
-                    offset: offset.toString(),
-                });
-                response = await instance(
-                    `${requests.fetchBookShelf}?${query}`,
-                    { headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' } }
-                );
-                const newBooks = response.data.data.userBooks || [];
-                setCurrentVisibility(response.data.data.shelfVisibility || 'everyone');
-                updateBookList(newBooks, limit);
-            } else {
-                return;
+                const statusSlugMap: Record<string, string> = {
+                    'Currently reading': 'currently-reading',
+                    'To be read': 'to-be-read',
+                    'Did not finish': 'did-not-finish',
+                    'Read': 'read',
+                };
+                const slug = statusSlug ?? statusSlugMap[status] ?? status.toLowerCase().replace(/\s+/g, '-');
+                shareUrl = `${APP_BASE_URL}/profile/${resolvedUserData.userName}/${slug}`;
+            } else return;
+
+            await Share.share({
+                title: `${resolvedUserData.userName}'s ${tagId ? tagName : status} shelf`,
+                message: `Check out this reading shelf: ${shareUrl}`,
+            });
+        } catch (error: any) {
+            if (error?.message !== 'User did not share') {
+                Alert.alert('Could not share', 'Please try again.');
             }
-        } catch (error) {
-            console.error('Failed to fetch books:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
-    useEffect(() => {
-        if (!resolvedUserData?.userId) return;
-        fetchBooks(page);
-    }, [page, status, tagId, resolvedUserData?.userId]);
+    // Memoised so HeaderBar doesn't re-render on every keystroke/state change
+    const headerRight = useMemo(() => (
+        <View style={styles.headerActions}>
+            <TouchableOpacity onPress={handleShare} style={styles.headerIconBtn}>
+                <Ionicons name="share-social-outline" size={22} color={COLORS.primaryWhiteHex} />
+            </TouchableOpacity>
+            {resolvedUserData?.isPageOwner && (
+                <TouchableOpacity onPress={() => setShowShelfMenu(true)} style={styles.headerIconBtn}>
+                    <Ionicons name="lock-closed-outline" size={20} color={COLORS.primaryWhiteHex} />
+                </TouchableOpacity>
+            )}
+        </View>
+    ), [resolvedUserData?.isPageOwner, styles, COLORS.primaryWhiteHex]);
 
-    useEffect(() => {
-        if (localUserData || !username) return;
-
-        const fetchUserData = async () => {
-            try {
-            setIsFetchingUser(true);
-
-            const response = await instance(
-                requests.fetchUserDataFromUsername(username),
-                {
-                headers: {
-                    Authorization: accessToken ? `Bearer ${accessToken}` : '',
-                },
-                }
-            );
-
-            const fetchedUser = response.data?.data;
-
-            setLocalUserData(fetchedUser);
-            } catch (error) {
-            console.error('Error fetching user data:', error);
-            } finally {
-            setIsFetchingUser(false);
-            }
-        };
-
-        fetchUserData();
-    }, [username]);
-
-    const loadMoreBooks = () => {
-        if (hasMore && !loading) setPage((prev) => prev + 1);
-    };
-
-    const renderBookItem = ({ item, index }: { item: Book; index: number }) => (
+    const renderBookItem = useCallback(({ item, index }: { item: Book; index: number }) => (
         <View style={[
             styles.cardContainer,
             {
@@ -243,56 +244,38 @@ const BookListScreen = ({ route, navigation }) => {
                 navigation={navigation}
             />
         </View>
-    );
+    ), [resolvedUserData?.isPageOwner, styles]);
 
-    const renderLoadingFooter = () => {
-        if (!loading) return null;
+    const listHeader = useMemo(() => (
+        resolvedUserData?.isPageOwner ? (
+            <ReadingQueueSection
+                status={status}
+                userData={resolvedUserData}
+                navigation={navigation}
+                accessToken={accessToken}
+            />
+        ) : null
+    ), [resolvedUserData?.isPageOwner, status]);
+
+    // Show a spinner while the user profile is being fetched (deep-link case)
+    if (isFetchingUser) {
         return (
-            <View style={styles.loadingContainer}>
-                <View style={styles.loadingIndicator}>
-                    <Text style={styles.loadingText}>Loading more books...</Text>
+            <SafeAreaView style={styles.container}>
+                <HeaderBar showBackButton title="" />
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={styles.loadingText}>Loading shelf…</Text>
                 </View>
-            </View>
+            </SafeAreaView>
         );
-    };
-
-    const renderEmptyState = () => (
-        <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>No books found</Text>
-            <Text style={styles.emptySubtitle}>
-                {status === 'Read' ? 'No books marked as read yet' :
-                 status === 'Currently reading' ? 'No books currently being read' :
-                 status === 'To be read' ? 'No books in your reading list' :
-                 'No books found for this status'}
-            </Text>
-        </View>
-    );
-
-    // ─── Right header icons ───────────────────────────────────────────────────
-    const renderHeaderRight = () => (
-        <View style={styles.headerActions}>
-            {/* Share — visible to everyone */}
-            <TouchableOpacity onPress={handleShare} style={styles.headerIconBtn}>
-                <Ionicons name="share-social-outline" size={22} color={COLORS.primaryWhiteHex} />
-            </TouchableOpacity>
-
-            {/* Privacy menu — owner only */}
-            {resolvedUserData?.isPageOwner && (
-                <TouchableOpacity onPress={() => setShowShelfMenu(true)} style={styles.headerIconBtn}>
-                    <Ionicons name="lock-closed-outline" size={20} color={COLORS.primaryWhiteHex} />
-                </TouchableOpacity>
-            )}
-        </View>
-    );
+    }
 
     return (
         <SafeAreaView style={styles.container}>
             <HeaderBar
                 showBackButton={true}
                 title={tagId ? tagName : status ?? ''}
-                rightComponent={renderHeaderRight()}
+                rightComponent={headerRight}
             />
-
             <FlatList
                 data={books}
                 numColumns={3}
@@ -300,18 +283,25 @@ const BookListScreen = ({ route, navigation }) => {
                 renderItem={renderBookItem}
                 onEndReached={loadMoreBooks}
                 onEndReachedThreshold={0.5}
-                ListHeaderComponent={
-                    resolvedUserData?.isPageOwner ? (
-                        <ReadingQueueSection
-                            status={status}
-                            userData={resolvedUserData}
-                            navigation={navigation}
-                            accessToken={accessToken}
-                        />
-                    ) : null
-                }
-                ListFooterComponent={renderLoadingFooter}
-                ListEmptyComponent={books.length === 0 && !loading ? renderEmptyState : null}
+                ListHeaderComponent={listHeader}
+                ListFooterComponent={loading ? (
+                    <View style={styles.loadingContainer}>
+                        <View style={styles.loadingIndicator}>
+                            <Text style={styles.loadingText}>Loading more books...</Text>
+                        </View>
+                    </View>
+                ) : null}
+                ListEmptyComponent={!loading ? (
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyTitle}>No books found</Text>
+                        <Text style={styles.emptySubtitle}>
+                            {status === 'Read' ? 'No books marked as read yet' :
+                             status === 'Currently reading' ? 'No books currently being read' :
+                             status === 'To be read' ? 'No books in your reading list' :
+                             'No books found for this status'}
+                        </Text>
+                    </View>
+                ) : null}
                 contentContainerStyle={[
                     styles.listContent,
                     books.length === 0 && !loading && styles.emptyListContent
@@ -328,25 +318,21 @@ const BookListScreen = ({ route, navigation }) => {
                 >
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Shelf Privacy</Text>
-                        {[
-                            { label: '🔒 Only Me',   value: 'only_me'   },
-                            { label: '👥 Friends',   value: 'friends'   },
-                            { label: '👤 Followers', value: 'followers' },
-                            { label: '🌍 Everyone',  value: 'everyone'  },
-                        ].map((option) => {
-                            const isSelected = option.value === currentVisibility;
+                        {(['only_me', 'friends', 'followers', 'everyone'] as const).map((value) => {
+                            const label = { only_me: '🔒 Only Me', friends: '👥 Friends', followers: '👤 Followers', everyone: '🌍 Everyone' }[value];
+                            const isSelected = value === currentVisibility;
                             return (
                                 <TouchableOpacity
-                                    key={option.value}
+                                    key={value}
                                     style={[styles.modalOption, isSelected && styles.selectedOption]}
                                     onPress={() => {
-                                        updateShelfPrivacy(option.value);
-                                        setCurrentVisibility(option.value as any);
+                                        updateShelfPrivacy(value);
+                                        setCurrentVisibility(value);
                                         setShowShelfMenu(false);
                                     }}
                                 >
                                     <Text style={[styles.modalText, isSelected && styles.selectedText]}>
-                                        {option.label}
+                                        {label}
                                     </Text>
                                 </TouchableOpacity>
                             );
