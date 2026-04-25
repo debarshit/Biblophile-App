@@ -95,7 +95,7 @@ const NotificationsScreen = () => {
   return (
     <SafeAreaView style={styles.screenContainer}>
       <HeaderBar showBackButton={true} title='Notifications' />
-      {/* <TabSelector 
+      <TabSelector 
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         tabs={notificationTabs} 
@@ -103,7 +103,7 @@ const NotificationsScreen = () => {
         tabButtonStyle={undefined} 
         activeTabStyle={undefined} 
         tabTextStyle={undefined} 
-      /> */}
+      />
       {renderContent()}
     </SafeAreaView>
   );

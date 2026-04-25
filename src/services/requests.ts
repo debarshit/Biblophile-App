@@ -152,6 +152,15 @@ const requests = {
     fetchPrivacyStatus:`${APIURL}social/user-relations/`,
     fetchSimilarUsers:`${APIURL}social/user-relations/similar-users`,
 
+    //privacy settings requests
+    getPrivacySettings:`${APIURL}social/user-relations/privacy`,
+    updatePrivacySettings:`${APIURL}social/user-relations/privacy`,
+    updateShelfPrivacy:`${APIURL}social/user-relations/privacy/shelf`,
+    updateBookPrivacy:`${APIURL}social/user-relations/privacy/book`,
+    resetShelfPrivacy:`${APIURL}social/user-relations/privacy/shelf`,
+    resetBookPrivacy: (userBookId: string) => `${APIURL}}social/user-relations/privacy/book/${userBookId}`,
+    fetchPrivacyView:`${APIURL}social/user-relations/privacy/view`,
+
     //buddy-reads requests
     fetchBuddyReads:`${APIURL}social/buddy-reads/`,
     fetchMyBuddyReads:`${APIURL}social/buddy-reads/my-reads`,

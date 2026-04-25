@@ -62,6 +62,7 @@ import ReadalongCheckpointDiscussion from './src/features/social/screens/Readalo
 import ChallengePromptDetailsScreen from './src/features/challenges/screens/ChallengePromptDetailsScreen';
 import ThreadScreen from './src/features/social/screens/ThreadScreen';
 import { ThemeProvider } from './src/contexts/ThemeContext';
+import PrivacySettingsScreen from './src/features/settings/screens/PrivacySettingsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -285,6 +286,7 @@ const App = () => {
                 <Stack.Screen name="PaymentGateway" component={PaymentGatewayScreen} options={{animation: 'slide_from_right'}} />
                 <Stack.Screen name="Settings" component={SettingsScreen} options={{animation: 'slide_from_right'}} />
                 <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} options={{animation: 'slide_from_right'}} />
+                <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} options={{animation: 'slide_from_right'}} />
                 <Stack.Screen name="Resources" component={ResourceScreen} options={{animation: 'slide_from_right'}} />
                 <Stack.Screen name="About" component={AboutScreen} options={{animation: 'slide_from_right'}} />
                 <Stack.Screen name="Profile" component={ProfileScreen} options={{animation: 'slide_from_right'}} />
@@ -297,7 +299,8 @@ const App = () => {
                 <Stack.Screen name="Cart" component={CartScreen} options={{animation: 'slide_from_right'}} />
                 <Stack.Screen name="History" component={OrderHistoryScreen} options={{animation: 'slide_from_right'}} />
                 <Stack.Screen name="CommonWebView" component={CommonWebViewScreen} options={{animation: 'slide_from_bottom'}} />
-                <Stack.Screen name="BookListScreen" component={BookListScreen} options={{animation: 'slide_from_bottom'}} />
+                <Stack.Screen name="BookListStatus" component={BookListScreen} options={{animation: 'slide_from_bottom'}} />
+                <Stack.Screen name="BookListTag" component={BookListScreen} options={{animation: 'slide_from_bottom'}} />
                 <Stack.Screen name="GenreScreen" component={GenreScreen} options={{animation: 'slide_from_bottom'}} />
                 <Stack.Screen name="Notifications" component={NotificationsScreen} options={{animation: 'slide_from_right'}} />
                 <Stack.Screen name="ChallengeDetails" component={ChallengeDetailsScreen} options={{animation: 'slide_from_bottom'}} />

@@ -41,9 +41,7 @@ const SettingsScreen = ({navigation, route}: any) => {
   const handleRefer = async () => {
     try {
       const result = await Share.share({
-        message: `📚 Discover the Ultimate library App! 📚
-
-Join me on Biblophile, the app that brings together book lovers, offering a seamless experience for buying, selling, renting books, and more! Explore our extensive collection and enjoy exclusive features today.
+        message: `Join me on Biblophile and let's tackle our reading goals together.
 
 📲 Download now: https://onelink.to/dxjdkb`,
       });
@@ -78,6 +76,12 @@ Join me on Biblophile, the app that brings together book lovers, offering a seam
           icon: <MaterialIcons color="#fff" name="notifications-none" size={20} />,
           label: 'Manage Notifications',
           onPress: () => navigation.push('NotificationSettings'),
+          bgColor: '#FF8C42',
+        },
+        {
+          icon: <MaterialIcons color="#fff" name="notifications-none" size={20} />,
+          label: 'Manage Privacy',
+          onPress: () => navigation.push('PrivacySettings'),
           bgColor: '#FF8C42',
         },
         {
