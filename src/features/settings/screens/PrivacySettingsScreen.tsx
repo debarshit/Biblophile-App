@@ -43,7 +43,7 @@ const PrivacySettingsScreen = () => {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
-      setSettings(res.data.data.profile);
+      setSettings(res.data.data);
     } catch (err) {
       console.log("Failed to fetch privacy settings", err);
     }

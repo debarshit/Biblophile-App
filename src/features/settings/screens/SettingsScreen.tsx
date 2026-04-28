@@ -79,7 +79,7 @@ const SettingsScreen = ({navigation, route}: any) => {
           bgColor: '#FF8C42',
         },
         {
-          icon: <MaterialIcons color="#fff" name="notifications-none" size={20} />,
+          icon: <MaterialIcons color="#fff" name="privacy-tip" size={20} />,
           label: 'Manage Privacy',
           onPress: () => navigation.push('PrivacySettings'),
           bgColor: '#FF8C42',

@@ -44,6 +44,13 @@ const CATEGORY_META = {
     description: "Reading streaks and nudges",
     icon: "⏰",
     channels: ["push", "email"]
+  },
+
+  collaborative_lists: {
+    title: "Collaborative Lists",
+    description: "Shared lists, invites, and book activity",
+    icon: "🤝",
+    channels: ["push"]
   }
 };
 
