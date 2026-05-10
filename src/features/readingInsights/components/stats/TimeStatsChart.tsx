@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
+import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
 import { useTheme } from '../../../../contexts/ThemeContext';
 
 interface TimeStatsChartProps {
@@ -11,8 +11,13 @@ interface TimeStatsChartProps {
 
 const TimeStatsChart: React.FC<TimeStatsChartProps> = ({ readingDurations, timeFrame }) => {
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, value: '', date: '' });
+  const [chartWidth, setChartWidth] = useState(0);
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+
+  const handleChartLayout = (event: LayoutChangeEvent) => {
+    setChartWidth(event.nativeEvent.layout.width);
+  };
 
   if (!Array.isArray(readingDurations) || readingDurations.length === 0) {
     return (
@@ -43,66 +48,69 @@ const TimeStatsChart: React.FC<TimeStatsChartProps> = ({ readingDurations, timeF
     }
   });
 
+  const formatChartLabel = (label: string) => {
+    const [, month, day] = label.split('-');
+    return `${Number(month)}/${Number(day)}`;
+  };
+
   const adjustedLabels = labels.map((label, index) => {
     if (index === 0 || index === Math.floor(labels.length / 2) || index === labels.length - 1) {
-      return label;
+      return formatChartLabel(label);
     }
     return '';
   });
-
-  const chartWidth = Math.max(
-    Dimensions.get('window').width,
-    dataPointsDurations.length * 50 + 40
-  );
+  const verticalLabelProps = timeFrame === 'last-week'
+    ? { fontSize: 10 }
+    : { fontSize: 10, dx: -6 };
 
   return (
     <View style={styles.statContainer}>
       <Text style={styles.title}>Minutes Read in Last {timeFrame === 'last-week' ? '7 Days' : '30 Days'}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <LineChart
-          data={{
-            labels: adjustedLabels,
-            datasets: [{ data: dataPointsDurations }],
-          }}
-          width={chartWidth}
-          height={220}
-          yAxisLabel=""
-          yAxisSuffix=" mins"
-          withVerticalLines={false}
-          withHorizontalLines={false}
-          withInnerLines={false}
-          chartConfig={{
-            backgroundColor: COLORS.primaryDarkGreyHex,
-            backgroundGradientFrom: COLORS.primaryDarkGreyHex,
-            backgroundGradientTo: COLORS.primaryDarkGreyHex,
-            decimalPlaces: 0,
-            color: (opacity = 1) => "#42D1D1",
-            labelColor: (opacity = 1) => COLORS.primaryWhiteHex,
-            style: { borderRadius: BORDERRADIUS.radius_8 },
-            propsForDots: { r: "4", strokeWidth: "2", stroke: COLORS.primaryBlackHex },
-          }}
-          bezier
-          style={{
-            marginVertical: SPACING.space_16,
-            borderRadius: BORDERRADIUS.radius_8,
-          }}
-          onDataPointClick={(data) => {
-            const { x, y, index } = data;
-            const date = labels[index];
-            setTooltipPos({
-              x, y, visible: true,
-              value: `${dataPointsDurations[index]} mins`,
-              date: date,
-            });
-          }}
-        />
+      <View style={styles.chartWrapper} onLayout={handleChartLayout}>
+        {chartWidth > 0 && (
+          <LineChart
+            data={{
+              labels: adjustedLabels,
+              datasets: [{ data: dataPointsDurations }],
+            }}
+            width={chartWidth}
+            height={220}
+            yAxisLabel=""
+            yAxisSuffix=" mins"
+            withVerticalLines={false}
+            withHorizontalLines={false}
+            withInnerLines={false}
+            chartConfig={{
+              backgroundColor: COLORS.primaryDarkGreyHex,
+              backgroundGradientFrom: COLORS.primaryDarkGreyHex,
+              backgroundGradientTo: COLORS.primaryDarkGreyHex,
+              decimalPlaces: 0,
+              color: (opacity = 1) => "#42D1D1",
+              labelColor: (opacity = 1) => COLORS.primaryWhiteHex,
+              style: { borderRadius: BORDERRADIUS.radius_8 },
+              propsForDots: { r: "4", strokeWidth: "2", stroke: COLORS.primaryBlackHex },
+              propsForVerticalLabels: verticalLabelProps,
+            }}
+            bezier
+            style={styles.chart}
+            onDataPointClick={(data) => {
+              const { x, y, index } = data;
+              const date = labels[index];
+              setTooltipPos({
+                x, y, visible: true,
+                value: `${dataPointsDurations[index]} mins`,
+                date: date,
+              });
+            }}
+          />
+        )}
         {tooltipPos.visible && (
           <View style={[styles.tooltip, { top: tooltipPos.y - 30, left: tooltipPos.x - 25 }]}>
             <Text style={styles.tooltipText}>{tooltipPos.value}</Text>
             <Text style={styles.tooltipText}>{tooltipPos.date}</Text>
           </View>
         )}
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -114,6 +122,15 @@ const createStyles = (COLORS) => StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: BORDERRADIUS.radius_8,
     padding: SPACING.space_8,
+  },
+  chartWrapper: {
+    position: 'relative',
+    width: '100%',
+  },
+  chart: {
+    alignSelf: 'center',
+    marginVertical: SPACING.space_16,
+    borderRadius: BORDERRADIUS.radius_8,
   },
   title: {
     fontSize: FONTSIZE.size_24,
