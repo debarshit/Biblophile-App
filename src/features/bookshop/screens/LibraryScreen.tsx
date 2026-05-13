@@ -10,6 +10,7 @@ import {
   View,
   Platform,
   ToastAndroid,
+  KeyboardAvoidingView,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {FlatList} from 'react-native';
@@ -94,6 +95,7 @@ const LibraryScreen = ({navigation}: any) => {
     type: null,
     id: null,
   });
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const handleNewsletterSubscribe = async () => {
     if (!newsletterEmail.trim()) return;
@@ -132,7 +134,7 @@ const LibraryScreen = ({navigation}: any) => {
     }
   };
 
-  const ListRef: any = useRef<FlatList>();
+  const ListRef = useRef<FlatList<any>>(null);
 
   // Define a variable to store the timeout ID
   let searchTimeout: any = null;  
@@ -316,8 +318,15 @@ const LibraryScreen = ({navigation}: any) => {
   return (
     <SafeAreaView style={styles.ScreenContainer}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 20}
+        style={styles.KeyboardView}>
       <ScrollView
+        ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         contentContainerStyle={styles.ScrollViewFlex}>
         {/* App Header */}
         <HeaderBar showBackButton={true} title=""/>
@@ -540,6 +549,11 @@ const LibraryScreen = ({navigation}: any) => {
             placeholderTextColor={COLORS.primaryLightGreyHex}
             value={newsletterEmail}
             onChangeText={setNewsletterEmail}
+            onFocus={() => {
+              setTimeout(() => {
+                scrollViewRef.current?.scrollToEnd({animated: true});
+              }, 250);
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
             style={styles.newsletterInput}
@@ -560,6 +574,7 @@ const LibraryScreen = ({navigation}: any) => {
         <MerchShopBanner /> */}
 
       </ScrollView>
+      </KeyboardAvoidingView>
       <CityPlaceModal
         visible={!!selectedPlaceFromLink}
         place={selectedPlaceFromLink}
@@ -595,8 +610,12 @@ const createStyles = (COLORS) => StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.primaryBlackHex,
   },
+  KeyboardView: {
+    flex: 1,
+  },
   ScrollViewFlex: {
     flexGrow: 1,
+    paddingBottom: SPACING.space_36 * 2,
   },
   ScreenTitle: {
     fontSize: FONTSIZE.size_28,
