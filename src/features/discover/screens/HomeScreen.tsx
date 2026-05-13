@@ -171,8 +171,6 @@ const HomeScreen = ({navigation}: any) => {
         {/* App Header */}
         <HeaderBar showLogo showNotifications />
 
-        <ChallengesBanner />
-
         <StreakWeeklyProgress userDetails={userDetails} onFullWeekComplete={() => setShowConfetti(true)} />
 
         <Banner />

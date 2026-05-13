@@ -107,7 +107,8 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
 
 const createStyles = (COLORS) => StyleSheet.create({
   HeaderContainer: {
-    padding: SPACING.space_30,
+    paddingHorizontal: SPACING.space_30,
+    paddingVertical: SPACING.space_12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

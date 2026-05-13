@@ -24,7 +24,7 @@ const ProgressStatsChart: React.FC<ProgressStatsChartProps> = ({ readingStatusDa
   }
 
   const statusCounts = readingStatusData.reduce((acc, book) => {
-    acc[book.Status] = (acc[book.Status] || 0) + 1;
+    acc[book.status] = (acc[book.status] || 0) + 1;
     return acc;
   }, {});
 

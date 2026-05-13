@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableWithoutFeedback, TextInput, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableWithoutFeedback, TextInput, LayoutChangeEvent } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
+import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../../theme/theme';
 import instance from '../../../../services/axios';
 import requests from '../../../../services/requests';
 import { useTheme } from '../../../../contexts/ThemeContext';
@@ -25,8 +25,13 @@ const PageStatsChart: React.FC<PageStatsChartProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editPageCount, setEditPageCount] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
-    const { COLORS } = useTheme();
+  const [chartWidth, setChartWidth] = useState(0);
+  const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+
+  const handleChartLayout = (event: LayoutChangeEvent) => {
+    setChartWidth(event.nativeEvent.layout.width);
+  };
 
   const handleSave = async () => {
     try {
@@ -80,67 +85,70 @@ const PageStatsChart: React.FC<PageStatsChartProps> = ({
     }
   });
 
+  const formatChartLabel = (label: string) => {
+    const [, month, day] = label.split('-');
+    return `${Number(month)}/${Number(day)}`;
+  };
+
   const adjustedLabels = labels.map((label, index) => {
     if (index === 0 || index === Math.floor(labels.length / 2) || index === labels.length - 1) {
-      return label;
+      return formatChartLabel(label);
     }
     return '';
   });
+  const verticalLabelProps = timeFrame === 'last-week'
+    ? { fontSize: 10 }
+    : { fontSize: 10, dx: -6 };
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayFormatted = yesterday.toISOString().split('T')[0];
 
-  const chartWidth = Math.max(
-    Dimensions.get('window').width,
-    dataPoints.length * 50 + 40
-  );
-
   return (
     <View style={styles.statContainer}>
       <Text style={styles.title}>Pages Read in Last {timeFrame === 'last-week' ? '7 Days' : '30 Days'}</Text>
       <TouchableWithoutFeedback onPress={() => setTooltipPos({ ...tooltipPos, visible: false })}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <LineChart
-            data={{
-              labels: adjustedLabels,
-              datasets: [{ data: dataPoints }],
-            }}
-            width={chartWidth}
-            height={220}
-            yAxisLabel=""
-            yAxisSuffix=" pgs"
-            withVerticalLines={false}
-            withHorizontalLines={false}
-            withInnerLines={false}
-            chartConfig={{
-              backgroundColor: COLORS.primaryDarkGreyHex,
-              backgroundGradientFrom: COLORS.primaryDarkGreyHex,
-              backgroundGradientTo: COLORS.primaryDarkGreyHex,
-              decimalPlaces: 0,
-              color: (opacity = 1) => COLORS.primaryOrangeHex,
-              labelColor: (opacity = 1) => COLORS.primaryWhiteHex,
-              style: { borderRadius: BORDERRADIUS.radius_8 },
-              propsForDots: { r: "4", strokeWidth: "2", stroke: COLORS.primaryBlackHex },
-            }}
-            bezier
-            style={{
-              marginVertical: SPACING.space_16,
-              borderRadius: BORDERRADIUS.radius_8,
-            }}
-            onDataPointClick={(data) => {
-              const { x, y, index } = data;
-              const date = labels[index];
-              setSelectedDate(date);
-              setEditPageCount(dataPoints[index].toString());
-              setTooltipPos({
-                x, y, visible: true,
-                value: `${dataPoints[index]} pages`,
-                date: date,
-              });
-              setIsEditing(false);
-            }}
-          />
+        <View style={styles.chartWrapper} onLayout={handleChartLayout}>
+          {chartWidth > 0 && (
+            <LineChart
+              data={{
+                labels: adjustedLabels,
+                datasets: [{ data: dataPoints }],
+              }}
+              width={chartWidth}
+              height={220}
+              yAxisLabel=""
+              yAxisSuffix=" pgs"
+              withVerticalLines={false}
+              withHorizontalLines={false}
+              withInnerLines={false}
+              chartConfig={{
+                backgroundColor: COLORS.primaryDarkGreyHex,
+                backgroundGradientFrom: COLORS.primaryDarkGreyHex,
+                backgroundGradientTo: COLORS.primaryDarkGreyHex,
+                decimalPlaces: 0,
+                color: (opacity = 1) => COLORS.primaryOrangeHex,
+                labelColor: (opacity = 1) => COLORS.primaryWhiteHex,
+                style: { borderRadius: BORDERRADIUS.radius_8 },
+                propsForDots: { r: "4", strokeWidth: "2", stroke: COLORS.primaryBlackHex },
+                propsForVerticalLabels: verticalLabelProps,
+              }}
+              bezier
+              style={styles.chart}
+              onDataPointClick={(data) => {
+                const { x, y, index } = data;
+                const date = labels[index];
+                setSelectedDate(date);
+                setEditPageCount(dataPoints[index].toString());
+                setTooltipPos({
+                  x, y, visible: true,
+                  value: `${dataPoints[index]} pages`,
+                  date: date,
+                });
+                setIsEditing(false);
+              }}
+            />
+          )}
           {tooltipPos.visible && (
             <View style={[styles.tooltip, { top: tooltipPos.y - 30, left: tooltipPos.x - 25 }]}>
               {isEditing ? (
@@ -168,7 +176,7 @@ const PageStatsChart: React.FC<PageStatsChartProps> = ({
               )}
             </View>
           )}
-        </ScrollView>
+        </View>
       </TouchableWithoutFeedback>
     </View>
   );
@@ -181,6 +189,15 @@ const createStyles = (COLORS) => StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: BORDERRADIUS.radius_8,
     padding: SPACING.space_8,
+  },
+  chartWrapper: {
+    position: 'relative',
+    width: '100%',
+  },
+  chart: {
+    alignSelf: 'center',
+    marginVertical: SPACING.space_16,
+    borderRadius: BORDERRADIUS.radius_8,
   },
   title: {
     fontSize: FONTSIZE.size_24,

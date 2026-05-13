@@ -86,7 +86,7 @@ const TabNavigator = () => {
               />
             ),
           }}></Tab.Screen> */}
-        {/* <Tab.Screen
+        <Tab.Screen
           name="Challenges"
           component={ChallengesScreen}
           options={{
@@ -99,7 +99,7 @@ const TabNavigator = () => {
                 }
               />
             ),
-          }}></Tab.Screen> */}
+          }}></Tab.Screen>
         <Tab.Screen
           name="Social"
           component={SocialScreen}

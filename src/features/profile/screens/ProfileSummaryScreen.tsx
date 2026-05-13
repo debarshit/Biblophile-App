@@ -254,6 +254,13 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
         <View style={styles.headerContainer}>
+          {/* Back Button */}
+          <TouchableOpacity
+            onPress={() => navigation.replace('Tab', { screen: 'Home' })}
+            style={styles.backButton}
+          >
+            <Feather name="arrow-left" size={20} color={COLORS.primaryWhiteHex} />
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={isPageOwner ? () => navigation.push('Profile') : undefined}
             style={styles.profileContainer}>
@@ -275,24 +282,23 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
               {username}
             </Text>
           </View>
-            {/* Share Button */}
-            <TouchableOpacity onPress={handleShareProfile} style={{marginRight: SPACING.space_10}}>
-              <Feather name="share-2" size={20} color={COLORS.primaryWhiteHex} />
+          {/* Share Button */}
+          <TouchableOpacity onPress={handleShareProfile} style={{marginRight: SPACING.space_10}}>
+            <Feather name="share-2" size={20} color={COLORS.primaryWhiteHex} />
+          </TouchableOpacity>
+          {/* Settings (only owner) */}
+          {isPageOwner && (
+            <TouchableOpacity
+              style={styles.headerIcon}
+              onPress={() => navigation.navigate('Settings')}
+            >
+              <GradientBGIcon 
+                name="menufold"
+                color={COLORS.primaryWhiteHex}
+                size={FONTSIZE.size_16}
+              />
             </TouchableOpacity>
-
-            {/* Settings (only owner) */}
-            {isPageOwner && (
-              <TouchableOpacity
-                style={styles.headerIcon}
-                onPress={() => navigation.navigate('Settings')}
-              >
-                <GradientBGIcon 
-                  name="menufold"
-                  color={COLORS.primaryWhiteHex}
-                  size={FONTSIZE.size_16}
-                />
-              </TouchableOpacity>
-            )}
+          )}
         </View>
 
         {!isPageOwner && (
@@ -424,6 +430,9 @@ const createStyles = (COLORS) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: SPACING.space_20,
+  },
+  backButton: {
+    marginRight: SPACING.space_8,
   },
   headerIcon: {
     paddingBottom: SPACING.space_20,
