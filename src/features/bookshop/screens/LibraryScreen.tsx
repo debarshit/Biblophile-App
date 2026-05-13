@@ -63,6 +63,8 @@ const LibraryScreen = ({navigation}: any) => {
   const CartList = useStore((state: any) => state.CartList);
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
 
   const route = useRoute<any>();
   const { type, id } = route.params || {};
@@ -92,6 +94,43 @@ const LibraryScreen = ({navigation}: any) => {
     type: null,
     id: null,
   });
+
+  const handleNewsletterSubscribe = async () => {
+    if (!newsletterEmail.trim()) return;
+
+    try {
+      setNewsletterLoading(true);
+
+      await instance.post(
+        'https://biblophile.com/blog/wp-admin/admin-ajax.php?action=tnp&na=s',
+        {
+          ne: newsletterEmail,
+          nl: ['1', '5'],
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      Toast.show({
+        type: 'success',
+        text1: 'Subscribed successfully',
+        position: 'bottom',
+      });
+
+      setNewsletterEmail('');
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Something went wrong',
+        position: 'bottom',
+      });
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
 
   const ListRef: any = useRef<FlatList>();
 
@@ -486,6 +525,36 @@ const LibraryScreen = ({navigation}: any) => {
           );
         })}
 
+        {/* Bangalore Events Newsletter CTA */}
+        <View style={styles.newsletterContainer}>
+          <Text style={styles.newsletterTitle}>
+            Never miss a bookish event in Bangalore
+          </Text>
+
+          <Text style={styles.newsletterSubtitle}>
+            Get curated reading meetups, book fairs & literary events weekly.
+          </Text>
+
+          <TextInput
+            placeholder="Enter your email"
+            placeholderTextColor={COLORS.primaryLightGreyHex}
+            value={newsletterEmail}
+            onChangeText={setNewsletterEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={styles.newsletterInput}
+          />
+
+          <TouchableOpacity
+            style={styles.newsletterButton}
+            onPress={handleNewsletterSubscribe}
+          >
+            <Text style={styles.newsletterButtonText}>
+              Get Bangalore Updates
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Checkout Bookmarks shop */}
         {/* <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
         <MerchShopBanner /> */}
@@ -607,6 +676,54 @@ const createStyles = (COLORS) => StyleSheet.create({
     marginTop: SPACING.space_20,
     fontFamily: FONTFAMILY.poppins_medium,
     color: COLORS.secondaryLightGreyHex,
+  },
+  newsletterContainer: {
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    marginHorizontal: SPACING.space_20,
+    marginTop: SPACING.space_32,
+    marginBottom: SPACING.space_20,
+    borderRadius: BORDERRADIUS.radius_25,
+    padding: SPACING.space_24,
+    borderWidth: 1,
+    borderColor: COLORS.primaryGreyHex,
+  },
+  newsletterTitle: {
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+    textAlign: 'center',
+    marginBottom: SPACING.space_8,
+  },
+
+  newsletterSubtitle: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
+    marginBottom: SPACING.space_20,
+    lineHeight: 22,
+  },
+  newsletterInput: {
+    height: 52,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 999,
+    paddingHorizontal: SPACING.space_20,
+    color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_16,
+    backgroundColor: 'transparent',
+  },
+  newsletterButton: {
+    height: 50,
+    borderRadius: 999,
+    backgroundColor: COLORS.primaryOrangeHex,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  newsletterButtonText: {
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_14,
   },
 });
 
