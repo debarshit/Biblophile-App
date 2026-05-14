@@ -107,20 +107,25 @@ const contributorRoleOptions: PickerOption[] = [
   { label: 'Afterword Author', value: 'afterword_author', icon: 'article' },
 ];
 
+const stripHtmlTags = (html?: string) => {
+  if (!html) return '';
+  return html.replace(/<[^>]+>/g, '');
+};
+
 const AddEditionScreen = ({ navigation, route }: any) => {
-  const { workId, title } = route.params;
+  const { workId, title, initialDescription = '', initialCoverUrl = '' } = route.params;
   const userDetails = useStore((state: any) => state.userDetails);
 
   const [bookTitle, setBookTitle] = useState(title);
   const [isbn, setIsbn] = useState('');
   const [format, setFormat] = useState<'paperback' | 'hardcover' | 'ebook' | 'audiobook'>('paperback');
   const [pageCount, setPageCount] = useState('');
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(stripHtmlTags(initialDescription));
   const [audio, setAudio] = useState({ h: '', m: '', s: '' });
   const [language, setLanguage] = useState('English');
   const [publisher, setPublisher] = useState('');
   const [publicationYear, setPublicationYear] = useState('');
-  const [coverUrl, setCoverUrl] = useState('');
+  const [coverUrl, setCoverUrl] = useState(initialCoverUrl || '');
   const [coverError, setCoverError] = useState(false);
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(false);
