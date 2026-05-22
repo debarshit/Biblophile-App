@@ -265,8 +265,13 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
 
                         // Show notification permission dialog after successful login
                         await handleNotificationPermission(userData);
+                        await analytics.identifyUser(String(userData.userId), {
+                            userId: String(userData.userId),
+                            email: userData.userEmail,
+                            name: userData.userName,
+                            username: userData.userUniqueUserName,
+                        });
                         analytics.login('email');
-                        analytics.identifyUser(userData.userId, {});
                     }
                     else
                     {
