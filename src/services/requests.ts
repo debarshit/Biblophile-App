@@ -1,6 +1,6 @@
 const isDevelopment = __DEV__;
 
-const APIURL = isDevelopment ? 'api/v0/' : 'backend/api/v0/';
+const APIURL = isDevelopment ? 'api/v0/' : 'api/v0/';
 
 const requests = {
     //auth requests

@@ -3,7 +3,7 @@ import jwt_decode from "jwt-decode";
 import { useStore } from "../store/store";
 
 const isDevelopment = __DEV__;
-const baseURL = isDevelopment ? "http://192.168.10.8:3000/" : "https://biblophile.com/";
+const baseURL = isDevelopment ? "http://192.168.10.239:3000/" : "https://api.biblophile.com/";
 
 const instance = axios.create({ baseURL });
 const refreshInstance = axios.create({ baseURL });
