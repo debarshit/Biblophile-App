@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import { PostHogProvider } from 'posthog-react-native'
-import { Alert, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import { Alert } from 'react-native';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
 import * as SplashScreen from 'expo-splash-screen';
@@ -81,7 +81,6 @@ const App = () => {
   const isAuthenticated = useStore((state: any) => state.isAuthenticated);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [currentVersion, setCurrentVersion] = useState(Constants.manifest2?.extra?.expoClient?.version);
-  const [showDowntimePopup, setShowDowntimePopup] = useState(true); //later make it Only show if backend is down
 
   useEffect(() => {
     async function loadFontsAsync() {
@@ -329,129 +328,10 @@ const App = () => {
             </Stack.Navigator>
           )}
           <Toast />
-          {showDowntimePopup && (
-  <View style={styles.overlay}>
-    <View style={styles.popup}>
-      <Text style={styles.title}>We’re fixing things 🔧</Text>
-
-      <Text style={styles.message}>
-        Due to an issue with our hosting provider, the app is temporarily down.
-      </Text>
-
-      <Text style={styles.subMessage}>
-        If you participated in the giveaway, don’t worry, results will be announced today on reddit, instagram, threads (27th May).
-        Winners will be contacted via email as well. 
-        Some users may face login issues, but for those who are logged in, the app should work fine. We’re on it and hope to be back up shortly!
-      </Text>
-
-      <Text style={styles.footer}>
-        We’ll be back very soon. Thanks for your patience ❤️
-      </Text>
-
-      <TouchableOpacity onPress={() => setShowDowntimePopup(false)}>
-        <Text style={styles.button}>Got it</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-)}
         </PostHogProvider>
       </NavigationContainer>
     </ThemeProvider>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 9999,
-    paddingHorizontal: 24,
-  },
-
-  popup: {
-    width: '100%',
-    backgroundColor: '#141921',
-    borderRadius: 24,
-    paddingVertical: 28,
-    paddingHorizontal: 24,
-    borderWidth: 1,
-    borderColor: '#252A32',
-    alignItems: 'center',
-  },
-
-  iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#21262E',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-
-  icon: {
-    fontSize: 28,
-  },
-
-  title: {
-    fontSize: 22,
-    color: '#FFFFFF',
-    fontFamily: 'Poppins-SemiBold',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-
-  message: {
-    fontSize: 14,
-    lineHeight: 24,
-    color: '#AEAEAE',
-    fontFamily: 'Poppins-Regular',
-    textAlign: 'center',
-  },
-
-  divider: {
-    width: '100%',
-    height: 1,
-    backgroundColor: '#252A32',
-    marginVertical: 20,
-  },
-
-  subMessage: {
-    fontSize: 14,
-    lineHeight: 24,
-    color: '#FFFFFF',
-    fontFamily: 'Poppins-Medium',
-    textAlign: 'center',
-  },
-
-  footer: {
-    marginTop: 18,
-    fontSize: 13,
-    lineHeight: 22,
-    color: '#AEAEAE',
-    fontFamily: 'Poppins-Regular',
-    textAlign: 'center',
-  },
-
-  buttonContainer: {
-    marginTop: 24,
-    backgroundColor: '#DC3535',
-    paddingVertical: 12,
-    paddingHorizontal: 28,
-    borderRadius: 14,
-  },
-
-  button: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontFamily: 'Poppins-SemiBold',
-  },
-});
 
 export default App;
