@@ -165,7 +165,7 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
             )}
             
             {/* Progress indicator for currently reading - now clickable to open modal */}
-            {isPageOwner && status === 'Currently reading' && (
+            {isPageOwner && status === 'Currently reading' && progressValue !== undefined && (
               <TouchableOpacity
                 style={styles.progressContainer}
                 onPress={() => setStatusModalVisible(true)}
