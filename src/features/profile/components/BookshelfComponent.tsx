@@ -24,10 +24,19 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { useStore } from '../../../store/store';
 
 interface BookshelfScreenProps {
-  userData:{
+  userData: {
     userId: string;
     isPageOwner: boolean;
   };
+}
+
+interface CollabMembership {
+  tagId: number;
+  tagName: string;
+  role: string;
+  ownerUserName: string;
+  ownerName: string;
+  bookCovers: string[];
 }
 
 const TAGS_PER_PAGE = 5;
@@ -35,11 +44,12 @@ const TAGS_PER_PAGE = 5;
 const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
   const [userBooks, setUserBooks] = useState([]);
   const [userTags, setUserTags] = useState([]);
+  const [collabMemberships, setCollabMemberships] = useState<CollabMembership[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMoreTags, setLoadingMoreTags] = useState(false);
   const [tagOffset, setTagOffset] = useState(0);
   const [hasMoreTags, setHasMoreTags] = useState(true);
-  const navigation:any = useNavigation();
+  const navigation: any = useNavigation();
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const userDetails = useStore((state: any) => state.userDetails);
@@ -101,28 +111,47 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
     } catch (error) {
       console.error('Failed to fetch user books:', error);
     } finally {
-      setLoading(false);
+      /* Handled collectively in initial load */
+    }
+  };
+
+  const fetchCollabMemberships = async () => {
+    try {
+      const res = await instance.get(requests.getMyMemberships, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      setCollabMemberships(res.data.data.memberships ?? []);
+    } catch (e) {
+      console.error('Failed to fetch collab memberships', e);
     }
   };
 
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
-      await Promise.all([
+      
+      const promises: Promise<any>[] = [
         fetchUserBooks(),
         fetchTags(0, false)
-      ]);
+      ];
+
+      if (userData.isPageOwner) {
+        promises.push(fetchCollabMemberships());
+      }
+
+      await Promise.all(promises);
       setLoading(false);
     };
     
     loadInitialData();
-  }, []);
+  }, [userData.userId, userData.isPageOwner]);
 
-   const handleScroll = (event: any) => {
+  const handleScroll = (event: any) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
     const paddingToBottom = 20;
     
-    // Check if user has scrolled to bottom
     const isCloseToBottom = 
       layoutMeasurement.height + contentOffset.y >= 
       contentSize.height - paddingToBottom;
@@ -138,9 +167,9 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
     </View>
   );
 
-  const Separator = () => (
+  const Separator = ({ title }: { title: string }) => (
     <View style={styles.separator}>
-      <Text style={styles.separatorText}>Your Tags</Text>
+      <Text style={styles.separatorText}>{title}</Text>
     </View>
   );
 
@@ -246,6 +275,56 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
     );
   };
 
+  const renderCollabCard = (membership: CollabMembership) => {
+    const bookImages = membership.bookCovers
+      .map(img => convertHttpToHttps(img))
+      .slice(0, 3);
+
+    return (
+      <View style={styles.sectionContainer} key={membership.tagId}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("BookListTag", {
+              tagId: membership.tagId,
+              tagName: membership.tagName,
+              userData,
+            })
+          }
+          style={styles.card}
+        >
+          <View style={styles.imageCollageContainer}>
+            {bookImages.length >= 1 ? (
+              <Image source={{ uri: bookImages[0] }} style={styles.largeImage} />
+            ) : (
+              <BookPlaceholder />
+            )}
+
+            <View style={styles.smallImagesColumn}>
+              {bookImages.length >= 2 ? (
+                <Image source={{ uri: bookImages[1] }} style={styles.smallImage} />
+              ) : (
+                <BookPlaceholder small />
+              )}
+
+              {bookImages.length >= 3 ? (
+                <Image source={{ uri: bookImages[2] }} style={styles.smallImage} />
+              ) : (
+                <BookPlaceholder small />
+              )}
+            </View>
+          </View>
+
+          <View style={styles.textContainer}>
+            <Text style={styles.statusText}>{membership.tagName}</Text>
+            {membership.ownerUserName && (
+              <Text style={styles.ownerText}>@{membership.ownerUserName}</Text>
+            )}
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -266,7 +345,7 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
             {renderBooksByStatus('To be read')}
             {renderBooksByStatus('Did not finish')}
             
-            {userTags.length > 0 && <Separator />}
+            {userTags.length > 0 && <Separator title="Your Tags" />}
             {userTags.map((tag) => renderTagCard(tag))}
 
             {loadingMoreTags && (
@@ -274,6 +353,13 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
                 <ActivityIndicator size="small" color={COLORS.primaryOrangeHex} />
                 <Text style={styles.loadingMoreText}>Loading more tags...</Text>
               </View>
+            )}
+
+            {userData.isPageOwner && collabMemberships.length > 0 && (
+              <>
+                <Separator title="Shared with you" />
+                {collabMemberships.map((membership) => renderCollabCard(membership))}
+              </>
             )}
           </>
         )}
@@ -336,6 +422,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     fontSize: FONTSIZE.size_18,
     fontFamily: FONTFAMILY.poppins_semibold,
     marginBottom: SPACING.space_4,
+  },
+  ownerText: {
+    color: COLORS.primaryLightGreyHex,
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
   },
   loadingText: {
     fontFamily: FONTFAMILY.poppins_regular,

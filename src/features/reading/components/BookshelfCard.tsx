@@ -160,7 +160,7 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
               )
             )}
 
-            {isPageOwner && (
+            {isPageOwner && userBookId && (
               <TouchableOpacity
                 style={styles.menuButton}
                 onPress={() => setShowPrivacyOptions(true)}
