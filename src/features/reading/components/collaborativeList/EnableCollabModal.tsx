@@ -109,7 +109,7 @@ const createStyles = (colors: any) =>
             marginBottom: SPACING.space_16,
         },
         title: {
-            color: '#fff',
+            color: colors.primaryWhiteHex,
             fontFamily: FONTFAMILY.poppins_semibold,
             fontSize: FONTSIZE.size_16,
             marginBottom: SPACING.space_16,
@@ -130,7 +130,7 @@ const createStyles = (colors: any) =>
         },
         iconMeta: { flex: 1 },
         iconTitle: {
-            color: '#fff',
+            color: colors.primaryWhiteHex,
             fontFamily: FONTFAMILY.poppins_semibold,
             fontSize: FONTSIZE.size_14,
         },

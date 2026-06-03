@@ -237,7 +237,7 @@ const createStyles = (colors: any) =>
             fontSize: FONTSIZE.size_14,
         },
         input: {
-            backgroundColor: '#252A32',
+            backgroundColor: colors.secondaryDarkGreyHex,
             borderWidth: 1,
             borderColor: 'rgba(255,255,255,0.1)',
             borderRadius: 10,

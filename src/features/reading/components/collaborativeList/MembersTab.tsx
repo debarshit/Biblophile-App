@@ -437,7 +437,7 @@ const createStyles = (colors: any) =>
             marginBottom: SPACING.space_16,
         },
         primaryBtnText: {
-            color: '#fff',
+            color: colors.primaryWhiteHex,
             fontFamily: FONTFAMILY.poppins_semibold,
             fontSize: FONTSIZE.size_14,
         },
@@ -462,7 +462,7 @@ const createStyles = (colors: any) =>
             marginBottom: SPACING.space_16,
         },
         inviteCardTitle: {
-            color: '#fff',
+            color: colors.primaryWhiteHex,
             fontFamily: FONTFAMILY.poppins_semibold,
             fontSize: FONTSIZE.size_12,
             marginBottom: SPACING.space_8,
@@ -490,7 +490,7 @@ const createStyles = (colors: any) =>
         },
         memberInfo: { flex: 1, minWidth: 0 },
         memberName: {
-            color: '#fff',
+            color: colors.primaryWhiteHex,
             fontFamily: FONTFAMILY.poppins_semibold,
             fontSize: FONTSIZE.size_12,
         },
@@ -523,10 +523,10 @@ const createStyles = (colors: any) =>
         inviteInputRow: { flexDirection: 'row', gap: SPACING.space_8 },
         textInput: {
             flex: 1,
-            backgroundColor: 'rgba(255,255,255,0.07)',
+            backgroundColor: colors.secondaryDarkGreyHex,
             borderRadius: BORDERRADIUS.radius_10,
             padding: SPACING.space_8,
-            color: '#fff',
+            color: colors.primaryWhiteHex,
             fontFamily: FONTFAMILY.poppins_regular,
             fontSize: FONTSIZE.size_12,
             borderWidth: 1,
@@ -539,7 +539,7 @@ const createStyles = (colors: any) =>
             justifyContent: 'center',
         },
         inviteBtnText: {
-            color: '#fff',
+            color: colors.primaryWhiteHex,
             fontFamily: FONTFAMILY.poppins_semibold,
             fontSize: FONTSIZE.size_12,
         },
@@ -581,7 +581,7 @@ const createStyles = (colors: any) =>
         },
 
     menuTitle: {
-    color: '#fff',
+    color: colors.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_16,
     marginBottom: 4,
@@ -599,7 +599,7 @@ const createStyles = (colors: any) =>
     },
 
     menuItemText: {
-    color: '#fff',
+    color: colors.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_14,
     },

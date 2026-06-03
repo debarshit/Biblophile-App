@@ -303,7 +303,7 @@ const createStyles = (COLORS) => StyleSheet.create({
     left: SPACING.space_8,
   },
   progressText: {
-    color: COLORS.primaryWhiteHex,
+    color: '#fff',
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_10,
   },
