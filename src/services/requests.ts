@@ -1,6 +1,6 @@
 const isDevelopment = __DEV__;
 
-const APIURL = isDevelopment ? 'api/v0/' : 'backend/api/v0/';
+const APIURL = isDevelopment ? 'api/v0/' : 'api/v0/';
 
 const requests = {
     //auth requests
@@ -105,6 +105,27 @@ const requests = {
     fetchBooksByTag: (tagId) => `${APIURL}reading/tags/${tagId}/books`,
     assignTagToBook: (bookId, tagId) => `${APIURL}reading/tags/book/${bookId}/${tagId}`,
     removeTagFromBook: (bookId, tagId) => `${APIURL}reading/tags/book/${bookId}/${tagId}`,
+    getListMeta: (tagId: string) => `${APIURL}reading/tags/${tagId}/meta`,
+
+    //collaborative tag requests
+    getListMembers: (tagId: string) => `${APIURL}reading/tags/collaborative/${tagId}/members`,
+    getPendingRequests: (tagId: string) => `${APIURL}reading/tags/collaborative/${tagId}/members/pending`,
+    inviteMember: (tagId: string) => `${APIURL}reading/tags/collaborative/${tagId}/members/invite`,
+    respondToJoinRequest: (tagId: string, requestUserId: string) => `${APIURL}reading/tags/collaborative/${tagId}/members/request/${requestUserId}/respond`,
+    respondToInvite: (tagId: string) => `${APIURL}reading/tags/collaborative/${tagId}/members/invite/respond`,
+    removeMember: (tagId: string, targetUserId: string) => `${APIURL}reading/tags/collaborative/${tagId}/members/${targetUserId}`,
+    updateMemberRole: (tagId: string, targetUserId: string) => `${APIURL}reading/tags/collaborative/${tagId}/members/${targetUserId}/role`,
+    getListActivity: (tagId: string) => `${APIURL}reading/tags/collaborative/${tagId}/activity`,
+    getMyEditableLists: `${APIURL}reading/tags/collaborative/my-editable-lists`,
+    getMyMemberships: `${APIURL}reading/tags/collaborative/my-memberships`,
+    getCollaborativeBooks: (tagId: string) => `${APIURL}reading/tags/collaborative/${tagId}/list/books`,
+    addCollaborativeBook: (tagId: string) => `${APIURL}reading/tags/collaborative/${tagId}/list/books`,
+    removeCollaborativeBook: (tagId: string, workId: string) => `${APIURL}reading/tags/collaborative/${tagId}/list/books/${workId}`,
+    reorderCollaborativeBook: (tagId: string, workId: string) => `${APIURL}reading/tags/collaborative/${tagId}/list/books/${workId}/position`,
+    enableCollaborativeList: (tagId: string) => `${APIURL}reading/tags/collaborative/${tagId}/collaborative`,
+    updateListSettings: (tagId: string) => `${APIURL}reading/tags/collaborative/${tagId}/collaborative/settings`,
+    requestToJoin: (tagId: string) => `${APIURL}reading/tags/collaborative/${tagId}/members/request`,
+    cancelPendingAction: (tagId: string) => `${APIURL}reading/tags/collaborative/${tagId}/members/cancel`,
 
     //reading insights requests
     fetchReadingStreak: `${APIURL}reading/reading-insights/streak`,

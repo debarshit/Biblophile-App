@@ -215,7 +215,13 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             <Text style={styles.sectionLabel}>{product.Format}</Text>
             <TouchableOpacity 
               style={styles.editionsButton}
-              onPress={() => navigation.replace('Editions', { workId: product.WorkId, title: name, currentBookId: id })}
+              onPress={() => navigation.replace('Editions', {
+                workId: product.WorkId,
+                title: name,
+                currentBookId: id,
+                initialDescription: product.ProductDescription,
+                initialCoverUrl: imagelink_portrait,
+              })}
             >
               <MaterialIcons name="library-books" size={FONTSIZE.size_14} color={COLORS.primaryOrangeHex} />
               <Text style={styles.editionsText}>

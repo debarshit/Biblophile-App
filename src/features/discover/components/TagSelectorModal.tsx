@@ -28,6 +28,12 @@ interface Tag {
   tagColor?: string;
 }
 
+interface EditableList {
+  tagId: number;
+  tagName: string;
+  role: string;
+}
+
 interface TagSelectorModalProps {
   visible: boolean;
   close: () => void;
@@ -53,6 +59,12 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Collab Lists States
+  const [editableLists, setEditableLists] = useState<EditableList[]>([]);
+  const [collabListIds, setCollabListIds] = useState<number[]>([]);
+  const [collabSaving, setCollabSaving] = useState<number | null>(null);
+
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
@@ -69,6 +81,17 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
     }
   };
 
+  const fetchEditableLists = async () => {
+    try {
+      const res = await instance.get(requests.getMyEditableLists, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setEditableLists(res.data.data.lists ?? []);
+    } catch (e) {
+      console.error('Failed to fetch editable lists', e);
+    }
+  };
+
   useEffect(() => {
     if (visible) {
       setLoading(true);
@@ -76,7 +99,8 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
         fetchData(requests.fetchUserTags, setAllTags),
         fetchData(requests.fetchBookTags(actualBookId)).then(tags => 
           setBookTags(tags.map((t: Tag) => t.tagId))
-        )
+        ),
+        fetchEditableLists(),
       ]).finally(() => setLoading(false));
     }
   }, [visible, actualBookId]);
@@ -128,6 +152,45 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
       console.log("Error creating google book:", err);
     }
     return actualBookId; // fallback
+  };
+
+  // Optimistic Shared Lists Toggle Handler
+  const toggleCollabList = async (list: EditableList) => {
+    if (!product.WorkId) return;
+
+    const isIn = collabListIds.includes(list.tagId);
+
+    setCollabListIds(prev =>
+      isIn ? prev.filter(id => id !== list.tagId) : [...prev, list.tagId]
+    );
+    setCollabSaving(list.tagId);
+
+    try {
+      if (isIn) {
+        await instance.delete(
+          requests.removeCollaborativeBook(list.tagId.toString(), product.WorkId.toString()),
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        let resolvedBookId: string | number = actualBookId;
+        if (isGoogleBook) {
+          resolvedBookId = await ensureRealBookId();
+          setActualBookId(String(resolvedBookId));
+        }
+        await instance.post(
+          requests.addCollaborativeBook(list.tagId.toString()),
+          { workId: product.WorkId, bookId: resolvedBookId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+    } catch (e) {
+      setCollabListIds(prev =>
+        isIn ? [...prev, list.tagId] : prev.filter(id => id !== list.tagId)
+      );
+      console.error('Failed to toggle collab list', e);
+    } finally {
+      setCollabSaving(null);
+    }
   };
 
   const save = async () => {
@@ -182,6 +245,33 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
     );
   };
 
+  const CollabListItem = ({ list }: { list: EditableList }) => {
+    const isIn = collabListIds.includes(list.tagId);
+    const isSaving = collabSaving === list.tagId;
+    return (
+      <TouchableOpacity
+        disabled={isSaving}
+        style={[styles.tagItem, isIn && styles.tagItemSelected, isSaving && { opacity: 0.6 }]}
+        onPress={() => toggleCollabList(list)}
+      >
+        <View style={styles.tagItemLeft}>
+          <View style={[styles.colorIndicator, { backgroundColor: COLORS.primaryOrangeHex, opacity: 0.6 }]} />
+          <View style={styles.collabTextColumn}>
+            <Text style={styles.tagText}>{list.tagName}</Text>
+            <Text style={styles.collabSubtext}>
+              {list.role === 'owner' ? 'Your list' : 'Shared list'}
+            </Text>
+          </View>
+        </View>
+        {isSaving ? (
+          <ActivityIndicator size="small" color={COLORS.primaryOrangeHex} />
+        ) : (
+          isIn && <AntDesign name="check" size={FONTSIZE.size_18} color={COLORS.primaryWhiteHex} />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
@@ -214,19 +304,36 @@ const TagSelectorModal: React.FC<TagSelectorModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.sectionLabel}>Your Tags</Text>
           {loading ? (
             <View style={styles.centerContainer}>
               <ActivityIndicator size="large" color={COLORS.primaryOrangeHex} />
             </View>
-          ) : allTags.length > 0 ? (
-            <ScrollView style={styles.tagsList} showsVerticalScrollIndicator={false}>
-              {allTags.map(tag => <TagItem key={tag.tagId} tag={tag} />)}
-            </ScrollView>
           ) : (
-            <View style={styles.centerContainer}>
-              <Text style={styles.emptyStateText}>No tags yet. Create your first tag above!</Text>
-            </View>
+            // A single clean scrollable view container to avoid flatlist/scrollview context conflicts
+            <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+              
+              {/* Personal Tags Section */}
+              <Text style={styles.sectionLabel}>Your Tags</Text>
+              {allTags.length > 0 ? (
+                <View style={styles.sectionItemsGap}>
+                  {allTags.map(tag => <TagItem key={tag.tagId} tag={tag} />)}
+                </View>
+              ) : (
+                <Text style={styles.emptyStateText}>No tags yet. Create your first tag above!</Text>
+              )}
+
+              {/* Collaborative Shared Lists Section */}
+              {editableLists.length > 0 && (
+                <>
+                  <Text style={[styles.sectionLabel, { marginTop: SPACING.space_16 }]}>Shared Lists</Text>
+                  <View style={styles.sectionItemsGap}>
+                    {editableLists.map(list => (
+                      <CollabListItem key={list.tagId} list={list} />
+                    ))}
+                  </View>
+                </>
+              )}
+            </ScrollView>
           )}
 
           <TouchableOpacity style={[styles.saveBtn, saving && { opacity: 0.5 }]} onPress={save} disabled={saving}>
@@ -292,6 +399,10 @@ const createStyles = (COLORS) => StyleSheet.create({
     alignItems: "center",
     borderRadius: BORDERRADIUS.radius_10,
   },
+  scrollContainer: {
+    maxHeight: 320,
+    marginBottom: SPACING.space_20,
+  },
   sectionLabel: {
     fontFamily: FONTFAMILY.poppins_medium,
     fontSize: FONTSIZE.size_12,
@@ -300,9 +411,8 @@ const createStyles = (COLORS) => StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  tagsList: {
-    maxHeight: 300,
-    marginBottom: SPACING.space_20,
+  sectionItemsGap: {
+    marginBottom: SPACING.space_4,
   },
   tagItem: {
     flexDirection: 'row',
@@ -324,6 +434,16 @@ const createStyles = (COLORS) => StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.space_12,
   },
+  collabTextColumn: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  collabSubtext: {
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    fontSize: FONTSIZE.size_12,
+    marginTop: 2,
+  },
   colorIndicator: {
     width: 20,
     height: 20,
@@ -339,12 +459,14 @@ const createStyles = (COLORS) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: SPACING.space_20,
+    marginBottom: SPACING.space_20,
   },
   emptyStateText: {
     fontFamily: FONTFAMILY.poppins_regular,
     fontSize: FONTSIZE.size_14,
     color: COLORS.secondaryLightGreyHex,
     textAlign: 'center',
+    paddingVertical: SPACING.space_12,
   },
   saveBtn: {
     backgroundColor: COLORS.primaryOrangeHex,

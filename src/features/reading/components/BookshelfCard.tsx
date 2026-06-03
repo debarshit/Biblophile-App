@@ -137,25 +137,30 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
             style={styles.bookImage}
             resizeMode="cover">
             {/* Status Badge */}
-            {isPageOwner ? (
-              <TouchableOpacity
-                onPress={() => setStatusModalVisible(true)}
-                style={[styles.statusBadge, { backgroundColor: getStatusColor(status) }]}
-              >
-                <Text style={styles.statusText}>
-                  {status === 'Currently reading' ? 'Reading' :
-                    status === 'To be read' ? 'Want to Read' : status}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(status) }]}>
-                <Text style={styles.statusText}>
-                  {status}
-                </Text>
-              </View>
+            {status !== undefined && (
+              isPageOwner ? (
+                <TouchableOpacity
+                  onPress={() => setStatusModalVisible(true)}
+                  style={[styles.statusBadge, { backgroundColor: getStatusColor(status) }]}
+                >
+                  <Text style={styles.statusText}>
+                    {status === 'Currently reading'
+                      ? 'Reading'
+                      : status === 'To be read'
+                      ? 'Want to Read'
+                      : status}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <View
+                  style={[styles.statusBadge, { backgroundColor: getStatusColor(status) }]}
+                >
+                  <Text style={styles.statusText}>{status}</Text>
+                </View>
+              )
             )}
 
-            {isPageOwner && (
+            {isPageOwner && userBookId && (
               <TouchableOpacity
                 style={styles.menuButton}
                 onPress={() => setShowPrivacyOptions(true)}
@@ -165,7 +170,7 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
             )}
             
             {/* Progress indicator for currently reading - now clickable to open modal */}
-            {isPageOwner && status === 'Currently reading' && (
+            {isPageOwner && status === 'Currently reading' && progressValue !== undefined && (
               <TouchableOpacity
                 style={styles.progressContainer}
                 onPress={() => setStatusModalVisible(true)}

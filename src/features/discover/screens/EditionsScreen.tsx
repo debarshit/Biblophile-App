@@ -58,7 +58,15 @@ const formatProgress = (value: number, unit: string, total: number | null) => {
 };
 
 const EditionsScreen = ({ navigation, route }: any) => {
-  const { workId, title, currentBookId, switchMode=false, userBookId } = route.params;
+  const {
+    workId,
+    title,
+    currentBookId,
+    initialDescription = '',
+    initialCoverUrl = '',
+    switchMode=false,
+    userBookId,
+  } = route.params;
   const [editionsData, setEditionsData] = useState<EditionsData | null>(null);
   const [previewData, setPreviewData] = useState<any>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -187,7 +195,12 @@ const EditionsScreen = ({ navigation, route }: any) => {
             <GradientBGIcon name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
           </TouchableOpacity>
           <TouchableOpacity 
-            onPress={() => navigation.navigate('AddEdition', { workId, title: editionsData?.title || title })} 
+            onPress={() => navigation.navigate('AddEdition', {
+              workId,
+              title: editionsData?.title || title,
+              initialDescription,
+              initialCoverUrl,
+            })}
             style={styles.addButton}
           >
             <AntDesign name="plus" size={FONTSIZE.size_16} color={COLORS.primaryWhiteHex} />
