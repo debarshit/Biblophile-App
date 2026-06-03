@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+    Modal,
+    Pressable,
     ScrollView,
     StyleSheet,
     Text,
+    Image,
     TextInput,
     TouchableOpacity,
     View,
@@ -11,14 +14,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { BORDERRADIUS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
 import instance from '../../../../services/axios';
 import requests from '../../../../services/requests';
-import type { JoinPolicy, Member, Membership, PendingRow } from '../../types';
+import type { Member, Membership, PendingRow } from '../../types';
 
 interface Props {
     tagId: string;
     accessToken: string;
     isOwner: boolean;
     currentUserId: number;
-    joinPolicy: JoinPolicy;
+    joinPolicy: 'invite_only' | 'request_only' | 'open';
     myMembership: Membership | null;
     onJoinRequest: () => Promise<void>;
     onCancelRequest: () => Promise<void>;
@@ -44,6 +47,8 @@ const MembersTab: React.FC<Props> = ({
     const [inviteUserName, setInviteUserName] = useState('');
     const [inviting, setInviting] = useState(false);
     const [inviteError, setInviteError] = useState('');
+    const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+    const [menuVisible, setMenuVisible] = useState(false);
 
     const s = useMemo(() => createStyles(colors), [colors]);
 
@@ -160,6 +165,33 @@ const MembersTab: React.FC<Props> = ({
         }
     };
 
+    //menu handlers
+    const openMemberMenu = (member: Member) => {
+        setSelectedMember(member);
+        setMenuVisible(true);
+    };
+
+    const closeMemberMenu = () => {
+        setMenuVisible(false);
+        setSelectedMember(null);
+    };
+
+    const handleRoleChange = async (
+        role: 'editor' | 'viewer',
+        ) => {
+        if (!selectedMember) return;
+
+        await updateRole(selectedMember.userId, role);
+        closeMemberMenu();
+        };
+
+        const handleRemoveMember = async () => {
+        if (!selectedMember) return;
+
+        await removeMember(selectedMember.userId);
+        closeMemberMenu();
+    };
+
     const canRequestJoin = !isOwner && !myMembership && joinPolicy !== 'invite_only';
     const hasPendingInvite =
         myMembership?.status === 'pending' && myMembership?.initiatedBy === 'owner';
@@ -167,7 +199,7 @@ const MembersTab: React.FC<Props> = ({
         myMembership?.status === 'pending' && myMembership?.initiatedBy !== 'owner';
 
     return (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView style={{paddingHorizontal: SPACING.space_16}} showsVerticalScrollIndicator={false}>
             {/* Join / cancel CTAs */}
             {canRequestJoin && (
                 <TouchableOpacity style={s.primaryBtn} onPress={onJoinRequest}>
@@ -212,7 +244,11 @@ const MembersTab: React.FC<Props> = ({
                     <Text style={s.sectionLabel}>PENDING REQUESTS</Text>
                     {pending.map(row => (
                         <View key={row.id} style={s.memberRow}>
-                            <View style={s.avatar} />
+                            <Image
+                                source={{ uri: row.userProfilePic }}
+                                style={s.avatar}
+                                resizeMode="cover"
+                            />
                             <View style={s.memberInfo}>
                                 <Text style={s.memberName}>{row.name}</Text>
                                 <Text style={s.memberMeta}>
@@ -286,32 +322,26 @@ const MembersTab: React.FC<Props> = ({
             ) : (
                 members.map(m => (
                     <View key={m.userId} style={s.memberRow}>
-                        <View style={s.avatar} />
+                        <Image
+                            source={{ uri: m.userProfilePic }}
+                            style={s.avatar}
+                            resizeMode="cover"
+                        />
                         <View style={s.memberInfo}>
                             <Text style={s.memberName}>{m.name}</Text>
                             <Text style={s.memberMeta}>@{m.userName} · {m.role}</Text>
                         </View>
                         {isOwner && m.role !== 'owner' && (
-                            <View style={s.actionRow}>
-                                <TouchableOpacity
-                                    style={s.rolePill}
-                                    onPress={() =>
-                                        updateRole(m.userId, m.role === 'editor' ? 'viewer' : 'editor')
-                                    }
-                                >
-                                    <Text style={s.rolePillText}>{m.role}</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={s.iconBtn}
-                                    onPress={() => removeMember(m.userId)}
-                                >
-                                    <Ionicons
-                                        name="person-remove-outline"
-                                        size={14}
-                                        color={colors.secondaryLightGreyHex}
-                                    />
-                                </TouchableOpacity>
-                            </View>
+                            <TouchableOpacity
+                                style={s.iconBtn}
+                                onPress={() => openMemberMenu(m)}
+                            >
+                                <Ionicons
+                                name="ellipsis-vertical"
+                                size={16}
+                                color={colors.secondaryLightGreyHex}
+                                />
+                            </TouchableOpacity>
                         )}
                         {!isOwner && m.userId === currentUserId && (
                             <TouchableOpacity
@@ -324,7 +354,76 @@ const MembersTab: React.FC<Props> = ({
                     </View>
                 ))
             )}
+            <Modal
+                visible={menuVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={closeMemberMenu}
+                >
+                <Pressable
+                    style={s.modalBackdrop}
+                    onPress={closeMemberMenu}
+                >
+                    <Pressable
+                    style={s.menuSheet}
+                    onPress={() => {}}
+                    >
+                    <Text style={s.menuTitle}>
+                        {selectedMember?.name}
+                    </Text>
+
+                    <Text style={s.menuSubtitle}>
+                        Current role: {selectedMember?.role}
+                    </Text>
+
+                    {selectedMember?.role !== 'viewer' && (
+                        <TouchableOpacity
+                        style={s.menuItem}
+                        onPress={() =>
+                            handleRoleChange('viewer')
+                        }
+                        >
+                        <Text style={s.menuItemText}>
+                            Change to Viewer
+                        </Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {selectedMember?.role !== 'editor' && (
+                        <TouchableOpacity
+                        style={s.menuItem}
+                        onPress={() =>
+                            handleRoleChange('editor')
+                        }
+                        >
+                        <Text style={s.menuItemText}>
+                            Change to Editor
+                        </Text>
+                        </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity
+                        style={s.menuItem}
+                        onPress={handleRemoveMember}
+                    >
+                        <Text style={s.removeText}>
+                        Remove Member
+                        </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={s.menuItem}
+                        onPress={closeMemberMenu}
+                    >
+                        <Text style={s.menuCancelText}>
+                        Cancel
+                        </Text>
+                    </TouchableOpacity>
+                    </Pressable>
+                </Pressable>
+            </Modal>
         </ScrollView>
+        
     );
 };
 
@@ -409,17 +508,6 @@ const createStyles = (colors: any) =>
             alignItems: 'center',
             justifyContent: 'center',
         },
-        rolePill: {
-            paddingHorizontal: 10,
-            paddingVertical: 4,
-            borderRadius: 8,
-            backgroundColor: 'rgba(255,255,255,0.07)',
-        },
-        rolePillText: {
-            color: colors.secondaryLightGreyHex,
-            fontFamily: FONTFAMILY.poppins_medium,
-            fontSize: FONTSIZE.size_12,
-        },
         ghostPill: {
             paddingHorizontal: 10,
             paddingVertical: 4,
@@ -479,6 +567,54 @@ const createStyles = (colors: any) =>
             textAlign: 'center',
             paddingVertical: SPACING.space_20,
         },
-    });
+        modalBackdrop: {
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            justifyContent: 'flex-end',
+        },
+
+        menuSheet: {
+        backgroundColor: colors.primaryBlackHex,
+        padding: SPACING.space_20,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        },
+
+    menuTitle: {
+    color: '#fff',
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_16,
+    marginBottom: 4,
+    },
+
+    menuSubtitle: {
+    color: colors.secondaryLightGreyHex,
+    fontFamily: FONTFAMILY.poppins_regular,
+    fontSize: FONTSIZE.size_12,
+    marginBottom: SPACING.space_16,
+    },
+
+    menuItem: {
+    paddingVertical: SPACING.space_12,
+    },
+
+    menuItemText: {
+    color: '#fff',
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+    },
+
+    removeText: {
+    color: '#E05252',
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+    },
+
+    menuCancelText: {
+    color: colors.secondaryLightGreyHex,
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+    },
+});
 
 export default MembersTab;

@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: SPACING.space_8,
         marginBottom: SPACING.space_16,
+        paddingHorizontal: SPACING.space_16,
     },
     pill: {
         paddingHorizontal: 14,

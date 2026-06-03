@@ -25,7 +25,6 @@ export interface ShelfUser {
 
 export type Visibility = 'only_me' | 'friends' | 'followers' | 'everyone';
 export type Tab = 'books' | 'members' | 'activity';
-export type JoinPolicy = 'open' | 'request' | 'invite_only';
 export type MemberRole = 'owner' | 'editor' | 'viewer';
 
 export interface Membership {
@@ -35,11 +34,12 @@ export interface Membership {
 }
 
 export interface ListSettings {
-    listVisibility: string;
-    booksVisibility: string;
-    membersVisibility: string;
-    joinPolicy: JoinPolicy;
+    listVisibility: 'members_only' | 'friends' | 'followers' | 'everyone';
+    booksVisibility: 'members_only' | 'friends' | 'followers' | 'everyone';
+    membersVisibility: 'members_only' | 'friends' | 'followers' | 'everyone';
+    joinPolicy: 'invite_only' | 'request_only' | 'open';
     defaultMemberRole: 'editor' | 'viewer';
+    description?: string;
     maxMembers?: number;
 }
 export interface Member {

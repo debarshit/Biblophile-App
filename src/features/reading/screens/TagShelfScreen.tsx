@@ -271,6 +271,7 @@ const createStyles = (COLORS: any) =>
             alignItems: 'center',
             gap: 4,
             marginBottom: SPACING.space_8,
+            paddingHorizontal: SPACING.space_16,
         },
         collabBadgeText: {
             color: COLORS.secondaryLightGreyHex,

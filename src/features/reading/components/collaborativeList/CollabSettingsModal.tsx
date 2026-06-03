@@ -4,6 +4,7 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -133,6 +134,26 @@ const CollabSettingsModal: React.FC<Props> = ({
                             }
                             {...rowProps}
                         />
+
+                        <View style={s.settingsRow}>
+                            <Text style={s.settingsLabel}>
+                                Max members (leave blank for unlimited)
+                            </Text>
+
+                            <TextInput
+                                value={draft.maxMembers?.toString() ?? ''}
+                                keyboardType="numeric"
+                                placeholder="Unlimited"
+                                placeholderTextColor={colors.secondaryLightGreyHex}
+                                onChangeText={text =>
+                                    set(
+                                        'maxMembers',
+                                        text ? Number(text) : undefined
+                                    )
+                                }
+                                style={s.input}
+                            />
+                        </View>
                     </ScrollView>
 
                     <View style={s.divider} />
@@ -214,6 +235,17 @@ const createStyles = (colors: any) =>
             color: '#fff',
             fontFamily: FONTFAMILY.poppins_semibold,
             fontSize: FONTSIZE.size_14,
+        },
+        input: {
+            backgroundColor: '#252A32',
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderRadius: 10,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            color: '#fff',
+            fontFamily: FONTFAMILY.poppins_regular,
+            fontSize: FONTSIZE.size_12,
         },
     });
 

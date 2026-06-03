@@ -12,31 +12,37 @@ export const PAGE_SIZE = 10;
 export const APP_BASE_URL = 'https://biblophile.com';
 
 export const DEFAULT_LIST_SETTINGS: ListSettings = {
-    listVisibility: 'members',
-    booksVisibility: 'members',
-    membersVisibility: 'members',
-    joinPolicy: 'invite_only',
-    defaultMemberRole: 'viewer',
+    listVisibility: 'friends',
+    booksVisibility: 'friends',
+    membersVisibility: 'friends',
+    joinPolicy: 'request_only',
+    defaultMemberRole: 'editor',
 };
 
 export const LIST_VISIBILITY_OPTIONS = [
-    { label: 'Everyone', value: 'everyone' },
-    { label: 'Members', value: 'members' },
-    { label: 'Only me', value: 'only_me' },
+  { label: 'Members only', value: 'members_only' },
+  { label: 'Friends', value: 'friends' },
+  { label: 'Followers', value: 'followers' },
+  { label: 'Everyone', value: 'everyone' },
 ];
 
 export const JOIN_POLICY_OPTIONS = [
-    { label: 'Open', value: 'open' },
-    { label: 'Request', value: 'request' },
-    { label: 'Invite only', value: 'invite_only' },
+  { label: 'Invite only', value: 'invite_only' },
+  // { label: 'Request to join', value: 'request_only' },
+  // { label: 'Open', value: 'open' },
 ];
 
 export const ACTION_LABELS: Record<string, string> = {
-    added_book: 'added',
-    removed_book: 'removed',
-    joined: 'joined the list',
-    left: 'left the list',
+  added_book: 'added a book',
+  removed_book: 'removed a book',
+  joined: 'joined the list',
+  left: 'left the list',
+  removed: 'was removed',
+  invited: 'was invited',
+  requested: 'requested to join',
+  settings_updated: 'updated list settings',
 };
+
 
 export const STATUS_SLUG_MAP: Record<string, string> = {
     'Currently reading': 'currently-reading',
