@@ -7,59 +7,68 @@ import { Book, ShelfUser, Visibility } from '../types';
 interface UseTagShelfOptions {
     tagId: number;
     userData?: ShelfUser;
+    accessToken: string;
     username?: string;
+    isCollaborative: boolean;
+    metaLoaded: boolean;
 }
 
 export function useTagShelf({
     tagId,
     userData,
-    username,
+    accessToken,
+    isCollaborative,
+    metaLoaded,
 }: UseTagShelfOptions) {
-    const {
-        accessToken,
-        resolvedUserData,
-        isFetchingUser,
-    } = useShelfUser({
-        userData,
-        username,
-    });
-
     const [books, setBooks] = useState<Book[]>([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
+    const [initialLoaded, setInitialLoaded] = useState(false);
 
     const [currentVisibility, setCurrentVisibility] =
         useState<Visibility>('everyone');
 
-    useEffect(() => {
-        setBooks([]);
-        setPage(0);
-        setHasMore(true);
-    }, [tagId, resolvedUserData?.userId]);
-
-    useEffect(() => {
-        if (!resolvedUserData?.userId) return;
-
-        fetchPage(page);
-    }, [page, tagId, resolvedUserData?.userId]);
-
-    const fetchPage = async (pageNum: number) => {
+    const fetchPage = useCallback(async (pageNum: number) => {
+        if (pageNum === 0) {
+          setInitialLoaded(true);
+        }
         try {
             setLoading(true);
 
             const limit = 10;
             const offset = pageNum * limit;
 
-            const response = await instance.get(
-                `${requests.fetchBooksByTag(
-                    tagId
-                )}?userId=${resolvedUserData.userId}&limit=${limit}&offset=${offset}`,
+           const response = isCollaborative
+            ? await instance.get(
+                requests.getCollaborativeBooks(
+                    tagId.toString()
+                ),
                 {
                     headers: {
                         Authorization: accessToken
                             ? `Bearer ${accessToken}`
                             : '',
+                    },
+                    params: {
+                        limit,
+                        offset,
+                    },
+                }
+            )
+            : await instance.get(
+                requests.fetchBooksByTag(tagId),
+                {
+                    headers: {
+                        Authorization: accessToken
+                            ? `Bearer ${accessToken}`
+                            : '',
+                    },
+                    params: {
+                        userId:
+                            userData?.userId,
+                        limit,
+                        offset,
                     },
                 }
             );
@@ -90,13 +99,34 @@ export function useTagShelf({
         } finally {
             setLoading(false);
         }
-    };
+        },[
+            tagId,
+            accessToken,
+            userData?.userId,
+            isCollaborative,
+        ]
+    );
+
+    useEffect(() => {
+        setBooks([]);
+        setPage(0);
+        setHasMore(true);
+    }, [tagId, userData?.userId, isCollaborative]);
+
+    useEffect(() => {
+         if (!isCollaborative && !userData?.userId) {
+            return;
+        }
+
+        fetchPage(page);
+    }, [page, tagId, userData?.userId, metaLoaded, isCollaborative, fetchPage]);
 
     const loadMore = useCallback(() => {
+        if (!initialLoaded) return;
         if (!loading && hasMore) {
             setPage((prev) => prev + 1);
         }
-    }, [loading, hasMore]);
+    }, [initialLoaded, loading, hasMore]);
 
     const updatePrivacy = useCallback(
         async (visibility: Visibility) => {
@@ -125,6 +155,17 @@ export function useTagShelf({
         [tagId, accessToken]
     );
 
+    const refreshBooks = useCallback(() => {
+        setBooks([]);
+        setHasMore(true);
+
+        if (page === 0) {
+            fetchPage(0);
+        } else {
+            setPage(0);
+        }
+    }, [page, fetchPage]);
+
     return {
         books,
         loading,
@@ -132,8 +173,6 @@ export function useTagShelf({
         currentVisibility,
         loadMore,
         updatePrivacy,
-        resolvedUserData,
-        isFetchingUser,
-        accessToken,
+        refreshBooks,
     };
 }

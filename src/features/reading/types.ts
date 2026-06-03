@@ -23,8 +23,47 @@ export interface ShelfUser {
     isPageOwner: boolean;
 }
 
-export type Visibility =
-    | 'only_me'
-    | 'friends'
-    | 'followers'
-    | 'everyone';
+export type Visibility = 'only_me' | 'friends' | 'followers' | 'everyone';
+export type Tab = 'books' | 'members' | 'activity';
+export type JoinPolicy = 'open' | 'request' | 'invite_only';
+export type MemberRole = 'owner' | 'editor' | 'viewer';
+
+export interface Membership {
+    role: MemberRole;
+    status: 'accepted' | 'pending';
+    initiatedBy?: 'member' | 'owner';
+}
+
+export interface ListSettings {
+    listVisibility: string;
+    booksVisibility: string;
+    membersVisibility: string;
+    joinPolicy: JoinPolicy;
+    defaultMemberRole: 'editor' | 'viewer';
+    maxMembers?: number;
+}
+export interface Member {
+    userId: number;
+    name: string;
+    userName: string;
+    userProfilePic: string;
+    role: MemberRole;
+}
+ 
+export interface PendingRow {
+    id: number;
+    userId: number;
+    name: string;
+    userName: string;
+    userProfilePic: string;
+    initiatedBy: 'member' | 'owner';
+}
+ 
+export interface ActivityItem {
+    id: number;
+    userName: string;
+    userProfilePic: string;
+    action: string;
+    workTitle?: string;
+    createdAt: string;
+}

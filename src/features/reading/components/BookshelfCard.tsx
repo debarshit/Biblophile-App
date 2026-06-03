@@ -137,22 +137,27 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
             style={styles.bookImage}
             resizeMode="cover">
             {/* Status Badge */}
-            {isPageOwner ? (
-              <TouchableOpacity
-                onPress={() => setStatusModalVisible(true)}
-                style={[styles.statusBadge, { backgroundColor: getStatusColor(status) }]}
-              >
-                <Text style={styles.statusText}>
-                  {status === 'Currently reading' ? 'Reading' :
-                    status === 'To be read' ? 'Want to Read' : status}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(status) }]}>
-                <Text style={styles.statusText}>
-                  {status}
-                </Text>
-              </View>
+            {status !== undefined && (
+              isPageOwner ? (
+                <TouchableOpacity
+                  onPress={() => setStatusModalVisible(true)}
+                  style={[styles.statusBadge, { backgroundColor: getStatusColor(status) }]}
+                >
+                  <Text style={styles.statusText}>
+                    {status === 'Currently reading'
+                      ? 'Reading'
+                      : status === 'To be read'
+                      ? 'Want to Read'
+                      : status}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <View
+                  style={[styles.statusBadge, { backgroundColor: getStatusColor(status) }]}
+                >
+                  <Text style={styles.statusText}>{status}</Text>
+                </View>
+              )
             )}
 
             {isPageOwner && (
