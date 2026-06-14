@@ -87,7 +87,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
   }, [product]);
 
   const loadMoreReviews = () => {
-    if (!isLoading && hasMoreReviews) {
+    if (!isLoading && hasMoreReviews && reviews.length > 0) {
       fetchReviews(offset);
     }
   };
