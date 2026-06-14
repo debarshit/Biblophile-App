@@ -337,23 +337,19 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
 
       case 4:
         return (
-          <ScrollView 
-            style={styles.stepContent}
-            contentContainerStyle={{ paddingBottom: 220 }}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.stepContent}>
-              <Text style={styles.stepTitle}>Got more to say?</Text>
-              <Text style={styles.stepSubtitle}>Share your detailed thoughts about this book... What did you love? What could have been better? Would you recommend it?</Text>
-              <View style={styles.editorContainer}>
-                <WysiwygEditor
-                  value={reviewHtml}
-                  onChange={setReviewHtml}
-                  maxChars={5000}
-                />
-              </View>
+          <View style={styles.stepContent}>
+            <Text style={styles.stepTitle}>Got more to say?</Text>
+            <Text style={styles.stepSubtitle}>
+              Share your detailed thoughts about this book... What did you love? What could have been better? Would you recommend it?
+            </Text>
+            <View style={[styles.editorContainer]}>
+              <WysiwygEditor
+                value={reviewHtml}
+                onChange={setReviewHtml}
+                maxChars={5000}
+              />
             </View>
-          </ScrollView>
+          </View>
         );
 
       default:
