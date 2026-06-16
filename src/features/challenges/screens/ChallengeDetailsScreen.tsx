@@ -197,7 +197,7 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
             <GradientBGIcon name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleShare}>
-            <GradientBGIcon name="sharealt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+            <GradientBGIcon name="share-alt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
           </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
