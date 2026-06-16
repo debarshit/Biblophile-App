@@ -293,7 +293,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
               onPress={() => navigation.navigate('Settings')}
             >
               <GradientBGIcon 
-                name="menufold"
+                name="menu-fold"
                 color={COLORS.primaryWhiteHex}
                 size={FONTSIZE.size_16}
               />

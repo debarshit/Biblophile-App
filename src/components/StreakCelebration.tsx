@@ -15,7 +15,11 @@ const StreakCelebration = ({
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const bounceAnim = useRef(new Animated.Value(0)).current;
   const { COLORS } = useTheme();
-  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  
+  // Checks dark mode based on theme color constant
+  const isDark = COLORS.primaryBlackHex === '#0C0F14';  
+  const styles = useMemo(() => createStyles(COLORS, isDark), [COLORS, isDark]);
+
   useEffect(() => {
     if (visible) {
       Animated.sequence([
@@ -67,6 +71,7 @@ const StreakCelebration = ({
       transparent={true}
       animationType="none"
       statusBarTranslucent={true}
+      onRequestClose={onAnimationComplete}
     >
       <View style={styles.overlay}>
         <Animated.View
@@ -105,15 +110,14 @@ const StreakCelebration = ({
   );
 };
 
-const createStyles = (COLORS) => StyleSheet.create({
+const createStyles = (COLORS, isDark) => StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   celebrationContainer: {
-    backgroundColor: COLORS.secondaryDarkGreyHex,
+    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.75)' : 'rgba(0, 0, 0, 0.4)',
     borderRadius: 20,
     padding: SPACING.space_30,
     alignItems: 'center',
@@ -121,8 +125,8 @@ const createStyles = (COLORS) => StyleSheet.create({
     borderColor: COLORS.primaryOrangeHex,
     elevation: 10,
     shadowColor: COLORS.primaryOrangeHex,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: isDark ? 0.5 : 0.25,
     shadowRadius: 20,
     minWidth: 250,
   },

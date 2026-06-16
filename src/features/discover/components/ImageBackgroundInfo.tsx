@@ -183,7 +183,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             <GradientBGIcon name="warning" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
           </TouchableOpacity>}
           <TouchableOpacity onPress={handleShare}>
-            <GradientBGIcon name="sharealt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+            <GradientBGIcon name="share-alt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
           </TouchableOpacity>
         </View>
       </View>
