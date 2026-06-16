@@ -100,6 +100,19 @@ export default {
       },
     ],
     [
+      "expo-widgets",
+      {
+        "widgets": [
+          {
+            "name": "ReadingShelfWidget",
+            "displayName": "Currently Reading",
+            "description": "See your current books",
+            "supportedFamilies": ["systemMedium"]
+          }
+        ]
+      }
+    ],
+    [
       "expo-build-properties",
       {
         "ios": {
