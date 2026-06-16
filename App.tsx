@@ -77,6 +77,15 @@ const poppins = {
   'Poppins-Thin': require('./src/assets/fonts/Poppins-Thin.ttf'),
 };
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
 const App = () => {
   const isAuthenticated = useStore((state: any) => state.isAuthenticated);
   const [fontsLoaded, setFontsLoaded] = useState(false);

@@ -13,7 +13,6 @@ export default {
     "android",
     "web"
   ],
-  "newArchEnabled": true,
   "splash": {
     "image": "./assets/splash.png",
     "resizeMode": "contain",
@@ -93,6 +92,14 @@ export default {
     "expo-localization",
     "@react-native-firebase/app",
     [
+      'expo-notifications',
+      {
+        icon: './assets/icon.png',
+        color: '#0C0F14',
+        enableBackgroundRemoteNotifications: true,
+      },
+    ],
+    [
       "expo-build-properties",
       {
         "ios": {
@@ -115,9 +122,4 @@ export default {
   "runtimeVersion": {
     "policy": "appVersion"
   },
-  "notification": {
-    "icon": "./assets/icon.png",
-    "color": "#0C0F14",
-    "iosDisplayInForeground": true
-  }
 }
