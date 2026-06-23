@@ -30,6 +30,7 @@ const requests = {
     previewEditionSwitch: `${APIURL}books/preview-edition-switch`,
     confirmEditionSwitch: `${APIURL}books/confirm-edition-switch`,
     fetchProductReviews: (id) => `${APIURL}books/${id}/reviews`,
+    fetchRatingSummary: (id) => `${APIURL}books/${id}/ratings-summary`,
     searchBooks: `${APIURL}books/search?searchQuery=`,
     searchExternalBooks: `${APIURL}books/search-external?searchQuery=`,
     fetchReviewTags: `${APIURL}books/reviews/tags`,
