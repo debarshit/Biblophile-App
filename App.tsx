@@ -64,6 +64,7 @@ import { ThemeProvider } from './src/contexts/ThemeContext';
 import PrivacySettingsScreen from './src/features/settings/screens/PrivacySettingsScreen';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 const Stack = createNativeStackNavigator();
 
