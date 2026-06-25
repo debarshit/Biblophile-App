@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Animated,
+  Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, Animated,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-controller';
@@ -106,9 +106,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
       });
       if (data.data.status === "success") {
         setUpdateMessage("Dates updated successfully!");
-        // close first
         handleClose();
-        // then refresh parent
         setTimeout(() => {
           onUpdate();
         }, 300);
@@ -223,7 +221,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* View History Button -> currently only visible in bookshleves in profile not in current reads */}
+          {/* View History Button */}
           {onViewHistory && !userBookId && (
             <TouchableOpacity style={styles.viewHistoryButton} onPress={onViewHistory}>
               <MaterialIcons name="history" size={20} color={COLORS.primaryOrangeHex} />
