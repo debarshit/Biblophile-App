@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView, Share } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Share } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -10,6 +10,7 @@ import GradientBGIcon from '../../../components/GradientBGIcon';
 import { AntDesign, Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStreak } from '../../../hooks/useStreak';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const [userData, setUserData] = useState(null);

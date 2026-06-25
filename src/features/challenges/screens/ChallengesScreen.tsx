@@ -1,6 +1,5 @@
 import React, {useEffect, useState, useCallback, useMemo} from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -21,6 +20,7 @@ import HeaderBar from '../../../components/HeaderBar';
 import ChallengeCard from '../components/ChallengeCard';
 import CreateChallengeForm from '../components/CreateChallengeForm';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ChallengeScreen = ({navigation}: any) => {
   // Consolidated state

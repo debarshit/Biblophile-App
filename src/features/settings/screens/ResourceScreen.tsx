@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useMemo } from 'react'
 import WebView from 'react-native-webview'
 import * as FileSystem from 'expo-file-system/legacy';
@@ -6,6 +6,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { COLORS, FONTSIZE } from '../../../theme/theme'
 import GradientBGIcon from '../../../components/GradientBGIcon'
 import { useTheme } from '../../../contexts/ThemeContext'
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ResourceScreen = ({ navigation, route }: any) => {
   const rawPath = route.params?.url || 

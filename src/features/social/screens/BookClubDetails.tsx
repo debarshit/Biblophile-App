@@ -8,7 +8,6 @@ import {
   Share,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { COLORS, SPACING, FONTSIZE, FONTFAMILY, BORDERRADIUS } from '../../../theme/theme';
@@ -20,6 +19,7 @@ import BookClubTabNavigator from '../components/BookClubTabNavigator';
 import BookClubMeetings from '../components/BookClubMeetings';
 import BookClubAbout from '../components/BookClubAbout';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Member {
   name: string;

@@ -9,7 +9,6 @@ import {
   RefreshControl,
   TouchableOpacity,
   Modal,
-  SafeAreaView,
   Dimensions,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
@@ -17,6 +16,7 @@ import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../th
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 

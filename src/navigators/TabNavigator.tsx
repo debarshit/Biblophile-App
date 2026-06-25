@@ -12,6 +12,7 @@ import ProfileSummaryScreen from '../features/profile/screens/ProfileSummaryScre
 import { useStore } from '../store/store';
 import DiscoverScreen from '../features/discover/screens/DiscoverScreen';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 
@@ -21,7 +22,8 @@ const TabNavigator = () => {
   const username = userDetails[0].userUniqueUserName;
   const profilePic = userDetails[0].profilePic;
   const { COLORS } = useTheme();
-  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const insets = useSafeAreaInsets();
+  const styles = useMemo(() => createStyles(COLORS, insets), [COLORS]);
     
   return (
     <Tab.Navigator
@@ -133,10 +135,11 @@ const TabNavigator = () => {
   );
 };
 
-const createStyles = (COLORS) => StyleSheet.create({
+const createStyles = (COLORS, insets) => StyleSheet.create({
   tabBarStyle: {
-    height:  Platform.OS === 'ios' ? 80 : 60,
+    height:  Platform.OS === 'ios' ? 80 : 60 + insets.bottom,
     position: 'absolute',
+    paddingBottom: insets.bottom,
     backgroundColor: COLORS.primaryBlackHex,
     borderTopWidth: 0,
     elevation: 0,

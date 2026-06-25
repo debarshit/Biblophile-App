@@ -1,8 +1,9 @@
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import React, { useMemo } from 'react';
 import WebView from 'react-native-webview';
 import { COLORS } from '../../../theme/theme';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const PaymentGatewayScreen = ({navigation, route}: any) => {
   const { COLORS } = useTheme();

@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
@@ -20,6 +19,7 @@ import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface SubmitReviewScreenProps {
   route: any;
