@@ -3,7 +3,7 @@ import {
   Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Animated,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-controller'; // Added import
+import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-controller';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
@@ -106,7 +106,9 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
       });
       if (data.data.status === "success") {
         setUpdateMessage("Dates updated successfully!");
+        // close first
         handleClose();
+        // then refresh parent
         setTimeout(() => {
           onUpdate();
         }, 300);
@@ -221,7 +223,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* View History Button */}
+          {/* View History Button -> currently only visible in bookshleves in profile not in current reads */}
           {onViewHistory && !userBookId && (
             <TouchableOpacity style={styles.viewHistoryButton} onPress={onViewHistory}>
               <MaterialIcons name="history" size={20} color={COLORS.primaryOrangeHex} />
@@ -339,10 +341,6 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
           </View>
         </Animated.View>
       </View>
-
-      {/* KeyboardToolbar integration: 
-        It tracks focused numeric inputs natively and shows navigation arrows + a Done action button.
-      */}
       <KeyboardToolbar 
         doneText="Done"
         buttonTintColor={COLORS.primaryOrangeHex}

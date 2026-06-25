@@ -3,7 +3,6 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert, Safe
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { ActivityIndicator } from 'react-native';
-// Imports from react-native-keyboard-controller
 import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-controller';
 
 import instance from '../../../services/axios';
@@ -26,6 +25,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
     const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const pickImage = async () => {
+        // Ask for permission
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permissionResult.granted) {
             Alert.alert('Permission required', 'Please allow access to your photos.');
@@ -107,6 +107,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
         }
     };
 
+    // Define field configuration
     const fieldConfig = {
         name: { 
             property: 'Name', 
@@ -141,6 +142,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
         }
     };
 
+    // Initialize state dynamically
     const [formData, setFormData] = useState(() => 
         Object.fromEntries(Object.entries(fieldConfig).map(([key, config]) => [key, config.initial]))
     );
@@ -193,6 +195,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
             if (response.data.message === "Updated") {
                 setMessage(fieldKey, 'Updated successfully');
                 updateProfile(config.storeField, value.trim());
+                // Update original values
                 originalValues[fieldKey] = value;
             } else {
                 setMessage(fieldKey, response.data.message, true);
@@ -319,64 +322,64 @@ const ProfileScreen = ({ navigation, route }: any) => {
 
     return (
         <>
-        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}>
-            <KeyboardAwareScrollView
-                style={styles.scrollContainer}
-                contentContainerStyle={styles.scrollContent}
-                bottomOffset={40} // Margin offset space when keyboard opens up
-            >
-                <HeaderBar showBackButton={true} title='Edit Profile'/>
-                <View style={styles.wrapper}>
-                    <TouchableOpacity onPress={pickImage} style={{ alignItems: 'center' }}>
-                        <View style={styles.avatarWrapper}>
-                            <Image source={{ uri: avatar }} style={styles.avatarImage} />
-                            <View style={styles.overlay}>
-                                <Text style={styles.overlayText}>Change</Text>
+            <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}>
+                <KeyboardAwareScrollView
+                    style={styles.scrollContainer}
+                    contentContainerStyle={styles.scrollContent}
+                    bottomOffset={40} // Margin offset space when keyboard opens up
+                >
+                    <HeaderBar showBackButton={true} title='Edit Profile'/>
+                    <View style={styles.wrapper}>
+                        <TouchableOpacity onPress={pickImage} style={{ alignItems: 'center' }}>
+                            <View style={styles.avatarWrapper}>
+                                <Image source={{ uri: avatar }} style={styles.avatarImage} />
+                                <View style={styles.overlay}>
+                                    <Text style={styles.overlayText}>Change</Text>
+                                </View>
                             </View>
+
+                            {uploading && (
+                                <View style={styles.uploadProgress}>
+                                    <ActivityIndicator color={COLORS.primaryOrangeHex} size="small" />
+                                    <Text style={{ color: COLORS.primaryWhiteHex, marginLeft: 8 }}>
+                                        Uploading... {Math.round(uploadProgress * 100)}%
+                                    </Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+
+                        {Object.keys(fieldConfig).map(renderField)}
+
+                        {/* Password Section */}
+                        <View style={styles.passwordSection}>
+                            <Text style={styles.sectionTitle}>Change Password</Text>
+                            
+                            {renderPasswordInput(password, setPassword, 'New Password', 'password')}
+                            {renderPasswordInput(passwordCnf, setPasswordCnf, 'Confirm New Password', 'passwordCnf')}
+                            
+                            {(password || passwordCnf) && (
+                                <TouchableOpacity
+                                    onPress={handlePasswordUpdate}
+                                    style={[styles.button, updatingFields.password && styles.disabledButton]}
+                                    disabled={updatingFields.password}
+                                >
+                                    <Text style={styles.buttonText}>
+                                        {updatingFields.password ? 'Updating Password...' : 'Update Password'}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                            
+                            {updateMessages.password && (
+                                <Text style={[styles.fieldMessage, { color: updateMessages.password.color }]}>
+                                    {updateMessages.password.text}
+                                </Text>
+                            )}
                         </View>
-
-                        {uploading && (
-                            <View style={styles.uploadProgress}>
-                                <ActivityIndicator color={COLORS.primaryOrangeHex} size="small" />
-                                <Text style={{ color: COLORS.primaryWhiteHex, marginLeft: 8 }}>
-                                    Uploading... {Math.round(uploadProgress * 100)}%
-                                </Text>
-                            </View>
-                        )}
-                    </TouchableOpacity>
-
-                    {Object.keys(fieldConfig).map(renderField)}
-
-                    {/* Password Section */}
-                    <View style={styles.passwordSection}>
-                        <Text style={styles.sectionTitle}>Change Password</Text>
-                        
-                        {renderPasswordInput(password, setPassword, 'New Password', 'password')}
-                        {renderPasswordInput(passwordCnf, setPasswordCnf, 'Confirm New Password', 'passwordCnf')}
-                        
-                        {(password || passwordCnf) && (
-                            <TouchableOpacity
-                                onPress={handlePasswordUpdate}
-                                style={[styles.button, updatingFields.password && styles.disabledButton]}
-                                disabled={updatingFields.password}
-                            >
-                                <Text style={styles.buttonText}>
-                                    {updatingFields.password ? 'Updating Password...' : 'Update Password'}
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                        
-                        {updateMessages.password && (
-                            <Text style={[styles.fieldMessage, { color: updateMessages.password.color }]}>
-                                {updateMessages.password.text}
-                            </Text>
-                        )}
                     </View>
-                </View>
-            </KeyboardAwareScrollView>
-        </SafeAreaView>
+                </KeyboardAwareScrollView>
+            </SafeAreaView>
             <KeyboardToolbar />
-            </>
+        </>
     );
 };
 
@@ -396,7 +399,7 @@ const createStyles = (COLORS: any) => StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 20,
         backgroundColor: COLORS.primaryBlackHex,
-        paddingBottom: 30, // Extra spacing at bottom for list layouts
+        paddingBottom: 30,
     },
     avatarWrapper: {
         width: 120,
