@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   View, Text, TextInput, StyleSheet, TouchableOpacity, Platform, ToastAndroid, ScrollView,
   Modal, ActivityIndicator,
-  KeyboardAvoidingView
 } from 'react-native';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import instance from '../../../services/axios';
@@ -15,6 +14,7 @@ import CustomPicker, { PickerOption } from '../../../components/CustomPickerComp
 import TagSelectorModal from './TagSelectorModal';
 import { hmsToSeconds, secondsToHMS } from '../../../utils/timeConversion';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-controller';
 
 interface ReadingStatusModalProps {
   visible: boolean;
@@ -262,11 +262,6 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 20}
-          style={{ flex: 1, justifyContent: 'flex-end' }}
-        >
           <View style={styles.content}>
             <View style={styles.header}>
               <Text style={styles.title}>Update Reading Info</Text>
@@ -280,7 +275,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
               <CustomPicker options={statusOptions} selectedValue={status} onValueChange={setStatus} />
             </View>
             
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <KeyboardAwareScrollView bottomOffset={12} showsVerticalScrollIndicator={false}>
               {(status === 'Currently reading' || status === 'Paused' || status === 'Re-read') && (
                 <View style={styles.section}>
                   <Text style={styles.label}>
@@ -363,7 +358,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
                   </TouchableOpacity>
                 )}
               </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
 
             <TouchableOpacity style={[styles.button, loading && styles.buttonDisabled]} onPress={submitReadingStatus} disabled={loading}>
               {loading ? (
@@ -373,7 +368,11 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
               )}
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
+          <KeyboardToolbar 
+            doneText="Done"
+            buttonTintColor={COLORS.primaryOrangeHex}
+            containerStyle={[styles.toolbarContainer, { backgroundColor: COLORS.secondaryDarkGreyHex }]}
+          />
       </View>
 
       <TagSelectorModal
@@ -415,6 +414,7 @@ const createStyles = (COLORS) => StyleSheet.create({
   timeInputWrapper: { flex: 1, alignItems: 'center' },
   timeLabel: { color: COLORS.secondaryLightGreyHex, fontSize: FONTSIZE.size_10, marginBottom: SPACING.space_4 },
   timeInput: { width: '90%', height: 44, backgroundColor: COLORS.primaryDarkGreyHex, borderRadius: BORDERRADIUS.radius_8, borderWidth: 1, borderColor: COLORS.secondaryDarkGreyHex, color: COLORS.primaryWhiteHex, textAlign: 'center', fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_regular },
+  toolbarContainer: { borderTopWidth: 0.5, borderTopColor: 'rgba(255,255,255,0.1)' },
 });
 
 export default ReadingStatusModal;

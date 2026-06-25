@@ -1,8 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Platform, KeyboardAvoidingView, ScrollView, Alert, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert, SafeAreaView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { ActivityIndicator } from 'react-native';
+// Imports from react-native-keyboard-controller
+import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-controller';
+
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
@@ -10,7 +13,7 @@ import { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
 import { useTheme } from '../../../contexts/ThemeContext';
 
-const ProfileScreen = ({navigation, route}: any) => {
+const ProfileScreen = ({ navigation, route }: any) => {
     const userDetails = useStore((state: any) => state.userDetails);
     const accessToken = userDetails[0].accessToken;
     const updateProfile = useStore((state: any) => state.updateProfile);
@@ -23,18 +26,17 @@ const ProfileScreen = ({navigation, route}: any) => {
     const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
     const pickImage = async () => {
-        // Ask for permission
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permissionResult.granted) {
-        Alert.alert('Permission required', 'Please allow access to your photos.');
-        return;
+            Alert.alert('Permission required', 'Please allow access to your photos.');
+            return;
         }
 
         const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.9,
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.9,
         });
 
         if (result.canceled) return;
@@ -57,55 +59,54 @@ const ProfileScreen = ({navigation, route}: any) => {
 
     const confirmUpload = async (image: any) => {
         Alert.alert(
-        'Upload this photo?',
-        '',
-        [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Upload', onPress: () => uploadPhoto(image) },
-        ]
+            'Upload this photo?',
+            '',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Upload', onPress: () => uploadPhoto(image) },
+            ]
         );
     };
 
     const uploadPhoto = async (image: any) => {
         try {
-        setUploading(true);
-        setUploadProgress(0);
+            setUploading(true);
+            setUploadProgress(0);
 
-        const formData = new FormData();
-        formData.append('photo', {
-            uri: image.uri,
-            name: `profile.jpg`,
-            type: 'image/jpeg',
-        } as any);
+            const formData = new FormData();
+            formData.append('photo', {
+                uri: image.uri,
+                name: `profile.jpg`,
+                type: 'image/jpeg',
+            } as any);
 
-        const response = await instance.post(requests.uploadUserDp, formData, {
-            headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${accessToken}`,
-            },
-            onUploadProgress: (progressEvent: any) => {
-            const progress = progressEvent.loaded / progressEvent.total;
-            setUploadProgress(progress);
-            },
-        });
-        if (response.data?.status === 'success') {
-            const newUrl = response.data.data?.UserPhoto;
-            setAvatar(newUrl);
-            updateProfile('profilePic', newUrl);
-            Alert.alert('Success', 'Profile photo updated!');
-        } else {
-            Alert.alert('Upload Failed', response.data?.message || 'Try again later.');
-        }
+            const response = await instance.post(requests.uploadUserDp, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                onUploadProgress: (progressEvent: any) => {
+                    const progress = progressEvent.loaded / progressEvent.total;
+                    setUploadProgress(progress);
+                },
+            });
+            if (response.data?.status === 'success') {
+                const newUrl = response.data.data?.UserPhoto;
+                setAvatar(newUrl);
+                updateProfile('profilePic', newUrl);
+                Alert.alert('Success', 'Profile photo updated!');
+            } else {
+                Alert.alert('Upload Failed', response.data?.message || 'Try again later.');
+            }
         } catch (error) {
-        console.log('Upload Error:', error);
-        Alert.alert('Error', 'Could not upload the image.');
+            console.log('Upload Error:', error);
+            Alert.alert('Error', 'Could not upload the image.');
         } finally {
-        setUploading(false);
-        setUploadProgress(0);
+            setUploading(false);
+            setUploadProgress(0);
         }
     };
 
-    // Define field configuration
     const fieldConfig = {
         name: { 
             property: 'Name', 
@@ -140,7 +141,6 @@ const ProfileScreen = ({navigation, route}: any) => {
         }
     };
 
-    // Initialize state dynamically
     const [formData, setFormData] = useState(() => 
         Object.fromEntries(Object.entries(fieldConfig).map(([key, config]) => [key, config.initial]))
     );
@@ -192,10 +192,7 @@ const ProfileScreen = ({navigation, route}: any) => {
 
             if (response.data.message === "Updated") {
                 setMessage(fieldKey, 'Updated successfully');
-                
                 updateProfile(config.storeField, value.trim());
-                
-                // Update original values
                 originalValues[fieldKey] = value;
             } else {
                 setMessage(fieldKey, response.data.message, true);
@@ -321,78 +318,85 @@ const ProfileScreen = ({navigation, route}: any) => {
     }, []);
 
     return (
+        <>
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}>
-<           KeyboardAvoidingView
-                style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            <KeyboardAwareScrollView
+                style={styles.scrollContainer}
+                contentContainerStyle={styles.scrollContent}
+                bottomOffset={40} // Margin offset space when keyboard opens up
             >
-                <ScrollView>
-                    <HeaderBar showBackButton={true} title='Edit Profile'/>
-                    <View style={styles.wrapper}>
-                        <TouchableOpacity onPress={pickImage} style={{ alignItems: 'center' }}>
-                            <View style={styles.avatarWrapper}>
-                                <Image
-                                source={{ uri: avatar }}
-                                style={styles.avatarImage}
-                                />
-                                <View style={styles.overlay}>
+                <HeaderBar showBackButton={true} title='Edit Profile'/>
+                <View style={styles.wrapper}>
+                    <TouchableOpacity onPress={pickImage} style={{ alignItems: 'center' }}>
+                        <View style={styles.avatarWrapper}>
+                            <Image source={{ uri: avatar }} style={styles.avatarImage} />
+                            <View style={styles.overlay}>
                                 <Text style={styles.overlayText}>Change</Text>
-                                </View>
                             </View>
+                        </View>
 
-                            {uploading && (
-                                <View style={styles.uploadProgress}>
+                        {uploading && (
+                            <View style={styles.uploadProgress}>
                                 <ActivityIndicator color={COLORS.primaryOrangeHex} size="small" />
                                 <Text style={{ color: COLORS.primaryWhiteHex, marginLeft: 8 }}>
                                     Uploading... {Math.round(uploadProgress * 100)}%
                                 </Text>
-                                </View>
-                            )}
-                        </TouchableOpacity>
+                            </View>
+                        )}
+                    </TouchableOpacity>
 
-                        {Object.keys(fieldConfig).map(renderField)}
+                    {Object.keys(fieldConfig).map(renderField)}
 
-                        {/* Password Section */}
-                        <View style={styles.passwordSection}>
-                            <Text style={styles.sectionTitle}>Change Password</Text>
-                            
-                            {renderPasswordInput(password, setPassword, 'New Password', 'password')}
-                            {renderPasswordInput(passwordCnf, setPasswordCnf, 'Confirm New Password', 'passwordCnf')}
-                            
-                            {(password || passwordCnf) && (
-                                <TouchableOpacity
-                                    onPress={handlePasswordUpdate}
-                                    style={[styles.button, updatingFields.password && styles.disabledButton]}
-                                    disabled={updatingFields.password}
-                                >
-                                    <Text style={styles.buttonText}>
-                                        {updatingFields.password ? 'Updating Password...' : 'Update Password'}
-                                    </Text>
-                                </TouchableOpacity>
-                            )}
-                            
-                            {updateMessages.password && (
-                                <Text style={[styles.fieldMessage, { color: updateMessages.password.color }]}>
-                                    {updateMessages.password.text}
+                    {/* Password Section */}
+                    <View style={styles.passwordSection}>
+                        <Text style={styles.sectionTitle}>Change Password</Text>
+                        
+                        {renderPasswordInput(password, setPassword, 'New Password', 'password')}
+                        {renderPasswordInput(passwordCnf, setPasswordCnf, 'Confirm New Password', 'passwordCnf')}
+                        
+                        {(password || passwordCnf) && (
+                            <TouchableOpacity
+                                onPress={handlePasswordUpdate}
+                                style={[styles.button, updatingFields.password && styles.disabledButton]}
+                                disabled={updatingFields.password}
+                            >
+                                <Text style={styles.buttonText}>
+                                    {updatingFields.password ? 'Updating Password...' : 'Update Password'}
                                 </Text>
-                            )}
-                        </View>
+                            </TouchableOpacity>
+                        )}
+                        
+                        {updateMessages.password && (
+                            <Text style={[styles.fieldMessage, { color: updateMessages.password.color }]}>
+                                {updateMessages.password.text}
+                            </Text>
+                        )}
                     </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
+                </View>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
+            <KeyboardToolbar />
+            </>
     );
 };
 
 export default ProfileScreen;
 
-const createStyles = (COLORS) => StyleSheet.create({
+const createStyles = (COLORS: any) => StyleSheet.create({
+    scrollContainer: {
+        flex: 1,
+        backgroundColor: COLORS.primaryBlackHex,
+    },
+    scrollContent: {
+        flexGrow: 1,
+    },
     wrapper: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 20,
         backgroundColor: COLORS.primaryBlackHex,
+        paddingBottom: 30, // Extra spacing at bottom for list layouts
     },
     avatarWrapper: {
         width: 120,
@@ -403,6 +407,7 @@ const createStyles = (COLORS) => StyleSheet.create({
         borderWidth: 2,
         borderColor: COLORS.primaryOrangeHex,
         marginBottom: 20,
+        marginTop: 10,
     },
     avatarImage: {
         width: '100%',
@@ -428,6 +433,7 @@ const createStyles = (COLORS) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: 10,
+        marginBottom: 10,
     },
     fieldContainer: {
         marginBottom: 15,
@@ -459,6 +465,7 @@ const createStyles = (COLORS) => StyleSheet.create({
     addressInput: {
         height: 120,
         textAlignVertical: 'top',
+        paddingTop: 10,
     },
     updateButton: {
         backgroundColor: COLORS.primaryOrangeHex,
