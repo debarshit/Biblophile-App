@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, Switch, Alert, StyleSheet, TouchableOpacity, SafeAreaView, AppState, ScrollView, Platform } from 'react-native';
+import { View, Text, Switch, Alert, StyleSheet, TouchableOpacity, AppState, ScrollView, Platform } from 'react-native';
 import { notificationService } from '../../../utils/notificationUtils';
 import Toast from 'react-native-toast-message';
 import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
@@ -9,6 +9,7 @@ import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const CATEGORY_META = {
   social: {

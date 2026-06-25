@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -23,6 +22,7 @@ import ChallengePrompts from '../components/ChallengePrompts';
 import CreatePrompt from '../components/CreatePrompt';
 import GradientBGIcon from '../../../components/GradientBGIcon';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 

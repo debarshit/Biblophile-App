@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,

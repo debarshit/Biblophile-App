@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -26,6 +25,7 @@ import {
 import ReadAlongCard from '../components/ReadAlongCard';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 

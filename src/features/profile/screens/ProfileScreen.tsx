@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { ActivityIndicator } from 'react-native';
@@ -11,6 +11,7 @@ import { useStore } from '../../../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ProfileScreen = ({ navigation, route }: any) => {
     const userDetails = useStore((state: any) => state.userDetails);

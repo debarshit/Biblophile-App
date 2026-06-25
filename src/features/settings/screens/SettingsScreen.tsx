@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import {
   StyleSheet,
-  SafeAreaView,
   View,
   ScrollView,
   Text,
@@ -21,6 +20,7 @@ import { useAnalytics } from '../../../utils/analytics';
 import CityModal from '../../bookshop/components/CityModal';
 import { useTheme } from '../../../contexts/ThemeContext';
 import ThemeModal from '../components/ThemeSwitcherModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const SettingsScreen = ({navigation, route}: any) => {
   const [cityModalVisible, setCityModalVisible] = React.useState(false);

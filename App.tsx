@@ -63,6 +63,7 @@ import ThreadScreen from './src/features/social/screens/ThreadScreen';
 import { ThemeProvider } from './src/contexts/ThemeContext';
 import PrivacySettingsScreen from './src/features/settings/screens/PrivacySettingsScreen';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
 
@@ -276,72 +277,74 @@ const App = () => {
 
   return (
     <ThemeProvider>
-      <NavigationContainer ref={navigationRef} linking={linking}>
-        <PostHogProvider
-          apiKey="phc_FSNgN6xgRp56gSFZVhNVr0PWaPthNY3VjRRc8H6IUFo"
-          options={posthogOptions}
-        >
-          <KeyboardProvider>
-            {isAuthenticated ? (
-              <CityProvider>
+      <SafeAreaProvider>
+        <NavigationContainer ref={navigationRef} linking={linking}>
+          <PostHogProvider
+            apiKey="phc_FSNgN6xgRp56gSFZVhNVr0PWaPthNY3VjRRc8H6IUFo"
+            options={posthogOptions}
+          >
+            <KeyboardProvider>
+              {isAuthenticated ? (
+                <CityProvider>
+                  <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="Tab" component={TabNavigator} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="Stats" component={StatScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="Library" component={LibraryScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="Discover" component={DiscoverScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="SearchScreen" component={SearchScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="Shop" component={LibraryScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="Details" component={DetailsScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="Payment" component={PaymentScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="PaymentGateway" component={PaymentGatewayScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="Settings" component={SettingsScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="Resources" component={ResourceScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="About" component={AboutScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="Profile" component={ProfileScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="Review" component={ReviewScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="Note" component={NotesScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="Durations" component={DurationTrackScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="ProfileSummary" component={ProfileSummaryScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="Subscription" component={SubscriptionScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="Social" component={SocialScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="Cart" component={CartScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="History" component={OrderHistoryScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="CommonWebView" component={CommonWebViewScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="BookListStatus" component={BookListScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="BookListTag" component={BookListScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="GenreScreen" component={GenreScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="Notifications" component={NotificationsScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="ChallengeDetails" component={ChallengeDetailsScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="ChallengePromptDetails" component={ChallengePromptDetailsScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="BuddyReadsDetails" component={BuddyReadsDetails} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="BuddyReadsCreate" component={BuddyReadsCreate} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="ReadAlongsCreate" component={ReadAlongsCreate} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="ReadalongDetails" component={ReadAlongDetails} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="ReadalongCheckpointDiscussion" component={ReadalongCheckpointDiscussion} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="CreateReadalongCheckpoint" component={CreateReadalongCheckpoint} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="CreateBookClub" component={CreateBookClubScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="BookClubDetails" component={BookClubDetailsScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="SubmitReview" component={SubmitReviewScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="MonthlyWrap" component={MonthlyWrapScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="AddWork" component={AddWorkScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="Editions" component={EditionsScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="AddEdition" component={AddEditionScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="ThreadScreen" component={ThreadScreen} />
+                  </Stack.Navigator>
+                </CityProvider>
+              ) : (
                 <Stack.Navigator screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="Tab" component={TabNavigator} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="Stats" component={StatScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="Library" component={LibraryScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="Discover" component={DiscoverScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="SearchScreen" component={SearchScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="Shop" component={LibraryScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="Details" component={DetailsScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="Payment" component={PaymentScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="PaymentGateway" component={PaymentGatewayScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="Settings" component={SettingsScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} options={{animation: 'slide_from_right'}} />
+                  <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{animation: 'slide_from_bottom'}} />
+                  <Stack.Screen name="SignupLogin" component={SignupLogin} options={{animation: 'slide_from_right'}} />
                   <Stack.Screen name="Resources" component={ResourceScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="About" component={AboutScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="Profile" component={ProfileScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="Review" component={ReviewScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="Note" component={NotesScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="Durations" component={DurationTrackScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="ProfileSummary" component={ProfileSummaryScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="Subscription" component={SubscriptionScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="Social" component={SocialScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="Cart" component={CartScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="History" component={OrderHistoryScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="CommonWebView" component={CommonWebViewScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="BookListStatus" component={BookListScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="BookListTag" component={BookListScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="GenreScreen" component={GenreScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="Notifications" component={NotificationsScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="ChallengeDetails" component={ChallengeDetailsScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="ChallengePromptDetails" component={ChallengePromptDetailsScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="BuddyReadsDetails" component={BuddyReadsDetails} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="BuddyReadsCreate" component={BuddyReadsCreate} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="ReadAlongsCreate" component={ReadAlongsCreate} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="ReadalongDetails" component={ReadAlongDetails} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="ReadalongCheckpointDiscussion" component={ReadalongCheckpointDiscussion} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="CreateReadalongCheckpoint" component={CreateReadalongCheckpoint} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="CreateBookClub" component={CreateBookClubScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="BookClubDetails" component={BookClubDetailsScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="SubmitReview" component={SubmitReviewScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="MonthlyWrap" component={MonthlyWrapScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="AddWork" component={AddWorkScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="Editions" component={EditionsScreen} options={{animation: 'slide_from_right'}} />
-                  <Stack.Screen name="AddEdition" component={AddEditionScreen} options={{animation: 'slide_from_bottom'}} />
-                  <Stack.Screen name="ThreadScreen" component={ThreadScreen} />
                 </Stack.Navigator>
-              </CityProvider>
-            ) : (
-              <Stack.Navigator screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{animation: 'slide_from_bottom'}} />
-                <Stack.Screen name="SignupLogin" component={SignupLogin} options={{animation: 'slide_from_right'}} />
-                <Stack.Screen name="Resources" component={ResourceScreen} options={{animation: 'slide_from_right'}} />
-              </Stack.Navigator>
-            )}
-            <Toast />
-          </KeyboardProvider>
-        </PostHogProvider>
-      </NavigationContainer>
+              )}
+              <Toast />
+            </KeyboardProvider>
+          </PostHogProvider>
+        </NavigationContainer>
+      </SafeAreaProvider>
     </ThemeProvider>
   );
 };

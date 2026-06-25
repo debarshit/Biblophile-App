@@ -4,7 +4,6 @@ import {
   StatusBar,
   StyleSheet,
   View,
-  SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
 import {useStore} from '../../../store/store';
@@ -14,6 +13,7 @@ import EmptyListAnimation from '../../../components/EmptyListAnimation';
 import PaymentFooter from '../../payment/components/PaymentFooter';
 import CartItem from '../components/CartItem';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface DeliveryOptionsData {
   deliveryOption: "delivery" | "self-pickup";

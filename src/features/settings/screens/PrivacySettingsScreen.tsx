@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
@@ -14,6 +13,7 @@ import requests from "../../../services/requests";
 import { useStore } from "../../../store/store";
 import { useTheme } from "../../../contexts/ThemeContext";
 import Toast from "react-native-toast-message";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const VISIBILITY_OPTIONS = [
   { label: "Only Me", value: "only_me" },
