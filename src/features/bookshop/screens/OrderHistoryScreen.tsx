@@ -4,7 +4,6 @@ import {
   StatusBar,
   StyleSheet,
   View,
-  SafeAreaView,
   Dimensions,
   ActivityIndicator
 } from 'react-native';
@@ -25,6 +24,7 @@ import HeaderBar from '../../../components/HeaderBar';
 import EmptyListAnimation from '../../../components/EmptyListAnimation';
 import OrderHistoryCard from '../components/OrderHistoryCard';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get("window");
 

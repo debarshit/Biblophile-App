@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
@@ -20,6 +19,7 @@ import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface SubmitReviewScreenProps {
   route: any;
@@ -264,12 +264,12 @@ const SubmitReviewScreen: React.FC<SubmitReviewScreenProps> = ({ route, navigati
                 starSize={40}
                 color={COLORS.primaryOrangeHex}
                 rating={rating}
-                enableHalfStar={true}
+                step="quarter"
                 enableSwiping={true}
                 onChange={setRating}
               />
               <Text style={styles.ratingText}>
-                {typeof rating === 'number' && Number.isFinite(rating) ? rating.toFixed(1) : '0.0'} / 5.0
+                {typeof rating === 'number' && Number.isFinite(rating) ? rating.toFixed(2) : '0.00'} / 5.0
               </Text>
             </View>
           </View>

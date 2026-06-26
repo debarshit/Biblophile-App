@@ -1,9 +1,12 @@
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useMemo } from 'react'
 import WebView from 'react-native-webview'
+import * as FileSystem from 'expo-file-system/legacy';
+import * as MediaLibrary from 'expo-media-library';
 import { COLORS, FONTSIZE } from '../../../theme/theme'
 import GradientBGIcon from '../../../components/GradientBGIcon'
 import { useTheme } from '../../../contexts/ThemeContext'
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ResourceScreen = ({ navigation, route }: any) => {
   const rawPath = route.params?.url || 
@@ -45,6 +48,42 @@ const ResourceScreen = ({ navigation, route }: any) => {
     }
   };
 
+  const onMessage = async (event) => {
+    const data = JSON.parse(event.nativeEvent.data);
+
+    if (data.type === 'download') {
+      try {
+        const permission = await MediaLibrary.requestPermissionsAsync();
+
+        if (!permission.granted) return;
+
+        const base64 = data.image.replace(
+          /^data:image\/\w+;base64,/,
+          ''
+        );
+
+        const fileUri =
+          FileSystem.cacheDirectory + data.filename;
+
+        await FileSystem.writeAsStringAsync(fileUri, base64, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+
+        const asset = await MediaLibrary.createAssetAsync(fileUri);
+
+        await MediaLibrary.createAlbumAsync(
+          'Biblophile',
+          asset,
+          false
+        );
+
+        alert('Saved to Gallery!');
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}>
       <TouchableOpacity onPress={BackHandler} style={{ position: 'absolute', top: 64, left: 16, zIndex: 1 }}>
@@ -55,7 +94,8 @@ const ResourceScreen = ({ navigation, route }: any) => {
         />
       </TouchableOpacity>
       <WebView 
-        source={{ uri: finalUrl }} 
+        source={{ uri: finalUrl }}
+        onMessage={onMessage}
         style={{ flex: 1 }} 
       />
     </SafeAreaView>

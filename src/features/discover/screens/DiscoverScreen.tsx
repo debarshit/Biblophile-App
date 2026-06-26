@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   TextInput,
@@ -40,6 +39,7 @@ import MerchShopBanner from '../../../components/MerchShopBanner';
 import FilteredRecommendationsModal from '../components/FilteredRecommendationsModal';
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const DiscoverScreen = ({ navigation }) => {
   // Global state from store

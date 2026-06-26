@@ -1,6 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -39,6 +38,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import CityPlaceModal from '../components/CityPlaceModal';
 import EventModal from '../components/CityEventModal';
 import { useRoute } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const getGenresFromData = (data: any) => {
   const genres = ['All', ...new Set(data.map((item: any) => item.genre))];

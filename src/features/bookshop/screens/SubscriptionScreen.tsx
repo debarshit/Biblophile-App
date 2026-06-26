@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Dimensions, 
   FlatList, 
-  SafeAreaView, 
   StyleSheet, 
   Text, 
   TouchableOpacity, 
@@ -24,6 +23,7 @@ import { COLORS, FONTSIZE, FONTFAMILY, SPACING, BORDERRADIUS } from '../../../th
 import HeaderBar from '../../../components/HeaderBar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get("window");
 

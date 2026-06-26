@@ -6,7 +6,6 @@ import {
   StatusBar,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
 } from 'react-native';
 import {
   COLORS,
@@ -23,6 +22,7 @@ import PaymentFooter from '../components/PaymentFooter';
 import PopUpAnimation from '../../../components/PopUpAnimation';
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const PaymentList = [
   {

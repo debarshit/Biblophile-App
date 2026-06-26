@@ -350,7 +350,6 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   TabContent: {
     flexGrow: 1,
-    padding: SPACING.space_20,
   },
   InfoTitle: {
     fontFamily: FONTFAMILY.poppins_semibold,

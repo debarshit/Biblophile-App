@@ -1,6 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
@@ -40,6 +39,7 @@ import CurrentReadsSection from '../../readingInsights/components/currentReads/C
 import MerchShopBanner from '../../../components/MerchShopBanner';
 import ChallengesBanner from '../components/ChallengesBanner';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Spotlight {
   Id: string;

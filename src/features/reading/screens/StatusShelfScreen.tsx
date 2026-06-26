@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Alert, Share } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Alert, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import HeaderBar from '../../../components/HeaderBar';
 import ReadingQueueSection from '../components/ReadingQueueSection';
@@ -7,6 +7,7 @@ import { BookGrid } from '../components/BookGrid';
 import { useStatusShelf } from '../hooks/useStatusShelf';
 import { SPACING } from '../../../theme/theme';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const STATUS_SLUG_MAP: Record<string, string> = {
     'Currently reading': 'currently-reading',

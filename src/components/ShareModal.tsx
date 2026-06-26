@@ -6,10 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { AntDesign, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
-import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
+import { BORDERRADIUS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import { shareToplatform, SHARE_PLATFORMS, ShareContent, SharePlatform } from '../utils/share';
 import InstagramStoryTemplate from './InstagramStoryTemplate';
 import { useTheme } from '../contexts/ThemeContext';

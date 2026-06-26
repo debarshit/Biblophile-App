@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Alert, Share } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Alert, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import HeaderBar from '../../../components/HeaderBar';
 import { BookGrid } from '../components/BookGrid';
@@ -13,6 +13,7 @@ import ActivityTab from '../components/collaborativeList/ActivityTab';
 import CollabSettingsModal from '../components/collaborativeList/CollabSettingsModal';
 import EnableCollabModal from '../components/collaborativeList/EnableCollabModal';
 import { useShelfUser } from '../hooks/useShelfUser';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const APP_BASE_URL = 'https://biblophile.com';
 

@@ -7,7 +7,8 @@
         "buildType": "apk"
       },
       "ios": {
-        "simulator": false
+        "simulator": false,
+        "image": "latest"
       },
       "env": {
         "APP_VARIANT": "development"
@@ -20,6 +21,7 @@
       },
       "ios": {
         "simulator": true,
+        "image": "latest",
         "channel": "preview"
       },
       "env": {
@@ -35,11 +37,17 @@
     "preview3": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "preview3"
+      "channel": "preview3",
+      "ios": {
+        "image": "latest"
+      }
     },
     "preview4": {
       "distribution": "internal",
-      "channel": "preview4"
+      "channel": "preview4",
+      "ios": {
+        "image": "latest"
+      }
     },
     "production": {
       "android": {
@@ -48,6 +56,7 @@
       },
       "ios": {
         "simulator": false,
+        "image": "latest",
         "channel": "production"
       },
       "env": {

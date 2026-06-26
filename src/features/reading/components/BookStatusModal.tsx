@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Animated,
+  Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, Animated,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-controller';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
@@ -242,7 +243,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
             />
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <KeyboardAwareScrollView showsVerticalScrollIndicator={false}>
             {/* Progress Input */}
             {localStatus === 'Currently reading' && (
               <View style={styles.section}>
@@ -324,7 +325,7 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
                 <Text style={styles.updateMessage}>{updateMessage}</Text>
               </View>
             )}
-          </ScrollView>
+          </KeyboardAwareScrollView>
 
           {/* Action Buttons */}
           <View style={styles.modalButtons}>
@@ -340,6 +341,11 @@ const BookStatusModal: React.FC<BookStatusModalProps> = ({
           </View>
         </Animated.View>
       </View>
+      <KeyboardToolbar 
+        doneText="Done"
+        buttonTintColor={COLORS.primaryOrangeHex}
+        containerStyle={[styles.toolbarContainer, { backgroundColor: COLORS.secondaryDarkGreyHex }]}
+      />
     </Modal>
   );
 };
@@ -380,4 +386,5 @@ const createStyles = (COLORS) => StyleSheet.create({
   timeInputWrapper: { flex: 1, alignItems: 'center' },
   timeLabel: { color: COLORS.secondaryLightGreyHex, fontSize: FONTSIZE.size_10, marginBottom: SPACING.space_4 },
   timeInput: { width: '90%', height: 44, backgroundColor: COLORS.secondaryDarkGreyHex, borderRadius: BORDERRADIUS.radius_8, borderWidth: 1, borderColor: COLORS.secondaryLightGreyHex, color: COLORS.primaryWhiteHex, textAlign: 'center', fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_regular },
+  toolbarContainer: { borderTopWidth: 0.5, borderTopColor: 'rgba(255,255,255,0.1)' }, // Optional subtle border
 });

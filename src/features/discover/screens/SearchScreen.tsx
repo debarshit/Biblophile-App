@@ -3,7 +3,6 @@ import {
   Dimensions, 
   FlatList, 
   Keyboard, 
-  SafeAreaView, 
   ScrollView, 
   StyleSheet, 
   Text, 
@@ -33,6 +32,7 @@ import { useCity } from '../../../contexts/CityContext';
 import SeasonalRecommendations from '../components/SeasonalRecommendations';
 import HeaderBar from '../../../components/HeaderBar';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Debounce search for better performance
 const useDebounce = (callback, delay) => {

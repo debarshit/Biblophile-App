@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -23,6 +22,7 @@ import ChallengePrompts from '../components/ChallengePrompts';
 import CreatePrompt from '../components/CreatePrompt';
 import GradientBGIcon from '../../../components/GradientBGIcon';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -197,7 +197,7 @@ const ChallengeDetailsScreen = ({ route, navigation }) => {
             <GradientBGIcon name="left" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleShare}>
-            <GradientBGIcon name="sharealt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
+            <GradientBGIcon name="share-alt" color={COLORS.primaryLightGreyHex} size={FONTSIZE.size_16} />
           </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
