@@ -364,14 +364,18 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
     </>
   );
 
+  const loadMoreReviews = () => {
+    if (!isLoading && hasMoreReviews && reviews.length > 0) {
+      fetchReviews(offset);
+    }
+  };
+
   return (
     <FlatList
       data={filteredReviews}
       keyExtractor={item => item.ratingId}
       renderItem={renderReview}
-      onEndReached={() => {
-        if (!isLoading && hasMoreReviews) fetchReviews(offset);
-      }}
+      onEndReached={loadMoreReviews}
       onEndReachedThreshold={0.5}
       ListHeaderComponent={<ListHeader />}
       ListFooterComponent={() => {
