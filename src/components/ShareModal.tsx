@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import { AntDesign, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
+import { AntDesign, MaterialCommunityIcons, FontAwesome5, FontAwesome } from '@expo/vector-icons';
 import { BORDERRADIUS, FONTFAMILY, FONTSIZE, SPACING } from '../theme/theme';
 import { shareToplatform, SHARE_PLATFORMS, ShareContent, SharePlatform } from '../utils/share';
 import InstagramStoryTemplate from './InstagramStoryTemplate';
@@ -73,7 +73,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
       case 'twitter':
         return <AntDesign name="twitter" size={24} color={COLORS.primaryWhiteHex} />;
       case 'facebook':
-        return <AntDesign name="facebook-square" size={24} color={COLORS.primaryWhiteHex} />;
+        return <FontAwesome name="facebook-square" size={24} color={COLORS.primaryWhiteHex} />;
       case 'whatsapp':
         return <FontAwesome5 name="whatsapp" size={24} color={COLORS.primaryWhiteHex} />;
       case 'threads':
@@ -81,7 +81,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
       case 'cloud':
         return <AntDesign name="cloud" size={24} color={COLORS.primaryWhiteHex} />;
       default:
-        return <AntDesign name="sharealt" size={24} color={COLORS.primaryWhiteHex} />;
+        return <AntDesign name="share-alt" size={24} color={COLORS.primaryWhiteHex} />;
     }
   };
 
@@ -130,7 +130,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                 style={styles.moreOptionsButton}
                 onPress={handleNativeShare}
               >
-                <AntDesign name="ellipsis1" size={20} color={COLORS.primaryWhiteHex} />
+                <AntDesign name="ellipsis" size={20} color={COLORS.primaryWhiteHex} />
                 <Text style={styles.moreOptionsText}>More options</Text>
               </TouchableOpacity>
             </ScrollView>

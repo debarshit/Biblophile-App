@@ -299,7 +299,7 @@ setLengthBuckets(mockLengthBuckets || []);
         onPress={handleShare}
         disabled={isSharing}
       >
-        <AntDesign name="sharealt" size={FONTSIZE.size_16} color={COLORS.primaryOrangeHex} />
+        <AntDesign name="share-alt" size={FONTSIZE.size_16} color={COLORS.primaryOrangeHex} />
         <Text style={styles.shareButtonText}>
           {isSharing ? 'Capturing…' : 'Share Stats'}
         </Text>

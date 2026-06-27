@@ -25,6 +25,7 @@ import {
 import BuddyReadCard from '../components/BuddyReadCard';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
