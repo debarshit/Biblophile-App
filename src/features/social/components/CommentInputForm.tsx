@@ -180,7 +180,6 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
 
 const createStyles = (COLORS) => StyleSheet.create({
     container: {
-        backgroundColor: COLORS.primaryGreyHex,
         borderTopWidth: 1,
         borderTopColor: '#2d3748',
         paddingTop: SPACING.space_10,
