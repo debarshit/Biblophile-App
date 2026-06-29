@@ -7,7 +7,6 @@ import {
     Text,
     ActivityIndicator,
     Keyboard,
-    Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTSIZE, SPACING } from '../../../theme/theme';
@@ -24,11 +23,11 @@ interface CommentInputFormProps {
     initialPageNumber?: number;
     placeholder?: string;
     replyContext?: {
-    commentId: number | null;
-    username?: string;
-    pageNumber?: number;
-  } | null;
-  onCancelReply?: () => void;
+        commentId: number | null;
+        username?: string;
+        pageNumber?: number;
+    } | null;
+    onCancelReply?: () => void;
 }
 
 export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputFormProps>(({
@@ -71,8 +70,8 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
         textInputRef.current?.blur();
     };
 
-    const canSubmit = commentText.trim().length > 0 && 
-                      pageNumber !== '' && 
+    const canSubmit = commentText.trim().length > 0 &&
+                      pageNumber !== '' &&
                       !isNaN(parseInt(pageNumber, 10)) &&
                       parseInt(pageNumber, 10) >= 0 &&
                       !isLoading;
@@ -82,16 +81,16 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
             {/* Main Input Area */}
             <View style={[styles.inputWrapper, isFocused && styles.inputWrapperFocused]}>
                 {replyContext && (
-  <View style={styles.replyBanner}>
-    <Text style={styles.replyText}>
-      Replying to <Text style={styles.replyUser}>@{replyContext.username}</Text>
-    </Text>
+                    <View style={styles.replyBanner}>
+                        <Text style={styles.replyText}>
+                            Replying to <Text style={styles.replyUser}>@{replyContext.username}</Text>
+                        </Text>
+                        <Pressable onPress={onCancelReply}>
+                            <Ionicons name="close" size={18} color={COLORS.secondaryLightGreyHex} />
+                        </Pressable>
+                    </View>
+                )}
 
-    <Pressable onPress={onCancelReply}>
-      <Ionicons name="close" size={18} color={COLORS.secondaryLightGreyHex} />
-    </Pressable>
-  </View>
-)}
                 {/* Text Input */}
                 <View style={styles.textInputContainer}>
                     <TextInput
@@ -114,10 +113,10 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
                     {/* Page Input (when focused or has content) */}
                     {showPageInput && (isFocused || commentText.length > 0) && (
                         <View style={styles.pageInputContainer}>
-                            <Ionicons 
-                                name="book-outline" 
-                                size={16} 
-                                color={COLORS.secondaryLightGreyHex} 
+                            <Ionicons
+                                name="book-outline"
+                                size={16}
+                                color={COLORS.secondaryLightGreyHex}
                             />
                             <Text style={styles.pageLabel}>At</Text>
                             <TextInput
@@ -151,21 +150,21 @@ export const CommentInputForm = forwardRef<CommentInputFormRef, CommentInputForm
                             style={[
                                 styles.submitButton,
                                 canSubmit && styles.submitButtonActive,
-                                !canSubmit && styles.submitButtonDisabled
+                                !canSubmit && styles.submitButtonDisabled,
                             ]}
                         >
                             {isLoading ? (
                                 <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
                             ) : (
                                 <>
-                                    <Ionicons 
-                                        name="send" 
-                                        size={18} 
-                                        color={canSubmit ? COLORS.primaryWhiteHex : COLORS.secondaryLightGreyHex} 
+                                    <Ionicons
+                                        name="send"
+                                        size={18}
+                                        color={canSubmit ? COLORS.primaryWhiteHex : COLORS.secondaryLightGreyHex}
                                     />
                                     <Text style={[
                                         styles.submitButtonText,
-                                        canSubmit && styles.submitButtonTextActive
+                                        canSubmit && styles.submitButtonTextActive,
                                     ]}>
                                         Post
                                     </Text>
@@ -203,25 +202,23 @@ const createStyles = (COLORS) => StyleSheet.create({
         paddingTop: SPACING.space_12,
     },
     replyBanner: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  backgroundColor: '#1f2933',
-  paddingHorizontal: SPACING.space_12,
-  paddingVertical: SPACING.space_8,
-  borderTopLeftRadius: BORDERRADIUS.radius_10,
-  borderTopRightRadius: BORDERRADIUS.radius_10,
-},
-
-replyText: {
-  color: COLORS.secondaryLightGreyHex,
-  fontSize: FONTSIZE.size_12,
-},
-
-replyUser: {
-  color: COLORS.primaryOrangeHex,
-  fontWeight: '600',
-},
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#1f2933',
+        paddingHorizontal: SPACING.space_12,
+        paddingVertical: SPACING.space_8,
+        borderTopLeftRadius: BORDERRADIUS.radius_10,
+        borderTopRightRadius: BORDERRADIUS.radius_10,
+    },
+    replyText: {
+        color: COLORS.secondaryLightGreyHex,
+        fontSize: FONTSIZE.size_12,
+    },
+    replyUser: {
+        color: COLORS.primaryOrangeHex,
+        fontWeight: '600',
+    },
     textInput: {
         fontSize: FONTSIZE.size_14,
         color: COLORS.primaryWhiteHex,

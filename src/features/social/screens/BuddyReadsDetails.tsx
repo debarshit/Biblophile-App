@@ -4,13 +4,10 @@ import {
   Text,
   View,
   Image,
-  ScrollView,
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
   Alert,
-  Share,
-  KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
@@ -18,7 +15,7 @@ import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../th
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import BuddyReadMembersSection from '../components/BuddyReadMembersSection';
 import BuddyReadCommentsSection, { BuddyReadCommentsSectionRef } from '../components/BuddyReadCommentsSection';
 import { useNavigation } from '@react-navigation/native';
@@ -27,6 +24,10 @@ import { CommentInputForm, CommentInputFormRef } from '../components/CommentInpu
 import ShareModal from '../../../components/ShareModal';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useTheme } from '../../../contexts/ThemeContext';
+import {
+  KeyboardAwareScrollView,
+  KeyboardStickyView,
+} from 'react-native-keyboard-controller';
 
 // Define the BuddyRead interface
 interface Member {
@@ -81,6 +82,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   } | null>(null);
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const { bottom } = useSafeAreaInsets();
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0]?.accessToken;
@@ -109,10 +111,9 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
       let isMemberUser = false;
 
       if (accessToken) {
-        // Only fetch user-specific data if accessToken is available
         const response = await instance.get(requests.fetchReadingStatusByWork(buddyReadData?.workId), {
           headers: {
-              Authorization: `Bearer ${userDetails[0].accessToken}`,
+            Authorization: `Bearer ${userDetails[0].accessToken}`,
           },
         });
 
@@ -123,7 +124,6 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
           progressPercentage: currentUserReadingStatusResponse.data.progressPercentage,
         };
 
-        // Check if the current user is the host & member
         isHostUser = buddyReadData?.host?.userId == currentUserData.userId;
         isMemberUser = buddyReadData?.members?.some(member => member.userId == currentUserData.userId) || false;
       }
@@ -142,18 +142,18 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   const handleReplyPress = useCallback((commentId: number, username: string, pageNumber: number) => {
     setReplyContext({ commentId, username, pageNumber });
     setTimeout(() => {
-        commentInputRef.current?.focus();
+      commentInputRef.current?.focus();
     }, 50);
   }, []);
 
   const handleCommentSubmit = useCallback(async (commentText: string, progressPercentage?: number) => {
     if (commentsSectionRef.current) {
-        await commentsSectionRef.current.submitComment(
-            commentText,
-            progressPercentage,
-            replyContext?.commentId ?? null
-        );
-        setReplyContext(null);
+      await commentsSectionRef.current.submitComment(
+        commentText,
+        progressPercentage,
+        replyContext?.commentId ?? null
+      );
+      setReplyContext(null);
     }
   }, [replyContext]);
 
@@ -177,9 +177,7 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
     try {
       const response = await instance.put(
         requests.updateBuddyReadDescription(buddyRead.buddyReadId),
-        {
-          description: description,
-        },
+        { description },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -213,7 +211,6 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
         );
         const response = joinLeaveResponse.data;
         if (response.data.status === 'added' || response.data.status === 'removed') {
-          console.log('Join/Leave action performed');
           fetchBuddyReadDetails(); // Refresh details
         } else {
           Alert.alert('Error', response.data.message || 'Failed to perform action');
@@ -253,18 +250,20 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container} >
+    <SafeAreaView style={styles.container}>
       <HeaderBar showBackButton={true} title='Buddy read' />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      <KeyboardAwareScrollView
+        style={styles.scrollViewContainer}
+        contentContainerStyle={styles.contentContainer}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={16}
       >
-      <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
         <TouchableOpacity onPress={sharePage} style={styles.shareButton}>
           <FontAwesome name="share" size={25} color={COLORS.primaryOrangeHex} />
         </TouchableOpacity>
+
         <Text style={styles.title}>{buddyRead.book_title}</Text>
+
         <View style={styles.bookDetailsContainer}>
           <TouchableOpacity onPress={() => navigation.navigate('Details', { id: buddyRead.bookId, type: 'Book' })}>
             <Image source={{ uri: convertHttpToHttps(buddyRead.book_photo) }} style={styles.bookImage} />
@@ -274,7 +273,11 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
               style={[
                 styles.actionButton,
                 {
-                  backgroundColor: isMember ? COLORS.primaryOrangeHex : buddyRead.members.length < buddyRead.maxMembers ? COLORS.primaryOrangeHex : COLORS.primaryLightGreyHex,
+                  backgroundColor: isMember
+                    ? COLORS.primaryOrangeHex
+                    : buddyRead.members.length < buddyRead.maxMembers
+                      ? COLORS.primaryOrangeHex
+                      : COLORS.primaryLightGreyHex,
                 },
               ]}
               onPress={joinOrLeave}
@@ -339,38 +342,39 @@ const BuddyReadsDetails: React.FC<Props> = ({ route }) => {
               onReplyPress={handleReplyPress}
               replyContextId={replyContext?.commentId ?? null}
               onContinueThread={(comment) => {
-              navigation.navigate('ThreadScreen', {
+                navigation.navigate('ThreadScreen', {
                   rootComment: comment,
                   buddyReadId,
                   currentUser,
                   isHost,
                   accessToken,
-              });
-          }}
+                });
+              }}
             />
           </>
         )}
-      </ScrollView>
-      {/* ADD: Fixed Comment Input at Bottom */}
-            {isMember && !isEditingDescription && (
-                <View style={styles.fixedCommentInputContainer}>
-                    <CommentInputForm
-                        ref={commentInputRef}
-                        onSubmit={handleCommentSubmit}
-                        isLoading={false}
-                        showPageInput
-                        initialPageNumber={replyContext?.pageNumber ?? currentUser.progressPercentage}
-                        placeholder={
-                            replyContext
-                                ? `Replying to ${replyContext.username}`
-                                : 'Share your thoughts...'
-                        }
-                        replyContext={replyContext}
-                        onCancelReply={() => setReplyContext(null)}
-                    />
-                </View>
-            )}
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+      {isMember && !isEditingDescription && (
+        <KeyboardStickyView offset={{ closed: 0, opened: bottom }}>
+          <View style={styles.fixedCommentInputContainer}>
+            <CommentInputForm
+              ref={commentInputRef}
+              onSubmit={handleCommentSubmit}
+              isLoading={false}
+              showPageInput
+              initialPageNumber={replyContext?.pageNumber ?? currentUser.progressPercentage}
+              placeholder={
+                replyContext
+                  ? `Replying to ${replyContext.username}`
+                  : 'Share your thoughts...'
+              }
+              replyContext={replyContext}
+              onCancelReply={() => setReplyContext(null)}
+            />
+          </View>
+        </KeyboardStickyView>
+      )}
+
       <ShareModal
         visible={shareModalVisible}
         onClose={() => setShareModalVisible(false)}
@@ -528,7 +532,7 @@ const createStyles = (COLORS) => StyleSheet.create({
     borderTopColor: COLORS.primaryGreyHex,
     paddingHorizontal: SPACING.space_15,
     paddingVertical: SPACING.space_10,
-    paddingBottom: Platform.OS === 'ios' ? SPACING.space_10 : SPACING.space_15,
+    paddingBottom: SPACING.space_10,
   },
 });
 
