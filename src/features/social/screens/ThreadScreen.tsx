@@ -5,8 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { CommentInputForm, CommentInputFormRef } from '../components/CommentInputForm';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 
 export default function ThreadScreen() {
     const navigation = useNavigation<any>();
@@ -21,6 +22,7 @@ export default function ThreadScreen() {
       } | null>(null);
     const { COLORS } = useTheme();
     const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+    const { bottom } = useSafeAreaInsets();
 
     const handleReplyPress = useCallback((commentId: number, username: string, pageNumber: number) => {
         setReplyContext({ commentId, username, pageNumber });
@@ -42,12 +44,7 @@ export default function ThreadScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-            >
-            <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
+            <KeyboardAwareScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled" bottomOffset={16}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -90,7 +87,8 @@ export default function ThreadScreen() {
                 rootCommentId={rootComment.commentId}
                 rootComment={rootComment} 
             />
-            </ScrollView>
+            </KeyboardAwareScrollView>
+            <KeyboardStickyView offset={{ closed: 0, opened: bottom }}>
             <CommentInputForm
                 ref={commentInputRef}
                 onSubmit={handleCommentSubmit}
@@ -105,7 +103,7 @@ export default function ThreadScreen() {
                 replyContext={replyContext}
                 onCancelReply={() => setReplyContext(null)}
             />
-            </KeyboardAvoidingView>
+            </KeyboardStickyView>
         </SafeAreaView>
     );
 }
