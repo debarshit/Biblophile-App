@@ -17,6 +17,7 @@ const OnboardingScreen = ({ navigation }: any) => {
       <Onboarding
         onDone={() => navigation.navigate('SignupLogin')}
         onSkip={() => navigation.navigate('SignupLogin')}
+        bottomBarColor={COLORS.primaryBlackHex}
         pages={[
           {
           //to ignore the warning saying title and subtitle are required
