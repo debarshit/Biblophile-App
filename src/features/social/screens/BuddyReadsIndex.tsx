@@ -16,7 +16,6 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import {
-  COLORS,
   FONTFAMILY,
   FONTSIZE,
   SPACING,
@@ -226,7 +225,7 @@ const BuddyReadsIndex = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Buddy Reads</Text>
