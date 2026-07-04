@@ -11,7 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -82,6 +82,7 @@ const MonthlyWrapScreen = ({ route, navigation }) => {
     }
 
     try {
+      //currently using legacy file system. Sort it in next update
       const localUri = `${FileSystem.cacheDirectory}${filename}`;
 
       const { status } = await FileSystem.downloadAsync(imageUrl, localUri);
