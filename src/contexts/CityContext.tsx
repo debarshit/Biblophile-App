@@ -10,6 +10,8 @@ type CityContextType = {
   latitude: number | null;
   longitude: number | null;
   setCoordinates: (lat: number, lng: number) => void;
+  isFromIndia: boolean | null;
+  detectedCity: string | null;
 };
 
 const CityContext = createContext<CityContextType | undefined>(undefined);
@@ -18,6 +20,8 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
   const { selectedCity, setSelectedCity, latitude, longitude, setCoordinates } = useStore();
   const [isCityModalOpen, setIsCityModalOpen] = useState<boolean>(false);
   const [cityModalType, setCityModalType] = useState<'firstLaunch' | 'bangaloreDetected' | null>(null);
+  const [isFromIndia, setIsFromIndia] = useState<boolean | null>(null);
+  const [detectedCity, setDetectedCity] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCityAndCoords = async () => {
@@ -26,7 +30,10 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
         const ipData = await ipApiResponse.json();
         const ipCity = ipData.city?.toLowerCase();
         const ipCountryCode = ipData.country_code;
+        setDetectedCity(ipCity);
+        if (!selectedCity) setSelectedCity(ipCity);
         const isFromIndia = ipCountryCode === 'IN';
+        setIsFromIndia(isFromIndia);
         setCoordinates(ipData.latitude, ipData.longitude);
 
         if (!isFromIndia) {
@@ -34,7 +41,7 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
           return; 
         }
 
-        const isInBangalore = ipCity === 'bengaluru' || ipCity === 'bangalore';
+        const isInBangalore = ipCity.toLowerCase() === 'bengaluru' || ipCity.toLowerCase() === 'bangalore';
 
         if (!selectedCity) {
           setCityModalType('firstLaunch');
@@ -55,7 +62,7 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <CityContext.Provider value={{ selectedCity, setSelectedCity, isCityModalOpen, setIsCityModalOpen, latitude, longitude, setCoordinates }}>
+    <CityContext.Provider value={{ selectedCity, setSelectedCity, isCityModalOpen, setIsCityModalOpen, latitude, longitude, setCoordinates, isFromIndia, detectedCity }}>
       {children}
       {isCityModalOpen && (
         <CityModal

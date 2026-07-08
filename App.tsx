@@ -292,7 +292,6 @@ const App = () => {
                     <Stack.Screen name="Library" component={LibraryScreen} options={{animation: 'slide_from_bottom'}} />
                     <Stack.Screen name="Discover" component={DiscoverScreen} options={{animation: 'slide_from_bottom'}} />
                     <Stack.Screen name="SearchScreen" component={SearchScreen} options={{animation: 'slide_from_bottom'}} />
-                    <Stack.Screen name="Shop" component={LibraryScreen} options={{animation: 'slide_from_bottom'}} />
                     <Stack.Screen name="Details" component={DetailsScreen} options={{animation: 'slide_from_bottom'}} />
                     <Stack.Screen name="Payment" component={PaymentScreen} options={{animation: 'slide_from_bottom'}} />
                     <Stack.Screen name="PaymentGateway" component={PaymentGatewayScreen} options={{animation: 'slide_from_right'}} />

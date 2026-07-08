@@ -180,11 +180,11 @@ const HomeScreen = ({navigation}: any) => {
         {/* Spotlight Section */}
         <Spotlights spotlights={spotlights} />
 
-        {/* Checkout bookshop only for Bengaluru users */}
-        {selectedCity === 'Bengaluru' && <View style={styles.bookshopSection}>
+        {/* Checkout city's library */}
+        <View style={styles.bookshopSection}>
           <View style={styles.headerContainer}>
             <Text style={styles.bookshopText}>Library</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Shop')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Library')}>
               <Text style={styles.seeMoreText}>See More</Text>
             </TouchableOpacity>
           </View>
@@ -224,7 +224,7 @@ const HomeScreen = ({navigation}: any) => {
               );
             }}
           />
-        </View>}
+        </View>
 
         <SeasonalRecommendations latitude={latitude} longitude={longitude} />
 
