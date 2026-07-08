@@ -72,7 +72,7 @@ const LibraryScreen = ({navigation}: any) => {
   const route = useRoute<any>();
   const { type, id, citySlug: paramCitySlug } = route.params || {};
 
-  const { selectedCity, isFromIndia } = useCity();
+  const { selectedCity, isFromIndia, detectedCity } = useCity();
   const activeCityName = paramCitySlug || selectedCity || "bengaluru";
   const citySlug = activeCityName.toLowerCase();
 
@@ -250,7 +250,7 @@ const LibraryScreen = ({navigation}: any) => {
 
   // Fetch city data
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken || !citySlug) return;
 
     async function fetchCityData() {
       try {
@@ -273,7 +273,7 @@ const LibraryScreen = ({navigation}: any) => {
     }
 
     fetchCityData();
-  }, [accessToken]);
+  }, [accessToken, citySlug]);
 
   // Group events by type
   const eventGroups = {
@@ -359,7 +359,7 @@ const LibraryScreen = ({navigation}: any) => {
         keyboardDismissMode="on-drag"
         contentContainerStyle={styles.ScrollViewFlex}>
         {/* App Header */}
-        <HeaderBar showBackButton={true} title=""/>
+        <HeaderBar showBackButton={true} title="" showLocationSelector={true}/>
 
         <Text style={styles.ScreenTitle}>
           Find the best{'\n'}book for you

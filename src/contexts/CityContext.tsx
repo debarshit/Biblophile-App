@@ -26,10 +26,10 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchCityAndCoords = async () => {
       try {
-        const ipApiResponse = await fetch('https://ipwho.is/');
+        const ipApiResponse = await fetch('https://ipapi.co/json/');  //alt option: https://ipwho.is/
         const ipData = await ipApiResponse.json();
         const ipCity = ipData.city?.toLowerCase();
-        const ipCountryCode = ipData.country_code;
+        const ipCountryCode = ipData.country;
         setDetectedCity(ipCity);
         if (!selectedCity) setSelectedCity(ipCity);
         const isFromIndia = ipCountryCode === 'IN';
@@ -45,10 +45,10 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
 
         if (!selectedCity) {
           setCityModalType('firstLaunch');
-          setIsCityModalOpen(true);
+          setIsCityModalOpen(false);
         } else if (selectedCity !== 'Bengaluru' && isInBangalore) {
           setCityModalType('bangaloreDetected');
-          setIsCityModalOpen(true);
+          setIsCityModalOpen(false);
         } else {
           setIsCityModalOpen(false);
         }
