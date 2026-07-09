@@ -53,7 +53,7 @@ const DetailsScreen = ({navigation, route}: any) => {
       ];
   
       //display rent price only for Bengaluru and only for Books
-      if (type === 'Book' && selectedCity == 'Bengaluru' && product['ProductRentPrice']) {
+      if (type === 'Book' && product['ProductRentPrice']) {
         const rentPrice = product['ProductRentPrice'];
         prices.push({
           size: 'Rent',
@@ -225,7 +225,7 @@ const DetailsScreen = ({navigation, route}: any) => {
         { size: 'Buy', price: productData['ProductPrice'] || null, currency: '₹' }
       ];
       // Display rent price only for Bengaluru and only for Books
-      if (productType === 'Book' && selectedCity === 'Bengaluru' && productData['ProductRentPrice']) {
+      if (productType === 'Book' && productData['ProductRentPrice']) {
         const rentPrice = productData['ProductRentPrice'];
         prices.push({
           size: 'Rent',

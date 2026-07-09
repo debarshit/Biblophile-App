@@ -251,10 +251,10 @@ const LibraryScreen = ({navigation}: any) => {
   // Fetch city data
   useEffect(() => {
     if (!accessToken || !citySlug) return;
+    setCityDataLoading(true);
 
     async function fetchCityData() {
       try {
-        setCityDataLoading(true);
         const headers = accessToken
           ? { Authorization: `Bearer ${accessToken}` }
           : {};
@@ -569,7 +569,7 @@ const LibraryScreen = ({navigation}: any) => {
         {/* Bangalore Events Newsletter CTA */}
         {(!cityPlaces || cityPlaces.length === 0) && (!cityEvents || cityEvents.length === 0) ? (
           <View style={styles.emptyCityContainer}>
-            <Text style={styles.emptyCityIcon}><FontAwesome6 name="map-location-dot" size={24} color="black" /></Text>
+            <Text style={styles.emptyCityIcon}><FontAwesome6 name="map-location-dot" size={24} color={COLORS.primaryOrangeHex} /></Text>
 
             <Text style={styles.emptyCityTitle}>
               Not available in this city yet
