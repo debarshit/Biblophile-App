@@ -43,15 +43,16 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
 
         const isInBangalore = ipCity.toLowerCase() === 'bengaluru' || ipCity.toLowerCase() === 'bangalore';
 
-        if (!selectedCity) {
-          setCityModalType('firstLaunch');
-          setIsCityModalOpen(false);
-        } else if (selectedCity !== 'Bengaluru' && isInBangalore) {
-          setCityModalType('bangaloreDetected');
-          setIsCityModalOpen(false);
-        } else {
-          setIsCityModalOpen(false);
-        }
+        //not blr specific anymore soo..
+        // if (!selectedCity) {
+        //   setCityModalType('firstLaunch');
+        //   setIsCityModalOpen(true);
+        // } else if (selectedCity !== 'Bengaluru' && isInBangalore) {
+        //   setCityModalType('bangaloreDetected');
+        //   setIsCityModalOpen(true);
+        // } else {
+        //   setIsCityModalOpen(false);
+        // }
 
       } catch (error) {
         console.error("Error fetching user city:", error);
