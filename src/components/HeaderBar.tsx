@@ -79,8 +79,12 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
         <View style={{ width: SPACING.space_36 }} />
       )}
 
-      {showLocationSelector && (
-        <TouchableOpacity 
+      {title ? (
+        <Text style={styles.HeaderText}>{title}</Text>
+      ) : showUsername && userDetails?.[0]?.userName ? (
+        <Text style={styles.HeaderText}>{userDetails[0].userName}</Text>
+      ) : (
+        showLocationSelector ? (<TouchableOpacity 
           style={styles.LocationSelectorContainer} 
           onPress={() => setCityModalVisible(true)}
         >
@@ -89,15 +93,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
             {selectedCity || "Select City"}
           </Text>
           <Ionicons name="chevron-down" size={14} color={COLORS.primaryLightGreyHex} />
-        </TouchableOpacity>
-      )}
-
-      {title ? (
-        <Text style={styles.HeaderText}>{title}</Text>
-      ) : showUsername && userDetails?.[0]?.userName ? (
-        <Text style={styles.HeaderText}>{userDetails[0].userName}</Text>
-      ) : (
-        <View />
+        </TouchableOpacity>) : (<View />)
       )}
 
       {rightComponent ? (

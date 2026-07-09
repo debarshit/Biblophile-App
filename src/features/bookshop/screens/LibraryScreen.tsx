@@ -19,7 +19,7 @@ import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import { AntDesign, Feather } from '@expo/vector-icons';
+import { AntDesign, Feather, FontAwesome6 } from '@expo/vector-icons';
 import {useStore} from '../../../store/store';
 import {
   BORDERRADIUS,
@@ -267,6 +267,8 @@ const LibraryScreen = ({navigation}: any) => {
         setCityEvents(eventsRes.data.data.items || []);
       } catch (error) {
         console.warn('Error fetching city data:', error);
+        setCityPlaces([]);
+        setCityEvents([]);
       } finally {
         setCityDataLoading(false);
       }
@@ -565,8 +567,25 @@ const LibraryScreen = ({navigation}: any) => {
         })}
 
         {/* Bangalore Events Newsletter CTA */}
-        {isFromIndia !== false && (
-        <View style={styles.newsletterContainer}>
+        {(!cityPlaces || cityPlaces.length === 0) && (!cityEvents || cityEvents.length === 0) ? (
+          <View style={styles.emptyCityContainer}>
+            <Text style={styles.emptyCityIcon}><FontAwesome6 name="map-location-dot" size={24} color="black" /></Text>
+
+            <Text style={styles.emptyCityTitle}>
+              Not available in this city yet
+            </Text>
+
+            <Text style={styles.emptyCityDescription}>
+              We haven't launched curated reading spots or events in{" "}
+              {citySlug ?? "this city"} yet.
+            </Text>
+
+            <Text style={styles.emptyCityHint}>
+              Check back later or select a different city to see what's happening.
+            </Text>
+          </View>
+        ) : 
+        (<View style={styles.newsletterContainer}>
           <Text style={styles.newsletterTitle}>
             Never miss a bookish event in {citySlug ?? "Bengaluru"}!
           </Text>
@@ -778,6 +797,42 @@ const createStyles = (COLORS) => StyleSheet.create({
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_14,
+  },
+  emptyCityContainer: {
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    marginHorizontal: SPACING.space_20,
+    marginTop: SPACING.space_32,
+    marginBottom: SPACING.space_20,
+    borderRadius: BORDERRADIUS.radius_25,
+    paddingVertical: SPACING.space_32,
+    paddingHorizontal: SPACING.space_24,
+    borderWidth: 1,
+    borderColor: COLORS.primaryGreyHex,
+    alignItems: 'center',
+  },
+  emptyCityIcon: {
+    marginBottom: SPACING.space_16,
+  },
+  emptyCityTitle: {
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+    textAlign: 'center',
+    marginBottom: SPACING.space_8,
+  },
+  emptyCityDescription: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: SPACING.space_8,
+  },
+  emptyCityHint: {
+    fontSize: FONTSIZE.size_12,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
   },
 });
 

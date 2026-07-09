@@ -56,10 +56,6 @@ const CityModal = ({ visibility, onClose, modalType = null }: CityModalProps) =>
       animationType="slide"
       transparent
     >
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-        style={{ flex: 1 }}
-      >
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContainer}>
             <View style={styles.header}>
@@ -132,7 +128,6 @@ const CityModal = ({ visibility, onClose, modalType = null }: CityModalProps) =>
             </View>
           </View>
         </View>
-      </KeyboardAvoidingView>
     </Modal>
   );
 };
