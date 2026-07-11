@@ -76,6 +76,9 @@ const requests = {
     fetchHotRecommendations: `${APIURL}recommendations/hot`,
     fetchCulturalRecommendations: `${APIURL}recommendations/cultural`,
     getFilteredRecommendations: `${APIURL}recommendations/filtered`,
+    fetchPersonalisedRecs: `${APIURL}recommendations/personalised`,
+    fetchSimilarToYourReads: `${APIURL}recommendations/similar-to-yours`,
+    fetchAIRecommendations: `${APIURL}recommendations/ai`,
 
     //city-discovery requests
     getCityEvents: (id: string) => `${APIURL}city-discover/${id}/events`,
@@ -173,6 +176,8 @@ const requests = {
     confirmRejectFriend:`${APIURL}social/user-relations/friend-request/action`,
     fetchPrivacyStatus:`${APIURL}social/user-relations/`,
     fetchSimilarUsers:`${APIURL}social/user-relations/similar-users`,
+    fetchReadingTwins: `${APIURL}social/user-relations/reading-twins`,
+    fetchFollowingFeed: (limit?: number, offset?: number) => `${APIURL}social/feed/following?limit=${limit ?? 20}&offset=${offset ?? 0}`,
 
     //privacy settings requests
     getPrivacySettings:`${APIURL}social/user-relations/privacy`,

@@ -35,6 +35,9 @@ import SeasonalRecommendations from '../components/SeasonalRecommendations';
 import BookGiveaway from '../components/BookGiveaway';
 import HotRecommendations from '../components/HotRecommendations';
 import CulturalRecommendations from '../components/CulturalRecommendations';
+import PersonalisedRecommendations from '../components/PersonalisedRecommendations';
+import SimilarToYourReads from '../components/SimilarToYourReads';
+import AIRecommendationsSection from '../components/AIRecommendationsSection';
 import MerchShopBanner from '../../../components/MerchShopBanner';
 import FilteredRecommendationsModal from '../components/FilteredRecommendationsModal';
 import { useAnalytics } from '../../../utils/analytics';
@@ -210,6 +213,12 @@ const DiscoverScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
+        {/* Personalised Recommendations — social circle picks */}
+        <PersonalisedRecommendations />
+
+        {/* Similar to Your Reads — taste-based picks */}
+        <SimilarToYourReads />
+
         {/* Seasonal reccos */}
         <SeasonalRecommendations />
 
@@ -224,6 +233,9 @@ const DiscoverScreen = ({ navigation }) => {
 
         {/* Indian voices */}
         <CulturalRecommendations />
+
+        {/* AI Picks — Gemini curated */}
+        <AIRecommendationsSection />
 
         {/* New releases/Trending/Must reads */}
         <HotRecommendations />
