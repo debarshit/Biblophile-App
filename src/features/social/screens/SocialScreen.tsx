@@ -18,14 +18,14 @@ const SocialScreen = ({ route }) => {
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const data = [
-    // {
-    //     tabLabel: 'News Feed',
-    //     component: NewsFeed,
-    // },
     {
-        tabLabel: 'Activity',
-        component: ActivityFeed,
+        tabLabel: 'News Feed',
+        component: NewsFeed,
     },
+    // {
+    //     tabLabel: 'Activity',
+    //     component: ActivityFeed,
+    // },
     {
         tabLabel: 'buddy Reads',
         component: buddyReadsIndex,
@@ -41,11 +41,11 @@ const SocialScreen = ({ route }) => {
     //   component: BookClubsIndex,
     //   props: {}, // (optional) additional props
     // },
-    {
-        tabLabel: 'Reading Twins',
-        component: ReadingTwins,
-        props: {},
-    },
+    // {
+    //     tabLabel: 'Reading Twins',
+    //     component: ReadingTwins,
+    //     props: {},
+    // },
   ];
 
   const initialIndex = data.findIndex(item => item.tabLabel === initialTab);

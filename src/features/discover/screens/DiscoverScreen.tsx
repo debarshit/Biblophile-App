@@ -152,7 +152,7 @@ const DiscoverScreen = ({ navigation }) => {
             <TextInput
               editable={false}
               pointerEvents="none"
-              placeholder="Find Your Book..."
+              placeholder="Find Your Book, friends..."
               placeholderTextColor={COLORS.primaryLightGreyHex}
               style={styles.textInputContainer}
             />
@@ -214,7 +214,7 @@ const DiscoverScreen = ({ navigation }) => {
         </View>
 
         {/* Personalised Recommendations — social circle picks */}
-        <PersonalisedRecommendations />
+        {/* <PersonalisedRecommendations /> */}
 
         {/* Similar to Your Reads — taste-based picks */}
         <SimilarToYourReads />
@@ -232,13 +232,13 @@ const DiscoverScreen = ({ navigation }) => {
         {/* <MerchShopBanner /> */}
 
         {/* Indian voices */}
-        <CulturalRecommendations />
+        {/* <CulturalRecommendations /> */}
 
         {/* AI Picks — Gemini curated */}
-        <AIRecommendationsSection />
+        {/* <AIRecommendationsSection /> */}
 
         {/* New releases/Trending/Must reads */}
-        <HotRecommendations />
+        {/* <HotRecommendations /> */}
 
       </Animated.ScrollView>
       

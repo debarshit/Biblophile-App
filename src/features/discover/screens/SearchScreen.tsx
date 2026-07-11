@@ -35,6 +35,7 @@ import HeaderBar from '../../../components/HeaderBar';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import SimilarUsers from '../../social/components/SimilarUsers';
 
 // Debounce search for better performance
 const useDebounce = (callback, delay) => {
@@ -424,11 +425,14 @@ const SearchScreen = ({ route }) => {
             </View>
           ) : (
             // Search Prompt
+            <>
             <View style={styles.searchPromptContainer}>
               <Feather name="users" size={48} color={COLORS.primaryLightGreyHex} style={{ marginBottom: SPACING.space_15 }} />
               <Text style={styles.promptTitle}>Search for readers</Text>
               <Text style={styles.promptSubtitle}>Find friends, reading twins, and book lovers</Text>
             </View>
+            {/* <SimilarUsers /> */}
+            </>
           )
         )}
         

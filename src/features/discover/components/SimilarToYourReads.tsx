@@ -156,7 +156,7 @@ const SimilarToYourReads = () => {
       {/* Header */}
       <View style={styles.headerContainer}>
         <View>
-          <Text style={styles.headerTitle}>📚 Similar to Your Reads</Text>
+          <Text style={styles.headerTitle}>Similar to Your Reads</Text>
           <Text style={styles.headerSubtitle}>
             Based on your genres, moods & reading style
           </Text>
