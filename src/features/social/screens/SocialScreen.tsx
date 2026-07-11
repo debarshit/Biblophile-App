@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 import React, { useMemo } from 'react';
 import Swiper from "react-native-screens-swiper";
+import NewsFeed from './NewsFeed';
 import ActivityFeed from './ActivityFeed';
 import buddyReadsIndex from './BuddyReadsIndex';
 import ReadAlongsIndex from './ReadAlongsIndex';
@@ -17,6 +18,10 @@ const SocialScreen = ({ route }) => {
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const data = [
+        {
+        tabLabel: 'News Feed',
+        component: NewsFeed,
+    },
     {
         tabLabel: 'Activity',
         component: ActivityFeed,
