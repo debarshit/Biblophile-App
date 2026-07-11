@@ -98,7 +98,7 @@ const SimilarToYourReads = () => {
 
   const renderBookItem = ({ item }: { item: SimilarItem }) => (
     <TouchableOpacity
-      onPress={() => navigation.push('Details', { id: item.workId, type: 'Work' })}
+      onPress={() => navigation.push('Details', { id: item.bookId, type: 'Work' })}
       style={styles.bookContainer}
       activeOpacity={0.8}
     >
