@@ -176,6 +176,7 @@ const requests = {
     confirmRejectFriend:`${APIURL}social/user-relations/friend-request/action`,
     fetchPrivacyStatus:`${APIURL}social/user-relations/`,
     fetchSimilarUsers:`${APIURL}social/user-relations/similar-users`,
+    searchUsers: (query: string) => `${APIURL}social/user-relations/search?q=${encodeURIComponent(query)}`,
     fetchReadingTwins: `${APIURL}social/user-relations/reading-twins`,
     fetchFollowingFeed: (limit?: number, offset?: number) => `${APIURL}social/feed/following?limit=${limit ?? 20}&offset=${offset ?? 0}`,
 

@@ -40,6 +40,7 @@ import MerchShopBanner from '../../../components/MerchShopBanner';
 import ChallengesBanner from '../components/ChallengesBanner';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import FriendActivityPreview from '../components/FriendActivityPreview';
 
 interface Spotlight {
   Id: string;
@@ -177,6 +178,8 @@ const HomeScreen = ({navigation}: any) => {
 
         <CurrentReadsSection />
  
+        <FriendActivityPreview />
+
         {/* Spotlight Section */}
         <Spotlights spotlights={spotlights} />
 
