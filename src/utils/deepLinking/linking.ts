@@ -71,6 +71,12 @@ const config = {
       path: ':type(streak|readingStreaks)/:action?',
       parse: { action: (action: string) => `${action}` },
     },
+    Notifications: {
+      path: 'notifications/:tab?',
+      parse: {
+        tab: (tab: string) => tab,
+      },
+    },
     Resources: {
       path: ':*', // The asterisk acts as a wildcard
     },

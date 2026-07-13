@@ -10,9 +10,13 @@ import requests from '../../../services/requests';
 import { useStore } from '../../../store/store';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useRoute } from '@react-navigation/native';
 
 const NotificationsScreen = () => {
-  const [activeTab, setActiveTab] = useState('notifications');
+  const route = useRoute();
+  const initialTab = (route.params as any)?.tab === 'friend-requests' ? 'friendRequests' : 'notifications';
+
+  const [activeTab, setActiveTab] = useState(initialTab ?? 'notifications');
   const [friendRequestCount, setFriendRequestCount] = useState(0);
   const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
   const [countsLoading, setCountsLoading] = useState(true);
@@ -66,6 +70,14 @@ const NotificationsScreen = () => {
   };
 
   useEffect(() => { fetchCounts(); }, []);
+
+  useEffect(() => {
+    if ((route.params as any)?.tab === 'friend-requests') {
+      setActiveTab('friendRequests');
+    } else {
+      setActiveTab('notifications');
+    }
+  }, [(route.params as any)?.tab]);
 
   const notificationTabs = [
     { 
