@@ -77,11 +77,11 @@ const PersonalisedRecommendations = () => {
           </View>
         )}
         {/* Avg rating badge — bottom right overlay */}
-        {item.avgRating > 0 && (
+        {item.avgRating > 0 && item.avgRating !== undefined && item.avgRating !== null && (
           <View style={styles.ratingBadge}>
             <Feather name="star" size={9} color={COLORS.primaryOrangeHex} />
             <Text style={styles.ratingBadgeText}>
-              {item.avgRating.toFixed(1)}
+              {parseFloat(item.avgRating.toString()).toFixed(1)}
             </Text>
           </View>
         )}

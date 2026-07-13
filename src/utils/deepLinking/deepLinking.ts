@@ -10,32 +10,57 @@ function matchPattern(path: string, pattern: string) {
   }
   
   // Convert pattern to regex: replace :param with a capture group
-  const regexString =
-    '^' +
-    pattern
-      .split('/')
-      .map((segment) => {
-        if (segment === '*') {
-          // Match everything for asterisk wildcard
-          paramNames.push('*');
-          return '(.*)';
-        }
-        if (segment.startsWith(':')) {
-          const isOptional = segment.endsWith('?');
-          const name = segment.replace(':', '').replace('?', '');
-          paramNames.push(name);
-          return isOptional ? '([^/]+)?' : '([^/]+)';
-        }
-        return segment;
-      })
-      .join('/') +
-    '$';
+  const segments = pattern.split('/');
+  let regexString = '^';
+
+  segments.forEach((segment, index) => {
+    // Add forward slash for segments after the first one
+    if (index > 0) {
+      // If this segment is optional, the preceding slash is also optional
+      if (segment.startsWith(':') && segment.endsWith('?')) {
+        regexString += '/?';
+      } else {
+        regexString += '/';
+      }
+    }
+
+    if (segment === '*') {
+      // Match everything for asterisk wildcard
+      paramNames.push('*');
+      regexString += '(.*)';
+      return;
+    }
+
+    if (segment.startsWith(':')) {
+      const isOptional = segment.endsWith('?');
+      let cleanSegment = segment.replace(':', '');
+      if (isOptional) cleanSegment = cleanSegment.slice(0, -1);
+
+      const regexMatch = cleanSegment.match(/^([a-zA-Z0-9_]+)\((.+)\)$/);
+      
+      if (regexMatch) {
+        const [, name, customRegex] = regexMatch;
+        paramNames.push(name);
+        regexString += isOptional ? `(${customRegex})?` : `(${customRegex})`;
+      } else {
+        paramNames.push(cleanSegment);
+        regexString += isOptional ? '([^/]+)?' : '([^/]+)';
+      }
+      return;
+    }
+
+    regexString += segment;
+  });
+
+  regexString += '$';
 
   const regex = new RegExp(regexString);
   const match = normalizedPath.match(regex);
 
   if (!match) return null;
 
+  // Filter out undefined matches from optional empty capture groups 
+  // to ensure array alignment with paramNames
   const values = match.slice(1);
   const params: Record<string, string | undefined> = {};
   paramNames.forEach((name, i) => {
