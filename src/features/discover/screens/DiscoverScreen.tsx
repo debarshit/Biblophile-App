@@ -214,7 +214,7 @@ const DiscoverScreen = ({ navigation }) => {
         </View>
 
         {/* Personalised Recommendations — social circle picks */}
-        {/* <PersonalisedRecommendations /> */}
+        <PersonalisedRecommendations />
 
         {/* Similar to Your Reads — taste-based picks */}
         <SimilarToYourReads />

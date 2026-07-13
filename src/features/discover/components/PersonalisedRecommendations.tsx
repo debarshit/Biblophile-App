@@ -114,12 +114,13 @@ const PersonalisedRecommendations = () => {
     );
   }
 
+  if (items.length === 0) {return null};
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.headerContainer}>
         <View>
-          <Text style={styles.headerTitle}>👥 Loved by Your Circle</Text>
+          <Text style={styles.headerTitle}>Loved by Your Circle</Text>
           <Text style={styles.headerSubtitle}>
             Books your friends and followings gave 4+ stars
           </Text>
