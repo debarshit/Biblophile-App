@@ -2,9 +2,11 @@ import { StyleSheet } from 'react-native';
 import React, { useMemo } from 'react';
 import Swiper from "react-native-screens-swiper";
 import NewsFeed from './NewsFeed';
+import ActivityFeed from './ActivityFeed';
 import buddyReadsIndex from './BuddyReadsIndex';
 import ReadAlongsIndex from './ReadAlongsIndex';
 import BookClubsIndex from './BookClubsIndex';
+import ReadingTwins from './ReadingTwins';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BORDERRADIUS, COLORS } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
@@ -20,6 +22,10 @@ const SocialScreen = ({ route }) => {
         tabLabel: 'News Feed',
         component: NewsFeed,
     },
+    // {
+    //     tabLabel: 'Activity',
+    //     component: ActivityFeed,
+    // },
     {
         tabLabel: 'buddy Reads',
         component: buddyReadsIndex,
@@ -34,6 +40,11 @@ const SocialScreen = ({ route }) => {
     //   tabLabel: 'Book Clubs',
     //   component: BookClubsIndex,
     //   props: {}, // (optional) additional props
+    // },
+    // {
+    //     tabLabel: 'Reading Twins',
+    //     component: ReadingTwins,
+    //     props: {},
     // },
   ];
 

@@ -6,6 +6,7 @@ import { useStore } from '../store/store';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import GradientBGIcon from './GradientBGIcon';
 import { useTheme } from '../contexts/ThemeContext';
+import CityModal from '../features/bookshop/components/CityModal';
 
 interface HeaderBarProps {
   title?: string;
@@ -13,6 +14,7 @@ interface HeaderBarProps {
   showLogo?: boolean;
   showNotifications?: boolean;
   showUsername?: boolean;
+  showLocationSelector?: boolean;
   rightComponent?: React.ReactNode;
 }
 
@@ -22,12 +24,16 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
   showLogo = false,
   showNotifications = false,
   showUsername = false,
+  showLocationSelector = false,
   rightComponent,
 }) => {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const navigation = useNavigation<any>();  
   const userDetails = useStore((state: any) => state.userDetails);
+  const selectedCity = useStore((state: any) => state.selectedCity);
+  const [cityModalVisible, setCityModalVisible] = useState(false);
+  
   const unreadNotificationCount = useStore(
     (state) => state.unreadNotificationCount
   );
@@ -70,7 +76,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
           style={styles.Image}
         />
       ) : (
-        <View style={{ width: SPACING.space_36 }} /> // placeholder to balance layout
+        <View style={{ width: SPACING.space_36 }} />
       )}
 
       {title ? (
@@ -78,7 +84,16 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
       ) : showUsername && userDetails?.[0]?.userName ? (
         <Text style={styles.HeaderText}>{userDetails[0].userName}</Text>
       ) : (
-        <View />
+        showLocationSelector ? (<TouchableOpacity 
+          style={styles.LocationSelectorContainer} 
+          onPress={() => setCityModalVisible(true)}
+        >
+          <Ionicons name="location" size={20} color={COLORS.primaryOrangeHex} />
+          <Text style={styles.LocationText} numberOfLines={1}>
+            {selectedCity || "Select City"}
+          </Text>
+          <Ionicons name="chevron-down" size={14} color={COLORS.primaryLightGreyHex} />
+        </TouchableOpacity>) : (<View />)
       )}
 
       {rightComponent ? (
@@ -101,6 +116,11 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
       ) : (
         <View style={{ width: 24 }} />
       )}
+
+      <CityModal 
+        visibility={cityModalVisible} 
+        onClose={() => setCityModalVisible(false)} 
+      />
     </View>
   );
 };
@@ -112,11 +132,22 @@ const createStyles = (COLORS) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    zIndex: 1,
+    zIndex: 10,
   },
   HeaderText: {
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_16,
+    color: COLORS.primaryWhiteHex,
+  },
+  LocationSelectorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    maxWidth: '45%',
+  },
+  LocationText: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
     color: COLORS.primaryWhiteHex,
   },
   Image: {
@@ -135,7 +166,6 @@ const createStyles = (COLORS) => StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 3,
   },
-
   badgeText: {
     color: "white",
     fontSize: 10,

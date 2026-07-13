@@ -57,7 +57,7 @@ const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
             >
                 <View style={styles.queueCardContent}>
                     <View style={styles.dragHandle}>
-                        <AntDesign name="menufold" size={20} color={COLORS.secondaryLightGreyHex} />
+                        <AntDesign name="menu-fold" size={20} color={COLORS.secondaryLightGreyHex} />
                     </View>
                     
                     <View style={styles.queueBookCover}>

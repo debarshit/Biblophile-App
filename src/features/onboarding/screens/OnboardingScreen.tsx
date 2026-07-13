@@ -13,10 +13,11 @@ const OnboardingScreen = ({ navigation }: any) => {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}>
       <Onboarding
         onDone={() => navigation.navigate('SignupLogin')}
         onSkip={() => navigation.navigate('SignupLogin')}
+        bottomBarColor={COLORS.primaryBlackHex}
         pages={[
           {
           //to ignore the warning saying title and subtitle are required

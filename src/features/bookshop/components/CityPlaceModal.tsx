@@ -111,7 +111,7 @@ export default function CityPlaceModal({ visible, onClose, place }: CityPlaceMod
 
                 {/* Share Button */}
                 <TouchableOpacity style={styles.shareButton} onPress={sharePlace}>
-                  <AntDesign name="sharealt" size={16} color="#fff" />
+                  <AntDesign name="share-alt" size={16} color="#fff" />
                 </TouchableOpacity>
               </View>
             )}

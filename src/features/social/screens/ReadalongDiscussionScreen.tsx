@@ -1,12 +1,13 @@
 import React, { useRef, useCallback, useMemo } from 'react';
-import { StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SPACING } from '../../../theme/theme';
+import { SPACING } from '../../../theme/theme';
 import { CommentInputForm } from '../components/CommentInputForm';
 import ReadalongCheckpointDetails, { type ReadalongCheckpointDetailsRef } from '../components/ReadalongCheckpointDetails';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 import HeaderBar from '../../../components/HeaderBar';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 
 interface Host {
     name: string;
@@ -61,23 +62,20 @@ const ReadalongCheckpointDiscussion: React.FC = () => {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <HeaderBar title="Checkpoint Discussion" showBackButton={true} />
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-            >
-                <ReadalongCheckpointDetails
-                    ref={checkpointDetailsRef}
-                    readalong={readalong}
-                    currentUser={currentUser}
-                    isMember={isMember}
-                    isHost={isHost}
-                    checkpointId={checkpointId}
-                    checkpointPrompt={checkpointPrompt}
-                />
+            <KeyboardAwareScrollView keyboardShouldPersistTaps="handled" bottomOffset={16}>
+            <ReadalongCheckpointDetails
+                ref={checkpointDetailsRef}
+                readalong={readalong}
+                currentUser={currentUser}
+                isMember={isMember}
+                isHost={isHost}
+                checkpointId={checkpointId}
+                checkpointPrompt={checkpointPrompt}
+            />
+            </KeyboardAwareScrollView>
 
-                {/* Fixed Comment Input at Bottom */}
-                {isMember && (
+            {isMember && (
+                <KeyboardStickyView >
                     <View style={styles.fixedCommentInputContainer}>
                         <CommentInputForm
                             onSubmit={handleCommentSubmit}
@@ -87,8 +85,8 @@ const ReadalongCheckpointDiscussion: React.FC = () => {
                             placeholder="Share your thoughts..."
                         />
                     </View>
-                )}
-            </KeyboardAvoidingView>
+                </KeyboardStickyView>
+            )}
         </SafeAreaView>
     );
 };
@@ -104,7 +102,6 @@ const createStyles = (COLORS) => StyleSheet.create({
         borderTopColor: COLORS.primaryGreyHex,
         paddingHorizontal: SPACING.space_15,
         paddingVertical: SPACING.space_10,
-        paddingBottom: Platform.OS === 'ios' ? SPACING.space_10 : SPACING.space_15,
     },
 });
 

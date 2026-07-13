@@ -10,6 +10,7 @@ import {
   Platform,
   ToastAndroid,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {FlatList} from 'react-native';
@@ -18,7 +19,7 @@ import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { LinearGradient } from 'expo-linear-gradient';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import { AntDesign, Feather } from '@expo/vector-icons';
+import { AntDesign, Feather, FontAwesome6 } from '@expo/vector-icons';
 import {useStore} from '../../../store/store';
 import {
   BORDERRADIUS,
@@ -39,6 +40,7 @@ import CityPlaceModal from '../components/CityPlaceModal';
 import EventModal from '../components/CityEventModal';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCity } from '../../../contexts/CityContext';
 
 const getGenresFromData = (data: any) => {
   const genres = ['All', ...new Set(data.map((item: any) => item.genre))];
@@ -68,7 +70,21 @@ const LibraryScreen = ({navigation}: any) => {
   const [newsletterLoading, setNewsletterLoading] = useState(false);
 
   const route = useRoute<any>();
-  const { type, id } = route.params || {};
+  const { type, id, citySlug: paramCitySlug } = route.params || {};
+
+  const { selectedCity, isFromIndia, detectedCity } = useCity();
+  const activeCityName = paramCitySlug || selectedCity || "bengaluru";
+  const citySlug = activeCityName.toLowerCase();
+
+  const newsletterListIds: Record<string, number> = {
+    bengaluru: 5,
+    bangalore: 5,
+    mumbai: 6,
+    delhi: 7,
+    hyderabad: 8,
+  };
+
+  const newsletterListId = newsletterListIds[citySlug ?? "bengaluru"] ?? 5;
 
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
@@ -97,42 +113,56 @@ const LibraryScreen = ({navigation}: any) => {
   });
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const handleNewsletterSubscribe = async () => {
-    if (!newsletterEmail.trim()) return;
+ const handleNewsletterSubscribe = async () => {
+  if (!newsletterEmail.trim()) return;
 
-    try {
-      setNewsletterLoading(true);
+  try {
+    setNewsletterLoading(true);
 
-      await instance.post(
-        'https://biblophile.com/blog/wp-admin/admin-ajax.php?action=tnp&na=s',
-        {
-          ne: newsletterEmail,
-          nl: ['1', '5'],
+    // Create a form-encoded payload
+    const formData = new URLSearchParams();
+    formData.append('action', 'tnp');
+    formData.append('na', 's');
+    formData.append('ne', newsletterEmail);
+    
+    // Explicitly target list ID
+    formData.append('nl[]', String(newsletterListId));
+
+    // Current unix timestamp 
+    // to appease the plugin's hidden input validation
+    const currentTimestamp = Math.floor(Date.now() / 1000).toString();
+    formData.append('ts', currentTimestamp);
+
+    const response = await instance.post(
+      'https://biblophile.com/blog/wp-admin/admin-ajax.php?action=tnp&na=s',
+      formData.toString(),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      Toast.show({
-        type: 'success',
-        text1: 'Subscribed successfully',
-        position: 'bottom',
-      });
-
-      setNewsletterEmail('');
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Something went wrong',
-        position: 'bottom',
-      });
-    } finally {
-      setNewsletterLoading(false);
+      }
+    );
+    if (typeof response.data === 'string' && response.data.includes('tnp-captcha')) {
+      throw new Error('Triggered anti-bot protection');
     }
-  };
+
+    Toast.show({
+      type: 'success',
+      text1: 'Subscribed successfully',
+      position: 'bottom',
+    });
+
+    setNewsletterEmail('');
+  } catch (error) {
+    Toast.show({
+      type: 'error',
+      text1: 'Something went wrong',
+      position: 'bottom',
+    });
+  } finally {
+    setNewsletterLoading(false);
+  }
+};
 
   const ListRef = useRef<FlatList<any>>(null);
 
@@ -220,30 +250,32 @@ const LibraryScreen = ({navigation}: any) => {
 
   // Fetch city data
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken || !citySlug) return;
+    setCityDataLoading(true);
 
     async function fetchCityData() {
       try {
-        setCityDataLoading(true);
         const headers = accessToken
           ? { Authorization: `Bearer ${accessToken}` }
           : {};
 
         const [placesRes, eventsRes] = await Promise.all([
-          instance.get(requests.getCityPlaces('1')),
-          instance.get(requests.getCityEvents('1'), { headers })
+          instance.get(requests.getCityPlaces(citySlug)),
+          instance.get(requests.getCityEvents(citySlug), { headers })
         ]);
         setCityPlaces(placesRes.data.data.items || []);
         setCityEvents(eventsRes.data.data.items || []);
       } catch (error) {
         console.warn('Error fetching city data:', error);
+        setCityPlaces([]);
+        setCityEvents([]);
       } finally {
         setCityDataLoading(false);
       }
     }
 
     fetchCityData();
-  }, [accessToken]);
+  }, [accessToken, citySlug]);
 
   // Group events by type
   const eventGroups = {
@@ -329,7 +361,7 @@ const LibraryScreen = ({navigation}: any) => {
         keyboardDismissMode="on-drag"
         contentContainerStyle={styles.ScrollViewFlex}>
         {/* App Header */}
-        <HeaderBar showBackButton={true} title=""/>
+        <HeaderBar showBackButton={true} title="" showLocationSelector={true}/>
 
         <Text style={styles.ScreenTitle}>
           Find the best{'\n'}book for you
@@ -535,9 +567,27 @@ const LibraryScreen = ({navigation}: any) => {
         })}
 
         {/* Bangalore Events Newsletter CTA */}
-        <View style={styles.newsletterContainer}>
+        {(!cityPlaces || cityPlaces.length === 0) && (!cityEvents || cityEvents.length === 0) ? (
+          <View style={styles.emptyCityContainer}>
+            <Text style={styles.emptyCityIcon}><FontAwesome6 name="map-location-dot" size={24} color={COLORS.primaryOrangeHex} /></Text>
+
+            <Text style={styles.emptyCityTitle}>
+              Not available in this city yet
+            </Text>
+
+            <Text style={styles.emptyCityDescription}>
+              We haven't launched curated reading spots or events in{" "}
+              {citySlug ?? "this city"} yet.
+            </Text>
+
+            <Text style={styles.emptyCityHint}>
+              Check back later or select a different city to see what's happening.
+            </Text>
+          </View>
+        ) : 
+        (<View style={styles.newsletterContainer}>
           <Text style={styles.newsletterTitle}>
-            Never miss a bookish event in Bangalore
+            Never miss a bookish event in {citySlug ?? "Bengaluru"}!
           </Text>
 
           <Text style={styles.newsletterSubtitle}>
@@ -563,11 +613,15 @@ const LibraryScreen = ({navigation}: any) => {
             style={styles.newsletterButton}
             onPress={handleNewsletterSubscribe}
           >
-            <Text style={styles.newsletterButtonText}>
-              Get Bangalore Updates
-            </Text>
+            {newsletterLoading ? 
+              <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} /> :
+              <Text style={styles.newsletterButtonText}>
+                Get {citySlug} Updates
+              </Text>
+            }
           </TouchableOpacity>
-        </View>
+        </View>)
+        }
 
         {/* Checkout Bookmarks shop */}
         {/* <Text style={styles.CoffeeBeansTitle}>Smart Bookmarks</Text>
@@ -743,6 +797,42 @@ const createStyles = (COLORS) => StyleSheet.create({
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_semibold,
     fontSize: FONTSIZE.size_14,
+  },
+  emptyCityContainer: {
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    marginHorizontal: SPACING.space_20,
+    marginTop: SPACING.space_32,
+    marginBottom: SPACING.space_20,
+    borderRadius: BORDERRADIUS.radius_25,
+    paddingVertical: SPACING.space_32,
+    paddingHorizontal: SPACING.space_24,
+    borderWidth: 1,
+    borderColor: COLORS.primaryGreyHex,
+    alignItems: 'center',
+  },
+  emptyCityIcon: {
+    marginBottom: SPACING.space_16,
+  },
+  emptyCityTitle: {
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+    textAlign: 'center',
+    marginBottom: SPACING.space_8,
+  },
+  emptyCityDescription: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: SPACING.space_8,
+  },
+  emptyCityHint: {
+    fontSize: FONTSIZE.size_12,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
   },
 });
 

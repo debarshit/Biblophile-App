@@ -10,6 +10,8 @@ type CityContextType = {
   latitude: number | null;
   longitude: number | null;
   setCoordinates: (lat: number, lng: number) => void;
+  isFromIndia: boolean | null;
+  detectedCity: string | null;
 };
 
 const CityContext = createContext<CityContextType | undefined>(undefined);
@@ -18,15 +20,20 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
   const { selectedCity, setSelectedCity, latitude, longitude, setCoordinates } = useStore();
   const [isCityModalOpen, setIsCityModalOpen] = useState<boolean>(false);
   const [cityModalType, setCityModalType] = useState<'firstLaunch' | 'bangaloreDetected' | null>(null);
+  const [isFromIndia, setIsFromIndia] = useState<boolean | null>(null);
+  const [detectedCity, setDetectedCity] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCityAndCoords = async () => {
       try {
-        const ipApiResponse = await fetch('https://ipwho.is/');
+        const ipApiResponse = await fetch('https://ipapi.co/json/');  //alt option: https://ipwho.is/
         const ipData = await ipApiResponse.json();
         const ipCity = ipData.city?.toLowerCase();
-        const ipCountryCode = ipData.country_code;
+        const ipCountryCode = ipData.country;
+        setDetectedCity(ipCity);
+        if (!selectedCity) setSelectedCity(ipCity);
         const isFromIndia = ipCountryCode === 'IN';
+        setIsFromIndia(isFromIndia);
         setCoordinates(ipData.latitude, ipData.longitude);
 
         if (!isFromIndia) {
@@ -34,17 +41,18 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
           return; 
         }
 
-        const isInBangalore = ipCity === 'bengaluru' || ipCity === 'bangalore';
+        const isInBangalore = ipCity.toLowerCase() === 'bengaluru' || ipCity.toLowerCase() === 'bangalore';
 
-        if (!selectedCity) {
-          setCityModalType('firstLaunch');
-          setIsCityModalOpen(true);
-        } else if (selectedCity !== 'Bengaluru' && isInBangalore) {
-          setCityModalType('bangaloreDetected');
-          setIsCityModalOpen(true);
-        } else {
-          setIsCityModalOpen(false);
-        }
+        //not blr specific anymore soo..
+        // if (!selectedCity) {
+        //   setCityModalType('firstLaunch');
+        //   setIsCityModalOpen(true);
+        // } else if (selectedCity !== 'Bengaluru' && isInBangalore) {
+        //   setCityModalType('bangaloreDetected');
+        //   setIsCityModalOpen(true);
+        // } else {
+        //   setIsCityModalOpen(false);
+        // }
 
       } catch (error) {
         console.error("Error fetching user city:", error);
@@ -55,7 +63,7 @@ export const CityProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <CityContext.Provider value={{ selectedCity, setSelectedCity, isCityModalOpen, setIsCityModalOpen, latitude, longitude, setCoordinates }}>
+    <CityContext.Provider value={{ selectedCity, setSelectedCity, isCityModalOpen, setIsCityModalOpen, latitude, longitude, setCoordinates, isFromIndia, detectedCity }}>
       {children}
       {isCityModalOpen && (
         <CityModal

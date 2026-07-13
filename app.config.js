@@ -11,7 +11,6 @@ export default {
   "platforms": [
     "ios",
     "android",
-    "web"
   ],
   "splash": {
     "image": "./assets/splash.png",

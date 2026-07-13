@@ -246,7 +246,7 @@ const createStyles = (COLORS: any) =>
         container: {
             flex: 1,
             backgroundColor: COLORS.primaryDarkGreyHex,
-            paddingHorizontal: SPACING.space_16,
+            paddingHorizontal: SPACING.space_8,
             paddingTop: SPACING.space_16,
         },
         centered: {

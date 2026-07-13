@@ -178,7 +178,7 @@ export default function BookClubDetailsScreen() {
         <SafeAreaView>
             <TouchableOpacity onPress={sharePage}>
             <GradientBGIcon 
-                name="sharealt" 
+                name="share-alt" 
                 color={COLORS.primaryLightGreyHex} 
                 size={FONTSIZE.size_16} 
             />
