@@ -60,7 +60,7 @@ const PersonalisedRecommendations = () => {
 
   const renderBookItem = ({ item }: { item: PersonalisedItem }) => (
     <TouchableOpacity
-      onPress={() => navigation.push('Details', { id: item.workId, type: 'Work' })}
+      onPress={() => navigation.push('Details', { id: item.bookId, type: 'Book' })}
       style={styles.bookContainer}
       activeOpacity={0.8}
     >
