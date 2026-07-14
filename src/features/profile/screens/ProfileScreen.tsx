@@ -193,7 +193,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
 
             const response = updateResponse.data;
 
-            if (response.data.message === "Updated") {
+            if (response.data.message === "User data updated") {
                 setMessage(fieldKey, 'Updated successfully');
                 updateProfile(config.storeField, value.trim());
                 // Update original values
