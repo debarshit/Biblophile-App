@@ -94,12 +94,12 @@ const PersonalisedRecommendations = () => {
       {/* Friend boost pill or connection count pill */}
       {item.friendBoost ? (
         <View style={styles.friendPill}>
-          <Text style={styles.friendPillText}>👥 Friend pick</Text>
+          <Text style={styles.friendPillText}>Friend pick</Text>
         </View>
       ) : (
         <View style={styles.connectionPill}>
           <Text style={styles.connectionPillText}>
-            ⭐ {item.connectionCount} readers
+            {item.connectionCount} readers
           </Text>
         </View>
       )}
