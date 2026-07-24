@@ -14,20 +14,20 @@ import { useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { Feather, Ionicons } from '@expo/vector-icons';
 
-import instance from '../../../services/axios';
-import requests from '../../../services/requests';
-import { useTheme } from '../../../contexts/ThemeContext';
+import instance from '../../../../services/axios';
+import requests from '../../../../services/requests';
+import { useTheme } from '../../../../contexts/ThemeContext';
 import {
   FONTFAMILY,
   FONTSIZE,
   SPACING,
   BORDERRADIUS,
-} from '../../../theme/theme';
+} from '../../../../theme/theme';
 
 import ArcCard from '../components/ArcCard';
 import ArcModal, { ArcCampaign, UserApplication } from '../components/ArcModal';
 import ArcHowItWorksModal from '../components/ArcHowItWorksModal';
-import HeaderBar from '../../../components/HeaderBar';
+import HeaderBar from '../../../../components/HeaderBar';
 
 interface EligibilityData {
   reviewRate: number;

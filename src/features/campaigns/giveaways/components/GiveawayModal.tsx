@@ -14,17 +14,17 @@ import {
   Platform,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../../contexts/ThemeContext';
 import {
   FONTFAMILY,
   FONTSIZE,
   SPACING,
   BORDERRADIUS,
-} from '../../../theme/theme';
+} from '../../../../theme/theme';
 import { AntDesign, Feather, Ionicons } from '@expo/vector-icons';
-import instance from '../../../services/axios';
-import requests from '../../../services/requests';
-import { useAnalytics } from '../../../utils/analytics';
+import instance from '../../../../services/axios';
+import requests from '../../../../services/requests';
+import { useAnalytics } from '../../../../utils/analytics';
 
 export interface GiveawayCampaign {
   id: number;

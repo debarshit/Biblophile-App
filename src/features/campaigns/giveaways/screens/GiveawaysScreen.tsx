@@ -14,21 +14,21 @@ import { useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { Feather, Ionicons } from '@expo/vector-icons';
 
-import instance from '../../../services/axios';
-import requests from '../../../services/requests';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { useStore } from '../../../store/store';
+import instance from '../../../../services/axios';
+import requests from '../../../../services/requests';
+import { useTheme } from '../../../../contexts/ThemeContext';
+import { useStore } from '../../../../store/store';
 import {
   FONTFAMILY,
   FONTSIZE,
   SPACING,
   BORDERRADIUS,
-} from '../../../theme/theme';
+} from '../../../../theme/theme';
 
 import GiveawayCard from '../components/GiveawayCard';
 import GiveawayModal, { GiveawayCampaign } from '../components/GiveawayModal';
 import GiveawayHowItWorksModal from '../components/GiveawayHowItWorksModal';
-import HeaderBar from '../../../components/HeaderBar';
+import HeaderBar from '../../../../components/HeaderBar';
 
 interface UserWin {
   giveawayId: number;

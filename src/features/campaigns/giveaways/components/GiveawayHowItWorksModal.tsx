@@ -7,13 +7,13 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../../contexts/ThemeContext';
 import {
   FONTFAMILY,
   FONTSIZE,
   SPACING,
   BORDERRADIUS,
-} from '../../../theme/theme';
+} from '../../../../theme/theme';
 import { AntDesign } from '@expo/vector-icons';
 
 interface Props {
