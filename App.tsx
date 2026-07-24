@@ -60,6 +60,8 @@ import AddEditionScreen from './src/features/discover/screens/AddEditionScreen';
 import ReadalongCheckpointDiscussion from './src/features/social/screens/ReadalongDiscussionScreen';
 import ChallengePromptDetailsScreen from './src/features/challenges/screens/ChallengePromptDetailsScreen';
 import ThreadScreen from './src/features/social/screens/ThreadScreen';
+import GiveawaysScreen from './src/features/giveaways/screens/GiveawaysScreen';
+import AdvanceReadingCopiesScreen from './src/features/arcs/screens/AdvanceReadingCopiesScreen';
 import { ThemeProvider } from './src/contexts/ThemeContext';
 import PrivacySettingsScreen from './src/features/settings/screens/PrivacySettingsScreen';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -330,6 +332,8 @@ const App = () => {
                     <Stack.Screen name="Editions" component={EditionsScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="AddEdition" component={AddEditionScreen} options={{animation: 'slide_from_bottom'}} />
                     <Stack.Screen name="ThreadScreen" component={ThreadScreen} />
+                    <Stack.Screen name="Giveaways" component={GiveawaysScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="AdvanceReadingCopies" component={AdvanceReadingCopiesScreen} options={{animation: 'slide_from_bottom'}} />
                   </Stack.Navigator>
                 </CityProvider>
               ) : (

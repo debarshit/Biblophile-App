@@ -149,8 +149,22 @@ const requests = {
     fetchBooksFinishedByDay: `${APIURL}reading/reading-insights/books-finished-by-day`,
     fetchReadingOverview: `${APIURL}reading/reading-insights/overview`,
 
-    //give-away requests
-    fetchGiveawayBooks: `${APIURL}giveaways/books`,
+    //give-away marketing requests
+    getActiveGiveaways: `${APIURL}marketing/giveaways`,
+    getGiveawayById: (id: string | number) => `${APIURL}marketing/giveaways/${id}`,
+    getUserWonGiveaways: `${APIURL}marketing/giveaways/user/won`,
+    joinGiveaway: (id: string | number) => `${APIURL}marketing/giveaways/${id}/join`,
+    claimGiveawayPrize: (id: string | number) => `${APIURL}marketing/giveaways/${id}/claim`,
+
+    //advance reading copies (ARC) requests
+    getActiveArcCampaigns: `${APIURL}marketing/arcs`,
+    getARCById: (id: string | number) => `${APIURL}marketing/arcs/${id}`,
+    getUserAppliedArcs: `${APIURL}marketing/arcs/user/applied`,
+    getUserArcEligibility: `${APIURL}marketing/arcs/user/eligibility`,
+    applyForArc: (id: string | number) => `${APIURL}marketing/arcs/${id}/apply`,
+    submitArcReview: (id: string | number) => `${APIURL}marketing/arcs/${id}/submit-review`,
+    getArcFeedbackMessages: (appId: string | number) => `${APIURL}marketing/arcs/applications/${appId}/feedback`,
+    sendArcFeedbackMessage: (appId: string | number) => `${APIURL}marketing/arcs/applications/${appId}/feedback`,
 
     //payment requests
     paymentRequest: `${APIURL}payments/request`,
