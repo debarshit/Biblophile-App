@@ -149,6 +149,10 @@ const requests = {
     fetchBooksFinishedByDay: `${APIURL}reading/reading-insights/books-finished-by-day`,
     fetchReadingOverview: `${APIURL}reading/reading-insights/overview`,
 
+    //social profile links
+    getSocialLinks: `${APIURL}marketing/profiles/user/socials`,
+    updateSocialLinks: `${APIURL}marketing/profiles/user/socials`,
+
     //give-away marketing requests
     getActiveGiveaways: `${APIURL}marketing/giveaways`,
     getGiveawayById: (id: string | number) => `${APIURL}marketing/giveaways/${id}`,

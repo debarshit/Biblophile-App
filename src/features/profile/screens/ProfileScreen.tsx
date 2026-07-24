@@ -12,6 +12,9 @@ import { COLORS, FONTFAMILY, FONTSIZE } from '../../../theme/theme';
 import HeaderBar from '../../../components/HeaderBar';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Entypo, FontAwesome5 } from '@expo/vector-icons';
+
+type TabKey = 'profile' | 'social';
 
 const ProfileScreen = ({ navigation, route }: any) => {
     const userDetails = useStore((state: any) => state.userDetails);
@@ -21,6 +24,8 @@ const ProfileScreen = ({ navigation, route }: any) => {
     const [avatar, setAvatar] = useState<string>(userDetails[0].profilePic);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+
+    const [activeTab, setActiveTab] = useState<TabKey>('profile');
 
     const { COLORS } = useTheme();
     const styles = useMemo(() => createStyles(COLORS), [COLORS]);
@@ -154,6 +159,61 @@ const ProfileScreen = ({ navigation, route }: any) => {
     const [updateMessages, setUpdateMessages] = useState<{ [key: string]: { text: string; color: string } }>({});
     const [updatingFields, setUpdatingFields] = useState<{ [key: string]: boolean }>({});
     const [focusedInput, setFocusedInput] = useState<string>('');
+
+    // ── Social Links ─────────────────────────────────────────────────────────
+    const [socials, setSocials] = useState({
+        instagram: '',
+        twitter: '',
+        tiktok: '',
+        goodreads: '',
+        website: '',
+    });
+    const [socialsLoading, setSocialsLoading] = useState(false);
+    const [socialsMessage, setSocialsMessage] = useState<{ text: string; isError: boolean } | null>(null);
+
+    useEffect(() => {
+        fetchSocialLinks();
+    }, []);
+
+    const fetchSocialLinks = async () => {
+        try {
+            const res = await instance.get(requests.getSocialLinks, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            if (res.data?.data) {
+                const d = res.data.data;
+                setSocials({
+                    instagram: d.instagram || '',
+                    twitter: d.twitter || '',
+                    tiktok: d.tiktok || '',
+                    goodreads: d.goodreads || '',
+                    website: d.website || '',
+                });
+            }
+        } catch (err) {
+            console.log('Error fetching social links:', err);
+        }
+    };
+
+    const saveSocialLinks = async () => {
+        setSocialsLoading(true);
+        setSocialsMessage(null);
+        try {
+            const res = await instance.put(requests.updateSocialLinks, socials, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            setSocialsMessage({ text: res.data?.message || 'Social links updated!', isError: false });
+            fetchSocialLinks();
+        } catch (err: any) {
+            setSocialsMessage({
+                text: err?.response?.data?.message || 'Failed to update social links.',
+                isError: true,
+            });
+        } finally {
+            setSocialsLoading(false);
+            setTimeout(() => setSocialsMessage(null), 4000);
+        }
+    };
 
     const setFieldValue = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -327,7 +387,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
                 <KeyboardAwareScrollView
                     style={styles.scrollContainer}
                     contentContainerStyle={styles.scrollContent}
-                    bottomOffset={40} // Margin offset space when keyboard opens up
+                    bottomOffset={100} // Margin offset space when keyboard opens up (accounts for KeyboardToolbar height too)
                 >
                     <HeaderBar showBackButton={true} title='Edit Profile'/>
                     <View style={styles.wrapper}>
@@ -349,33 +409,124 @@ const ProfileScreen = ({ navigation, route }: any) => {
                             )}
                         </TouchableOpacity>
 
-                        {Object.keys(fieldConfig).map(renderField)}
-
-                        {/* Password Section */}
-                        <View style={styles.passwordSection}>
-                            <Text style={styles.sectionTitle}>Change Password</Text>
-                            
-                            {renderPasswordInput(password, setPassword, 'New Password', 'password')}
-                            {renderPasswordInput(passwordCnf, setPasswordCnf, 'Confirm New Password', 'passwordCnf')}
-                            
-                            {(password || passwordCnf) && (
-                                <TouchableOpacity
-                                    onPress={handlePasswordUpdate}
-                                    style={[styles.button, updatingFields.password && styles.disabledButton]}
-                                    disabled={updatingFields.password}
-                                >
-                                    <Text style={styles.buttonText}>
-                                        {updatingFields.password ? 'Updating Password...' : 'Update Password'}
-                                    </Text>
-                                </TouchableOpacity>
-                            )}
-                            
-                            {updateMessages.password && (
-                                <Text style={[styles.fieldMessage, { color: updateMessages.password.color }]}>
-                                    {updateMessages.password.text}
+                        {/* Tab Bar */}
+                        <View style={styles.tabBar}>
+                            <TouchableOpacity
+                                style={[styles.tabItem, activeTab === 'profile' && styles.tabItemActive]}
+                                onPress={() => setActiveTab('profile')}
+                            >
+                                <Text style={[styles.tabLabel, activeTab === 'profile' && styles.tabLabelActive]}>
+                                    Profile
                                 </Text>
-                            )}
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.tabItem, activeTab === 'social' && styles.tabItemActive]}
+                                onPress={() => setActiveTab('social')}
+                            >
+                                <Text style={[styles.tabLabel, activeTab === 'social' && styles.tabLabelActive]}>
+                                    Social Links
+                                </Text>
+                            </TouchableOpacity>
                         </View>
+
+                        {activeTab === 'profile' && (
+                            <View style={styles.tabContent}>
+                                {Object.keys(fieldConfig).map(renderField)}
+
+                                {/* Password Section */}
+                                <View style={styles.passwordSection}>
+                                    <Text style={styles.sectionTitle}>Change Password</Text>
+
+                                    {renderPasswordInput(password, setPassword, 'New Password', 'password')}
+                                    {renderPasswordInput(passwordCnf, setPasswordCnf, 'Confirm New Password', 'passwordCnf')}
+
+                                    {(password || passwordCnf) && (
+                                        <TouchableOpacity
+                                            onPress={handlePasswordUpdate}
+                                            style={[styles.button, updatingFields.password && styles.disabledButton]}
+                                            disabled={updatingFields.password}
+                                        >
+                                            <Text style={styles.buttonText}>
+                                                {updatingFields.password ? 'Updating Password...' : 'Update Password'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+
+                                    {updateMessages.password && (
+                                        <Text style={[styles.fieldMessage, { color: updateMessages.password.color }]}>
+                                            {updateMessages.password.text}
+                                        </Text>
+                                    )}
+                                </View>
+                            </View>
+                        )}
+
+                        {activeTab === 'social' && (
+                            <View style={styles.tabContent}>
+                                {/* Social Links Section */}
+                                <View style={styles.socialSection}>
+                                    <Text style={styles.socialHint}>
+                                        Adding your social profiles increases your chances of being selected for ARC campaigns.
+                                    </Text>
+
+                                    {([
+                                        { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/yourusername', icon: <Entypo name="instagram" size={16} color={COLORS.primaryWhiteHex} /> },
+                                        { key: 'twitter',   label: 'Twitter (X)', placeholder: 'https://twitter.com/yourusername',   icon: <Entypo name="twitter" size={16} color={COLORS.primaryWhiteHex} /> },
+                                        { key: 'tiktok',    label: 'TikTok',      placeholder: 'https://tiktok.com/@yourusername', icon: <FontAwesome5 name="tiktok" size={16} color={COLORS.primaryWhiteHex} /> },
+                                        { key: 'goodreads', label: 'Goodreads',   placeholder: 'https://goodreads.com/user/show/...', icon: <FontAwesome5 name="goodreads" size={16} color={COLORS.primaryWhiteHex} /> },
+                                        { key: 'website',   label: 'Website / Blog', placeholder: 'https://mybookblog.com',        icon: <FontAwesome5 name="blog" size={16} color={COLORS.primaryWhiteHex} /> },
+                                    ] as const).map(({ key, label, placeholder, icon }) => (
+                                        <View key={key} style={styles.socialFieldContainer}>
+                                            <View style={styles.socialLabelRow}>
+                                                <Text style={styles.socialEmoji}>{icon}</Text>
+                                                <Text style={styles.socialLabel}>{label}</Text>
+                                            </View>
+                                            <View style={[
+                                                styles.inputWrapper,
+                                                focusedInput === `social_${key}` && styles.highlightedInput,
+                                            ]}>
+                                                <TextInput
+                                                    style={styles.input}
+                                                    placeholder={placeholder}
+                                                    placeholderTextColor={COLORS.secondaryLightGreyHex}
+                                                    autoCapitalize="none"
+                                                    keyboardType="url"
+                                                    autoCorrect={false}
+                                                    value={socials[key]}
+                                                    onFocus={() => setFocusedInput(`social_${key}`)}
+                                                    onBlur={() => setFocusedInput('')}
+                                                    onChangeText={(text) => setSocials(prev => ({ ...prev, [key]: text }))}
+                                                />
+                                            </View>
+                                        </View>
+                                    ))}
+
+                                    {socialsMessage && (
+                                        <View style={[
+                                            styles.socialsMessageBox,
+                                            { borderColor: socialsMessage.isError ? COLORS.primaryRedHex : COLORS.primaryOrangeHex },
+                                        ]}>
+                                            <Text style={[
+                                                styles.socialsMessageText,
+                                                { color: socialsMessage.isError ? COLORS.primaryRedHex : COLORS.primaryOrangeHex },
+                                            ]}>
+                                                {socialsMessage.text}
+                                            </Text>
+                                        </View>
+                                    )}
+
+                                    <TouchableOpacity
+                                        style={[styles.button, socialsLoading && styles.disabledButton]}
+                                        onPress={saveSocialLinks}
+                                        disabled={socialsLoading}
+                                    >
+                                        <Text style={styles.buttonText}>
+                                            {socialsLoading ? 'Saving...' : 'Save Social Profiles'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
                     </View>
                 </KeyboardAwareScrollView>
             </SafeAreaView>
@@ -439,6 +590,35 @@ const createStyles = (COLORS: any) => StyleSheet.create({
         marginTop: 10,
         marginBottom: 10,
     },
+    // Tabs
+    tabBar: {
+        flexDirection: 'row',
+        width: 300,
+        backgroundColor: COLORS.secondaryDarkGreyHex,
+        borderRadius: 8,
+        padding: 4,
+        marginBottom: 20,
+    },
+    tabItem: {
+        flex: 1,
+        paddingVertical: 8,
+        borderRadius: 6,
+        alignItems: 'center',
+    },
+    tabItemActive: {
+        backgroundColor: COLORS.primaryOrangeHex,
+    },
+    tabLabel: {
+        fontSize: FONTSIZE.size_14,
+        fontFamily: FONTFAMILY.poppins_medium,
+        color: COLORS.secondaryLightGreyHex,
+    },
+    tabLabelActive: {
+        color: COLORS.primaryWhiteHex,
+    },
+    tabContent: {
+        width: 300,
+    },
     fieldContainer: {
         marginBottom: 15,
         width: 300,
@@ -495,8 +675,8 @@ const createStyles = (COLORS: any) => StyleSheet.create({
         textAlign: 'center',
     },
     passwordSection: {
-        width: 300,
-        marginTop: 20,
+        width: '100%',
+        marginTop: 10,
         paddingTop: 20,
         borderTopWidth: 1,
         borderTopColor: COLORS.primaryLightGreyHex,
@@ -520,5 +700,52 @@ const createStyles = (COLORS: any) => StyleSheet.create({
         fontSize: FONTSIZE.size_16,
         fontFamily: FONTFAMILY.poppins_medium,
         textAlign: 'center',
+    },
+    // Social links section
+    socialSection: {
+        width: '100%',
+        paddingBottom: 10,
+    },
+    socialHint: {
+        fontSize: FONTSIZE.size_12,
+        fontFamily: FONTFAMILY.poppins_regular,
+        color: COLORS.primaryWhiteHex,
+        textAlign: 'center',
+        marginBottom: 16,
+        lineHeight: 18,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(209,120,66,0.25)',
+    },
+    socialFieldContainer: {
+        marginBottom: 12,
+    },
+    socialLabelRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 5,
+    },
+    socialEmoji: {
+        fontSize: 14,
+    },
+    socialLabel: {
+        fontSize: FONTSIZE.size_12,
+        fontFamily: FONTFAMILY.poppins_semibold,
+        color: COLORS.secondaryLightGreyHex,
+    },
+    socialsMessageBox: {
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        marginTop: 4,
+        marginBottom: 4,
+    },
+    socialsMessageText: {
+        fontSize: FONTSIZE.size_12,
+        fontFamily: FONTFAMILY.poppins_medium,
     },
 });
