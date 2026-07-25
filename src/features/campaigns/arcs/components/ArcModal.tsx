@@ -71,6 +71,7 @@ interface Props {
   arc: ArcCampaign | null;
   // optional: if we already know the user has an application (from the list screen)
   userApplication?: UserApplication | null;
+  navigation?: any;
 }
 
 const formatDate = (dateStr: string) => {
@@ -93,7 +94,7 @@ const REVIEWER_EXPECTATIONS = [
   'Provide private feedback to the author',
 ];
 
-export default function ArcModal({ visible, onClose, arc, userApplication }: Props) {
+export default function ArcModal({ visible, onClose, arc, userApplication, navigation }: Props) {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const analytics = useAnalytics();
@@ -190,6 +191,16 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
     setNewMessage('');
     setMessages([]);
     onClose();
+  };
+
+  const handleViewBook = () => {
+    if (!arc?.bookId || !navigation) return;
+    handleClose();
+    navigation.navigate('Details', {
+      id: String(arc.bookId),
+      type: 'Book',
+      arcId: arc.id,
+    });
   };
 
   const renderMessage = ({ item }: { item: FeedbackMessage }) => {
@@ -382,7 +393,9 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
                   </View>
 
                   <Text style={styles.title}>{arc.title}</Text>
-                  <Text style={styles.bookName}>{arc.bookName}</Text>
+                  <TouchableOpacity onPress={handleViewBook} activeOpacity={0.7}>
+                    <Text style={[styles.bookName, navigation && styles.bookNameLink]}>{arc.bookName}</Text>
+                  </TouchableOpacity>
 
                   <View style={styles.datesRow}>
                     <Feather name="calendar" size={13} color={COLORS.primaryOrangeHex} />
@@ -517,6 +530,7 @@ const createStyles = (COLORS: any) =>
     metaTagText: { fontSize: FONTSIZE.size_12, fontFamily: FONTFAMILY.poppins_medium, color: COLORS.primaryOrangeHex },
     title: { fontSize: FONTSIZE.size_20, fontFamily: FONTFAMILY.poppins_semibold, color: COLORS.primaryWhiteHex, marginBottom: SPACING.space_4 },
     bookName: { fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_regular, color: COLORS.secondaryLightGreyHex, marginBottom: SPACING.space_10 },
+    bookNameLink: { color: COLORS.primaryOrangeHex, textDecorationLine: 'underline' },
     datesRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: SPACING.space_12 },
     dateText: { fontSize: FONTSIZE.size_12, fontFamily: FONTFAMILY.poppins_regular, color: COLORS.primaryOrangeHex },
     description: { fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_regular, color: COLORS.secondaryLightGreyHex, lineHeight: 22, marginBottom: SPACING.space_16 },

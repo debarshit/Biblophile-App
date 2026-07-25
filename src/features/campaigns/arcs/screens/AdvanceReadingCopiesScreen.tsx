@@ -325,6 +325,7 @@ const AdvanceReadingCopiesScreen = ({ navigation }: any) => {
         arc={selectedArc}
         userApplication={selectedApp}
         onClose={closeArc}
+        navigation={navigation}
       />
       <ArcHowItWorksModal
         visible={howItWorksVisible}

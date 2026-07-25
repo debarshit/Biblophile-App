@@ -15,6 +15,7 @@ import TagSelectorModal from './TagSelectorModal';
 import { hmsToSeconds, secondsToHMS } from '../../../utils/timeConversion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-controller';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ReadingStatusModalProps {
   visible: boolean;
@@ -236,6 +237,35 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
         onUpdate({ userBookId, status, localProgressValue, tags: bookTags });
         showToast('Updated successfully!');
         onClose();
+
+        // ─── Campaign attribution: shelf_add ───────────────────────────────
+        // Mirror website's ReadingStatus component: when a book is added to "To be read",
+        // fire shelf_add events for any attributed giveaway/ARC campaign, then clear the IDs.
+        if (status === 'To be read') {
+          const accessToken = userDetails[0]?.accessToken;
+          const [storedGiveawayId, storedArcId] = await Promise.all([
+            AsyncStorage.getItem('attributedGiveawayId'),
+            AsyncStorage.getItem('attributedArcId'),
+          ]);
+
+          if (storedGiveawayId && !isNaN(Number(storedGiveawayId))) {
+            instance.post(
+              requests.trackGiveawayEvent(Number(storedGiveawayId)),
+              { eventType: 'shelf_add' },
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            ).catch(err => console.error('Error tracking giveaway shelf add:', err));
+            AsyncStorage.removeItem('attributedGiveawayId');
+          }
+
+          if (storedArcId && !isNaN(Number(storedArcId))) {
+            instance.post(
+              requests.trackArcEvent(Number(storedArcId)),
+              { eventType: 'shelf_add' },
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            ).catch(err => console.error('Error tracking ARC shelf add:', err));
+            AsyncStorage.removeItem('attributedArcId');
+          }
+        }
       }
     } catch (error) {
       console.error('Error submitting status:', error);

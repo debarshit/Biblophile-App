@@ -46,6 +46,7 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   giveaway: GiveawayCampaign | null;
+  navigation?: any;
 }
 
 const formatDate = (dateStr: string) => {
@@ -61,7 +62,7 @@ const getDaysLeft = (endDate: string) => {
 
 type ModalView = 'detail' | 'claim';
 
-export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
+export default function GiveawayModal({ visible, onClose, giveaway, navigation }: Props) {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const analytics = useAnalytics();
@@ -132,6 +133,16 @@ export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
     setShippingAddress('');
     setContactPhone('');
     onClose();
+  };
+
+  const handleViewBook = () => {
+    if (!giveaway?.bookId || !navigation) return;
+    handleClose();
+    navigation.navigate('Details', {
+      id: String(giveaway.bookId),
+      type: 'Book',
+      giveawayId: giveaway.id,
+    });
   };
 
   useEffect(() => {
@@ -263,7 +274,9 @@ export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
                   </View>
 
                   <Text style={styles.title}>{giveaway.title}</Text>
-                  <Text style={styles.bookName}>{giveaway.bookName}</Text>
+                  <TouchableOpacity onPress={handleViewBook} activeOpacity={0.7}>
+                    <Text style={[styles.bookName, navigation && styles.bookNameLink]}>{giveaway.bookName}</Text>
+                  </TouchableOpacity>
 
                   {/* Dates */}
                   <View style={styles.datesRow}>
@@ -410,6 +423,10 @@ const createStyles = (COLORS: any) =>
       fontFamily: FONTFAMILY.poppins_regular,
       color: COLORS.secondaryLightGreyHex,
       marginBottom: SPACING.space_10,
+    },
+    bookNameLink: {
+      color: COLORS.primaryOrangeHex,
+      textDecorationLine: 'underline',
     },
     datesRow: {
       flexDirection: 'row',

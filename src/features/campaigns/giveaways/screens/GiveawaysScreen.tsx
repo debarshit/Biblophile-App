@@ -274,6 +274,7 @@ const GiveawaysScreen = ({ navigation }: any) => {
         visible={modalVisible}
         giveaway={selectedGiveaway}
         onClose={closeGiveaway}
+        navigation={navigation}
       />
       <GiveawayHowItWorksModal
         visible={howItWorksVisible}
