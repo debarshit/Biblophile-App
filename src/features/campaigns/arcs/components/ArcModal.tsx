@@ -372,7 +372,7 @@ export default function ArcModal({ visible, onClose, arc, userApplication, navig
                     </Text>
                   </View>
                   <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
-                    <AntDesign name="sharealt" size={16} color="#fff" />
+                    <AntDesign name="share-alt" size={16} color="#fff" />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.closeFloating} onPress={handleClose}>
                     <AntDesign name="close" size={16} color="#fff" />
@@ -426,7 +426,7 @@ export default function ArcModal({ visible, onClose, arc, userApplication, navig
                   </TouchableOpacity>
 
                   <TouchableOpacity style={styles.secondaryBtn} onPress={handleShare}>
-                    <AntDesign name="sharealt" size={14} color={COLORS.primaryOrangeHex} />
+                    <AntDesign name="share-alt" size={14} color={COLORS.primaryOrangeHex} />
                     <Text style={styles.secondaryBtnText}>Share</Text>
                   </TouchableOpacity>
 

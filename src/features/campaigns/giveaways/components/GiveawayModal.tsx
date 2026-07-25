@@ -40,12 +40,17 @@ export interface GiveawayCampaign {
   bookName: string;
   bookPhoto: string;
   bookDescription: string;
+  hasJoined: boolean;
 }
+
+export type GiveawayClaimStatus = 'pending' | 'claimed' | 'expired';
 
 interface Props {
   visible: boolean;
   onClose: () => void;
   giveaway: GiveawayCampaign | null;
+  showClaimPrize?: boolean;
+  claimStatus?: GiveawayClaimStatus;
   navigation?: any;
 }
 
@@ -62,7 +67,7 @@ const getDaysLeft = (endDate: string) => {
 
 type ModalView = 'detail' | 'claim';
 
-export default function GiveawayModal({ visible, onClose, giveaway, navigation }: Props) {
+export default function GiveawayModal({ visible, onClose, giveaway, showClaimPrize = false, claimStatus, navigation }: Props) {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const analytics = useAnalytics();
@@ -90,6 +95,12 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
   if (!giveaway) return null;
 
   const daysLeft = getDaysLeft(giveaway.endDate);
+  const canClaimPrize = showClaimPrize && claimStatus === 'pending';
+  const claimStatusDetails = claimStatus && {
+    pending: { label: 'Awaiting Claim', color: '#F2A75E' },
+    claimed: { label: 'Claimed - Shipping', color: '#55C285' },
+    expired: { label: 'Claim Expired', color: '#E05E6B' },
+  }[claimStatus];
 
   const handleJoin = async () => {
     try {
@@ -242,14 +253,14 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
                     </View>
                   )}
                   {/* Days left badge */}
-                  <View style={[
+                  {daysLeft > 0 && <View style={[
                     styles.daysBadge,
                     daysLeft <= 3 && styles.daysBadgeUrgent,
                   ]}>
                     <Text style={styles.daysBadgeText}>
                       {daysLeft === 0 ? 'Ends today!' : `${daysLeft}d left`}
                     </Text>
-                  </View>
+                  </View>}
                   {/* Share button */}
                   <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
                     <AntDesign name="share-alt" size={16} color="#fff" />
@@ -287,22 +298,39 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
                     </Text>
                   </View>
 
+                  {claimStatusDetails && (
+                    <View style={[styles.claimStatusBadge, { borderColor: claimStatusDetails.color }]}>
+                      <Ionicons
+                        name={claimStatus === 'claimed' ? 'checkmark-circle-outline' : 'alert-circle-outline'}
+                        size={14}
+                        color={claimStatusDetails.color}
+                      />
+                      <Text style={[styles.claimStatusText, { color: claimStatusDetails.color }]}>
+                        {claimStatusDetails.label}
+                      </Text>
+                    </View>
+                  )}
+
                   {/* Description */}
                   {giveaway.description ? (
                     <Text style={styles.description}>{giveaway.description}</Text>
                   ) : null}
 
                   {/* CTA Buttons */}
-                  <TouchableOpacity
-                    style={[styles.primaryBtn, joining && styles.btnDisabled]}
-                    onPress={handleJoin}
-                    disabled={joining}
-                  >
-                    {joining
-                      ? <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
-                      : <Text style={styles.primaryBtnText}>Enter Giveaway</Text>
-                    }
-                  </TouchableOpacity>
+                  {(!giveaway.hasJoined && !showClaimPrize) && (
+                    <TouchableOpacity
+                      style={[styles.primaryBtn, joining && styles.btnDisabled]}
+                      onPress={handleJoin}
+                      disabled={joining}
+                    >
+                      {joining ? (
+                        <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
+                      ) : (
+                        <Text style={styles.primaryBtnText}>Enter Giveaway</Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+
 
                   <TouchableOpacity style={styles.secondaryBtn} onPress={handleShare}>
                     <AntDesign name="share-alt" size={14} color={COLORS.primaryOrangeHex} />
@@ -310,13 +338,13 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
                   </TouchableOpacity>
 
                   {/* Claim prize CTA — shown for won giveaways */}
-                  <TouchableOpacity
+                  {canClaimPrize && <TouchableOpacity
                     style={styles.claimPrizeBtn}
                     onPress={() => setView('claim')}
                   >
                     <Ionicons name="trophy-outline" size={14} color="#F5C518" />
                     <Text style={styles.claimPrizeBtnText}>Claim Prize (won)</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity>}
                 </ScrollView>
               </>
             )}
@@ -433,13 +461,28 @@ const createStyles = (COLORS: any) =>
     datesRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: SPACING.space_6 || 6,
+      gap: 6,
       marginBottom: SPACING.space_12,
     },
     dateText: {
       fontSize: FONTSIZE.size_12,
       fontFamily: FONTFAMILY.poppins_regular,
       color: COLORS.primaryOrangeHex,
+    },
+    claimStatusBadge: {
+      alignSelf: 'flex-start',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      borderWidth: 1,
+      borderRadius: BORDERRADIUS.radius_25,
+      paddingHorizontal: SPACING.space_10,
+      paddingVertical: 6,
+      marginBottom: SPACING.space_12,
+    },
+    claimStatusText: {
+      fontSize: FONTSIZE.size_12,
+      fontFamily: FONTFAMILY.poppins_semibold,
     },
     description: {
       fontSize: FONTSIZE.size_14,

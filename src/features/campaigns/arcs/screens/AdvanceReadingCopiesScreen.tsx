@@ -173,7 +173,6 @@ const AdvanceReadingCopiesScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
       <HeaderBar showBackButton title="Advance Reading Copies" />
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -181,18 +180,19 @@ const AdvanceReadingCopiesScreen = ({ navigation }: any) => {
         {/* Sub-header */}
         <View style={styles.subHeader}>
           <View style={styles.subHeaderLeft}>
-            <Text style={styles.screenTitle}>Read Before Anyone Else 📖</Text>
+            <Text style={styles.screenTitle}>
+              Read Before Anyone Else
+              <TouchableOpacity
+                style={styles.infoBtn}
+                onPress={() => setHowItWorksVisible(true)}
+              >
+                <Feather name="info" size={16} color={COLORS.primaryOrangeHex} />
+              </TouchableOpacity>
+            </Text>
             <Text style={styles.screenSubtitle}>
-              Apply to read upcoming books before publication and share your honest review.
+              Apply to review advance reading copies (ARCs) from publishers.
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.infoBtn}
-            onPress={() => setHowItWorksVisible(true)}
-          >
-            <Feather name="info" size={16} color={COLORS.primaryOrangeHex} />
-            <Text style={styles.infoBtnText}>How it works</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Eligibility card */}
@@ -213,8 +213,8 @@ const AdvanceReadingCopiesScreen = ({ navigation }: any) => {
               </View>
               <Text style={styles.eligibilityNote}>
                 {isEligible
-                  ? `${reviewRate}% — You're eligible for ARCs ✅`
-                  : `${reviewRate}% — Must be ≥80% for ARC access ⚠️`}
+                  ? `${reviewRate}% — You're eligible for ARCs`
+                  : `${reviewRate}% — Must be ≥80% for ARC access`}
               </Text>
             </View>
           </View>
@@ -369,21 +369,8 @@ const createStyles = (COLORS: any) =>
       marginTop: 2,
     },
     infoBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      backgroundColor: 'rgba(209,120,66,0.12)',
-      borderRadius: 20,
-      paddingHorizontal: SPACING.space_12,
+      paddingHorizontal: SPACING.space_4,
       paddingVertical: SPACING.space_8,
-      borderWidth: 1,
-      borderColor: 'rgba(209,120,66,0.3)',
-      marginTop: 2,
-    },
-    infoBtnText: {
-      fontSize: FONTSIZE.size_12,
-      fontFamily: FONTFAMILY.poppins_medium,
-      color: COLORS.primaryOrangeHex,
     },
     // Eligibility card
     eligibilityCard: {

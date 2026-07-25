@@ -56,7 +56,7 @@ export default function GiveawayCard({ giveaway, onPress }: Props) {
         <View style={styles.footer}>
           <Text style={styles.copies}>{giveaway.quantity} {giveaway.quantity === 1 ? 'copy' : 'copies'}</Text>
           <View style={styles.enterBtn}>
-            <Text style={styles.enterBtnText}>Enter</Text>
+            <Text style={styles.enterBtnText}>{giveaway.hasJoined ? 'Entered' : 'Enter'}</Text>
           </View>
         </View>
       </View>

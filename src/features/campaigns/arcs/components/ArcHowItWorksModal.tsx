@@ -23,22 +23,22 @@ interface Props {
 
 const STEPS = [
   {
-    emoji: '📋',
+    emoji: '●',
     title: 'Apply to a campaign',
     desc: "Browse active ARC campaigns and tap Request ARC Copy. Write a brief pitch about why you're a great fit for this book.",
   },
   {
-    emoji: '✅',
+    emoji: '●',
     title: 'Get approved',
     desc: 'The author reviews applications and approves readers. Linking your social profiles in Settings increases your approval chances significantly.',
   },
   {
-    emoji: '📖',
+    emoji: '●',
     title: 'Read & submit your review',
     desc: 'Once approved, you\'ll have until the review due date to read the book and submit your honest review on Biblophile.',
   },
   {
-    emoji: '💬',
+    emoji: '●',
     title: 'Share private feedback with the author',
     desc: 'Found a typo? Have formatting notes? Use the private feedback thread to share constructive notes directly with the author — your kindness helps make the book better.',
   },
@@ -103,7 +103,6 @@ export default function ArcHowItWorksModal({ visible, onClose }: Props) {
 
             {/* Eligibility note */}
             <View style={styles.noteBox}>
-              <Text style={styles.noteIcon}>⚠️</Text>
               <Text style={styles.noteText}>
                 <Text style={styles.noteBold}>Maintain 80%+ completion rate</Text>
                 {' '}to keep your ARC access. Missing review deadlines reduces your eligibility for future campaigns.
@@ -168,7 +167,8 @@ const createStyles = (COLORS: any) =>
       marginRight: SPACING.space_12,
     },
     stepEmoji: {
-      fontSize: 22,
+      fontSize: FONTSIZE.size_16,
+      color: COLORS.primaryWhiteHex,
     },
     stepLine: {
       flex: 1,
@@ -232,10 +232,6 @@ const createStyles = (COLORS: any) =>
       borderColor: 'rgba(220,53,53,0.3)',
       gap: SPACING.space_10,
       alignItems: 'flex-start',
-    },
-    noteIcon: {
-      fontSize: 16,
-      marginTop: 2,
     },
     noteText: {
       flex: 1,
