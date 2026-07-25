@@ -66,6 +66,7 @@ const AdvanceReadingCopiesScreen = ({ navigation }: any) => {
   const [selectedApp, setSelectedApp] = useState<UserApplication | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [howItWorksVisible, setHowItWorksVisible] = useState(false);
+  const [openedFromMyArcs, setOpenedFromMyArcs] = useState(false);
 
   // ─── Fetch data ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -138,6 +139,7 @@ const AdvanceReadingCopiesScreen = ({ navigation }: any) => {
     const userApp = myApps.find(a => a.campaignId === arc.id) || null;
     setSelectedArc(arc);
     setSelectedApp(userApp);
+    setOpenedFromMyArcs(false);
     setModalVisible(true);
   };
 
@@ -156,6 +158,7 @@ const AdvanceReadingCopiesScreen = ({ navigation }: any) => {
     };
     setSelectedArc(matchedArc as ArcCampaign);
     setSelectedApp(app);
+    setOpenedFromMyArcs(true);
     setModalVisible(true);
   };
 
@@ -163,6 +166,7 @@ const AdvanceReadingCopiesScreen = ({ navigation }: any) => {
     setModalVisible(false);
     setSelectedArc(null);
     setSelectedApp(null);
+    setOpenedFromMyArcs(false);
   };
 
   const reviewRate = eligibility ? Math.round(eligibility.reviewRate * 100) : null;
@@ -324,6 +328,7 @@ const AdvanceReadingCopiesScreen = ({ navigation }: any) => {
         visible={modalVisible}
         arc={selectedArc}
         userApplication={selectedApp}
+        showPrivateNotes={openedFromMyArcs}
         onClose={closeArc}
         navigation={navigation}
       />

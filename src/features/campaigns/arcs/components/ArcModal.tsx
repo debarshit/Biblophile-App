@@ -69,8 +69,8 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   arc: ArcCampaign | null;
-  // optional: if we already know the user has an application (from the list screen)
   userApplication?: UserApplication | null;
+  showPrivateNotes?: boolean;
   navigation?: any;
 }
 
@@ -94,7 +94,7 @@ const REVIEWER_EXPECTATIONS = [
   'Provide private feedback to the author',
 ];
 
-export default function ArcModal({ visible, onClose, arc, userApplication, navigation }: Props) {
+export default function ArcModal({ visible, onClose, arc, userApplication, showPrivateNotes = false, navigation }: Props) {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const analytics = useAnalytics();
@@ -114,6 +114,7 @@ export default function ArcModal({ visible, onClose, arc, userApplication, navig
   const flatListRef = useRef<FlatList>(null);
 
   const activeAppId = userApplication?.applicationId;
+  const isApplied = Boolean(userApplication);
 
   useEffect(() => {
     if (view === 'chat' && activeAppId) {
@@ -140,12 +141,10 @@ export default function ArcModal({ visible, onClose, arc, userApplication, navig
     setNewMessage('');
     setSending(true);
     try {
-      const res = await instance.post(requests.sendArcFeedbackMessage(activeAppId), {
+      await instance.post(requests.sendArcFeedbackMessage(activeAppId), {
         message: text,
       });
-      const added: FeedbackMessage = res.data.data;
-      console.log(added);
-      setMessages(prev => [...prev, added]);
+      await fetchMessages();
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch {
       Toast.show({ type: 'error', text1: 'Failed to send message', position: 'bottom' });
@@ -248,7 +247,7 @@ export default function ArcModal({ visible, onClose, arc, userApplication, navig
               <>
                 <View style={styles.header}>
                   <TouchableOpacity onPress={() => setView('detail')} style={styles.iconBtn}>
-                    <AntDesign name="arrowleft" size={18} color={COLORS.primaryWhiteHex} />
+                    <AntDesign name="arrow-left" size={18} color={COLORS.primaryWhiteHex} />
                   </TouchableOpacity>
                   <View style={styles.headerCenter}>
                     <Text style={styles.headerTitle}>Private Notes</Text>
@@ -311,7 +310,7 @@ export default function ArcModal({ visible, onClose, arc, userApplication, navig
               <>
                 <View style={styles.header}>
                   <TouchableOpacity onPress={() => setView('detail')} style={styles.iconBtn}>
-                    <AntDesign name="arrowleft" size={18} color={COLORS.primaryWhiteHex} />
+                    <AntDesign name="arrow-left" size={18} color={COLORS.primaryWhiteHex} />
                   </TouchableOpacity>
                   <Text style={styles.headerTitle}>Request ARC Copy</Text>
                   <TouchableOpacity onPress={handleClose} style={styles.iconBtn}>
@@ -421,9 +420,11 @@ export default function ArcModal({ visible, onClose, arc, userApplication, navig
                   </View>
 
                   {/* CTAs */}
-                  <TouchableOpacity style={styles.primaryBtn} onPress={() => setView('apply')}>
-                    <Text style={styles.primaryBtnText}>📋 Request ARC Copy</Text>
-                  </TouchableOpacity>
+                  {!isApplied && (
+                    <TouchableOpacity style={styles.primaryBtn} onPress={() => setView('apply')}>
+                      <Text style={styles.primaryBtnText}>📋 Request ARC Copy</Text>
+                    </TouchableOpacity>
+                  )}
 
                   <TouchableOpacity style={styles.secondaryBtn} onPress={handleShare}>
                     <AntDesign name="share-alt" size={14} color={COLORS.primaryOrangeHex} />
@@ -431,7 +432,7 @@ export default function ArcModal({ visible, onClose, arc, userApplication, navig
                   </TouchableOpacity>
 
                   {/* Private notes — only if user has an approved application */}
-                  {userApplication && userApplication.status === 'approved' && (
+                  {showPrivateNotes && userApplication?.status === 'approved' && (
                     <TouchableOpacity
                       style={styles.chatBtn}
                       onPress={() => setView('chat')}
