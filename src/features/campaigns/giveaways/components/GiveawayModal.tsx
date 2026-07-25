@@ -76,6 +76,17 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
   const [contactPhone, setContactPhone] = useState('');
   const [claiming, setClaiming] = useState(false);
 
+  useEffect(() => {
+    if (!giveaway?.id) return;
+    instance.post(requests.trackGiveawayEvent(giveaway.id), { eventType: 'impression' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging impression:", err));
+
+    instance.post(requests.trackGiveawayEvent(giveaway.id), { eventType: 'giveaway_pageview' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging pageview:", err));
+  }, [giveaway?.id, accessToken]);
+
   if (!giveaway) return null;
 
   const daysLeft = getDaysLeft(giveaway.endDate);
@@ -145,16 +156,6 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
     });
   };
 
-  useEffect(() => {
-    instance.post(requests.trackGiveawayEvent(giveaway.id), { eventType: 'impression' }, {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
-    }).catch(err => console.error("Error logging impression:", err));
-
-    instance.post(requests.trackGiveawayEvent(giveaway.id), { eventType: 'giveaway_pageview' }, {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
-    }).catch(err => console.error("Error logging pageview:", err));
-  }, [giveaway.id, accessToken]);
-
   return (
     <Modal
       visible={visible}
@@ -174,7 +175,7 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
               <>
                 <View style={styles.header}>
                   <TouchableOpacity onPress={() => setView('detail')} style={styles.backBtn}>
-                    <AntDesign name="arrowleft" size={18} color={COLORS.primaryWhiteHex} />
+                    <AntDesign name="arrow-left" size={18} color={COLORS.primaryWhiteHex} />
                   </TouchableOpacity>
                   <Text style={styles.headerTitle}>Claim Your Prize</Text>
                   <TouchableOpacity onPress={handleClose} style={styles.closeIcon}>
@@ -205,7 +206,7 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
                   <Text style={styles.fieldLabel}>Contact Phone</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="9864075081"
                     placeholderTextColor={COLORS.primaryLightGreyHex}
                     keyboardType="phone-pad"
                     value={contactPhone}
@@ -251,7 +252,7 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
                   </View>
                   {/* Share button */}
                   <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
-                    <AntDesign name="sharealt" size={16} color="#fff" />
+                    <AntDesign name="share-alt" size={16} color="#fff" />
                   </TouchableOpacity>
                   {/* Close button */}
                   <TouchableOpacity style={styles.closeFloating} onPress={handleClose}>
@@ -266,10 +267,10 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
                   {/* Meta */}
                   <View style={styles.metaRow}>
                     <View style={styles.metaTag}>
-                      <Text style={styles.metaTagText}>🎁 Giveaway</Text>
+                      <Text style={styles.metaTagText}>Giveaway</Text>
                     </View>
                     <View style={styles.metaTag}>
-                      <Text style={styles.metaTagText}>📚 {giveaway.quantity} {giveaway.quantity === 1 ? 'copy' : 'copies'}</Text>
+                      <Text style={styles.metaTagText}>{giveaway.quantity} {giveaway.quantity === 1 ? 'copy' : 'copies'}</Text>
                     </View>
                   </View>
 
@@ -299,12 +300,12 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
                   >
                     {joining
                       ? <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
-                      : <Text style={styles.primaryBtnText}>🎲 Enter Giveaway</Text>
+                      : <Text style={styles.primaryBtnText}>Enter Giveaway</Text>
                     }
                   </TouchableOpacity>
 
                   <TouchableOpacity style={styles.secondaryBtn} onPress={handleShare}>
-                    <AntDesign name="sharealt" size={14} color={COLORS.primaryOrangeHex} />
+                    <AntDesign name="share-alt" size={14} color={COLORS.primaryOrangeHex} />
                     <Text style={styles.secondaryBtnText}>Share</Text>
                   </TouchableOpacity>
 
@@ -322,6 +323,7 @@ export default function GiveawayModal({ visible, onClose, giveaway, navigation }
           </View>
         </KeyboardAvoidingView>
       </View>
+      <Toast />
     </Modal>
   );
 }
@@ -482,14 +484,14 @@ const createStyles = (COLORS: any) =>
       alignItems: 'center',
       justifyContent: 'center',
       gap: SPACING.space_8,
-      backgroundColor: 'rgba(245,197,24,0.12)',
+      backgroundColor: COLORS.primaryGreyHex,
       borderWidth: 1,
-      borderColor: 'rgba(245,197,24,0.35)',
+      borderColor: COLORS.secondaryDarkGreyHex,
       borderRadius: BORDERRADIUS.radius_25,
       paddingVertical: SPACING.space_12,
     },
     claimPrizeBtnText: {
-      color: '#F5C518',
+      color: COLORS.primaryWhiteHex,
       fontFamily: FONTFAMILY.poppins_semibold,
       fontSize: FONTSIZE.size_14,
     },

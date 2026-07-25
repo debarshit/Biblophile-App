@@ -154,6 +154,17 @@ export default function ArcModal({ visible, onClose, arc, userApplication, navig
     }
   };
 
+  useEffect(() => {
+  if (!arc?.id) return;
+    instance.post(requests.trackArcEvent(arc.id), { eventType: 'impression' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging impression:", err));
+
+    instance.post(requests.trackArcEvent(arc.id), { eventType: 'arc_pageview' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging pageview:", err));
+  }, [arc?.id, accessToken]);
+
   if (!arc) return null;
 
   const daysLeft = getDaysLeft(arc.endDate);
@@ -217,16 +228,6 @@ export default function ArcModal({ visible, onClose, arc, userApplication, navig
       </View>
     );
   };
-
-  useEffect(() => {
-    instance.post(requests.trackArcEvent(arc.id), { eventType: 'impression' }, {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
-    }).catch(err => console.error("Error logging impression:", err));
-
-    instance.post(requests.trackArcEvent(arc.id), { eventType: 'arc_pageview' }, {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
-    }).catch(err => console.error("Error logging pageview:", err));
-  }, [arc.id, accessToken]);
 
   return (
     <Modal

@@ -54,7 +54,7 @@ export default function GiveawayCard({ giveaway, onPress }: Props) {
         <Text style={styles.title} numberOfLines={2}>{giveaway.title}</Text>
         <Text style={styles.bookName} numberOfLines={1}>{giveaway.bookName}</Text>
         <View style={styles.footer}>
-          <Text style={styles.copies}>📚 {giveaway.quantity} {giveaway.quantity === 1 ? 'copy' : 'copies'}</Text>
+          <Text style={styles.copies}>{giveaway.quantity} {giveaway.quantity === 1 ? 'copy' : 'copies'}</Text>
           <View style={styles.enterBtn}>
             <Text style={styles.enterBtnText}>Enter</Text>
           </View>

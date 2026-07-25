@@ -163,18 +163,19 @@ const GiveawaysScreen = ({ navigation }: any) => {
         {/* Sub-header */}
         <View style={styles.subHeader}>
           <View style={styles.subHeaderLeft}>
-            <Text style={styles.screenTitle}>Win Free Books 🎁</Text>
-            <Text style={styles.screenSubtitle}>
-              Enter draws to win author-gifted copies — no review required.
-            </Text>
-          </View>
-          <TouchableOpacity
+            <Text style={styles.screenTitle}>
+              Win Free Books
+                        <TouchableOpacity
             style={styles.infoBtn}
             onPress={() => setHowItWorksVisible(true)}
           >
             <Feather name="info" size={16} color={COLORS.primaryOrangeHex} />
-            <Text style={styles.infoBtnText}>How it works</Text>
           </TouchableOpacity>
+            </Text>
+            <Text style={styles.screenSubtitle}>
+              Browse active book giveaways and track prizes you've won.
+            </Text>
+          </View>
         </View>
 
         {/* Active giveaways */}
@@ -318,21 +319,8 @@ const createStyles = (COLORS: any) =>
       marginTop: 2,
     },
     infoBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      backgroundColor: 'rgba(209,120,66,0.12)',
-      borderRadius: 20,
-      paddingHorizontal: SPACING.space_12,
+      paddingHorizontal: SPACING.space_4,
       paddingVertical: SPACING.space_8,
-      borderWidth: 1,
-      borderColor: 'rgba(209,120,66,0.3)',
-      marginTop: 2,
-    },
-    infoBtnText: {
-      fontSize: FONTSIZE.size_12,
-      fontFamily: FONTFAMILY.poppins_medium,
-      color: COLORS.primaryOrangeHex,
     },
     sectionTitle: {
       fontSize: FONTSIZE.size_18,

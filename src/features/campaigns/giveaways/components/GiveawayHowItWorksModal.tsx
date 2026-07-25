@@ -23,22 +23,22 @@ interface Props {
 
 const STEPS = [
   {
-    emoji: '🎁',
+    emoji: '●',
     title: 'Enter before it closes',
     desc: 'Browse active giveaways and tap "Enter Giveaway" to add your name to the draw. No purchase required.',
   },
   {
-    emoji: '⏳',
+    emoji: '●',
     title: 'Sit back — everyone has equal odds',
     desc: "Once you've entered, just wait. Every participant has the same chance of winning, no matter how early or late they joined.",
   },
   {
-    emoji: '🎲',
+    emoji: '●',
     title: 'Winners are drawn randomly',
     desc: "When the campaign closes, winners are selected at random. You'll be notified immediately if you've won.",
   },
   {
-    emoji: '📦',
+    emoji: '●',
     title: 'Your copy is sent out',
     desc: "Winners provide their shipping details and the author or publisher sends the book directly to you — completely free.",
   },
@@ -85,7 +85,6 @@ export default function GiveawayHowItWorksModal({ visible, onClose }: Props) {
 
             {/* Note */}
             <View style={styles.noteBox}>
-              <Text style={styles.noteIcon}>✨</Text>
               <Text style={styles.noteText}>
                 <Text style={styles.noteBold}>No strings attached.</Text>
                 {' '}Unlike ARCs, giveaway winners are not required to leave a review. It's a pure gift from the author to readers.
@@ -150,7 +149,8 @@ const createStyles = (COLORS: any) =>
       marginRight: SPACING.space_12,
     },
     stepEmoji: {
-      fontSize: 22,
+      fontSize: FONTSIZE.size_16,
+      color: COLORS.primaryWhiteHex,
     },
     stepLine: {
       flex: 1,
@@ -176,7 +176,6 @@ const createStyles = (COLORS: any) =>
     },
     noteBox: {
       flexDirection: 'row',
-      backgroundColor: 'rgba(209,120,66,0.12)',
       borderRadius: BORDERRADIUS.radius_15,
       padding: SPACING.space_16,
       marginTop: SPACING.space_8,
@@ -185,10 +184,6 @@ const createStyles = (COLORS: any) =>
       borderColor: 'rgba(209,120,66,0.3)',
       gap: SPACING.space_10,
       alignItems: 'flex-start',
-    },
-    noteIcon: {
-      fontSize: 18,
-      marginTop: 2,
     },
     noteText: {
       flex: 1,
