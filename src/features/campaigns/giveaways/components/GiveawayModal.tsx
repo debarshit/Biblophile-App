@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ import { AntDesign, Feather, Ionicons } from '@expo/vector-icons';
 import instance from '../../../../services/axios';
 import requests from '../../../../services/requests';
 import { useAnalytics } from '../../../../utils/analytics';
+import { useStore } from '../../../../store/store';
 
 export interface GiveawayCampaign {
   id: number;
@@ -64,6 +65,8 @@ export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const analytics = useAnalytics();
+  const userDetails = useStore((state: any) => state.userDetails);
+  const accessToken = userDetails[0].accessToken;
 
   const [joining, setJoining] = useState(false);
   const [view, setView] = useState<ModalView>('detail');
@@ -130,6 +133,16 @@ export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
     setContactPhone('');
     onClose();
   };
+
+  useEffect(() => {
+    instance.post(requests.trackGiveawayEvent(giveaway.id), { eventType: 'impression' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging impression:", err));
+
+    instance.post(requests.trackGiveawayEvent(giveaway.id), { eventType: 'giveaway_pageview' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging pageview:", err));
+  }, [giveaway.id, accessToken]);
 
   return (
     <Modal

@@ -159,6 +159,7 @@ const requests = {
     getUserWonGiveaways: `${APIURL}marketing/giveaways/user/won`,
     joinGiveaway: (id: string | number) => `${APIURL}marketing/giveaways/${id}/join`,
     claimGiveawayPrize: (id: string | number) => `${APIURL}marketing/giveaways/${id}/claim`,
+    trackGiveawayEvent: (id: number) => `${APIURL}marketing/giveaways/${id}/track`,
 
     //advance reading copies (ARC) requests
     getActiveArcCampaigns: `${APIURL}marketing/arcs`,
@@ -169,6 +170,7 @@ const requests = {
     submitArcReview: (id: string | number) => `${APIURL}marketing/arcs/${id}/submit-review`,
     getArcFeedbackMessages: (appId: string | number) => `${APIURL}marketing/arcs/applications/${appId}/feedback`,
     sendArcFeedbackMessage: (appId: string | number) => `${APIURL}marketing/arcs/applications/${appId}/feedback`,
+    trackArcEvent: (id: number) => `${APIURL}marketing/arcs/${id}/track`,
 
     //payment requests
     paymentRequest: `${APIURL}payments/request`,

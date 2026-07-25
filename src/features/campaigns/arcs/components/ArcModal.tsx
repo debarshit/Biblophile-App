@@ -99,6 +99,7 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
   const analytics = useAnalytics();
   const userDetails = useStore((state: any) => state.userDetails);
   const userId = userDetails[0]?.userId;
+  const accessToken = userDetails[0].accessToken;
 
   const [view, setView] = useState<ModalView>('detail');
   const [applying, setApplying] = useState(false);
@@ -205,6 +206,16 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
       </View>
     );
   };
+
+  useEffect(() => {
+    instance.post(requests.trackArcEvent(arc.id), { eventType: 'impression' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging impression:", err));
+
+    instance.post(requests.trackArcEvent(arc.id), { eventType: 'arc_pageview' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging pageview:", err));
+  }, [arc.id, accessToken]);
 
   return (
     <Modal

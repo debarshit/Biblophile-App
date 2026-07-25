@@ -59,6 +59,7 @@ const GiveawaysScreen = ({ navigation }: any) => {
   const { subPath } = route.params || {};
 
   const userDetails = useStore((state: any) => state.userDetails);
+  const accessToken = userDetails[0].accessToken;
 
   const [activeGiveaways, setActiveGiveaways] = useState<GiveawayCampaign[]>([]);
   const [myWins, setMyWins] = useState<UserWin[]>([]);
@@ -85,7 +86,19 @@ const GiveawaysScreen = ({ navigation }: any) => {
       ]);
 
       if (giveawaysRes.status === 'fulfilled') {
-        setActiveGiveaways(giveawaysRes.value.data?.data || []);
+        const data = giveawaysRes.value.data?.data || [];
+        setActiveGiveaways(data);
+        if (data.length > 0) {
+          data.forEach((g: any) => {
+            instance.post(requests.trackGiveawayEvent(g.id), { eventType: 'impression' }, {
+              headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+            }).catch(err => console.error("Error logging impression:", err));
+
+            instance.post(requests.trackGiveawayEvent(g.id), { eventType: 'giveaway_pageview' }, {
+              headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+            }).catch(err => console.error("Error logging pageview:", err));
+          });
+        }
       }
       if (winsRes.status === 'fulfilled') {
         setMyWins(winsRes.value.data?.data || []);
