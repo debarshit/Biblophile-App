@@ -19,6 +19,7 @@ import { AntDesign } from '@expo/vector-icons';
 interface Props {
   visible: boolean;
   onClose: () => void;
+  navigation?: any;
 }
 
 const STEPS = [
@@ -51,9 +52,14 @@ const EXPECTATIONS = [
   'Optionally share on social media (boosts future approvals)',
 ];
 
-export default function ArcHowItWorksModal({ visible, onClose }: Props) {
+export default function ArcHowItWorksModal({ visible, onClose, navigation }: Props) {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+
+  const openSocialLinks = () => {
+    onClose();
+    navigation?.navigate('Profile', { initialTab: 'social' });
+  };
 
   return (
     <Modal
@@ -85,7 +91,15 @@ export default function ArcHowItWorksModal({ visible, onClose }: Props) {
                 </View>
                 <View style={styles.stepContent}>
                   <Text style={styles.stepTitle}>{step.title}</Text>
-                  <Text style={styles.stepDesc}>{step.desc}</Text>
+                  {i === 1 ? (
+                    <Text style={styles.stepDesc}>
+                      Linking your social profiles in{' '}
+                      <Text style={styles.settingsLink} onPress={openSocialLinks}>Settings</Text>
+                      {' '}increases your approval chances significantly.
+                    </Text>
+                  ) : (
+                    <Text style={styles.stepDesc}>{step.desc}</Text>
+                  )}
                 </View>
               </View>
             ))}
@@ -191,6 +205,11 @@ const createStyles = (COLORS: any) =>
       fontFamily: FONTFAMILY.poppins_regular,
       color: COLORS.secondaryLightGreyHex,
       lineHeight: 22,
+    },
+    settingsLink: {
+      color: COLORS.primaryOrangeHex,
+      fontFamily: FONTFAMILY.poppins_semibold,
+      textDecorationLine: 'underline',
     },
     expectationsBox: {
       backgroundColor: COLORS.secondaryDarkGreyHex,

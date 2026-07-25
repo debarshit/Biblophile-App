@@ -335,6 +335,7 @@ const AdvanceReadingCopiesScreen = ({ navigation }: any) => {
       <ArcHowItWorksModal
         visible={howItWorksVisible}
         onClose={() => setHowItWorksVisible(false)}
+        navigation={navigation}
       />
     </SafeAreaView>
   );
