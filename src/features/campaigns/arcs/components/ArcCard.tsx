@@ -59,7 +59,7 @@ export default function ArcCard({ arc, onPress }: Props) {
         <View style={styles.footer}>
           <Text style={styles.slots}>👥 {arc.quantityLimit} slots</Text>
           <View style={styles.requestBtn}>
-            <Text style={styles.requestBtnText}>Apply</Text>
+            <Text style={styles.requestBtnText}>{arc.hasApplied ? 'Applied' : 'Apply'}</Text>
           </View>
         </View>
       </View>
