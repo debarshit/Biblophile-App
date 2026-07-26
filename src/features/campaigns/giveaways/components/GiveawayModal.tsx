@@ -41,6 +41,7 @@ export interface GiveawayCampaign {
   bookPhoto: string;
   bookDescription: string;
   hasJoined: boolean;
+  format?: string;
 }
 
 export type GiveawayClaimStatus = 'pending' | 'claimed' | 'expired';
@@ -252,6 +253,10 @@ export default function GiveawayModal({ visible, onClose, giveaway, showClaimPri
                       <Ionicons name="book-outline" size={48} color={COLORS.primaryLightGreyHex} />
                     </View>
                   )}
+                  {/* format badge */}
+                  <View style={styles.formatBadge}>
+                    <Text style={styles.formatBadgeText}>{giveaway.format}</Text>
+                  </View>
                   {/* Days left badge */}
                   {daysLeft > 0 && <View style={[
                     styles.daysBadge,
@@ -403,6 +408,21 @@ const createStyles = (COLORS: any) =>
       color: '#fff',
       fontFamily: FONTFAMILY.poppins_semibold,
       fontSize: FONTSIZE.size_12,
+    },
+    formatBadge: {
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      backgroundColor: 'rgba(53,99,220,0.85)',
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    formatBadgeText: {
+      color: '#fff',
+      fontFamily: FONTFAMILY.poppins_bold,
+      fontSize: FONTSIZE.size_10,
+      letterSpacing: 1,
     },
     shareBtn: {
       position: 'absolute',

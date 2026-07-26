@@ -42,6 +42,11 @@ export default function GiveawayCard({ giveaway, onPress }: Props) {
         </View>
       )}
 
+      {/* ARC badge */}
+      <View style={styles.formatBadge}>
+        <Text style={styles.formatBadgeText}>{giveaway.format}</Text>
+      </View>
+
       {/* Days remaining badge */}
       <View style={[styles.badge, daysLeft <= 3 && styles.badgeUrgent]}>
         <Text style={styles.badgeText}>
@@ -97,6 +102,21 @@ const createStyles = (COLORS: any) =>
       color: '#fff',
       fontFamily: FONTFAMILY.poppins_semibold,
       fontSize: FONTSIZE.size_10,
+    },
+        formatBadge: {
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      backgroundColor: 'rgba(53,99,220,0.85)',
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    formatBadgeText: {
+      color: '#fff',
+      fontFamily: FONTFAMILY.poppins_bold,
+      fontSize: FONTSIZE.size_10,
+      letterSpacing: 1,
     },
     info: {
       padding: SPACING.space_12,

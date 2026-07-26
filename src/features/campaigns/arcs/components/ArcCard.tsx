@@ -42,8 +42,8 @@ export default function ArcCard({ arc, onPress }: Props) {
       )}
 
       {/* ARC badge */}
-      <View style={styles.arcBadge}>
-        <Text style={styles.arcBadgeText}>ARC</Text>
+      <View style={styles.formatBadge}>
+        <Text style={styles.formatBadgeText}>{arc.format}</Text>
       </View>
 
       {/* Days left */}
@@ -84,7 +84,7 @@ const createStyles = (COLORS: any) =>
       justifyContent: 'center',
       alignItems: 'center',
     },
-    arcBadge: {
+    formatBadge: {
       position: 'absolute',
       top: 10,
       left: 10,
@@ -93,7 +93,7 @@ const createStyles = (COLORS: any) =>
       paddingHorizontal: 8,
       paddingVertical: 3,
     },
-    arcBadgeText: {
+    formatBadgeText: {
       color: '#fff',
       fontFamily: FONTFAMILY.poppins_bold,
       fontSize: FONTSIZE.size_10,

@@ -41,6 +41,7 @@ export interface ArcCampaign {
   bookName: string;
   bookPhoto: string;
   bookDescription: string;
+  format?: string;
 }
 
 export interface UserApplication {
@@ -365,6 +366,10 @@ export default function ArcModal({ visible, onClose, arc, userApplication, showP
                       <Ionicons name="book-outline" size={48} color={COLORS.primaryLightGreyHex} />
                     </View>
                   )}
+                  {/* ARC badge */}
+                  <View style={styles.formatBadge}>
+                    <Text style={styles.formatBadgeText}>{arc.format}</Text>
+                  </View>
                   <View style={[styles.daysBadge, daysLeft <= 3 && styles.daysBadgeUrgent]}>
                     <Text style={styles.daysBadgeText}>
                       {daysLeft === 0 ? 'Ends today!' : `${daysLeft}d left`}
@@ -505,6 +510,21 @@ const createStyles = (COLORS: any) =>
       backgroundColor: COLORS.secondaryDarkGreyHex,
       justifyContent: 'center',
       alignItems: 'center',
+    },
+    formatBadge: {
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      backgroundColor: 'rgba(53,99,220,0.85)',
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    formatBadgeText: {
+      color: '#fff',
+      fontFamily: FONTFAMILY.poppins_bold,
+      fontSize: FONTSIZE.size_10,
+      letterSpacing: 1,
     },
     daysBadge: {
       position: 'absolute', bottom: 12, left: 12,
