@@ -25,7 +25,15 @@ const ProfileScreen = ({ navigation, route }: any) => {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
 
-    const [activeTab, setActiveTab] = useState<TabKey>('profile');
+    const [activeTab, setActiveTab] = useState<TabKey>(
+        route.params?.initialTab === 'social' ? 'social' : 'profile'
+    );
+
+    useEffect(() => {
+        if (route.params?.initialTab === 'social') {
+            setActiveTab('social');
+        }
+    }, [route.params?.initialTab]);
 
     const { COLORS } = useTheme();
     const styles = useMemo(() => createStyles(COLORS), [COLORS]);
@@ -377,7 +385,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
 
     useEffect(() => {
         if (route.params) {
-            alert(route.params.update);
+            // alert(route.params.update);
         }
     }, []);
 

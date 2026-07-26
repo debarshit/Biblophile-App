@@ -42,6 +42,11 @@ export default function GiveawayCard({ giveaway, onPress }: Props) {
         </View>
       )}
 
+      {/* ARC badge */}
+      <View style={styles.formatBadge}>
+        <Text style={styles.formatBadgeText}>{giveaway.format}</Text>
+      </View>
+
       {/* Days remaining badge */}
       <View style={[styles.badge, daysLeft <= 3 && styles.badgeUrgent]}>
         <Text style={styles.badgeText}>
@@ -54,9 +59,9 @@ export default function GiveawayCard({ giveaway, onPress }: Props) {
         <Text style={styles.title} numberOfLines={2}>{giveaway.title}</Text>
         <Text style={styles.bookName} numberOfLines={1}>{giveaway.bookName}</Text>
         <View style={styles.footer}>
-          <Text style={styles.copies}>📚 {giveaway.quantity} {giveaway.quantity === 1 ? 'copy' : 'copies'}</Text>
+          <Text style={styles.copies}>{giveaway.quantity} {giveaway.quantity === 1 ? 'copy' : 'copies'}</Text>
           <View style={styles.enterBtn}>
-            <Text style={styles.enterBtnText}>Enter</Text>
+            <Text style={styles.enterBtnText}>{giveaway.hasJoined ? 'Entered' : 'Enter'}</Text>
           </View>
         </View>
       </View>
@@ -97,6 +102,21 @@ const createStyles = (COLORS: any) =>
       color: '#fff',
       fontFamily: FONTFAMILY.poppins_semibold,
       fontSize: FONTSIZE.size_10,
+    },
+        formatBadge: {
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      backgroundColor: 'rgba(53,99,220,0.85)',
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    formatBadgeText: {
+      color: '#fff',
+      fontFamily: FONTFAMILY.poppins_bold,
+      fontSize: FONTSIZE.size_10,
+      letterSpacing: 1,
     },
     info: {
       padding: SPACING.space_12,

@@ -40,12 +40,19 @@ export interface GiveawayCampaign {
   bookName: string;
   bookPhoto: string;
   bookDescription: string;
+  hasJoined: boolean;
+  format?: string;
 }
+
+export type GiveawayClaimStatus = 'pending' | 'claimed' | 'expired';
 
 interface Props {
   visible: boolean;
   onClose: () => void;
   giveaway: GiveawayCampaign | null;
+  showClaimPrize?: boolean;
+  claimStatus?: GiveawayClaimStatus;
+  navigation?: any;
 }
 
 const formatDate = (dateStr: string) => {
@@ -61,7 +68,7 @@ const getDaysLeft = (endDate: string) => {
 
 type ModalView = 'detail' | 'claim';
 
-export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
+export default function GiveawayModal({ visible, onClose, giveaway, showClaimPrize = false, claimStatus, navigation }: Props) {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const analytics = useAnalytics();
@@ -75,9 +82,26 @@ export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
   const [contactPhone, setContactPhone] = useState('');
   const [claiming, setClaiming] = useState(false);
 
+  useEffect(() => {
+    if (!giveaway?.id) return;
+    instance.post(requests.trackGiveawayEvent(giveaway.id), { eventType: 'impression' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging impression:", err));
+
+    instance.post(requests.trackGiveawayEvent(giveaway.id), { eventType: 'giveaway_pageview' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging pageview:", err));
+  }, [giveaway?.id, accessToken]);
+
   if (!giveaway) return null;
 
   const daysLeft = getDaysLeft(giveaway.endDate);
+  const canClaimPrize = showClaimPrize && claimStatus === 'pending';
+  const claimStatusDetails = claimStatus && {
+    pending: { label: 'Awaiting Claim', color: '#F2A75E' },
+    claimed: { label: 'Claimed - Shipping', color: '#55C285' },
+    expired: { label: 'Claim Expired', color: '#E05E6B' },
+  }[claimStatus];
 
   const handleJoin = async () => {
     try {
@@ -134,15 +158,15 @@ export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
     onClose();
   };
 
-  useEffect(() => {
-    instance.post(requests.trackGiveawayEvent(giveaway.id), { eventType: 'impression' }, {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
-    }).catch(err => console.error("Error logging impression:", err));
-
-    instance.post(requests.trackGiveawayEvent(giveaway.id), { eventType: 'giveaway_pageview' }, {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
-    }).catch(err => console.error("Error logging pageview:", err));
-  }, [giveaway.id, accessToken]);
+  const handleViewBook = () => {
+    if (!giveaway?.bookId || !navigation) return;
+    handleClose();
+    navigation.navigate('Details', {
+      id: String(giveaway.bookId),
+      type: 'Book',
+      giveawayId: giveaway.id,
+    });
+  };
 
   return (
     <Modal
@@ -163,7 +187,7 @@ export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
               <>
                 <View style={styles.header}>
                   <TouchableOpacity onPress={() => setView('detail')} style={styles.backBtn}>
-                    <AntDesign name="arrowleft" size={18} color={COLORS.primaryWhiteHex} />
+                    <AntDesign name="arrow-left" size={18} color={COLORS.primaryWhiteHex} />
                   </TouchableOpacity>
                   <Text style={styles.headerTitle}>Claim Your Prize</Text>
                   <TouchableOpacity onPress={handleClose} style={styles.closeIcon}>
@@ -194,7 +218,7 @@ export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
                   <Text style={styles.fieldLabel}>Contact Phone</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="9864075081"
                     placeholderTextColor={COLORS.primaryLightGreyHex}
                     keyboardType="phone-pad"
                     value={contactPhone}
@@ -229,18 +253,22 @@ export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
                       <Ionicons name="book-outline" size={48} color={COLORS.primaryLightGreyHex} />
                     </View>
                   )}
+                  {/* format badge */}
+                  <View style={styles.formatBadge}>
+                    <Text style={styles.formatBadgeText}>{giveaway.format}</Text>
+                  </View>
                   {/* Days left badge */}
-                  <View style={[
+                  {daysLeft > 0 && <View style={[
                     styles.daysBadge,
                     daysLeft <= 3 && styles.daysBadgeUrgent,
                   ]}>
                     <Text style={styles.daysBadgeText}>
                       {daysLeft === 0 ? 'Ends today!' : `${daysLeft}d left`}
                     </Text>
-                  </View>
+                  </View>}
                   {/* Share button */}
                   <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
-                    <AntDesign name="sharealt" size={16} color="#fff" />
+                    <AntDesign name="share-alt" size={16} color="#fff" />
                   </TouchableOpacity>
                   {/* Close button */}
                   <TouchableOpacity style={styles.closeFloating} onPress={handleClose}>
@@ -255,15 +283,17 @@ export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
                   {/* Meta */}
                   <View style={styles.metaRow}>
                     <View style={styles.metaTag}>
-                      <Text style={styles.metaTagText}>🎁 Giveaway</Text>
+                      <Text style={styles.metaTagText}>Giveaway</Text>
                     </View>
                     <View style={styles.metaTag}>
-                      <Text style={styles.metaTagText}>📚 {giveaway.quantity} {giveaway.quantity === 1 ? 'copy' : 'copies'}</Text>
+                      <Text style={styles.metaTagText}>{giveaway.quantity} {giveaway.quantity === 1 ? 'copy' : 'copies'}</Text>
                     </View>
                   </View>
 
                   <Text style={styles.title}>{giveaway.title}</Text>
-                  <Text style={styles.bookName}>{giveaway.bookName}</Text>
+                  <TouchableOpacity onPress={handleViewBook} activeOpacity={0.7}>
+                    <Text style={[styles.bookName, navigation && styles.bookNameLink]}>{giveaway.bookName}</Text>
+                  </TouchableOpacity>
 
                   {/* Dates */}
                   <View style={styles.datesRow}>
@@ -273,42 +303,60 @@ export default function GiveawayModal({ visible, onClose, giveaway }: Props) {
                     </Text>
                   </View>
 
+                  {claimStatusDetails && (
+                    <View style={[styles.claimStatusBadge, { borderColor: claimStatusDetails.color }]}>
+                      <Ionicons
+                        name={claimStatus === 'claimed' ? 'checkmark-circle-outline' : 'alert-circle-outline'}
+                        size={14}
+                        color={claimStatusDetails.color}
+                      />
+                      <Text style={[styles.claimStatusText, { color: claimStatusDetails.color }]}>
+                        {claimStatusDetails.label}
+                      </Text>
+                    </View>
+                  )}
+
                   {/* Description */}
                   {giveaway.description ? (
                     <Text style={styles.description}>{giveaway.description}</Text>
                   ) : null}
 
                   {/* CTA Buttons */}
-                  <TouchableOpacity
-                    style={[styles.primaryBtn, joining && styles.btnDisabled]}
-                    onPress={handleJoin}
-                    disabled={joining}
-                  >
-                    {joining
-                      ? <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
-                      : <Text style={styles.primaryBtnText}>🎲 Enter Giveaway</Text>
-                    }
-                  </TouchableOpacity>
+                  {(!giveaway.hasJoined && !showClaimPrize) && (
+                    <TouchableOpacity
+                      style={[styles.primaryBtn, joining && styles.btnDisabled]}
+                      onPress={handleJoin}
+                      disabled={joining}
+                    >
+                      {joining ? (
+                        <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
+                      ) : (
+                        <Text style={styles.primaryBtnText}>Enter Giveaway</Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+
 
                   <TouchableOpacity style={styles.secondaryBtn} onPress={handleShare}>
-                    <AntDesign name="sharealt" size={14} color={COLORS.primaryOrangeHex} />
+                    <AntDesign name="share-alt" size={14} color={COLORS.primaryOrangeHex} />
                     <Text style={styles.secondaryBtnText}>Share</Text>
                   </TouchableOpacity>
 
                   {/* Claim prize CTA — shown for won giveaways */}
-                  <TouchableOpacity
+                  {canClaimPrize && <TouchableOpacity
                     style={styles.claimPrizeBtn}
                     onPress={() => setView('claim')}
                   >
                     <Ionicons name="trophy-outline" size={14} color="#F5C518" />
                     <Text style={styles.claimPrizeBtnText}>Claim Prize (won)</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity>}
                 </ScrollView>
               </>
             )}
           </View>
         </KeyboardAvoidingView>
       </View>
+      <Toast />
     </Modal>
   );
 }
@@ -361,6 +409,21 @@ const createStyles = (COLORS: any) =>
       fontFamily: FONTFAMILY.poppins_semibold,
       fontSize: FONTSIZE.size_12,
     },
+    formatBadge: {
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      backgroundColor: 'rgba(53,99,220,0.85)',
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    formatBadgeText: {
+      color: '#fff',
+      fontFamily: FONTFAMILY.poppins_bold,
+      fontSize: FONTSIZE.size_10,
+      letterSpacing: 1,
+    },
     shareBtn: {
       position: 'absolute',
       top: 12,
@@ -411,16 +474,35 @@ const createStyles = (COLORS: any) =>
       color: COLORS.secondaryLightGreyHex,
       marginBottom: SPACING.space_10,
     },
+    bookNameLink: {
+      color: COLORS.primaryOrangeHex,
+      textDecorationLine: 'underline',
+    },
     datesRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: SPACING.space_6 || 6,
+      gap: 6,
       marginBottom: SPACING.space_12,
     },
     dateText: {
       fontSize: FONTSIZE.size_12,
       fontFamily: FONTFAMILY.poppins_regular,
       color: COLORS.primaryOrangeHex,
+    },
+    claimStatusBadge: {
+      alignSelf: 'flex-start',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      borderWidth: 1,
+      borderRadius: BORDERRADIUS.radius_25,
+      paddingHorizontal: SPACING.space_10,
+      paddingVertical: 6,
+      marginBottom: SPACING.space_12,
+    },
+    claimStatusText: {
+      fontSize: FONTSIZE.size_12,
+      fontFamily: FONTFAMILY.poppins_semibold,
     },
     description: {
       fontSize: FONTSIZE.size_14,
@@ -465,14 +547,14 @@ const createStyles = (COLORS: any) =>
       alignItems: 'center',
       justifyContent: 'center',
       gap: SPACING.space_8,
-      backgroundColor: 'rgba(245,197,24,0.12)',
+      backgroundColor: COLORS.primaryGreyHex,
       borderWidth: 1,
-      borderColor: 'rgba(245,197,24,0.35)',
+      borderColor: COLORS.secondaryDarkGreyHex,
       borderRadius: BORDERRADIUS.radius_25,
       paddingVertical: SPACING.space_12,
     },
     claimPrizeBtnText: {
-      color: '#F5C518',
+      color: COLORS.primaryWhiteHex,
       fontFamily: FONTFAMILY.poppins_semibold,
       fontSize: FONTSIZE.size_14,
     },

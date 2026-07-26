@@ -41,6 +41,7 @@ export interface ArcCampaign {
   bookName: string;
   bookPhoto: string;
   bookDescription: string;
+  format?: string;
 }
 
 export interface UserApplication {
@@ -69,8 +70,9 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   arc: ArcCampaign | null;
-  // optional: if we already know the user has an application (from the list screen)
   userApplication?: UserApplication | null;
+  showPrivateNotes?: boolean;
+  navigation?: any;
 }
 
 const formatDate = (dateStr: string) => {
@@ -93,7 +95,7 @@ const REVIEWER_EXPECTATIONS = [
   'Provide private feedback to the author',
 ];
 
-export default function ArcModal({ visible, onClose, arc, userApplication }: Props) {
+export default function ArcModal({ visible, onClose, arc, userApplication, showPrivateNotes = false, navigation }: Props) {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const analytics = useAnalytics();
@@ -113,6 +115,7 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
   const flatListRef = useRef<FlatList>(null);
 
   const activeAppId = userApplication?.applicationId;
+  const isApplied = Boolean(userApplication);
 
   useEffect(() => {
     if (view === 'chat' && activeAppId) {
@@ -139,12 +142,10 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
     setNewMessage('');
     setSending(true);
     try {
-      const res = await instance.post(requests.sendArcFeedbackMessage(activeAppId), {
+      await instance.post(requests.sendArcFeedbackMessage(activeAppId), {
         message: text,
       });
-      const added: FeedbackMessage = res.data.data;
-      console.log(added);
-      setMessages(prev => [...prev, added]);
+      await fetchMessages();
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch {
       Toast.show({ type: 'error', text1: 'Failed to send message', position: 'bottom' });
@@ -152,6 +153,17 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
       setSending(false);
     }
   };
+
+  useEffect(() => {
+  if (!arc?.id) return;
+    instance.post(requests.trackArcEvent(arc.id), { eventType: 'impression' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging impression:", err));
+
+    instance.post(requests.trackArcEvent(arc.id), { eventType: 'arc_pageview' }, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    }).catch(err => console.error("Error logging pageview:", err));
+  }, [arc?.id, accessToken]);
 
   if (!arc) return null;
 
@@ -192,6 +204,16 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
     onClose();
   };
 
+  const handleViewBook = () => {
+    if (!arc?.bookId || !navigation) return;
+    handleClose();
+    navigation.navigate('Details', {
+      id: String(arc.bookId),
+      type: 'Book',
+      arcId: arc.id,
+    });
+  };
+
   const renderMessage = ({ item }: { item: FeedbackMessage }) => {
     const isMe = item.senderId === userId || item.senderRole === 'reader';
     return (
@@ -206,16 +228,6 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
       </View>
     );
   };
-
-  useEffect(() => {
-    instance.post(requests.trackArcEvent(arc.id), { eventType: 'impression' }, {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
-    }).catch(err => console.error("Error logging impression:", err));
-
-    instance.post(requests.trackArcEvent(arc.id), { eventType: 'arc_pageview' }, {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
-    }).catch(err => console.error("Error logging pageview:", err));
-  }, [arc.id, accessToken]);
 
   return (
     <Modal
@@ -236,7 +248,7 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
               <>
                 <View style={styles.header}>
                   <TouchableOpacity onPress={() => setView('detail')} style={styles.iconBtn}>
-                    <AntDesign name="arrowleft" size={18} color={COLORS.primaryWhiteHex} />
+                    <AntDesign name="arrow-left" size={18} color={COLORS.primaryWhiteHex} />
                   </TouchableOpacity>
                   <View style={styles.headerCenter}>
                     <Text style={styles.headerTitle}>Private Notes</Text>
@@ -299,7 +311,7 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
               <>
                 <View style={styles.header}>
                   <TouchableOpacity onPress={() => setView('detail')} style={styles.iconBtn}>
-                    <AntDesign name="arrowleft" size={18} color={COLORS.primaryWhiteHex} />
+                    <AntDesign name="arrow-left" size={18} color={COLORS.primaryWhiteHex} />
                   </TouchableOpacity>
                   <Text style={styles.headerTitle}>Request ARC Copy</Text>
                   <TouchableOpacity onPress={handleClose} style={styles.iconBtn}>
@@ -354,13 +366,17 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
                       <Ionicons name="book-outline" size={48} color={COLORS.primaryLightGreyHex} />
                     </View>
                   )}
+                  {/* ARC badge */}
+                  <View style={styles.formatBadge}>
+                    <Text style={styles.formatBadgeText}>{arc.format}</Text>
+                  </View>
                   <View style={[styles.daysBadge, daysLeft <= 3 && styles.daysBadgeUrgent]}>
                     <Text style={styles.daysBadgeText}>
                       {daysLeft === 0 ? 'Ends today!' : `${daysLeft}d left`}
                     </Text>
                   </View>
                   <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
-                    <AntDesign name="sharealt" size={16} color="#fff" />
+                    <AntDesign name="share-alt" size={16} color="#fff" />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.closeFloating} onPress={handleClose}>
                     <AntDesign name="close" size={16} color="#fff" />
@@ -382,7 +398,9 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
                   </View>
 
                   <Text style={styles.title}>{arc.title}</Text>
-                  <Text style={styles.bookName}>{arc.bookName}</Text>
+                  <TouchableOpacity onPress={handleViewBook} activeOpacity={0.7}>
+                    <Text style={[styles.bookName, navigation && styles.bookNameLink]}>{arc.bookName}</Text>
+                  </TouchableOpacity>
 
                   <View style={styles.datesRow}>
                     <Feather name="calendar" size={13} color={COLORS.primaryOrangeHex} />
@@ -407,17 +425,19 @@ export default function ArcModal({ visible, onClose, arc, userApplication }: Pro
                   </View>
 
                   {/* CTAs */}
-                  <TouchableOpacity style={styles.primaryBtn} onPress={() => setView('apply')}>
-                    <Text style={styles.primaryBtnText}>📋 Request ARC Copy</Text>
-                  </TouchableOpacity>
+                  {!isApplied && (
+                    <TouchableOpacity style={styles.primaryBtn} onPress={() => setView('apply')}>
+                      <Text style={styles.primaryBtnText}>📋 Request ARC Copy</Text>
+                    </TouchableOpacity>
+                  )}
 
                   <TouchableOpacity style={styles.secondaryBtn} onPress={handleShare}>
-                    <AntDesign name="sharealt" size={14} color={COLORS.primaryOrangeHex} />
+                    <AntDesign name="share-alt" size={14} color={COLORS.primaryOrangeHex} />
                     <Text style={styles.secondaryBtnText}>Share</Text>
                   </TouchableOpacity>
 
                   {/* Private notes — only if user has an approved application */}
-                  {userApplication && userApplication.status === 'approved' && (
+                  {showPrivateNotes && userApplication?.status === 'approved' && (
                     <TouchableOpacity
                       style={styles.chatBtn}
                       onPress={() => setView('chat')}
@@ -491,6 +511,21 @@ const createStyles = (COLORS: any) =>
       justifyContent: 'center',
       alignItems: 'center',
     },
+    formatBadge: {
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      backgroundColor: 'rgba(53,99,220,0.85)',
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    formatBadgeText: {
+      color: '#fff',
+      fontFamily: FONTFAMILY.poppins_bold,
+      fontSize: FONTSIZE.size_10,
+      letterSpacing: 1,
+    },
     daysBadge: {
       position: 'absolute', bottom: 12, left: 12,
       backgroundColor: 'rgba(209,120,66,0.9)',
@@ -517,6 +552,7 @@ const createStyles = (COLORS: any) =>
     metaTagText: { fontSize: FONTSIZE.size_12, fontFamily: FONTFAMILY.poppins_medium, color: COLORS.primaryOrangeHex },
     title: { fontSize: FONTSIZE.size_20, fontFamily: FONTFAMILY.poppins_semibold, color: COLORS.primaryWhiteHex, marginBottom: SPACING.space_4 },
     bookName: { fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_regular, color: COLORS.secondaryLightGreyHex, marginBottom: SPACING.space_10 },
+    bookNameLink: { color: COLORS.primaryOrangeHex, textDecorationLine: 'underline' },
     datesRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: SPACING.space_12 },
     dateText: { fontSize: FONTSIZE.size_12, fontFamily: FONTFAMILY.poppins_regular, color: COLORS.primaryOrangeHex },
     description: { fontSize: FONTSIZE.size_14, fontFamily: FONTFAMILY.poppins_regular, color: COLORS.secondaryLightGreyHex, lineHeight: 22, marginBottom: SPACING.space_16 },

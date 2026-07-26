@@ -26,7 +26,7 @@ import {
 } from '../../../../theme/theme';
 
 import GiveawayCard from '../components/GiveawayCard';
-import GiveawayModal, { GiveawayCampaign } from '../components/GiveawayModal';
+import GiveawayModal, { GiveawayCampaign, GiveawayClaimStatus } from '../components/GiveawayModal';
 import GiveawayHowItWorksModal from '../components/GiveawayHowItWorksModal';
 import HeaderBar from '../../../../components/HeaderBar';
 
@@ -70,7 +70,9 @@ const GiveawaysScreen = ({ navigation }: any) => {
   const [howItWorksVisible, setHowItWorksVisible] = useState(false);
 
   // Deep-link claim view — track which win triggered the claim modal
-  const [claimingWin, setClaimingWin] = useState<UserWin | null>(null);
+  // Only won-prize cards may expose the claim action in the modal.
+  const [openedFromWonPrize, setOpenedFromWonPrize] = useState(false);
+  const [selectedClaimStatus, setSelectedClaimStatus] = useState<GiveawayClaimStatus | undefined>();
 
   // ─── Fetch data ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -121,6 +123,8 @@ const GiveawaysScreen = ({ navigation }: any) => {
     const found = activeGiveaways.find(g => String(g.id) === String(subPath));
     if (found) {
       setSelectedGiveaway(found);
+      setOpenedFromWonPrize(false);
+      setSelectedClaimStatus(undefined);
       setModalVisible(true);
     } else if (!loading) {
       // Fetch individually (e.g., expired campaign deep link)
@@ -130,6 +134,8 @@ const GiveawaysScreen = ({ navigation }: any) => {
           const g = res.data?.data;
           if (g) {
             setSelectedGiveaway(g);
+            setOpenedFromWonPrize(false);
+            setSelectedClaimStatus(undefined);
             setModalVisible(true);
           }
         })
@@ -142,12 +148,16 @@ const GiveawaysScreen = ({ navigation }: any) => {
   // ─── Helpers ──────────────────────────────────────────────────────────────
   const openGiveaway = (giveaway: GiveawayCampaign) => {
     setSelectedGiveaway(giveaway);
+    setOpenedFromWonPrize(false);
+    setSelectedClaimStatus(undefined);
     setModalVisible(true);
   };
 
   const closeGiveaway = () => {
     setModalVisible(false);
     setSelectedGiveaway(null);
+    setOpenedFromWonPrize(false);
+    setSelectedClaimStatus(undefined);
   };
 
   // ─── UI ───────────────────────────────────────────────────────────────────
@@ -163,18 +173,19 @@ const GiveawaysScreen = ({ navigation }: any) => {
         {/* Sub-header */}
         <View style={styles.subHeader}>
           <View style={styles.subHeaderLeft}>
-            <Text style={styles.screenTitle}>Win Free Books 🎁</Text>
+            <Text style={styles.screenTitle}>
+              Win Free Books
+              <TouchableOpacity
+                style={styles.infoBtn}
+                onPress={() => setHowItWorksVisible(true)}
+              >
+                <Feather name="info" size={16} color={COLORS.primaryOrangeHex} />
+              </TouchableOpacity>
+            </Text>
             <Text style={styles.screenSubtitle}>
-              Enter draws to win author-gifted copies — no review required.
+              Browse active book giveaways and track prizes you've won.
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.infoBtn}
-            onPress={() => setHowItWorksVisible(true)}
-          >
-            <Feather name="info" size={16} color={COLORS.primaryOrangeHex} />
-            <Text style={styles.infoBtnText}>How it works</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Active giveaways */}
@@ -208,7 +219,7 @@ const GiveawaysScreen = ({ navigation }: any) => {
         {myWins.length > 0 && (
           <>
             <Text style={[styles.sectionTitle, { marginTop: SPACING.space_32 }]}>
-              🏆 Prizes I've Won
+              Prizes I've Won
             </Text>
             {myWins.map(win => (
               <View key={win.giveawayId} style={styles.winCard}>
@@ -255,6 +266,8 @@ const GiveawaysScreen = ({ navigation }: any) => {
                             bookDescription: '',
                           };
                           setSelectedGiveaway(matchedGiveaway as GiveawayCampaign);
+                          setOpenedFromWonPrize(true);
+                          setSelectedClaimStatus(win.claimStatus);
                           setModalVisible(true);
                         }}
                       >
@@ -274,6 +287,9 @@ const GiveawaysScreen = ({ navigation }: any) => {
         visible={modalVisible}
         giveaway={selectedGiveaway}
         onClose={closeGiveaway}
+        showClaimPrize={openedFromWonPrize}
+        claimStatus={selectedClaimStatus}
+        navigation={navigation}
       />
       <GiveawayHowItWorksModal
         visible={howItWorksVisible}
@@ -317,21 +333,8 @@ const createStyles = (COLORS: any) =>
       marginTop: 2,
     },
     infoBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      backgroundColor: 'rgba(209,120,66,0.12)',
-      borderRadius: 20,
-      paddingHorizontal: SPACING.space_12,
+      paddingHorizontal: SPACING.space_4,
       paddingVertical: SPACING.space_8,
-      borderWidth: 1,
-      borderColor: 'rgba(209,120,66,0.3)',
-      marginTop: 2,
-    },
-    infoBtnText: {
-      fontSize: FONTSIZE.size_12,
-      fontFamily: FONTFAMILY.poppins_medium,
-      color: COLORS.primaryOrangeHex,
     },
     sectionTitle: {
       fontSize: FONTSIZE.size_18,
