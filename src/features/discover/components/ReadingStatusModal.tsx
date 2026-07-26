@@ -358,7 +358,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
                       <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
                     ) : (
                       <>
-                        <AntDesign name={isInQueue ? "checkcircle" : "plus"} size={FONTSIZE.size_16} color={COLORS.primaryWhiteHex} />
+                        <AntDesign name={isInQueue ? "check-circle" : "plus"} size={FONTSIZE.size_16} color={COLORS.primaryWhiteHex} />
                         <Text style={styles.queueButtonText}>{isInQueue ? 'In Reading Queue' : 'Add to Reading Queue'}</Text>
                       </>
                     )}
