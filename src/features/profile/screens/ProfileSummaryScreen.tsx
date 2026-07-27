@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Share, Linking } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
+import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import BookshelfComponent from '../components/BookshelfComponent';
 import UserReviews from '../../reading/components/UserReviews';
@@ -141,7 +141,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
     }
   };
 
-  const handleFriendRequest = async (action:string) => {
+  const handleFriendRequest = async (action: string) => {
     const prevState = userRelations;
     // optimistic update
     setUserRelations((prev) => {
@@ -238,12 +238,12 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
     } else if (userRelations?.isReversePendingRequest) {
       return (
         <View style={{flexDirection: 'row', gap: SPACING.space_8, justifyContent: 'space-around'}}>
-        <TouchableOpacity style={styles.addFriendButton} onPress={() => handleFriendRequest('confirm')}>
-          <Text style={styles.buttonText}>Confirm Friend</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.addFriendButton} onPress={() => handleFriendRequest('reject')}>
-          <Text style={styles.buttonText}>Reject Friend</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.addFriendButton} onPress={() => handleFriendRequest('confirm')}>
+            <Text style={styles.buttonText}>Confirm Friend</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.addFriendButton} onPress={() => handleFriendRequest('reject')}>
+            <Text style={styles.buttonText}>Reject Friend</Text>
+          </TouchableOpacity>
         </View>
       );
     } else {
@@ -309,31 +309,30 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
           )}
         </View>
       </View>
-
       <ScrollView style={styles.container}>
-        {/* Profile Info Section: side-by-side photo + friends count */}
-        <View style={styles.profileHeader}>
+
+        {/* Avatar + Name + Friends */}
+        <View style={styles.headerContainer}>
           <TouchableOpacity
             onPress={isPageOwner ? () => navigation.push('Profile') : undefined}
-            style={styles.avatarWrapper}
-            disabled={!isPageOwner}
-          >
-            <View style={styles.avatarBorder}>
+            style={styles.profileContainer}>
+            <View style={styles.profileImageContainer}>
               <Image
                 source={{ uri: userData?.profilePic }}
                 style={styles.profileImage}
               />
+              {isPageOwner && (
+                <View style={styles.editBadge}>
+                  <Feather name="edit-3" size={12} color="#fff" />
+                </View>
+              )}
             </View>
-            {isPageOwner && (
-              <View style={styles.editBadge}>
-                <Feather name="edit-3" size={10} color="#fff" />
-              </View>
-            )}
           </TouchableOpacity>
 
-          <View style={styles.friendsStatContainer}>
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName} numberOfLines={1}>{userData?.name}</Text>
             <TouchableOpacity
-              style={styles.friendsStatColumn}
+              style={styles.friendsInlineRow}
               onPress={() =>
                 navigation.push('FriendsList', {
                   pageOwnerId: userData.userId,
@@ -348,57 +347,41 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
           </View>
         </View>
 
-        {/* Name */}
-        <View style={styles.bioContainer}>
-          <Text style={styles.profileName}>{userData?.name}</Text>
-        </View>
-
-        {/* Social Links Row */}
+        {/* Social Links Row - horizontally scrollable */}
         {socialLinkEntries.length > 0 && (
-          <View style={styles.socialLinksRow}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.socialLinksScroll}
+            contentContainerStyle={styles.socialLinksScrollContent}
+          >
             {socialLinkEntries.map((entry) => (
               <TouchableOpacity
                 key={entry.key}
                 style={styles.socialLinkButton}
                 onPress={() => handleSocialLinkPress(entry.url)}
+                activeOpacity={0.75}
               >
                 {entry.lib === 'FontAwesome5' ? (
-                  <FontAwesome5 name={entry.name} size={18} color={COLORS.primaryWhiteHex} />
+                  <FontAwesome5 name={entry.name} size={16} color={COLORS.primaryWhiteHex} />
                 ) : (
-                  <Entypo name={entry.name} size={18} color={COLORS.primaryWhiteHex} />
+                  <Entypo name={entry.name} size={16} color={COLORS.primaryWhiteHex} />
                 )}
               </TouchableOpacity>
             ))}
+          </ScrollView>
+        )}
+
+        {!isPageOwner && (
+          <View style={styles.buttonsSection}>
+            {getFriendButtonText()}
+            {/* <TouchableOpacity style={styles.followButton} onPress={() => handleFollowRequest()}>
+              <Text style={styles.buttonText}>{userRelations?.isFollowing ? "Unfollow" : "Follow"}</Text>
+            </TouchableOpacity> */}
           </View>
         )}
 
-        {/* Action Buttons */}
-        <View style={styles.actionButtonsRow}>
-          {isPageOwner ? (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.primaryButton]}
-              onPress={() => navigation.push('Profile')}
-            >
-              <Text style={styles.actionButtonText}>Edit Profile</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.friendActionWrapper}>
-              {getFriendButtonText()}
-            </View>
-          )}
-
-          <TouchableOpacity
-            style={[styles.actionButton, styles.secondaryButton]}
-            onPress={handleShareProfile}
-          >
-            <Feather name="share-2" size={13} color={COLORS.primaryWhiteHex} style={{ marginRight: 6 }} />
-            <Text style={styles.actionButtonText}>Share</Text>
-          </TouchableOpacity>
-        </View>
-
         <View style={styles.horizontalLine} />
-
-        {/* Mood Preferences (old style) */}
         <View style={styles.infoSection}>
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Mood Preferences</Text>
@@ -429,9 +412,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
               <View style={styles.statDivider} />
 
               <View style={styles.statItem}>
-                <Text style={styles.statIcon}>
-                  <FontAwesome5 name="fire" size={20} color={COLORS.primaryWhiteHex} />
-                </Text>
+                <Text style={styles.statIcon}><FontAwesome5 name="fire" size={20} color={COLORS.primaryWhiteHex} /></Text>
                 <Text style={styles.statValue}>{currentStreak || 0}</Text>
                 <Text style={styles.statLabel}>day streak</Text>
               </View>
@@ -440,44 +421,23 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
         </View>
 
         <View style={styles.horizontalLine} />
-
         {privacyStatus ? (
           <>
-            {/* Tab Bar (new style) */}
-            <View style={styles.tabBar}>
-              <TouchableOpacity
-                onPress={() => setActiveTab('bookshelf')}
-                style={[styles.tabButton, activeTab === 'bookshelf' && styles.tabButtonActive]}
-              >
-                <Feather
-                  name="grid"
-                  size={18}
-                  color={activeTab === 'bookshelf' ? COLORS.primaryOrangeHex : COLORS.secondaryLightGreyHex}
-                />
-                <Text style={[styles.tabLabel, activeTab === 'bookshelf' && styles.tabLabelActive]}>
-                  Bookshelf
-                </Text>
+            <View style={styles.TabBar}>
+              <TouchableOpacity onPress={() => setActiveTab('bookshelf')} style={[styles.TabButton, activeTab === 'bookshelf' && styles.TabButtonActive]}>
+                <Text style={[styles.TabLabel, activeTab === 'bookshelf' && styles.TabLabelActive]}>Bookshelf</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setActiveTab('reviews')}
-                style={[styles.tabButton, activeTab === 'reviews' && styles.tabButtonActive]}
-              >
-                <Feather
-                  name="message-circle"
-                  size={18}
-                  color={activeTab === 'reviews' ? COLORS.primaryOrangeHex : COLORS.secondaryLightGreyHex}
-                />
-                <Text style={[styles.tabLabel, activeTab === 'reviews' && styles.tabLabelActive]}>
-                  Reviews
-                </Text>
+              <TouchableOpacity onPress={() => setActiveTab('reviews')} style={[styles.TabButton, activeTab === 'reviews' && styles.TabButtonActive]}>
+                <Text style={[styles.TabLabel, activeTab === 'reviews' && styles.TabLabelActive]}>Reviews</Text>
               </TouchableOpacity>
             </View>
             {renderContent()}
           </>
         ) : (
           <View style={styles.privateContainer}>
-            <Feather name="lock" size={40} color={COLORS.secondaryLightGreyHex} />
-            <Text style={styles.privateText}>This profile is private</Text>
+            <Text style={styles.privateText}>
+              🔒 This profile is private
+            </Text>
           </View>
         )}
       </ScrollView>
@@ -485,295 +445,305 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   );
 };
 
-const createStyles = (COLORS: any) =>
-  StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: COLORS.primaryBlackHex,
-    },
-    container: {
-      flex: 1,
-      backgroundColor: COLORS.primaryBlackHex,
-      
-    },
-    headerBar: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: SPACING.space_16,
-      paddingVertical: SPACING.space_12,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.primaryDarkGreyHex,
-    },
-    backButton: {
-      padding: SPACING.space_4,
-    },
-    headerTitle: {
-      fontSize: FONTSIZE.size_16,
-      fontFamily: FONTFAMILY.poppins_bold,
-      color: COLORS.primaryWhiteHex,
-    },
-    headerRightActions: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    headerShareButton: {
-      padding: SPACING.space_4,
-      marginRight: SPACING.space_12,
-    },
-    headerSettingsButton: {
-      padding: SPACING.space_4,
-    },
-    profileHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.space_20,
-      marginTop: SPACING.space_20,
-    },
-    avatarWrapper: {
-      position: 'relative',
-    },
-    avatarBorder: {
-      padding: 3,
-      borderRadius: 50,
-      borderWidth: 2,
-      borderColor: COLORS.primaryOrangeHex,
-    },
-    profileImage: {
-      width: 86,
-      height: 86,
-      borderRadius: 43,
-      backgroundColor: COLORS.primaryDarkGreyHex,
-    },
-    editBadge: {
-      position: 'absolute',
-      bottom: 0,
-      right: 0,
-      backgroundColor: COLORS.primaryOrangeHex,
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 2,
-      borderColor: COLORS.primaryBlackHex,
-    },
-    friendsStatContainer: {
-      flex: 1,
-      flexDirection: 'row',
-      justifyContent: 'flex-start',
-      marginLeft: SPACING.space_24,
-    },
-    friendsStatColumn: {
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    statNumber: {
-      fontSize: FONTSIZE.size_18,
-      fontFamily: FONTFAMILY.poppins_bold,
-      color: COLORS.primaryWhiteHex,
-    },
-    statLabelText: {
-      fontSize: FONTSIZE.size_12,
-      fontFamily: FONTFAMILY.poppins_regular,
-      color: COLORS.secondaryLightGreyHex,
-      marginTop: 2,
-    },
-    bioContainer: {
-      paddingHorizontal: SPACING.space_20,
-      marginTop: SPACING.space_16,
-    },
-    profileName: {
-      fontSize: FONTSIZE.size_16,
-      fontFamily: FONTFAMILY.poppins_semibold,
-      color: COLORS.primaryWhiteHex,
-    },
-    socialLinksRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.space_20,
-      marginTop: SPACING.space_12,
-      gap: SPACING.space_12,
-    },
-    socialLinkButton: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
-      backgroundColor: COLORS.secondaryDarkGreyHex,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: COLORS.primaryDarkGreyHex,
-    },
-    actionButtonsRow: {
-      flexDirection: 'row',
-      paddingHorizontal: SPACING.space_20,
-      marginTop: SPACING.space_16,
-      marginBottom: SPACING.space_16,
-      gap: SPACING.space_10,
-    },
-    actionButton: {
-      flex: 1,
-      height: 38,
-      borderRadius: BORDERRADIUS.radius_8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'row',
-    },
-    primaryButton: {
-      backgroundColor: COLORS.primaryOrangeHex,
-    },
-    secondaryButton: {
-      backgroundColor: COLORS.secondaryDarkGreyHex,
-      borderWidth: 1,
-      borderColor: COLORS.primaryDarkGreyHex,
-    },
-    actionButtonText: {
-      fontSize: FONTSIZE.size_12,
-      fontFamily: FONTFAMILY.poppins_semibold,
-      color: COLORS.primaryWhiteHex,
-    },
-    friendActionWrapper: {
-      flex: 1,
-    },
-    addFriendButton: {
-      height: 38,
-      borderRadius: BORDERRADIUS.radius_8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: COLORS.primaryOrangeHex,
-    },
-    friendStatusButton: {
-      height: 38,
-      borderRadius: BORDERRADIUS.radius_8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: COLORS.secondaryDarkGreyHex,
-      borderWidth: 1,
-      borderColor: COLORS.primaryDarkGreyHex,
-    },
-    buttonText: {
-      fontSize: FONTSIZE.size_12,
-      fontFamily: FONTFAMILY.poppins_semibold,
-      color: COLORS.primaryWhiteHex,
-    },
-    horizontalLine: {
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.primaryLightGreyHex,
-      marginHorizontal: SPACING.space_20,
-      marginBottom: SPACING.space_20,
-    },
-    infoSection: {
-      flexDirection: 'column',
-      gap: SPACING.space_12,
-      paddingHorizontal: SPACING.space_20,
-    },
-    section: {
-      backgroundColor: COLORS.secondaryDarkGreyHex,
-      borderRadius: BORDERRADIUS.radius_10,
-      padding: SPACING.space_20,
-    },
-    sectionTitle: {
-      fontSize: FONTSIZE.size_20,
-      fontFamily: FONTFAMILY.poppins_bold,
-      marginBottom: SPACING.space_16,
-      color: COLORS.primaryWhiteHex,
-      alignSelf: 'center',
-    },
-    descriptionText: {
-      color: COLORS.primaryWhiteHex,
-      fontFamily: FONTFAMILY.poppins_medium,
-      fontSize: FONTSIZE.size_18,
-    },
-    highlightText: {
-      color: COLORS.primaryOrangeHex,
-      fontFamily: FONTFAMILY.poppins_bold,
-      fontSize: FONTSIZE.size_18,
-    },
-    statsRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-    },
-    statItem: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    statIcon: {
-      fontSize: FONTSIZE.size_24,
-      marginBottom: SPACING.space_4,
-    },
-    statValue: {
-      fontSize: FONTSIZE.size_20,
-      fontFamily: FONTFAMILY.poppins_bold,
-      color: COLORS.primaryOrangeHex,
-      marginBottom: SPACING.space_2,
-    },
-    statLabel: {
-      fontSize: FONTSIZE.size_10,
-      fontFamily: FONTFAMILY.poppins_regular,
-      color: COLORS.secondaryLightGreyHex,
-      textAlign: 'center',
-    },
-    statDivider: {
-      width: 1,
-      height: 40,
-      backgroundColor: COLORS.secondaryLightGreyHex,
-      opacity: 0.3,
-    },
-    tabBar: {
-      flexDirection: 'row',
-      borderTopWidth: 1,
-      borderTopColor: COLORS.primaryDarkGreyHex,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.primaryDarkGreyHex,
-      marginTop: SPACING.space_8,
-    },
-    tabButton: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: SPACING.space_12,
-      gap: SPACING.space_8,
-    },
-    tabButtonActive: {
-      borderBottomWidth: 2,
-      borderBottomColor: COLORS.primaryOrangeHex,
-    },
-    tabLabel: {
-      fontFamily: FONTFAMILY.poppins_medium,
-      fontSize: FONTSIZE.size_12,
-      color: COLORS.secondaryLightGreyHex,
-    },
-    tabLabelActive: {
-      color: COLORS.primaryOrangeHex,
-      fontFamily: FONTFAMILY.poppins_semibold,
-    },
-    TabContent: {
-      flex: 1,
-      padding: SPACING.space_36,
-    },
-    loadingContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: COLORS.primaryBlackHex,
-    },
-    privateContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: 60,
-      paddingHorizontal: SPACING.space_32,
-    },
-    privateText: {
-      fontFamily: FONTFAMILY.poppins_medium,
-      color: COLORS.secondaryLightGreyHex,
-      fontSize: FONTSIZE.size_14,
-      marginTop: 8,
-      textAlign: 'center',
-    },
-  });
+const createStyles = (COLORS) => StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.primaryBlackHex,
+  },
+  container: {
+    padding: SPACING.space_20,
+    backgroundColor: COLORS.primaryBlackHex,
+    flex: 1,
+  },
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.space_16,
+    paddingVertical: SPACING.space_12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.primaryDarkGreyHex,
+  },
+  backButton: {
+    padding: SPACING.space_4,
+  },
+  headerTitle: {
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+  },
+  headerRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerShareButton: {
+    padding: SPACING.space_4,
+    marginRight: SPACING.space_12,
+  },
+  headerSettingsButton: {
+    padding: SPACING.space_4,
+  },
+  profileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  profileImageContainer: {
+    position: 'relative',
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: COLORS.primaryOrangeHex,
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: COLORS.primaryOrangeHex,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.primaryBlackHex,
+  },
+  profileInfo: {
+    marginLeft: 14,
+    flex: 1,
+    minWidth: 0,
+    justifyContent: 'center',
+  },
+  profileName: {
+    fontSize: FONTSIZE.size_18,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_4,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.space_16,
+  },
+  friendsInlineRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: SPACING.space_4,
+  },
+  statNumber: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+  },
+  statLabelText: {
+    fontSize: FONTSIZE.size_12,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.space_20,
+  },
+  topBarTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+    marginHorizontal: SPACING.space_8,
+  },
+  topBarRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerIconButton: {
+    marginLeft: SPACING.space_8,
+    padding: SPACING.space_4,
+  },
+  backButton: {
+    padding: SPACING.space_4,
+  },
+  headerIcon: {
+    marginLeft: SPACING.space_8,
+    paddingBottom: 0,
+  },
+  socialLinksScroll: {
+    marginBottom: SPACING.space_20,
+  },
+  socialLinksScrollContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.space_12,
+    paddingRight: SPACING.space_8,
+  },
+  socialLinkButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.primaryDarkGreyHex,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryBlackHex,
+  },
+  booksSection: {
+    marginBottom: SPACING.space_20,
+  },
+  infoSection: {
+    flexDirection: 'column',
+    gap: SPACING.space_12,
+  },
+  buttonsSection: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: SPACING.space_8,
+    marginBottom: SPACING.space_20,
+  },
+  addFriendButton: {
+    backgroundColor: COLORS.primaryOrangeHex,
+    paddingVertical: SPACING.space_8,
+    borderRadius: BORDERRADIUS.radius_10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    shadowColor: COLORS.primaryBlackRGBA,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
+    width: 160,
+  },
+  followButton: {
+    backgroundColor: COLORS.primaryBlackHex,
+    paddingVertical: SPACING.space_8,
+    borderRadius: BORDERRADIUS.radius_10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    shadowColor: COLORS.primaryBlackRGBA,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
+    width: 140,
+  },
+  buttonText: {
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_bold,
+    fontSize: FONTSIZE.size_12,
+  },
+  horizontalLine: {
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.primaryLightGreyHex,
+    marginBottom: SPACING.space_20,
+  },
+  section: {
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_20,
+    marginBottom: SPACING.space_20,
+  },
+  sectionTitle: {
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_bold,
+    marginBottom: SPACING.space_16,
+    color: COLORS.primaryWhiteHex,
+    alignSelf: 'center',
+  },
+  booksList: {
+    flexDirection: 'row',
+  },
+  descriptionText: {
+    color: COLORS.primaryWhiteHex,
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_18,
+  },
+  highlightText: {
+    color: COLORS.primaryOrangeHex,
+    fontFamily: FONTFAMILY.poppins_bold,
+    fontSize: FONTSIZE.size_18,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    borderRadius: BORDERRADIUS.radius_10,
+    paddingHorizontal: SPACING.space_10,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    shadowColor: COLORS.primaryBlackRGBA,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statIcon: {
+    fontSize: FONTSIZE.size_24,
+    marginBottom: SPACING.space_4,
+  },
+  statValue: {
+    fontSize: FONTSIZE.size_20,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryOrangeHex,
+    marginBottom: SPACING.space_2,
+  },
+  statLabel: {
+    fontSize: FONTSIZE.size_10,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    textAlign: 'center',
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: COLORS.secondaryLightGreyHex,
+    opacity: 0.3,
+  },
+  TabBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    paddingBottom: SPACING.space_8,
+  },
+  TabButton: {
+    paddingVertical: SPACING.space_12,
+    paddingHorizontal: SPACING.space_16,
+  },
+  TabButtonActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: COLORS.primaryOrangeHex,
+  },
+  TabLabel: {
+    fontFamily: FONTFAMILY.poppins_medium,
+    fontSize: FONTSIZE.size_14,
+    color: COLORS.primaryWhiteHex,
+  },
+  TabLabelActive: {
+    color: COLORS.primaryOrangeHex,
+  },
+  TabContent: {
+    flexGrow: 1,
+    padding: SPACING.space_20,
+  },
+  privateContainer: {
+    alignItems: "center",
+    marginTop: 40,
+  },
+  privateText: {
+    color: COLORS.secondaryLightGreyHex,
+    fontSize: 16,
+  },
+});
 
 export default ProfileSummaryScreen;
