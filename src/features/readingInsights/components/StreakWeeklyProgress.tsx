@@ -16,6 +16,8 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
   const {
     currentStreak,
     latestUpdateTime,
+    streakFreezes,
+    weeklyProgress,
     updateStreak,
     loading,
   } = useStreak(userDetails[0]?.accessToken, null, handleCelebration);
@@ -51,6 +53,17 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
   }
 
   function getDayClasses(dayIndex) {
+    if (weeklyProgress && weeklyProgress.length === 7) {
+      const dayData = weeklyProgress[dayIndex];
+      if (dayData && dayData.hasRead) {
+        if (dayData.type === 'freeze') {
+          return styles.freezeDay;
+        }
+        return styles.filledDay;
+      }
+      return styles.day;
+    }
+
     if (!latestUpdateTime) return styles.day;
 
     const today = new Date();
@@ -242,6 +255,9 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   filledDay: {
     backgroundColor: COLORS.primaryOrangeHex,
+  },
+  freezeDay: {
+    backgroundColor: '#38BDF8',
   },
   greeting: {
     fontFamily: FONTFAMILY.poppins_medium,

@@ -42,10 +42,12 @@ const StreakCalendarView = () => {
       if (response.data && response.data.dates) {
         const newMarkedDates = {};
         
-        response.data.dates.forEach(date => {
-          newMarkedDates[date] = {
+        response.data.dates.forEach(item => {
+          const dateStr = typeof item === 'string' ? item : item.date;
+          const isFreeze = typeof item === 'object' && item.type === 'freeze';
+          newMarkedDates[dateStr] = {
             selected: true,
-            selectedColor: COLORS.primaryOrangeHex,
+            selectedColor: isFreeze ? '#38BDF8' : COLORS.primaryOrangeHex,
             selectedTextColor: COLORS.primaryWhiteHex,
           };
         });

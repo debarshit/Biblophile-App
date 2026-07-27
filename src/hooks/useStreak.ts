@@ -9,6 +9,8 @@ export const useStreak = (accessToken, userId = null, initialAction = null, onCe
   const [currentStreak, setCurrentStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
   const [latestUpdateTime, setLatestUpdateTime] = useState("");
+  const [streakFreezes, setStreakFreezes] = useState(0);
+  const [weeklyProgress, setWeeklyProgress] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -16,6 +18,12 @@ export const useStreak = (accessToken, userId = null, initialAction = null, onCe
     setCurrentStreak(data.currentStreak);
     setMaxStreak(data.maxStreak);
     setLatestUpdateTime(data.latestUpdateTime);
+    if (data.streakFreezes !== undefined) {
+      setStreakFreezes(data.streakFreezes);
+    }
+    if (data.weeklyProgress !== undefined) {
+      setWeeklyProgress(data.weeklyProgress);
+    }
   }, []);
 
   const fetchStreak = useCallback(async () => {
@@ -91,6 +99,8 @@ export const useStreak = (accessToken, userId = null, initialAction = null, onCe
     currentStreak,
     maxStreak,
     latestUpdateTime,
+    streakFreezes,
+    weeklyProgress,
     loading,
     error,
     fetchStreak,
