@@ -8,6 +8,7 @@ import { useStore } from '../../../store/store';
 import { useNavigation } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../../../contexts/ThemeContext';
+import UserDisplay from '../../../components/UserDisplay';
 
 // Types
 interface Host {
@@ -40,6 +41,8 @@ interface Comment {
     commentText: string;
     progressPercentage: number;
     user_name: string;
+    username?: string;
+    user_avatar?: string;
     userId: string;
     like_count: number;
     createdAt: string;
@@ -242,11 +245,18 @@ const CommentItem = memo(({
                     </View>
                 )}
 
-                <Text style={styles.commentMeta}>
-                    <Text style={styles.commentUser}>{comment.user_name}</Text>
-                    <Text style={styles.commentPage}> (At {comment.progressPercentage}%)</Text>
-                    <Text style={styles.commentDate}> • {formatTimestamp(comment.createdAt)}</Text>
-                </Text>
+                <UserDisplay
+                    username={comment.username || comment.user_name}
+                    name={comment.user_name}
+                    avatarUrl={comment.user_avatar}
+                    size="small"
+                    style={{ flex: 1, marginBottom: 6 }}
+                >
+                    <Text style={styles.commentMeta}>
+                        <Text style={styles.commentPage}>At {comment.progressPercentage}%</Text>
+                        <Text style={styles.commentDate}> • {formatTimestamp(comment.createdAt)}</Text>
+                    </Text>
+                </UserDisplay>
 
                 {/* Comment Text */}
                 <View style={styles.textWrapper}>
@@ -745,11 +755,6 @@ const createStyles = (COLORS) => StyleSheet.create({
     },
     commentMeta: {
         marginBottom: SPACING.space_8,
-    },
-    commentUser: {
-        fontWeight: '600',
-        color: COLORS.primaryWhiteHex,
-        fontSize: FONTSIZE.size_14,
     },
     commentPage: {
         fontSize: FONTSIZE.size_12,

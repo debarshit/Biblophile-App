@@ -15,6 +15,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
+import UserDisplay from '../../../components/UserDisplay';
 
 interface Friend {
   userId: number;
@@ -105,18 +106,17 @@ const FriendsListScreen = ({ navigation, route }: any) => {
   }, [friends, searchQuery]);
 
   const renderFriendItem = ({ item }: { item: Friend }) => (
-    <TouchableOpacity
-      style={styles.friendRow}
-      onPress={() => navigation.push('ProfileSummary', { username: item.userName })}
-      activeOpacity={0.8}
-    >
-      <Image source={{ uri: item.userProfilePic }} style={styles.avatar} />
-      <View style={styles.friendDetails}>
-        <Text style={styles.friendName}>{item.name}</Text>
-        <Text style={styles.friendUsername}>@{item.userName}</Text>
-      </View>
+    <View style={styles.friendRow}>
+      <UserDisplay
+        username={item.userName}
+        name={item.name}
+        avatarUrl={item.userProfilePic}
+        size="medium"
+        showUsername={true}
+        style={{ flex: 1 }}
+      />
       <Feather name="chevron-right" size={18} color={COLORS.secondaryLightGreyHex} />
-    </TouchableOpacity>
+    </View>
   );
 
   const renderFooter = () => {
@@ -247,28 +247,6 @@ const createStyles = (COLORS: any) =>
       paddingVertical: SPACING.space_12,
       borderBottomWidth: 1,
       borderBottomColor: COLORS.primaryDarkGreyHex,
-    },
-    avatar: {
-      width: 52,
-      height: 52,
-      borderRadius: 26,
-      backgroundColor: COLORS.primaryDarkGreyHex,
-    },
-    friendDetails: {
-      flex: 1,
-      marginLeft: SPACING.space_12,
-      justifyContent: 'center',
-    },
-    friendName: {
-      fontSize: FONTSIZE.size_14,
-      fontFamily: FONTFAMILY.poppins_semibold,
-      color: COLORS.primaryWhiteHex,
-    },
-    friendUsername: {
-      fontSize: FONTSIZE.size_12,
-      fontFamily: FONTFAMILY.poppins_regular,
-      color: COLORS.secondaryLightGreyHex,
-      marginTop: 2,
     },
     centerContainer: {
       flex: 1,

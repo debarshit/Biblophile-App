@@ -6,6 +6,7 @@ import { BlurView } from "expo-blur";
 import { COLORS, SPACING, BORDERRADIUS, FONTFAMILY, FONTSIZE } from "../../../theme/theme";
 import { Comment } from "../hooks/useComments";
 import { useTheme } from "../../../contexts/ThemeContext";
+import UserDisplay from "../../../components/UserDisplay";
 
 interface CommentItemProps {
     comment: Comment;
@@ -65,20 +66,18 @@ export const CommentItem = ({
         >
             {/* Header */}
             <View style={styles.commentHeader}>
-                <View style={styles.userInfo}>
-                    <View style={styles.avatarContainer}>
-                        <Text style={styles.avatarText}>
-                            {comment.user_name.charAt(0).toUpperCase()}
-                        </Text>
+                <UserDisplay
+                    username={comment.username || comment.user_name}
+                    name={comment.user_name}
+                    avatarUrl={comment.user_avatar}
+                    size="small"
+                    style={{ flex: 1 }}
+                >
+                    <View style={styles.commentMeta}>
+                        <Text style={styles.pageIndicator}>At {comment.progressPercentage}%</Text>
+                        <Text style={styles.timestamp}>• {formatTimestamp(comment.createdAt)}</Text>
                     </View>
-                    <View style={styles.userDetails}>
-                        <Text style={styles.commentUserName}>{comment.user_name}</Text>
-                        <View style={styles.commentMeta}>
-                            <Text style={styles.pageIndicator}>At {comment.progressPercentage}%</Text>
-                            <Text style={styles.timestamp}>• {formatTimestamp(comment.createdAt)}</Text>
-                        </View>
-                    </View>
-                </View>
+                </UserDisplay>
                 {(isHost || comment.userId === currentUser.userId) && (
                     <Pressable
                         onPress={() => onEllipsisClick(comment.commentId)}
@@ -219,28 +218,6 @@ const createStyles = (COLORS) => StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         marginBottom: SPACING.space_12,
-    },
-    userInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-    avatarContainer: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: COLORS.primaryOrangeHex,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: SPACING.space_10,
-    },
-    avatarText: {
-        color: COLORS.primaryWhiteHex,
-        fontFamily: FONTFAMILY.poppins_semibold,
-        fontSize: FONTSIZE.size_16,
-    },
-    userDetails: { flex: 1 },
-    commentUserName: {
-        fontFamily: FONTFAMILY.poppins_semibold,
-        color: COLORS.primaryWhiteHex,
-        fontSize: FONTSIZE.size_14,
-        marginBottom: SPACING.space_2,
     },
     commentMeta: { flexDirection: 'row', alignItems: 'center' },
     pageIndicator: {

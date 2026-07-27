@@ -18,6 +18,7 @@ import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 
 // Components
 import CoffeeCard from '../../../components/CoffeeCard';
+import UserDisplay from '../../../components/UserDisplay';
 
 // Services and utilities
 import instance from '../../../services/axios';
@@ -387,37 +388,33 @@ const SearchScreen = ({ route }) => {
               ) : (
                 <View style={styles.peopleList}>
                   {peopleResults.map((item, index) => {
-                    const picUri = item.userProfilePic ? convertHttpToHttps(item.userProfilePic) : null;
+                    const picUri = item.userProfilePic ? convertHttpToHttps(item.userProfilePic) : undefined;
                     const isLast = index === peopleResults.length - 1;
                     return (
-                      <TouchableOpacity 
+                      <View 
                         key={item.userId}
                         style={[
                           styles.userRow,
                           !isLast && { borderBottomWidth: 0.5, borderBottomColor: COLORS.primaryGreyHex }
                         ]}
-                        onPress={() => navigation.push('ProfileSummary', { username: item.userName })}
-                        activeOpacity={0.8}
                       >
-                        {picUri ? (
-                          <Image source={{ uri: picUri }} style={styles.userAvatar} />
-                        ) : (
-                          <View style={styles.userAvatarFallback}>
-                            <Feather name="user" size={20} color={COLORS.secondaryLightGreyHex} />
-                          </View>
-                        )}
-                        <View style={styles.userInfo}>
-                          <Text style={styles.userName} numberOfLines={1}>{item.name}</Text>
-                          <Text style={styles.userUsername} numberOfLines={1}>@{item.userName}</Text>
+                        <UserDisplay
+                          username={item.userName}
+                          name={item.name}
+                          avatarUrl={picUri}
+                          size="medium"
+                          showUsername={true}
+                          style={{ flex: 1 }}
+                        >
                           {item.booksRead && item.booksRead > 0 ? (
                             <View style={styles.booksReadRow}>
-                              <Feather name="book" size={10} color={COLORS.primaryOrangeHex} style={{ marginRight: 4 }} />
+                              <Feather name="book" size={10} color={COLORS.primaryOrangeHex} style={{ marginRight: 4, marginTop: 4 }} />
                               <Text style={styles.booksReadText}>{item.booksRead} book{item.booksRead > 1 ? 's' : ''} read</Text>
                             </View>
                           ) : null}
-                        </View>
+                        </UserDisplay>
                         <Feather name="chevron-right" size={18} color={COLORS.primaryLightGreyHex} />
-                      </TouchableOpacity>
+                      </View>
                     );
                   })}
                 </View>
@@ -577,34 +574,6 @@ const createStyles = (COLORS) => StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.space_20,
     paddingVertical: SPACING.space_12,
-  },
-  userAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  userAvatarFallback: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.primaryGreyHex,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userInfo: {
-    flex: 1,
-    marginLeft: SPACING.space_12,
-  },
-  userName: {
-    fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_14,
-    color: COLORS.primaryWhiteHex,
-  },
-  userUsername: {
-    fontFamily: FONTFAMILY.poppins_regular,
-    fontSize: FONTSIZE.size_12,
-    color: COLORS.primaryLightGreyHex,
-    marginBottom: 2,
   },
   booksReadRow: {
     flexDirection: 'row',
