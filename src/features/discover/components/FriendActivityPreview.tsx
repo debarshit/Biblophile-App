@@ -164,7 +164,7 @@ const FriendActivityPreview = () => {
       {/* Header */}
       <View style={stylesObj.headerRow}>
         <Text style={stylesObj.title}>👥 Friend Activity</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Social', { initialTab: 'Activity' })}>
+        <TouchableOpacity onPress={() => navigation.navigate('Social', { initialTab: 'Activity Feed' })}>
           <Text style={stylesObj.seeAll}>See all →</Text>
         </TouchableOpacity>
       </View>
