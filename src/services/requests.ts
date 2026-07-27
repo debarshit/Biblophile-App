@@ -190,6 +190,7 @@ const requests = {
 
     //user-relations requests
     fetchUserRelations: (pageOwnerId) => `${APIURL}social/user-relations/${pageOwnerId}/relations`,
+    fetchFriendsList: (pageOwnerId) => `${APIURL}social/user-relations/${pageOwnerId}/friends`,
     fetchFriendRequests:`${APIURL}social/user-relations/friend-requests/incoming`,
     toggleFollow:`${APIURL}social/user-relations/toggle-follow`,
     toggleFriend:`${APIURL}social/user-relations/toggle-friend`,

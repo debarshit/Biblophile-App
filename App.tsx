@@ -27,6 +27,7 @@ import StatScreen from './src/features/readingInsights/screens/StatScreen';
 import AboutScreen from './src/features/settings/screens/AboutScreen';
 import ReviewScreen from './src/features/reading/components/UserReviews';
 import ProfileSummaryScreen from './src/features/profile/screens/ProfileSummaryScreen';
+import FriendsListScreen from './src/features/profile/screens/FriendsListScreen';
 import NotesScreen from './src/features/reading/screens/NotesScreen';
 import DurationTrackScreen from './src/features/reading/screens/DurationTrackScreen';
 import LibraryScreen from './src/features/bookshop/screens/LibraryScreen';
@@ -307,6 +308,7 @@ const App = () => {
                     <Stack.Screen name="Note" component={NotesScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="Durations" component={DurationTrackScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="ProfileSummary" component={ProfileSummaryScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="FriendsList" component={FriendsListScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="Subscription" component={SubscriptionScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="Social" component={SocialScreen} options={{animation: 'slide_from_bottom'}} />
                     <Stack.Screen name="Cart" component={CartScreen} options={{animation: 'slide_from_right'}} />
