@@ -138,7 +138,8 @@ export const useStore = create<StoreState>()(
                         'userName': 'userUniqueUserName',
                         'email': 'userEmail',
                         'phone': 'userPhone',
-                        'address': 'userAddress'
+                        'address': 'userAddress',
+                        'bio': 'bio'
                     };
                     
                     const userDetailField = fieldMap[field] || field;

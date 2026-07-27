@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const SOCIAL_ICON_MAP: Record<string, { lib: 'Entypo' | 'FontAwesome5'; name: string }> = {
   instagram: { lib: 'Entypo', name: 'instagram' },
   twitter: { lib: 'Entypo', name: 'twitter' },
+  youtube: { lib: 'Entypo', name: 'youtube' },
   tiktok: { lib: 'FontAwesome5', name: 'tiktok' },
   goodreads: { lib: 'FontAwesome5', name: 'goodreads' },
   website: { lib: 'FontAwesome5', name: 'blog' },
@@ -346,6 +347,13 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Bio Section */}
+        {userData?.bio ? (
+          <View style={styles.bioSection}>
+            <Text style={styles.bioText}>{userData.bio}</Text>
+          </View>
+        ) : null}
 
         {/* Social Links Row - horizontally scrollable */}
         {socialLinkEntries.length > 0 && (
@@ -743,6 +751,17 @@ const createStyles = (COLORS) => StyleSheet.create({
   privateText: {
     color: COLORS.secondaryLightGreyHex,
     fontSize: 16,
+  },
+  bioSection: {
+    paddingHorizontal: SPACING.space_20,
+    marginTop: SPACING.space_4,
+    marginBottom: SPACING.space_12,
+  },
+  bioText: {
+    fontSize: FONTSIZE.size_12,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    lineHeight: 18,
   },
 });
 

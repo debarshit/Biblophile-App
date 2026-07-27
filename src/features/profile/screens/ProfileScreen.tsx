@@ -147,6 +147,14 @@ const ProfileScreen = ({ navigation, route }: any) => {
             initial: userDetails[0].userPhone,
             storeField: 'phone' 
         },
+        bio: {
+            property: 'Bio',
+            placeholder: 'About / Bio (Max 150 chars)',
+            initial: userDetails[0].bio || '',
+            storeField: 'bio',
+            multiline: true,
+            maxLength: 150
+        },
         address: { 
             property: 'UserAddress', 
             placeholder: 'Address', 
@@ -175,6 +183,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
         tiktok: '',
         goodreads: '',
         website: '',
+        youtube: '',
     });
     const [socialsLoading, setSocialsLoading] = useState(false);
     const [socialsMessage, setSocialsMessage] = useState<{ text: string; isError: boolean } | null>(null);
@@ -196,6 +205,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
                     tiktok: d.tiktok || '',
                     goodreads: d.goodreads || '',
                     website: d.website || '',
+                    youtube: d.youtube || '',
                 });
             }
         } catch (err) {
@@ -244,7 +254,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
         const config = fieldConfig[fieldKey];
         const value = formData[fieldKey];
         
-        if (!value?.trim()) {
+        if (!value?.trim() && fieldKey !== 'bio') {
             setMessage(fieldKey, 'Field cannot be empty', true);
             return;
         }
@@ -254,7 +264,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
         try {
             const updateResponse = await instance.put(requests.updateUserData, {
                 property: config.property,
-                value: value.trim()
+                value: value ? value.trim() : ''
             }, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
@@ -329,19 +339,28 @@ const ProfileScreen = ({ navigation, route }: any) => {
                 <View style={styles.inputBox}>
                     <View style={[styles.inputWrapper, focusedInput === fieldKey && styles.highlightedInput]}>
                         <TextInput
-                            style={[styles.input, config.multiline && styles.addressInput]}
+                            style={[
+                                styles.input, 
+                                config.multiline && (fieldKey === 'bio' ? styles.bioInput : styles.addressInput)
+                            ]}
                             placeholder={config.placeholder}
                             placeholderTextColor={COLORS.secondaryLightGreyHex}
                             autoCapitalize='none'
                             keyboardType='default'
                             multiline={config.multiline}
-                            numberOfLines={config.multiline ? 4 : 1}
+                            numberOfLines={config.multiline ? (fieldKey === 'bio' ? 3 : 4) : 1}
                             textAlignVertical={config.multiline ? 'top' : 'center'}
                             onFocus={() => setFocusedInput(fieldKey)}
                             value={value}
                             onChangeText={(text) => setFieldValue(fieldKey, text)}
+                            maxLength={config.maxLength}
                         />
                     </View>
+                    {config.maxLength && value && (
+                        <Text style={styles.charCountText}>
+                            {value.length} / {config.maxLength}
+                        </Text>
+                    )}
                 </View>
                 
                 {changed && (
@@ -480,6 +499,7 @@ const ProfileScreen = ({ navigation, route }: any) => {
                                     {([
                                         { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/yourusername', icon: <Entypo name="instagram" size={16} color={COLORS.primaryWhiteHex} /> },
                                         { key: 'twitter',   label: 'Twitter (X)', placeholder: 'https://twitter.com/yourusername',   icon: <Entypo name="twitter" size={16} color={COLORS.primaryWhiteHex} /> },
+                                        { key: 'youtube',   label: 'YouTube',     placeholder: 'https://youtube.com/@yourchannel', icon: <Entypo name="youtube" size={16} color={COLORS.primaryWhiteHex} /> },
                                         { key: 'tiktok',    label: 'TikTok',      placeholder: 'https://tiktok.com/@yourusername', icon: <FontAwesome5 name="tiktok" size={16} color={COLORS.primaryWhiteHex} /> },
                                         { key: 'goodreads', label: 'Goodreads',   placeholder: 'https://goodreads.com/user/show/...', icon: <FontAwesome5 name="goodreads" size={16} color={COLORS.primaryWhiteHex} /> },
                                         { key: 'website',   label: 'Website / Blog', placeholder: 'https://mybookblog.com',        icon: <FontAwesome5 name="blog" size={16} color={COLORS.primaryWhiteHex} /> },
@@ -755,5 +775,18 @@ const createStyles = (COLORS: any) => StyleSheet.create({
     socialsMessageText: {
         fontSize: FONTSIZE.size_12,
         fontFamily: FONTFAMILY.poppins_medium,
+    },
+    bioInput: {
+        height: 80,
+        textAlignVertical: 'top',
+        paddingTop: 10,
+    },
+    charCountText: {
+        alignSelf: 'flex-end',
+        fontSize: 10,
+        fontFamily: FONTFAMILY.poppins_regular,
+        color: COLORS.secondaryLightGreyHex,
+        marginTop: 4,
+        marginRight: 4,
     },
 });
