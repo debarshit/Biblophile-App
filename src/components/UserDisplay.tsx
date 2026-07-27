@@ -139,6 +139,21 @@ export const UserDisplay: React.FC<UserDisplayProps> = ({
     );
   };
 
+  if (layout === 'text-only') {
+    return (
+      <Text
+        style={[
+          styles.nameText,
+          { color: COLORS.primaryWhiteHex, fontSize: dimensions.fontSizeName },
+          textStyle,
+        ]}
+        onPress={handlePress}
+      >
+        {displayName}
+      </Text>
+    );
+  }
+
   return (
     <TouchableOpacity
       activeOpacity={0.7}

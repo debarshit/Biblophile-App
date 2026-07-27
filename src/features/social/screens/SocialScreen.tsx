@@ -18,14 +18,14 @@ const SocialScreen = ({ route }) => {
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
   const data = [
-    {
-        tabLabel: 'News Feed',
-        component: NewsFeed,
-    },
     // {
-    //     tabLabel: 'Activity',
-    //     component: ActivityFeed,
+    //     tabLabel: 'News Feed',
+    //     component: NewsFeed,
     // },
+    {
+        tabLabel: 'Activity Feed',
+        component: ActivityFeed,
+    },
     {
         tabLabel: 'buddy Reads',
         component: buddyReadsIndex,

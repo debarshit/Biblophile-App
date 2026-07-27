@@ -178,7 +178,7 @@ const HomeScreen = ({navigation}: any) => {
 
         <CurrentReadsSection />
  
-        {/* <FriendActivityPreview /> */}
+        <FriendActivityPreview />
 
         {/* Spotlight Section */}
         <Spotlights spotlights={spotlights} />

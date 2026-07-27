@@ -20,6 +20,7 @@ import {
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import UserDisplay from '../../../components/UserDisplay';
 
 interface Actor {
   userId: number;
@@ -44,99 +45,6 @@ interface FeedEvent {
     status?: string;
   };
 }
-
-export const mockFriendActivity: FeedEvent[] = [
-  {
-    id: 1,
-    createdAt: "2026-07-11T10:20:00Z",
-    eventType: "status_change",
-    actor: {
-      userId: 101,
-      name: "Emma Watson",
-      userName: "emmaw",
-      profilePic: "https://i.pravatar.cc/150?img=1",
-    },
-    book: {
-      workId: 501,
-      title: "Atomic Habits",
-      photo: "https://covers.openlibrary.org/b/id/10523338-L.jpg",
-    },
-    payload: {
-      status: "Currently reading",
-    },
-  },
-  {
-    id: 2,
-    createdAt: "2026-07-11T07:15:00Z",
-    eventType: "review",
-    actor: {
-      userId: 102,
-      name: "James Lee",
-      userName: "jamesl",
-      profilePic: "https://i.pravatar.cc/150?img=12",
-    },
-    book: {
-      workId: 502,
-      title: "The Midnight Library",
-      photo: "https://covers.openlibrary.org/b/id/12610547-L.jpg",
-    },
-  },
-  {
-    id: 3,
-    createdAt: "2026-07-10T18:40:00Z",
-    eventType: "status_change",
-    actor: {
-      userId: 103,
-      name: "Sophia Brown",
-      userName: "sophiab",
-      profilePic: "https://i.pravatar.cc/150?img=20",
-    },
-    book: {
-      workId: 503,
-      title: "Project Hail Mary",
-      photo: "https://covers.openlibrary.org/b/id/12617631-L.jpg",
-    },
-    payload: {
-      status: "Read",
-    },
-  },
-  {
-    id: 4,
-    createdAt: "2026-07-09T14:00:00Z",
-    eventType: "status_change",
-    actor: {
-      userId: 104,
-      name: "Michael Scott",
-      userName: "michael",
-      profilePic: "https://i.pravatar.cc/150?img=8",
-    },
-    book: {
-      workId: 504,
-      title: "Dune",
-    },
-    payload: {
-      status: "Paused",
-    },
-  },
-  {
-    id: 5,
-    createdAt: "2026-07-08T09:30:00Z",
-    eventType: "status_change",
-    actor: {
-      userId: 105,
-      name: "Olivia Carter",
-      userName: "olivia",
-      profilePic: "",
-    },
-    book: {
-      workId: 505,
-      title: "The Psychology of Money",
-    },
-    payload: {
-      status: "Did not finish",
-    },
-  },
-];
 
 const getRelativeTime = (dateStr: string): string => {
   const date = new Date(dateStr);
@@ -200,36 +108,27 @@ const FriendActivityPreview = () => {
 
   const pulse = useRef(new Animated.Value(0.4)).current;
 
-  // useEffect(() => {
-  //   let isMounted = true;
-  //   const fetchPreview = async () => {
-  //     try {
-  //       const response = await instance.get(requests.fetchFollowingFeed(3, 0));
-  //       const data = response.data?.data?.events;
-  //       if (isMounted && data) {
-  //         setEvents(data.slice(0, 3));
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching friend activity preview:', error);
-  //     } finally {
-  //       if (isMounted) setLoading(false);
-  //     }
-  //   };
-
-  //   fetchPreview();
-  //   return () => {
-  //     isMounted = false;
-  //   };
-  // }, []);
-
   useEffect(() => {
-  setLoading(true);
+    let isMounted = true;
+    const fetchPreview = async () => {
+      try {
+        const response = await instance.get(requests.fetchFollowingFeed(3, 0));
+        const data = response.data?.data?.events;
+        if (isMounted && data) {
+          setEvents(data.slice(0, 3));
+        }
+      } catch (error) {
+        console.error('Error fetching friend activity preview:', error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
 
-  setTimeout(() => {
-    setEvents(mockFriendActivity.slice(0, 3));
-    setLoading(false);
-  }, 1000); // simulate network delay
-}, []);
+    fetchPreview();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const anim = Animated.loop(
@@ -286,18 +185,24 @@ const FriendActivityPreview = () => {
               !isLast && { borderBottomWidth: 0.5, borderBottomColor: COLORS.primaryGreyHex },
             ]}
           >
-            {profilePicUri ? (
-              <Image source={{ uri: profilePicUri }} style={stylesObj.avatar} />
-            ) : (
-              <View style={stylesObj.avatarFallback}>
-                <Feather name="user" size={14} color={COLORS.secondaryLightGreyHex} />
-              </View>
-            )}
+            <UserDisplay
+              username={event.actor.userName}
+              name={event.actor.name}
+              avatarUrl={profilePicUri || undefined}
+              size="small"
+              layout="avatar-only"
+            />
 
             <View style={stylesObj.middleContent}>
               <Text style={stylesObj.actionTextRow} numberOfLines={1}>
-                <Text style={stylesObj.actorName}>{event.actor.name} </Text>
-                <Text style={stylesObj.actionVerb}>{actionText}</Text>
+                <UserDisplay
+                  username={event.actor.userName}
+                  name={event.actor.name}
+                  layout="text-only"
+                  textStyle={stylesObj.actorName}
+                  size="small"
+                />
+                <Text style={stylesObj.actionVerb}> {actionText}</Text>
               </Text>
               <Text style={stylesObj.bookTitle} numberOfLines={1}>
                 {event.book.title}
@@ -348,19 +253,6 @@ const createStyles = (COLORS: any) =>
       alignItems: 'center',
       paddingHorizontal: SPACING.space_16,
       paddingVertical: SPACING.space_12,
-    },
-    avatar: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-    },
-    avatarFallback: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: COLORS.primaryGreyHex,
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     middleContent: {
       flex: 1,
