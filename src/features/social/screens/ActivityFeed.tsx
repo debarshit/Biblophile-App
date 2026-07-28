@@ -155,11 +155,11 @@ interface EventCardProps {
 const EventCard: React.FC<EventCardProps> = ({ event, COLORS, styles }) => {
   const actionText = getActionText(event);
   const relativeTime = getRelativeTime(event.createdAt);
-  const profilePicUri = event.actor.profilePic
-    ? convertHttpToHttps(event.actor.profilePic)
+  const profilePicUri = event.actor?.profilePic
+    ? convertHttpToHttps(event.actor?.profilePic)
     : null;
-  const bookPhotoUri = event.book.photo
-    ? convertHttpToHttps(event.book.photo)
+  const bookPhotoUri = event.book?.photo
+    ? convertHttpToHttps(event.book?.photo)
     : null;
 
   return (
@@ -192,7 +192,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, COLORS, styles }) => {
         {/* Row 2: book title + cover */}
         <View style={styles.bookRow}>
           <Text style={styles.bookTitle} numberOfLines={1}>
-            {event.book.title}
+            {event.book?.title ?? ""}
           </Text>
           {bookPhotoUri ? (
             <Image source={{ uri: bookPhotoUri }} style={styles.bookCover} resizeMode="cover" />
