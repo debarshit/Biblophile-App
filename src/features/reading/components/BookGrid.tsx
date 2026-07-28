@@ -80,6 +80,9 @@ export const BookGrid: React.FC<BookGridProps> = ({
                     progressUnit={item.progressUnit}
                     progressValue={item.progressValue}
                     visibility={item.visibility}
+                    bookPages={item.bookPages}
+                    format={item.format}
+                    audioDurationSec={item.audioDurationSec}
                     onUpdate={null}
                     navigation={navigation}
                 />
