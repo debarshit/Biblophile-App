@@ -17,7 +17,6 @@ import SessionControls from './SessionControls';
 import DailyNoteBottomSheet from './DailyNoteBottomSheet';
 import ReadingHistoryModal from '../../../reading/components/ReadingHistoryModal';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import ReadingShelfWidget from '../../../../widgets/ReadingShelfWidget';
 
 const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const navigation = useNavigation<any>();
@@ -79,72 +78,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
         headers: authHeaders,
       });
       const response = currentReadsResponse.data;
-      const reads = response.data?.currentReads || [];
-      setCurrentReads(reads);
-
-      // Update widget snapshot
-      try {
-        if (reads.length > 0) {
-          const book = reads[0];
-          const status = book.Status ?? book.status;
-          const progressValue = book.ProgressValue ?? book.progressValue;
-          const progressUnit = book.ProgressUnit ?? book.progressUnit;
-          const bookPages = book.BookPages ?? book.bookPages;
-          const audioDurationSec = book.AudioDurationSec ?? book.audioDurationSec;
-          const bookTitle = book.BookTitle ?? book.bookTitle;
-          const bookAuthor = book.BookAuthor ?? book.bookAuthor;
-
-          let percentage = 0;
-          let progressText = 'Not started';
-
-          if (status === 'Read') {
-            percentage = 100;
-            progressText = 'Completed';
-          } else if (status === 'To be read') {
-            percentage = 0;
-            progressText = 'To be read';
-          } else if (progressValue !== null && progressValue !== undefined && progressValue > 0) {
-            if (progressUnit === 'percentage') {
-              percentage = Math.min(100, Math.max(0, progressValue));
-              progressText = `${percentage}% completed`;
-            } else if (progressUnit === 'pages') {
-              if (bookPages && bookPages > 0) {
-                percentage = Math.min(100, Math.round((progressValue / bookPages) * 100));
-                progressText = `${progressValue} of ${bookPages} pages`;
-              } else {
-                progressText = `${progressValue} pages read`;
-              }
-            } else if (progressUnit === 'seconds') {
-              if (audioDurationSec && audioDurationSec > 0) {
-                percentage = Math.min(100, Math.round((progressValue / audioDurationSec) * 100));
-                const progressMins = Math.round(progressValue / 60);
-                const durationMins = Math.round(audioDurationSec / 60);
-                progressText = `${progressMins} of ${durationMins} mins`;
-              } else {
-                progressText = `${Math.round(progressValue / 60)} mins listened`;
-              }
-            }
-          }
-
-          ReadingShelfWidget.updateSnapshot({
-            bookTitle: bookTitle || 'Unknown Book',
-            bookAuthor: bookAuthor || 'Unknown Author',
-            progressText,
-            progressValue: percentage / 100,
-            percentageText: `${percentage}%`
-          });
-        } else {
-          ReadingShelfWidget.updateSnapshot({
-            bookTitle: 'No book selected',
-            bookAuthor: 'Start reading in Biblophile!',
-            progressText: '0%',
-            progressValue: 0,
-            percentageText: '0%'
-          });
-        }
-      } catch (widgetError) {
-        console.error('Failed to update widget snapshot:', widgetError);
-      }
+      setCurrentReads(response.data.currentReads);
     } catch (error) {
       console.error('Failed to fetch current reads:', error);
       setCurrentReads([]);
@@ -152,7 +86,6 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
       setIsLoadingCurrentReads(false);
     }
   }, [authHeaders]);
-
 
   const fetchPagesRead = useCallback(async () => {
     try {

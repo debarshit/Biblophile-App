@@ -86,23 +86,8 @@ export const useStore = create<StoreState>()(
           set({ isAuthenticated: true, user: userData['userId'] });
         },
         logout: async () => {
-          // Clear widget on logout
-          try {
-            const ReadingShelfWidget = require('../widgets/ReadingShelfWidget').default;
-            ReadingShelfWidget.updateSnapshot({
-              bookTitle: 'No book selected',
-              bookAuthor: 'Start reading in Biblophile!',
-              progressText: '0%',
-              progressValue: 0,
-              percentageText: '0%'
-            });
-          } catch (e) {
-            console.error('Failed to clear widget on logout:', e);
-          }
-
           const { userDetails } = get();
           const user = userDetails[0];
-
           const refreshToken = user?.refreshToken;
           const notificationToken = user?.notificationToken;
 
