@@ -66,8 +66,6 @@ export default {
         "com.instagram.android"
       ]
     },
-    "compileSdkVersion": 35,
-    "targetSdkVersion": 35,
     "intentFilters": [
       {
         "action": "VIEW",
