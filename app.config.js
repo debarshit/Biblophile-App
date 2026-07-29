@@ -3,7 +3,7 @@ const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
 export default {
   "name": IS_DEV ? "Biblophile Dev" : IS_PREVIEW ? "Biblophile Preview" : "Biblophile",
   "slug": "Biblophile-App",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "orientation": "default",
   "icon": IS_DEV ? "./assets/favicon.png" : "./assets/icon.png",
   "userInterfaceStyle": "automatic",
@@ -21,7 +21,7 @@ export default {
     "**/*"
   ],
   "ios": {
-    "buildNumber": "12",
+    "buildNumber": "13",
     "supportsTablet": true,
     "googleServicesFile": "./GoogleService-Info.plist",
     "infoPlist": {
@@ -47,7 +47,7 @@ export default {
       "backgroundColor": "#0C0F14"
     },
     "googleServicesFile": "./google-services.json",
-    "versionCode": 18,
+    "versionCode": 19,
     package: IS_DEV
       ? "com.debar_shit.BiblophileApp.dev"
       : IS_PREVIEW
