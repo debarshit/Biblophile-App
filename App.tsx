@@ -1,6 +1,20 @@
 import React, {useEffect, useState} from 'react';
 import { PostHogProvider } from 'posthog-react-native'
-import { Alert } from 'react-native';
+import { Alert, Text, TextInput } from 'react-native';
+
+// Cap font scaling globally to prevent layout distortion on large system fonts
+if ((Text as any).defaultProps) {
+  (Text as any).defaultProps.maxFontSizeMultiplier = 1.3;
+} else {
+  (Text as any).defaultProps = { maxFontSizeMultiplier: 1.3 };
+}
+
+if ((TextInput as any).defaultProps) {
+  (TextInput as any).defaultProps.maxFontSizeMultiplier = 1.3;
+} else {
+  (TextInput as any).defaultProps = { maxFontSizeMultiplier: 1.3 };
+}
+
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
 import * as SplashScreen from 'expo-splash-screen';
