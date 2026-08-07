@@ -19,6 +19,7 @@ import Mascot from '../../../components/Mascot';
 import CustomPicker from '../../../components/CustomPickerComponent';
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeText } from '../../../components/safeText';
 
 const EyeIcon: React.FC<{ visible: boolean; onPress: () => void; styles: any }> = ({
     visible,
@@ -314,7 +315,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                             </View>
 
                             <TouchableOpacity onPress={forgotPassword}>
-                                <Text style={styles.forgotText}>Forgot password?</Text>
+                                <SafeText style={styles.forgotText}>Forgot password?</SafeText>
                             </TouchableOpacity>
 
                             <TouchableOpacity onPress={handleLogin} style={styles.button} disabled={isLoading}>
@@ -326,7 +327,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                             <View style={styles.registerLink}>
                                 <Text style={styles.switchText}>
                                     Don't have an account?{' '}
-                                    <Text style={styles.linkText} onPress={toggleRegistration}>Register</Text>
+                                    <SafeText style={styles.linkText} onPress={toggleRegistration}>Register </SafeText>
                                 </Text>
                             </View>
                         </View>
@@ -478,7 +479,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                             <View style={styles.registerLink}>
                                 <Text style={styles.switchText}>
                                     Already have an account?{' '}
-                                    <Text style={styles.linkText} onPress={toggleRegistration}>Login</Text>
+                                    <SafeText style={styles.linkText} onPress={toggleRegistration}>Login</SafeText>
                                 </Text>
                             </View>
                         </View>
@@ -487,10 +488,10 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                     <Text style={styles.agreementMessageText}>By continuing you agree to our</Text>
                     <View style={styles.agreementTextContainer}>
                         <TouchableOpacity onPress={() => openWebView('https://biblophile.com/policies/terms-of-service.php')}>
-                            <Text style={styles.agreementText}>Terms of service</Text>
+                            <SafeText style={styles.agreementText}>Terms of service</SafeText>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => openWebView('https://biblophile.com/policies/privacy-policy.php')}>
-                            <Text style={styles.agreementText}>Privacy policy</Text>
+                            <SafeText style={styles.agreementText}>Privacy policy</SafeText>
                         </TouchableOpacity>
                     </View>
                 </View>

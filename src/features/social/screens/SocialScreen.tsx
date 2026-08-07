@@ -23,16 +23,16 @@ const SocialScreen = ({ route }) => {
     //     component: NewsFeed,
     // },
     {
-        tabLabel: 'Activity Feed',
+        tabLabel: 'Activity Feed ', //extra space added to prevent clipping on Android 15+ (search this comment to find other temp workarounds), along with safeText.tsx component
         component: ActivityFeed,
     },
     {
-        tabLabel: 'buddy Reads',
+        tabLabel: 'buddy Reads ', //extra space added to prevent clipping on Android 15+ (search this comment to find other temp workarounds), along with safeText.tsx component
         component: buddyReadsIndex,
         props: {}, // (optional) additional props
     },
     {
-        tabLabel: 'Read Alongs',
+        tabLabel: 'Read Alongs ', //extra space added to prevent clipping on Android 15+ (search this comment to find other temp workarounds), along with safeText.tsx component
         component: ReadAlongsIndex,
         props: {}, // (optional) additional props
     },

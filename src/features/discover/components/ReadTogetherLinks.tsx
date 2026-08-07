@@ -5,6 +5,7 @@ import requests from "../../../services/requests";
 import { useNavigation } from '@react-navigation/native';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { SafeText } from '../../../components/safeText';
 
 interface ReadTogetherProps {
     id: string;
@@ -99,7 +100,7 @@ const ReadTogetherLinks: React.FC<ReadTogetherProps> = ({ id, isGoogleBook, prod
             <Text style={styles.learnMoreText}>
                 Not sure which option to choose? 
                 <TouchableOpacity onPress={handleLearnMorePress}>
-                    <Text style={styles.learnMoreLink}> Learn more about Buddy Reads vs Readalongs</Text>
+                    <SafeText style={styles.learnMoreLink}> Learn more about Buddy Reads vs Readalongs</SafeText>
                 </TouchableOpacity>
             </Text>
         </View>

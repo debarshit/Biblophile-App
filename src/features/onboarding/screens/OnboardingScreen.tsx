@@ -17,6 +17,7 @@ const OnboardingScreen = ({ navigation }: any) => {
       <Onboarding
         onDone={() => navigation.navigate('SignupLogin')}
         onSkip={() => navigation.navigate('SignupLogin')}
+        skipLabel={'Skip '} //extra space added to prevent clipping on Android 15+ (search this comment to find other temp workarounds), along with safeText.tsx component
         bottomBarColor={COLORS.primaryBlackHex}
         pages={[
           {

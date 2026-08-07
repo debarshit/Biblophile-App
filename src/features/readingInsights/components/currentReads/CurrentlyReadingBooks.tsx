@@ -4,6 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
 import BookItem from './BookItemComponent';
 import { useTheme } from '../../../../contexts/ThemeContext';
+import { SafeText } from '../../../../components/safeText';
 
 interface CurrentlyReadingBooksProps {
   currentReads: any[];
@@ -70,9 +71,9 @@ const CurrentlyReadingBooks: React.FC<CurrentlyReadingBooksProps> = ({
                 <FontAwesome name="arrow-right" style={styles.discoverButtonIcon} />
               </TouchableOpacity>
               <TouchableOpacity onPress={handlePress} style={styles.secondaryCTA}>
-                <Text style={styles.secondaryCTAText}>
+                <SafeText style={styles.secondaryCTAText}>
                   Or, import from Goodreads
-                </Text>
+                </SafeText>
               </TouchableOpacity>
             </>
           )}
