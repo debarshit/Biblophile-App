@@ -117,7 +117,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
       });
       const tags = data.data.tags || [];
       setBookTags(tags);
-      onUpdate({ status, localProgressValue, tags });
+      onUpdate({ status, progressValue: localProgressValue, progressUnit: localProgressUnit, tags });
     } catch (err) {
       console.log("Error fetching book tags:", err);
     }
@@ -234,7 +234,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
       if (data.data.message === "Updated successfully") {
         const userBookId = data.data.userBookId;
         analytics.track('reading_status_updated');
-        onUpdate({ userBookId, status, localProgressValue, tags: bookTags });
+        onUpdate({ userBookId, status, progressValue: localProgressValue, progressUnit: localProgressUnit, tags: bookTags });
         showToast('Updated successfully!');
         onClose();
 
