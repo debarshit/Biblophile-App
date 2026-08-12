@@ -45,7 +45,7 @@ const StatScreen = () => {
 
   const navigation = useNavigation<any>();
   const userDetails = useStore((state) => state.userDetails);
-  const { currentStreak, maxStreak } = useStreak(userDetails[0]?.accessToken);
+  const { currentStreak, maxStreak, streakFreezes } = useStreak(userDetails[0]?.accessToken);
   const analytics = useAnalytics();
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
@@ -225,7 +225,7 @@ const StatScreen = () => {
           contentContainerStyle={styles.listContainer}
         /> */}
 
-        <StreakAchievements maxStreak={maxStreak} />
+        <StreakAchievements maxStreak={maxStreak} currentStreak={currentStreak} streakFreezes={streakFreezes} />
         <StreakCalendarView />
 
         <View style={styles.section}>

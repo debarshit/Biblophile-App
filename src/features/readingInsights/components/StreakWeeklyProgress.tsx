@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useStreak } from '../../../hooks/useStreak';
 import StreakCelebration from '../../../components/StreakCelebration';
@@ -9,7 +8,6 @@ import { useTheme } from '../../../contexts/ThemeContext';
 
 const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
   const navigation = useNavigation<any>();
-  const [showTooltip, setShowTooltip] = useState(false);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [celebrationData, setCelebrationData] = useState(null);
 
@@ -43,6 +41,7 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
     setCelebrationData({
       currentStreak: streakData.currentStreak,
       isNewRecord: streakData.isNewRecord,
+      streakFreezes: streakData.streakFreezes ?? streakFreezes,
     });
     setShowStreakCelebration(true);
   }
@@ -123,23 +122,6 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
 
   return (
     <View style={styles.progressContainer}>
-      <View style={styles.streakInfo}>
-        <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
-        {/* <TouchableOpacity onPress={() => setShowTooltip(!showTooltip)} style={styles.infoIconContainer}>
-          <FontAwesome name="info-circle" style={styles.infoIcon} />
-          {showTooltip && (
-            <View style={styles.tooltip}>
-              <Text style={styles.tooltipText}>
-                Use our NFC bookmarks for a physical experience!
-              </Text>
-              <TouchableOpacity onPress={handleBuyNow}>
-                <Text style={styles.buyNowText}>Buy Now</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </TouchableOpacity> */}
-      </View>
-
       <View style={styles.weekContainer}>
         {daysOfWeek.map((day, index) => (
           <View key={index} style={[styles.dayContainer, getDayClasses(index)]}>
@@ -192,16 +174,9 @@ const createStyles = (COLORS) => StyleSheet.create({
     margin: SPACING.space_8,
     zIndex: -1,
   },
-  streakInfo: {
-    alignContent: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: SPACING.space_4,
-    zIndex: -1,
-  },
   streakText: {
     fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_16,
+    fontSize: FONTSIZE.size_14,
     color: COLORS.primaryOrangeHex,
   },
   infoIconContainer: {

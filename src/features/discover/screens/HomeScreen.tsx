@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import Toast from 'react-native-toast-message';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import Spotlights from '../components/Spotlights';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -54,6 +55,7 @@ const HomeScreen = ({navigation}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const CartList = useStore((state: any) => state.CartList);
+  const unreadNotificationCount = useStore((state: any) => state.unreadNotificationCount);
 
   //useState variables
   const [bookList, setBookList] = useState<any>([]);
@@ -61,6 +63,7 @@ const HomeScreen = ({navigation}: any) => {
   const [loading, setLoading] = useState(true);
   const [booksLoading, setBooksLoading] = useState(true);
   const [currentStreak, setCurrentStreak] = useState(1);
+  const [streakFreezes, setStreakFreezes] = useState(0);
   const [latestUpdateTime, setLatestUpdateTime] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -147,6 +150,7 @@ const HomeScreen = ({navigation}: any) => {
         const data = response.data.data;
         if (data) {
           setCurrentStreak(data.currentStreak);
+          setStreakFreezes(data.streakFreezes ?? 0);
           setLatestUpdateTime(data.latestUpdateTime);
         }
       } catch (error) {
@@ -169,8 +173,37 @@ const HomeScreen = ({navigation}: any) => {
         contentContainerStyle={styles.ScrollViewFlex}
         contentOffset={{ x: 0, y: scrollOffset }}
         scrollEventThrottle={16}>
-        {/* App Header */}
-        <HeaderBar showLogo showNotifications />
+        {/* App Header-with redundant notification setup */}
+        <HeaderBar 
+          showLogo 
+          rightComponent={
+            <View style={styles.headerRightContainer}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate('Stats')}
+                style={styles.headerStreakBadge}
+              >
+                <Text style={styles.headerStreakText}>🔥 {currentStreak || 0}</Text>
+                <View style={styles.headerBadgeDivider} />
+                <Text style={styles.headerFreezeText}>❄️ {streakFreezes ?? 0}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Notifications')}
+                style={{ position: 'relative' }}
+              >
+                <Ionicons name="notifications" size={24} color={COLORS.primaryWhiteHex} />
+                {unreadNotificationCount > 0 && (
+                  <View style={styles.notificationBadge}>
+                    <Text style={styles.notificationBadgeText}>
+                      {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+          }
+        />
 
         <StreakWeeklyProgress userDetails={userDetails} onFullWeekComplete={() => setShowConfetti(true)} />
 
@@ -307,6 +340,54 @@ const createStyles = (COLORS) => StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_semibold,
     textAlign: 'center',
     color: COLORS.primaryWhiteHex,
+  },
+  headerRightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.space_12,
+  },
+  headerStreakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryDarkGreyHex,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: BORDERRADIUS.radius_15,
+    paddingHorizontal: SPACING.space_10,
+    paddingVertical: SPACING.space_4,
+    gap: SPACING.space_8,
+  },
+  headerStreakText: {
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_12,
+    color: COLORS.primaryOrangeHex,
+  },
+  headerBadgeDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  headerFreezeText: {
+    fontFamily: FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_12,
+    color: '#38BDF8',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -6,
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  notificationBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
 });
 
