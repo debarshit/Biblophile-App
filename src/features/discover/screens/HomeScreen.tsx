@@ -27,6 +27,9 @@ import {
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
+import StreakCelebration from '../../../components/StreakCelebration';
+import GlassEffect from '../../../components/GlassEffect';
+import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
 import HeaderBar from '../../../components/HeaderBar';
 import CoffeeCard from '../../../components/CoffeeCard';
 import Banner from '../components/Banner';
@@ -63,8 +66,9 @@ const HomeScreen = ({navigation}: any) => {
   const [loading, setLoading] = useState(true);
   const [booksLoading, setBooksLoading] = useState(true);
   const [currentStreak, setCurrentStreak] = useState(1);
-  const [streakFreezes, setStreakFreezes] = useState(0);
-  const [latestUpdateTime, setLatestUpdateTime] = useState("");
+  const [streakFreezes, setStreakFreezes] = useState<number | null>(null);
+  const [latestUpdateTime, setLatestUpdateTime] = useState<string | null>(null);
+  const { onScroll: onTabBarScroll } = useTabBarScroll();
   const [showConfetti, setShowConfetti] = useState(false);
 
   const ListRef: any = useRef<FlatList>();
@@ -172,6 +176,7 @@ const HomeScreen = ({navigation}: any) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.ScrollViewFlex}
         contentOffset={{ x: 0, y: scrollOffset }}
+        onScroll={onTabBarScroll}
         scrollEventThrottle={16}>
         {/* App Header-with redundant notification setup */}
         <HeaderBar 
@@ -181,11 +186,17 @@ const HomeScreen = ({navigation}: any) => {
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => navigation.navigate('Stats')}
-                style={styles.headerStreakBadge}
               >
-                <Text style={styles.headerStreakText}>🔥 {currentStreak || 0}</Text>
-                <View style={styles.headerBadgeDivider} />
-                <Text style={styles.headerFreezeText}>❄️ {streakFreezes ?? 0}</Text>
+                <GlassEffect
+                  glassStyle="clear"
+                  intensity={30}
+                  borderRadius={15}
+                  style={styles.headerStreakBadge}
+                >
+                  <Text style={styles.headerStreakText}>🔥 {currentStreak || 0}</Text>
+                  <View style={styles.headerBadgeDivider} />
+                  <Text style={styles.headerFreezeText}>❄️ {streakFreezes ?? 0}</Text>
+                </GlassEffect>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -349,9 +360,9 @@ const createStyles = (COLORS) => StyleSheet.create({
   headerStreakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.primaryDarkGreyHex,
+    backgroundColor: 'rgba(30, 33, 40, 0.45)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
     borderRadius: BORDERRADIUS.radius_15,
     paddingHorizontal: SPACING.space_10,
     paddingVertical: SPACING.space_4,

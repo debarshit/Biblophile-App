@@ -20,6 +20,7 @@ import Spotlights from '../components/Spotlights';
 import HeaderBar from '../../../components/HeaderBar';
 import FloatingIcon from '../../bookshop/components/FloatingIcon';
 import GenrePicker from '../components/GenrePicker';
+import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
 
 // Services and utilities
 import instance from '../../../services/axios';
@@ -90,6 +91,7 @@ const DiscoverScreen = ({ navigation }) => {
 
   const analytics = useAnalytics();
   const tabBarHeight = useBottomTabBarHeight();
+  const { onScroll: onTabBarScroll } = useTabBarScroll();
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
@@ -159,6 +161,7 @@ const DiscoverScreen = ({ navigation }) => {
           styles.scrollViewFlex,
           { paddingBottom: tabBarHeight }
         ]}
+        onScroll={onTabBarScroll}
         scrollEventThrottle={16}
       >
         {/* App Header */}

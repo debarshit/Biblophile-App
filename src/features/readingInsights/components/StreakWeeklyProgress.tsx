@@ -5,6 +5,7 @@ import { useStreak } from '../../../hooks/useStreak';
 import StreakCelebration from '../../../components/StreakCelebration';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../contexts/ThemeContext';
+import GlassEffect from '../../../components/GlassEffect';
 
 const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
   const navigation = useNavigation<any>();
@@ -121,7 +122,12 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
   }, [currentStreak, latestUpdateTime]);
 
   return (
-    <View style={styles.progressContainer}>
+    <GlassEffect
+      glassStyle="regular"
+      intensity={25}
+      borderRadius={BORDERRADIUS.radius_15}
+      style={styles.progressContainer}
+    >
       <View style={styles.weekContainer}>
         {daysOfWeek.map((day, index) => (
           <View key={index} style={[styles.dayContainer, getDayClasses(index)]}>
@@ -160,7 +166,7 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
         isNewRecord={celebrationData?.isNewRecord || false}
         onAnimationComplete={handleCelebrationComplete}
       />
-    </View>
+    </GlassEffect>
   );
 };
 
@@ -168,11 +174,12 @@ export default StreakWeeklyProgress;
 
 const createStyles = (COLORS) => StyleSheet.create({
   progressContainer: {
-    backgroundColor: COLORS.primaryGreyHex,
-    borderRadius: BORDERRADIUS.radius_10,
-    padding: SPACING.space_8,
-    margin: SPACING.space_8,
-    zIndex: -1,
+    backgroundColor: 'rgba(30, 33, 40, 0.45)',
+    borderRadius: BORDERRADIUS.radius_15,
+    padding: SPACING.space_12,
+    margin: SPACING.space_10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   streakText: {
     fontFamily: FONTFAMILY.poppins_semibold,
