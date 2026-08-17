@@ -282,13 +282,27 @@ const TabNavigatorContent = () => {
   const username = userDetails[0]?.userUniqueUserName;
   const profilePic = userDetails[0]?.profilePic;
   const { COLORS } = useTheme();
+  const insets = useSafeAreaInsets();
+
+  const isIos = Platform.OS === 'ios';
 
   return (
     <Tab.Navigator
-      tabBar={(props) => <CustomGlassTabBar {...props} />}
+      tabBar={isIos ? (props) => <CustomGlassTabBar {...props} /> : undefined}
       screenOptions={{
         tabBarHideOnKeyboard: true,
         headerShown: false,
+        tabBarStyle: !isIos
+          ? {
+              height: 60 + insets.bottom,
+              backgroundColor: COLORS.primaryBlackHex,
+              borderTopWidth: 0,
+              elevation: 0,
+              paddingBottom: insets.bottom,
+            }
+          : undefined,
+        tabBarActiveTintColor: COLORS.primaryOrangeHex,
+        tabBarInactiveTintColor: COLORS.primaryLightGreyHex,
       }}
     >
       <Tab.Screen

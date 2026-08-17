@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useRef, useCallback } from 'react';
-import { Animated, NativeSyntheticEvent, NativeScrollEvent, Easing } from 'react-native';
+import { Animated, NativeSyntheticEvent, NativeScrollEvent, Easing, Platform } from 'react-native';
 
 interface TabBarScrollContextType {
   tabBarTranslateY: Animated.Value;
@@ -20,6 +20,7 @@ export const TabBarScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const lastScrollY = useRef(0);
 
   const showTabBar = useCallback(() => {
+    if (Platform.OS !== 'ios') return;
     if (isVisibleRef.current) return;
     isVisibleRef.current = true;
     Animated.parallel([
@@ -45,23 +46,24 @@ export const TabBarScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [tabBarTranslateY, tabBarScale, tabBarOpacity]);
 
   const hideTabBar = useCallback(() => {
+    if (Platform.OS !== 'ios') return;
     if (!isVisibleRef.current) return;
     isVisibleRef.current = false;
     Animated.parallel([
       Animated.timing(tabBarTranslateY, {
-        toValue: 10, // Slight downward shift
+        toValue: 10,
         duration: 200,
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
       }),
       Animated.timing(tabBarScale, {
-        toValue: 0.85, // Shrink to 85%
+        toValue: 0.85,
         duration: 200,
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
       }),
       Animated.timing(tabBarOpacity, {
-        toValue: 0.6, // Blend into background
+        toValue: 0.6,
         duration: 200,
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
@@ -71,6 +73,7 @@ export const TabBarScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const onScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (Platform.OS !== 'ios') return;
       const currentY = event.nativeEvent.contentOffset.y;
       const diff = currentY - lastScrollY.current;
 
@@ -82,10 +85,8 @@ export const TabBarScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
       } else if (currentY + layoutHeight >= contentHeight - 15) {
         showTabBar();
       } else if (diff > 8 && currentY > 50) {
-        // Snappy shrink on slight scroll down
         hideTabBar();
       } else if (diff < -8) {
-        // Snappy restore on slight scroll up
         showTabBar();
       }
 
