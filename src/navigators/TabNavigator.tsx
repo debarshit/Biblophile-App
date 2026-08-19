@@ -28,6 +28,7 @@ import {
   TabBarScrollProvider,
   useTabBarScroll,
 } from '../contexts/TabBarScrollContext';
+import { useResponsive } from '../utils/responsive';
 
 const Tab = createBottomTabNavigator();
 
@@ -39,6 +40,7 @@ interface TabButtonProps {
   icon: React.ReactNode;
   COLORS: any;
   inactiveColor: string;
+  isTablet: boolean;
 }
 
 const TabButton: React.FC<TabButtonProps> = ({
@@ -49,18 +51,19 @@ const TabButton: React.FC<TabButtonProps> = ({
   icon,
   COLORS,
   inactiveColor,
+  isTablet,
 }) => {
   return (
     <TouchableOpacity
       activeOpacity={0.7}
       onPress={onPress}
       onLongPress={onLongPress}
-      style={styles.tabItemContainer}
+      style={isTablet ? styles.tabItemContainerTablet : styles.tabItemContainer}
     >
       {icon}
       <Text
         style={[
-          styles.tabLabel,
+          isTablet ? styles.tabLabelTablet : styles.tabLabel,
           {
             color: isFocused
               ? COLORS.primaryOrangeHex
@@ -82,6 +85,7 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
 }) => {
   const { COLORS, scheme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { showSidebar } = useResponsive();
   const { tabBarTranslateY, tabBarScale, tabBarOpacity, showTabBar } = useTabBarScroll();
 
   const [tabBarInnerWidth, setTabBarInnerWidth] = useState(0);
@@ -97,9 +101,9 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
 
   const tabWidth = tabBarInnerWidth ? (tabBarInnerWidth - 12) / state.routes.length : 0;
 
-  // Track page navigation changes when not dragging
+  // Track page navigation changes when not dragging (for phone)
   useEffect(() => {
-    if (tabWidth > 0 && !isDragging.current) {
+    if (!showSidebar && tabWidth > 0 && !isDragging.current) {
       Animated.spring(bubbleTranslateX, {
         toValue: activeIndex * tabWidth,
         damping: 18,
@@ -108,7 +112,7 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
         useNativeDriver: true,
       }).start();
     }
-  }, [activeIndex, tabWidth]);
+  }, [activeIndex, tabWidth, showSidebar]);
 
   const isDark = scheme === 'dark';
   const backingColor = isDark ? 'rgba(15, 17, 22, 0.72)' : 'rgba(255, 255, 255, 0.82)';
@@ -188,25 +192,38 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
 
   return (
     <Animated.View
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
+      onTouchStart={showSidebar ? undefined : handleTouchStart}
+      onTouchMove={showSidebar ? undefined : handleTouchMove}
+      onTouchEnd={showSidebar ? undefined : handleTouchEnd}
+      onTouchCancel={showSidebar ? undefined : handleTouchEnd}
       style={[
-        styles.tabBarContainer,
+        showSidebar ? styles.tabBarContainerTablet : styles.tabBarContainer,
         {
-          bottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 22) : 16,
-          transform: [
-            { translateY: tabBarTranslateY },
-            { scale: tabBarScale }
-          ],
-          opacity: tabBarOpacity,
           borderColor: tabBorderColor,
+          ...(!showSidebar && {
+            bottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 22) : 16,
+            transform: [
+              { translateY: tabBarTranslateY },
+              { scale: tabBarScale }
+            ],
+            opacity: tabBarOpacity,
+          }),
+          ...(showSidebar && {
+            paddingTop: Math.max(insets.top, 24),
+            paddingBottom: Math.max(insets.bottom, 24),
+            paddingLeft: Math.max(insets.left, 8),
+          })
         },
       ]}
     >
       {/* Semi-translucent background card to ensure text/icon readability */}
-      <View style={[StyleSheet.absoluteFillObject, { backgroundColor: backingColor, borderRadius: 34 }]} />
+      <View style={[StyleSheet.absoluteFillObject, { 
+        backgroundColor: backingColor, 
+        borderTopRightRadius: showSidebar ? 24 : 34, 
+        borderBottomRightRadius: showSidebar ? 24 : 34,
+        borderTopLeftRadius: showSidebar ? 0 : 34,
+        borderBottomLeftRadius: showSidebar ? 0 : 34
+      }]} />
 
       <GlassBackground
         glassStyle="clear"
@@ -214,9 +231,9 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
         intensity={35}
         tint={glassTint}
       />
-      <View style={styles.tabBarInner} onLayout={handleInnerLayout}>
-        {/* Sliding Frosted Glassy Bubble Indicator */}
-        {tabWidth > 0 && (
+      <View style={showSidebar ? styles.tabBarInnerTablet : styles.tabBarInner} onLayout={showSidebar ? undefined : handleInnerLayout}>
+        {/* Sliding Bubble Indicator is only rendered on mobile phone (non-sidebar) mode */}
+        {!showSidebar && tabWidth > 0 && (
           <Animated.View
             style={[
               styles.bubbleIndicator,
@@ -268,7 +285,7 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
                 color: isFocused
                   ? COLORS.primaryOrangeHex
                   : inactiveColor,
-                size: 24,
+                size: showSidebar ? 26 : 24,
               })
             : null;
 
@@ -282,6 +299,7 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
               icon={icon}
               COLORS={COLORS}
               inactiveColor={inactiveColor}
+              isTablet={showSidebar}
             />
           );
         })}
@@ -296,25 +314,30 @@ const TabNavigatorContent = () => {
   const profilePic = userDetails[0]?.profilePic;
   const { COLORS, scheme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { showSidebar, sidebarWidth } = useResponsive();
 
   const isIos = Platform.OS === 'ios';
   const isDark = scheme === 'dark';
+  const showCustomTabBar = isIos || showSidebar;
 
   return (
     <Tab.Navigator
-      tabBar={isIos ? (props) => <CustomGlassTabBar {...props} /> : undefined}
+      tabBar={showCustomTabBar ? (props) => <CustomGlassTabBar {...props} /> : undefined}
+      sceneContainerStyle={{
+        paddingLeft: showSidebar ? sidebarWidth : 0,
+        backgroundColor: COLORS.primaryBlackHex,
+      }}
       screenOptions={{
         tabBarHideOnKeyboard: true,
         headerShown: false,
-        tabBarStyle: !isIos
+        tabBarStyle: !showCustomTabBar
           ? {
               height: 60 + insets.bottom,
               backgroundColor: COLORS.primaryBlackHex,
               borderTopWidth: 0,
               elevation: 0,
-              paddingBottom: insets.bottom,
             }
-          : undefined,
+          : { display: 'none' },
         tabBarActiveTintColor: COLORS.primaryOrangeHex,
         tabBarInactiveTintColor: COLORS.primaryLightGreyHex,
       }}
@@ -419,11 +442,36 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 8,
   },
+  tabBarContainerTablet: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 100,
+    backgroundColor: 'transparent',
+    borderRightWidth: 1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 4, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
+    borderTopRightRadius: 24,
+    borderBottomRightRadius: 24,
+    overflow: 'hidden',
+  },
   tabBarInner: {
     flexDirection: 'row',
     height: '100%',
     alignItems: 'center',
     justifyContent: 'space-around',
+    paddingHorizontal: 6,
+    position: 'relative',
+  },
+  tabBarInnerTablet: {
+    flexDirection: 'column',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
     paddingHorizontal: 6,
     position: 'relative',
   },
@@ -434,10 +482,23 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     zIndex: 1,
   },
+  tabItemContainerTablet: {
+    width: 88,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
   tabLabel: {
     fontSize: 10,
     fontFamily: FONTFAMILY.poppins_medium,
     marginTop: 2,
+  },
+  tabLabelTablet: {
+    fontSize: 10,
+    fontFamily: FONTFAMILY.poppins_medium,
+    marginTop: 4,
+    textAlign: 'center',
   },
   profilePic: {
     width: 24,
@@ -449,6 +510,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 9,
     borderRadius: 26,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 2,
+    zIndex: 0,
+  },
+  bubbleIndicatorTablet: {
+    position: 'absolute',
+    borderRadius: 16,
     borderWidth: 1,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.18,

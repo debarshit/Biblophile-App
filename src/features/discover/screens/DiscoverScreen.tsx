@@ -44,6 +44,7 @@ import FilteredRecommendationsModal from '../components/FilteredRecommendationsM
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ResponsiveContainer, useResponsive } from '../../../utils/responsive';
 
 const PerkLineArt = ({ variant, color }: { variant: 'giveaway' | 'arc'; color: string }) => (
   <Svg
@@ -90,7 +91,10 @@ const DiscoverScreen = ({ navigation }) => {
   const [reviewTags, setReviewTags] = useState({});
 
   const analytics = useAnalytics();
-  const tabBarHeight = useBottomTabBarHeight();
+  const { showSidebar } = useResponsive();
+  const rawTabBarHeight = useBottomTabBarHeight();
+  const isIos = Platform.OS === 'ios';
+  const tabBarHeight = (isIos && !showSidebar) ? rawTabBarHeight : 0;
   const { onScroll: onTabBarScroll } = useTabBarScroll();
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
@@ -152,7 +156,7 @@ const DiscoverScreen = ({ navigation }) => {
   }, []);
 
   return (
-    <SafeAreaView style={styles.screenContainer}>
+    <SafeAreaView style={styles.screenContainer} edges={['top', 'left', 'right']}>
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
 
       <Animated.ScrollView
@@ -164,6 +168,7 @@ const DiscoverScreen = ({ navigation }) => {
         onScroll={onTabBarScroll}
         scrollEventThrottle={16}
       >
+        <ResponsiveContainer>
         {/* App Header */}
         <HeaderBar showLogo showNotifications />
 
@@ -298,7 +303,7 @@ const DiscoverScreen = ({ navigation }) => {
 
         {/* New releases/Trending/Must reads */}
         {/* <HotRecommendations /> */}
-
+        </ResponsiveContainer>
       </Animated.ScrollView>
       
       {CartList.length > 0 && <FloatingIcon />}

@@ -22,6 +22,7 @@ import CreateChallengeForm from '../components/CreateChallengeForm';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
+import { ResponsiveContainer } from '../../../utils/responsive';
 
 const ChallengeScreen = ({navigation}: any) => {
   // Consolidated state
@@ -225,8 +226,9 @@ const ChallengeScreen = ({navigation}: any) => {
     ) : null;
 
   return (
-    <SafeAreaView style={styles.screenContainer}>
+    <SafeAreaView style={styles.screenContainer} edges={['top', 'left', 'right']}>
       <ScrollView onScroll={onTabBarScroll} scrollEventThrottle={16}>
+        <ResponsiveContainer>
         <HeaderBar title="" />
         
         {/* Header */}
@@ -307,6 +309,7 @@ const ChallengeScreen = ({navigation}: any) => {
             />
           }
         />
+        </ResponsiveContainer>
       </ScrollView>
 
       {/* FAB */}

@@ -45,6 +45,7 @@ import ChallengesBanner from '../components/ChallengesBanner';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FriendActivityPreview from '../components/FriendActivityPreview';
+import { ResponsiveContainer } from '../../../utils/responsive';
 
 interface Spotlight {
   Id: string;
@@ -166,7 +167,7 @@ const HomeScreen = ({navigation}: any) => {
   }, [currentStreak]);
 
   return (
-    <SafeAreaView style={styles.ScreenContainer}>
+    <SafeAreaView style={styles.ScreenContainer} edges={['top', 'left', 'right']}>
 
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
       {showConfetti && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} />}
@@ -178,112 +179,113 @@ const HomeScreen = ({navigation}: any) => {
         contentOffset={{ x: 0, y: scrollOffset }}
         onScroll={onTabBarScroll}
         scrollEventThrottle={16}>
-        {/* App Header-with redundant notification setup */}
-        <HeaderBar 
-          showLogo 
-          rightComponent={
-            <View style={styles.headerRightContainer}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => navigation.navigate('Stats')}
-              >
-                <GlassEffect
-                  glassStyle="clear"
-                  intensity={30}
-                  borderRadius={15}
-                  style={styles.headerStreakBadge}
+        <ResponsiveContainer>
+          {/* App Header-with redundant notification setup */}
+          <HeaderBar 
+            showLogo 
+            rightComponent={
+              <View style={styles.headerRightContainer}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => navigation.navigate('Stats')}
                 >
-                  <Text style={styles.headerStreakText}>🔥 {currentStreak || 0}</Text>
-                  <View style={styles.headerBadgeDivider} />
-                  <Text style={styles.headerFreezeText}>❄️ {streakFreezes ?? 0}</Text>
-                </GlassEffect>
-              </TouchableOpacity>
+                  <GlassEffect
+                    glassStyle="clear"
+                    intensity={30}
+                    borderRadius={15}
+                    style={styles.headerStreakBadge}
+                  >
+                    <Text style={styles.headerStreakText}>🔥 {currentStreak || 0}</Text>
+                    <View style={styles.headerBadgeDivider} />
+                    <Text style={styles.headerFreezeText}>❄️ {streakFreezes ?? 0}</Text>
+                  </GlassEffect>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Notifications')}
-                style={{ position: 'relative' }}
-              >
-                <Ionicons name="notifications" size={24} color={COLORS.primaryWhiteHex} />
-                {unreadNotificationCount > 0 && (
-                  <View style={styles.notificationBadge}>
-                    <Text style={styles.notificationBadgeText}>
-                      {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-          }
-        />
-
-        <StreakWeeklyProgress userDetails={userDetails} onFullWeekComplete={() => setShowConfetti(true)} />
-
-        <Banner />
-
-        <CurrentReadsSection />
- 
-        <FriendActivityPreview />
-
-        {/* Spotlight Section */}
-        <Spotlights spotlights={spotlights} />
-
-        {/* Checkout city's library */}
-        <View style={styles.bookshopSection}>
-          <View style={styles.headerContainer}>
-            <Text style={styles.bookshopText}>Library</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Library')}>
-              <Text style={styles.seeMoreText}>See More</Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            {...bookList.length === 0 && styles.hidden}
-            ref={ListRef}
-            horizontal
-            ListEmptyComponent={
-              <View style={styles.EmptyListContainer}>
-                <Text style={styles.infoText}>No Books found</Text>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('Notifications')}
+                  style={{ position: 'relative' }}
+                >
+                  <Ionicons name="notifications" size={24} color={COLORS.primaryWhiteHex} />
+                  {unreadNotificationCount > 0 && (
+                    <View style={styles.notificationBadge}>
+                      <Text style={styles.notificationBadgeText}>
+                        {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
               </View>
             }
-            showsHorizontalScrollIndicator={false}
-            data={bookList}
-            contentContainerStyle={styles.FlatListContainer}
-            keyExtractor={item => item.BookId}
-            renderItem={({item}) => {
-              return (
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.push('Details', {
-                      id: item.BookId,
-                      type: "Book",
-                    });
-                  }}>
-                  <CoffeeCard
-                    id={item.BookId}
-                    name={item.BookName}
-                    photo={convertHttpToHttps(item.BookPhoto)}
-                    type="Book"
-                    price={item.BookPrice}
-                    averageRating={item.BookAverageRating}
-                    ratingCount={item.BookRatingCount}
-                    buttonPressHandler={CoffeeCardAddToCart}
-                  />
-                </TouchableOpacity>
-              );
-            }}
           />
-        </View>
 
-        <SeasonalRecommendations latitude={latitude} longitude={longitude} />
+          <StreakWeeklyProgress userDetails={userDetails} onFullWeekComplete={() => setShowConfetti(true)} />
 
-        {/* Checkout merch shop */}
-        {/* <MerchShopBanner title='Check Out Our Exclusive Merch!' description='Browse our latest merchandise, only for book lovers like you.' /> */}
+          <Banner />
 
-        {/* biblo jan and made with love in India */}
-        <View style={styles.welcomeMascot}>
-          <Mascot emotion="pendingBooks"/>
-          <Text style={styles.welcomeMessage}>From India, with love for readers</Text>
-        </View>
+          <CurrentReadsSection />
+   
+          <FriendActivityPreview />
 
+          {/* Spotlight Section */}
+          <Spotlights spotlights={spotlights} />
+
+          {/* Checkout city's library */}
+          <View style={styles.bookshopSection}>
+            <View style={styles.headerContainer}>
+              <Text style={styles.bookshopText}>Library</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Library')}>
+                <Text style={styles.seeMoreText}>See More</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              {...bookList.length === 0 && styles.hidden}
+              ref={ListRef}
+              horizontal
+              ListEmptyComponent={
+                <View style={styles.EmptyListContainer}>
+                  <Text style={styles.infoText}>No Books found</Text>
+                </View>
+              }
+              showsHorizontalScrollIndicator={false}
+              data={bookList}
+              contentContainerStyle={styles.FlatListContainer}
+              keyExtractor={item => item.BookId}
+              renderItem={({item}) => {
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.push('Details', {
+                        id: item.BookId,
+                        type: "Book",
+                      });
+                    }}>
+                    <CoffeeCard
+                      id={item.BookId}
+                      name={item.BookName}
+                      photo={convertHttpToHttps(item.BookPhoto)}
+                      type="Book"
+                      price={item.BookPrice}
+                      averageRating={item.BookAverageRating}
+                      ratingCount={item.BookRatingCount}
+                      buttonPressHandler={CoffeeCardAddToCart}
+                    />
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
+
+          <SeasonalRecommendations latitude={latitude} longitude={longitude} />
+
+          {/* Checkout merch shop */}
+          {/* <MerchShopBanner title='Check Out Our Exclusive Merch!' description='Browse our latest merchandise, only for book lovers like you.' /> */}
+
+          {/* biblo jan and made with love in India */}
+          <View style={styles.welcomeMascot}>
+            <Mascot emotion="pendingBooks"/>
+            <Text style={styles.welcomeMessage}>From India, with love for readers</Text>
+          </View>
+        </ResponsiveContainer>
       </Animated.ScrollView>
       {CartList.length > 0 && <FloatingIcon />}
     </SafeAreaView>

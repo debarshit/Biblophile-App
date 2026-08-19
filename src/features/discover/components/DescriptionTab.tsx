@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, TouchableWithoutFeedback, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import ProductOptions from './ProductOptions';
 import RequestBookButton from './RequestBookButton';
@@ -27,17 +27,17 @@ const DescriptionTab = ({
     <View style={styles.TabContent}>
       <Text style={styles.InfoTitle}>Description</Text>
       {fullDesc ? (
-        <TouchableWithoutFeedback onPress={() => setFullDesc(prev => !prev)}>
+        <Pressable onPress={() => setFullDesc(prev => !prev)} android_ripple={null}>
           <Text style={styles.DescriptionText}>
             {stripHtmlTags(isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription'])}
           </Text>
-        </TouchableWithoutFeedback>
+        </Pressable>
       ) : (
-        <TouchableWithoutFeedback onPress={() => setFullDesc(prev => !prev)}>
+        <Pressable onPress={() => setFullDesc(prev => !prev)} android_ripple={null}>
           <Text numberOfLines={3} style={styles.DescriptionText}>
             {stripHtmlTags(isGoogleBook ? product['volumeInfo']?.description : product['ProductDescription'])}
           </Text>
-        </TouchableWithoutFeedback>
+        </Pressable>
       )}
       <>
         <Text style={styles.InfoTitle}>Options</Text>

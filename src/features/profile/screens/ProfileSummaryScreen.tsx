@@ -11,6 +11,7 @@ import { useStreak } from '../../../hooks/useStreak';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
+import { ResponsiveContainer } from '../../../utils/responsive';
 
 // Only keys with a non-empty URL are rendered.
 const SOCIAL_ICON_MAP: Record<string, { lib: 'Entypo' | 'FontAwesome5'; name: string }> = {
@@ -292,7 +293,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
           <Feather name="arrow-left" size={22} color={COLORS.primaryWhiteHex} />
@@ -313,6 +314,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
         </View>
       </View>
       <ScrollView style={styles.container} onScroll={onTabBarScroll} scrollEventThrottle={16}>
+        <ResponsiveContainer>
 
         {/* Avatar + Name + Friends */}
         <View style={styles.headerContainer}>
@@ -450,6 +452,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
             </Text>
           </View>
         )}
+        </ResponsiveContainer>
       </ScrollView>
     </SafeAreaView>
   );
