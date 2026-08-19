@@ -11,6 +11,8 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../contexts/ThemeContext';
+import GlassEffect from '../../../components/GlassEffect';
+import { Platform } from 'react-native';
 import {
   BORDERRADIUS,
   FONTFAMILY,
@@ -143,7 +145,12 @@ const FriendActivityPreview = () => {
 
   if (loading) {
     return (
-      <View style={stylesObj.container}>
+      <GlassEffect
+        glassStyle="regular"
+        intensity={25}
+        borderRadius={BORDERRADIUS.radius_20}
+        style={stylesObj.container}
+      >
         <View style={stylesObj.headerRow}>
           <Text style={stylesObj.title}>👥 Friend Activity</Text>
           <Text style={stylesObj.seeAll}>See all →</Text>
@@ -151,7 +158,7 @@ const FriendActivityPreview = () => {
         <View style={stylesObj.separator} />
         <SkeletonRow COLORS={COLORS} pulse={pulse} />
         <SkeletonRow COLORS={COLORS} pulse={pulse} />
-      </View>
+      </GlassEffect>
     );
   }
 
@@ -160,7 +167,12 @@ const FriendActivityPreview = () => {
   }
 
   return (
-    <View style={stylesObj.container}>
+    <GlassEffect
+      glassStyle="regular"
+      intensity={25}
+      borderRadius={BORDERRADIUS.radius_20}
+      style={stylesObj.container}
+    >
       {/* Header */}
       <View style={stylesObj.headerRow}>
         <Text style={stylesObj.title}>👥 Friend Activity</Text>
@@ -213,7 +225,7 @@ const FriendActivityPreview = () => {
           </View>
         );
       })}
-    </View>
+    </GlassEffect>
   );
 };
 
@@ -222,9 +234,11 @@ const createStyles = (COLORS: any) =>
     container: {
       marginHorizontal: SPACING.space_20,
       marginBottom: SPACING.space_24,
-      backgroundColor: COLORS.primaryDarkGreyHex,
+      backgroundColor: Platform.OS === 'ios' ? 'rgba(30, 33, 40, 0.45)' : COLORS.primaryDarkGreyHex,
       borderRadius: BORDERRADIUS.radius_20,
       overflow: 'hidden',
+      borderWidth: Platform.OS === 'ios' ? 1 : 0,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
     },
     headerRow: {
       flexDirection: 'row',

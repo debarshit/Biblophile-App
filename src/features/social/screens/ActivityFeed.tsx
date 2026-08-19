@@ -18,6 +18,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import UserDisplay from '../../../components/UserDisplay';
+import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -236,6 +237,7 @@ const LIMIT = 20;
 const ActivityFeed: React.FC = () => {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const { onScroll: onTabBarScroll } = useTabBarScroll();
 
   const [events, setEvents] = useState<FeedEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -369,6 +371,8 @@ const ActivityFeed: React.FC = () => {
           />
         }
         showsVerticalScrollIndicator={false}
+        onScroll={onTabBarScroll}
+        scrollEventThrottle={16}
       />
     </View>
   );

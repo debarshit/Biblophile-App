@@ -10,6 +10,7 @@ import { AntDesign, Entypo, Feather, FontAwesome5, MaterialCommunityIcons } from
 import { useStreak } from '../../../hooks/useStreak';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
 
 // Only keys with a non-empty URL are rendered.
 const SOCIAL_ICON_MAP: Record<string, { lib: 'Entypo' | 'FontAwesome5'; name: string }> = {
@@ -49,6 +50,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const { currentStreak } = useStreak(userDetails[0]?.accessToken, pageOwnerUserId);
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const { onScroll: onTabBarScroll } = useTabBarScroll();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -310,7 +312,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
           )}
         </View>
       </View>
-      <ScrollView style={styles.container}>
+      <ScrollView style={styles.container} onScroll={onTabBarScroll} scrollEventThrottle={16}>
 
         {/* Avatar + Name + Friends */}
         <View style={styles.headerContainer}>

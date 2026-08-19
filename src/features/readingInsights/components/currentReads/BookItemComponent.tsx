@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
-import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Image, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../../theme/theme';
 import { convertHttpToHttps } from '../../../../utils/convertHttpToHttps';
 import { useTheme } from '../../../../contexts/ThemeContext';
+import GlassEffect from '../../../../components/GlassEffect';
 
 interface BookItemProps {
   book: any;
@@ -56,7 +57,12 @@ const BookItem: React.FC<BookItemProps> = React.memo(({ book, navigation, onUpda
   ]);
 
   return (
-    <View style={styles.book}>
+    <GlassEffect
+      glassStyle="regular"
+      intensity={25}
+      borderRadius={8}
+      style={styles.book}
+    >
       <TouchableOpacity
         onPress={() => {
           navigation.push('Details', {
@@ -80,7 +86,7 @@ const BookItem: React.FC<BookItemProps> = React.memo(({ book, navigation, onUpda
       >
         <Text style={styles.updateButtonText}>Update Status</Text>
       </TouchableOpacity>
-    </View>
+    </GlassEffect>
   );
 });
 
@@ -91,7 +97,7 @@ const createStyles = (COLORS) => StyleSheet.create({
   book: {
     flexDirection: 'column',
     alignItems: 'center',
-    backgroundColor: COLORS.secondaryDarkGreyHex,
+    backgroundColor: Platform.OS === 'ios' ? 'rgba(40, 40, 45, 0.45)' : COLORS.secondaryDarkGreyHex,
     padding: SPACING.space_10,
     borderRadius: 8,
     marginHorizontal: SPACING.space_10,
@@ -99,6 +105,8 @@ const createStyles = (COLORS) => StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
+    borderWidth: Platform.OS === 'ios' ? 1 : 0,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   bookPhoto: {
     width: 100,
