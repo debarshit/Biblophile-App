@@ -34,6 +34,9 @@ interface BookshelfCardProps {
   progressUnit?: 'pages' | 'percentage' | 'seconds';
   progressValue: number|null;
   visibility: 'only_me' | 'friends' | 'followers' | 'everyone';
+  bookPages?: number | null;
+  format?: string | null;
+  audioDurationSec?: number | null;
   onUpdate: () => void;
   navigation: any;
 }
@@ -49,6 +52,9 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
   progressUnit,
   progressValue,
   visibility,
+  bookPages,
+  format,
+  audioDurationSec,
   onUpdate,
   navigation
 }) => {
@@ -58,6 +64,35 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
   const [showPrivacyOptions, setShowPrivacyOptions] = useState(false);
   const [currentVisibility, setCurrentVisibility] = useState(visibility);
   const { COLORS } = useTheme();
+
+  const percentage = useMemo(() => {
+    if (status === 'Read') return 100;
+    if (status === 'To be read') return 0;
+
+    if (progressValue === null || progressValue === undefined || progressValue <= 0) {
+      return 0;
+    }
+
+    if (progressUnit === 'percentage') {
+      return Math.min(100, Math.max(0, progressValue));
+    }
+
+    if (progressUnit === 'pages') {
+      if (bookPages && bookPages > 0) {
+        return Math.min(100, Math.round((progressValue / bookPages) * 100));
+      }
+      return null;
+    }
+
+    if (progressUnit === 'seconds') {
+      if (audioDurationSec && audioDurationSec > 0) {
+        return Math.min(100, Math.round((progressValue / audioDurationSec) * 100));
+      }
+      return null;
+    }
+
+    return null;
+  }, [status, progressUnit, progressValue, bookPages, audioDurationSec]);
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0].accessToken;
@@ -177,6 +212,13 @@ const BookshelfCard: React.FC<BookshelfCardProps> = ({
               >
                 <Text style={styles.progressText}>{`${progressUnit} ${progressValue}`}</Text>
               </TouchableOpacity>
+            )}
+
+            {/* Progress bar at the bottom of the book cover */}
+            {percentage !== null && (
+              <View style={styles.progressBarContainer}>
+                <View style={[styles.progressBarFill, { width: `${percentage}%` }]} />
+              </View>
             )}
           </ImageBackground>
         </TouchableOpacity>
@@ -348,5 +390,17 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   selectedText: {
     color: COLORS.primaryOrangeHex,
+  },
+  progressBarContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.24)',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: COLORS.primaryOrangeHex,
   },
 });

@@ -17,6 +17,8 @@ import requests from '../../../services/requests';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import UserDisplay from '../../../components/UserDisplay';
+import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -102,7 +104,7 @@ const SkeletonCard: React.FC<{ COLORS: any }> = ({ COLORS }) => {
   const bg = COLORS.secondaryDarkGreyHex;
 
   return (
-    <View style={[skeletonStyles.card, { backgroundColor: COLORS.primaryDarkGreyHex, borderLeftColor: COLORS.primaryGreyHex }]}>
+    <View style={[skeletonStyles.card, { backgroundColor: COLORS.primaryDarkGreyHex }]}>
       <Animated.View style={[skeletonStyles.avatar, { backgroundColor: bg, opacity: pulse }]} />
       <View style={skeletonStyles.content}>
         <Animated.View style={[skeletonStyles.line, { width: '60%', backgroundColor: bg, opacity: pulse }]} />
@@ -121,7 +123,6 @@ const skeletonStyles = StyleSheet.create({
     borderRadius: BORDERRADIUS.radius_15,
     padding: SPACING.space_16,
     marginBottom: SPACING.space_12,
-    borderLeftWidth: 2,
   },
   avatar: {
     width: 44,
@@ -155,38 +156,44 @@ interface EventCardProps {
 const EventCard: React.FC<EventCardProps> = ({ event, COLORS, styles }) => {
   const actionText = getActionText(event);
   const relativeTime = getRelativeTime(event.createdAt);
-  const profilePicUri = event.actor.profilePic
-    ? convertHttpToHttps(event.actor.profilePic)
+  const profilePicUri = event.actor?.profilePic
+    ? convertHttpToHttps(event.actor?.profilePic)
     : null;
-  const bookPhotoUri = event.book.photo
-    ? convertHttpToHttps(event.book.photo)
+  const bookPhotoUri = event.book?.photo
+    ? convertHttpToHttps(event.book?.photo)
     : null;
 
   return (
     <View style={styles.card}>
       {/* Actor avatar */}
       <View style={styles.avatarContainer}>
-        {profilePicUri ? (
-          <Image source={{ uri: profilePicUri }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarFallback]}>
-            <Feather name="user" size={20} color={COLORS.secondaryLightGreyHex} />
-          </View>
-        )}
+        <UserDisplay
+          username={event.actor.userName}
+          name={event.actor.name}
+          avatarUrl={profilePicUri || undefined}
+          size="medium"
+          layout="avatar-only"
+        />
       </View>
 
       {/* Content */}
       <View style={styles.eventContent}>
         {/* Row 1: name + action */}
         <Text style={styles.actionRow} numberOfLines={2}>
-          <Text style={styles.actorName}>{event.actor.name} </Text>
-          <Text style={styles.actionText}>{actionText}</Text>
+          <UserDisplay
+            username={event.actor.userName}
+            name={event.actor.name}
+            layout="text-only"
+            textStyle={styles.actorName}
+            size="medium"
+          />
+          <Text style={styles.actionText}> {actionText}</Text>
         </Text>
 
         {/* Row 2: book title + cover */}
         <View style={styles.bookRow}>
           <Text style={styles.bookTitle} numberOfLines={1}>
-            {event.book.title}
+            {event.book?.title ?? ""}
           </Text>
           {bookPhotoUri ? (
             <Image source={{ uri: bookPhotoUri }} style={styles.bookCover} resizeMode="cover" />
@@ -230,6 +237,7 @@ const LIMIT = 20;
 const ActivityFeed: React.FC = () => {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const { onScroll: onTabBarScroll } = useTabBarScroll();
 
   const [events, setEvents] = useState<FeedEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -363,6 +371,8 @@ const ActivityFeed: React.FC = () => {
           />
         }
         showsVerticalScrollIndicator={false}
+        onScroll={onTabBarScroll}
+        scrollEventThrottle={16}
       />
     </View>
   );
@@ -397,21 +407,9 @@ const createStyles = (COLORS: any) =>
       borderRadius: BORDERRADIUS.radius_15,
       padding: SPACING.space_16,
       marginBottom: SPACING.space_12,
-      borderLeftWidth: 2,
-      borderLeftColor: COLORS.primaryOrangeHex,
     },
     avatarContainer: {
       marginRight: SPACING.space_12,
-    },
-    avatar: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-    },
-    avatarFallback: {
-      backgroundColor: COLORS.primaryGreyHex,
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     eventContent: {
       flex: 1,

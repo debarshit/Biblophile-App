@@ -30,23 +30,17 @@ export const updateReadingStreak = async ({
     if (response.data.message) {
       if (response.data.message === "Updated") {
         const streakData = {
-          currentStreak: response.data.streak,
+          currentStreak: response.data.streak ?? response.data.currentStreak,
           maxStreak: response.data.maxStreak,
           latestUpdateTime: response.data.latestUpdateTime,
-          isNewRecord: response.data.streak > 0,
-          // isNewRecord: response.data.streak > currentStreak,
+          streakFreezes: response.data.streakFreezes,
+          weeklyProgress: response.data.weeklyProgress,
+          isNewRecord: (response.data.streak ?? response.data.currentStreak) > 0,
         };
 
         if (onSuccess) {
           onSuccess(streakData);
         }
-
-        // if (!silent && showAlert) {
-        //   const message = streakData.isNewRecord 
-        //     ? `🔥 New streak record! ${streakData.currentStreak} days!`
-        //     : `✅ Streak updated: ${streakData.currentStreak} days`;
-        //   Alert.alert('Success', message);
-        // }
 
         return streakData;
       } else if (response.data.message === "Already updated today" || 
@@ -56,10 +50,11 @@ export const updateReadingStreak = async ({
           currentStreak: response.data.streak || response.data.currentStreak,
           maxStreak: response.data.maxStreak,
           latestUpdateTime: response.data.latestUpdateTime,
+          streakFreezes: response.data.streakFreezes,
+          weeklyProgress: response.data.weeklyProgress,
           isAlreadyUpdated: true,
         };
 
-        // Don't call onSuccess for already updated case, but return the data
         return streakData;
       } else {
         if (onError && !silent) {
@@ -121,6 +116,8 @@ export const fetchReadingStreak = async ({
       currentStreak: data.currentStreak,
       maxStreak: data.maxStreak,
       latestUpdateTime: data.latestUpdateTime,
+      streakFreezes: data.streakFreezes,
+      weeklyProgress: data.weeklyProgress,
     };
 
     onSuccess?.(streakData);

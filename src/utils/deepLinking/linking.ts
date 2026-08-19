@@ -77,6 +77,18 @@ const config = {
         tab: (tab: string) => tab,
       },
     },
+    Giveaways: {
+      path: 'giveaways/:subPath?',
+      parse: {
+        subPath: (subPath: string) => `${subPath}`,
+      },
+    },
+    AdvanceReadingCopies: {
+      path: 'advance-reading-copies/:subPath?',
+      parse: {
+        subPath: (subPath: string) => `${subPath}`,
+      },
+    },
     Resources: {
       path: ':*', // The asterisk acts as a wildcard
     },

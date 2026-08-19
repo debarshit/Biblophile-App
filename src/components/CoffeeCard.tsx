@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import {
-  Dimensions,
   ImageBackground,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import { AntDesign } from '@expo/vector-icons';
@@ -18,8 +18,6 @@ import {
 } from '../theme/theme';
 import BGIcon from './BGIcon';
 import { useTheme } from '../contexts/ThemeContext';
-
-const CARD_WIDTH = Dimensions.get('window').width * 0.42;
 
 interface CoffeeCardProps {
   id: string;
@@ -45,7 +43,11 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
   buttonPressHandler,
 }) => {
   const { COLORS } = useTheme();
-  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const { width, height } = useWindowDimensions();
+  const isTablet = Math.min(width, height) >= 500;
+  const cardWidth = isTablet ? 160 : width * 0.42;
+
+  const styles = useMemo(() => createStyles(COLORS, cardWidth), [COLORS, cardWidth]);
   return (
     <LinearGradient
       start={{x: 0, y: 0}}
@@ -105,14 +107,14 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({
   );
 };
 
-const createStyles = (COLORS) => StyleSheet.create({
+const createStyles = (COLORS, cardWidth) => StyleSheet.create({
   CardLinearGradientContainer: {
     padding: SPACING.space_15,
     borderRadius: BORDERRADIUS.radius_25,
   },
   CardImageBG: {
-    width: CARD_WIDTH,
-    height: CARD_WIDTH * 1.4,
+    width: cardWidth,
+    height: cardWidth * 1.4,
     borderRadius: BORDERRADIUS.radius_20,
     marginBottom: SPACING.space_15,
     overflow: 'hidden',

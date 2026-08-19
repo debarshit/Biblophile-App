@@ -27,6 +27,7 @@ import BuyOptionsModal from '../../bookshop/components/BuyOptionsModal';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
@@ -73,6 +74,32 @@ const DetailsScreen = ({navigation, route}: any) => {
   const [favourite, setFavourite] = useState(false);
 
   const { action, productId, productType } = route.params || {}; // Ensure params exist
+
+  // ─── Campaign attribution tracking ───────────────────────────────────────
+  // Mirror the website's ?giveawayId / ?arcId query-param pattern using route params + AsyncStorage
+  useEffect(() => {
+    const giveawayId = route.params?.giveawayId;
+    const arcId = route.params?.arcId;
+    const accessToken = userDetails[0]?.accessToken;
+
+    if (giveawayId && !isNaN(Number(giveawayId))) {
+      AsyncStorage.setItem('attributedGiveawayId', String(giveawayId));
+      instance.post(
+        requests.trackGiveawayEvent(Number(giveawayId)),
+        { eventType: 'book_pageview' },
+        { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {} }
+      ).catch(err => console.error('Error tracking giveaway book view:', err));
+    }
+
+    if (arcId && !isNaN(Number(arcId))) {
+      AsyncStorage.setItem('attributedArcId', String(arcId));
+      instance.post(
+        requests.trackArcEvent(Number(arcId)),
+        { eventType: 'book_pageview' },
+        { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {} }
+      ).catch(err => console.error('Error tracking ARC book view:', err));
+    }
+  }, [route.params?.giveawayId, route.params?.arcId]);
 
   //handle the deep linked function
   const handleAction = (action) => {

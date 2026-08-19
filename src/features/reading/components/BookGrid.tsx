@@ -7,19 +7,13 @@ import {
     Platform,
     TouchableOpacity,
     Modal,
-    Dimensions,
+    useWindowDimensions,
 } from 'react-native';
 import BookshelfCard from './BookshelfCard';
 import { BORDERRADIUS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import type { Book } from '../types';
-
-const { width } = Dimensions.get('window');
-const CARD_MARGIN = SPACING.space_8;
-const CONTAINER_PADDING = SPACING.space_16;
-const AVAILABLE_WIDTH = width - CONTAINER_PADDING * 2;
-const CARD_WIDTH = (AVAILABLE_WIDTH - CARD_MARGIN * 2) / 3;
 
 const VISIBILITY_OPTIONS = [
     { value: 'only_me',   label: '🔒 Only Me' },
@@ -56,7 +50,20 @@ export const BookGrid: React.FC<BookGridProps> = ({
     navigation,
 }) => {
     const { COLORS } = useTheme();
-    const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+    const { width, height } = useWindowDimensions();
+
+    const { isTablet, numColumns, cardWidth, cardMargin } = useMemo(() => {
+        const isTab = Math.min(width, height) >= 500;
+        const cols = isTab ? 5 : 3;
+        const contentWidth = isTab ? Math.min(width, 1000) : width;
+        const containerPadding = SPACING.space_16;
+        const margin = SPACING.space_8;
+        const availWidth = contentWidth - containerPadding * 2;
+        const cWidth = (availWidth - margin * (cols - 1)) / cols;
+        return { isTablet: isTab, numColumns: cols, cardWidth: cWidth, cardMargin: margin };
+    }, [width, height]);
+
+    const styles = useMemo(() => createStyles(COLORS, cardWidth), [COLORS, cardWidth]);
 
     const renderItem = useCallback(
         ({ item, index }: { item: Book; index: number }) => (
@@ -64,8 +71,8 @@ export const BookGrid: React.FC<BookGridProps> = ({
                 style={[
                     styles.cardContainer,
                     {
-                        marginLeft: index % 3 === 0 ? 0 : CARD_MARGIN / 2,
-                        marginRight: index % 3 === 2 ? 0 : CARD_MARGIN / 2,
+                        marginLeft: index % numColumns === 0 ? 0 : cardMargin / 2,
+                        marginRight: index % numColumns === numColumns - 1 ? 0 : cardMargin / 2,
                     },
                 ]}
             >
@@ -80,12 +87,15 @@ export const BookGrid: React.FC<BookGridProps> = ({
                     progressUnit={item.progressUnit}
                     progressValue={item.progressValue}
                     visibility={item.visibility}
+                    bookPages={item.bookPages}
+                    format={item.format}
+                    audioDurationSec={item.audioDurationSec}
                     onUpdate={null}
                     navigation={navigation}
                 />
             </View>
         ),
-        [isPageOwner, styles, navigation]
+        [isPageOwner, styles, navigation, numColumns, cardMargin]
     );
 
     const footer = loading ? (
@@ -106,8 +116,9 @@ export const BookGrid: React.FC<BookGridProps> = ({
     return (
         <>
             <FlatList
+                key={isTablet ? 'tablet-grid' : 'phone-grid'}
                 data={books}
-                numColumns={3}
+                numColumns={numColumns}
                 keyExtractor={(item) => item.bookId.toString()}
                 renderItem={renderItem}
                 onEndReached={onEndReached}
@@ -117,6 +128,7 @@ export const BookGrid: React.FC<BookGridProps> = ({
                 ListEmptyComponent={empty}
                 contentContainerStyle={[
                     styles.listContent,
+                    isTablet && { maxWidth: 1000, alignSelf: 'center', width: '100%' },
                     books.length === 0 && !loading && styles.emptyListContent,
                 ]}
                 showsVerticalScrollIndicator={false}
@@ -157,7 +169,7 @@ export const BookGrid: React.FC<BookGridProps> = ({
     );
 };
 
-const createStyles = (COLORS: any) =>
+const createStyles = (COLORS: any, cardWidth: number) =>
     StyleSheet.create({
         listContent: {
             paddingBottom: SPACING.space_24,
@@ -172,7 +184,7 @@ const createStyles = (COLORS: any) =>
             marginBottom: SPACING.space_12,
         },
         cardContainer: {
-            width: CARD_WIDTH,
+            width: cardWidth,
             backgroundColor: COLORS.primaryGreyHex,
             borderRadius: BORDERRADIUS.radius_15,
             overflow: 'hidden',

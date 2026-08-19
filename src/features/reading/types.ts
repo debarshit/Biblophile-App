@@ -9,6 +9,9 @@ export interface Book {
     progressValue: number | null;
     position?: number;
     visibility: 'only_me' | 'friends' | 'followers' | 'everyone';
+    bookPages?: number | null;
+    format?: string | null;
+    audioDurationSec?: number | null;
 }
 
 export interface ShelfUser {

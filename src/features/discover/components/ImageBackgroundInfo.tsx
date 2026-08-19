@@ -12,6 +12,7 @@ import MissingBookInfoModal from './MissingBookInfoModal';
 import ShareModal from '../../../components/ShareModal';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { secondsToHMS } from '../../../utils/timeConversion';
 
 interface ImageBackgroundInfoProps {
   EnableBackHandler: boolean;
@@ -27,6 +28,37 @@ interface ImageBackgroundInfoProps {
   isGoogleBook: boolean;
   onBookPromoted?: (internalBookId: string) => void;
 }
+
+const formatReadingProgress = (
+  value: number,
+  unit: string,
+  product: any
+) => {
+  const normalizedUnit = (unit || '').toLowerCase().trim();
+
+  if (normalizedUnit === 'seconds' || normalizedUnit === 'hrs' || normalizedUnit === 'hours') {
+    const { h, m, s } = secondsToHMS(value);
+    const time = `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    const totalSeconds = product?.ProductAudioDurationSec ?? product?.audioDurationSec ?? product?.audioDuration;
+    if (totalSeconds && Number(totalSeconds) > 0) {
+      const { h: th, m: tm, s: ts } = secondsToHMS(Number(totalSeconds));
+      const totalTime = `${th}:${tm.toString().padStart(2, '0')}:${ts.toString().padStart(2, '0')}`;
+      return `${time}/${totalTime} hrs`;
+    }
+    return `${time} hrs`;
+  }
+
+  if (normalizedUnit === 'percentage' || normalizedUnit === '%') {
+    return `${value}%`;
+  }
+
+  // Default to pages ('pages', 'pgs', 'page', or empty default)
+  const totalPages = product?.ProductPages ?? product?.bookPages ?? product?.pageCount ?? product?.volumeInfo?.pageCount;
+  if (totalPages && Number(totalPages) > 0) {
+    return `${value}/${totalPages} pgs`;
+  }
+  return `${value} pgs`;
+};
 
 // Extracted chip component for reusability
 const Chip: React.FC<{ styles: any; text: string; style?: any }> = ({ styles, text, style }) => (
@@ -259,8 +291,10 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
             <View style={styles.statusBadge}>
               <Text style={styles.statusText}>{readingStatus.userBookId ? readingStatus.status : 'Set status'}</Text>
             </View>
-            {readingStatus.status === 'Currently reading' && readingStatus.progressValue != null && (
-              <Text style={styles.pageInfo}>{`${readingStatus.progressValue} ${readingStatus.progressUnit}`}</Text>
+            {(readingStatus.status === 'Currently reading' || readingStatus.status === 'Paused') && readingStatus.progressValue != null && (
+              <Text style={styles.pageInfo}>
+                {formatReadingProgress(readingStatus.progressValue, readingStatus.progressUnit, product)}
+              </Text>
             )}
           </View>
 
@@ -284,7 +318,14 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
         isGoogleBook={isGoogleBook}
         onBookPromoted={onBookPromoted}
         product={product}
-        onUpdate={setReadingStatus}
+        onUpdate={(updatedData: any) => {
+          setReadingStatus((prev) => ({
+            ...prev,
+            ...updatedData,
+            progressValue: updatedData.progressValue ?? updatedData.localProgressValue ?? prev.progressValue,
+            progressUnit: updatedData.progressUnit ?? prev.progressUnit,
+          }));
+        }}
         initialStatus={readingStatus.status}
         initialProgressUnit={readingStatus.progressUnit as 'pages' | 'percentage' | 'seconds'}
         initialProgressValue={readingStatus.progressValue}

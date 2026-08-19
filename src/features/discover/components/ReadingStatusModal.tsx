@@ -15,6 +15,7 @@ import TagSelectorModal from './TagSelectorModal';
 import { hmsToSeconds, secondsToHMS } from '../../../utils/timeConversion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-controller';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ReadingStatusModalProps {
   visible: boolean;
@@ -116,7 +117,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
       });
       const tags = data.data.tags || [];
       setBookTags(tags);
-      onUpdate({ status, localProgressValue, tags });
+      onUpdate({ status, progressValue: localProgressValue, progressUnit: localProgressUnit, tags });
     } catch (err) {
       console.log("Error fetching book tags:", err);
     }
@@ -233,9 +234,38 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
       if (data.data.message === "Updated successfully") {
         const userBookId = data.data.userBookId;
         analytics.track('reading_status_updated');
-        onUpdate({ userBookId, status, localProgressValue, tags: bookTags });
+        onUpdate({ userBookId, status, progressValue: localProgressValue, progressUnit: localProgressUnit, tags: bookTags });
         showToast('Updated successfully!');
         onClose();
+
+        // ─── Campaign attribution: shelf_add ───────────────────────────────
+        // Mirror website's ReadingStatus component: when a book is added to "To be read",
+        // fire shelf_add events for any attributed giveaway/ARC campaign, then clear the IDs.
+        if (status === 'To be read') {
+          const accessToken = userDetails[0]?.accessToken;
+          const [storedGiveawayId, storedArcId] = await Promise.all([
+            AsyncStorage.getItem('attributedGiveawayId'),
+            AsyncStorage.getItem('attributedArcId'),
+          ]);
+
+          if (storedGiveawayId && !isNaN(Number(storedGiveawayId))) {
+            instance.post(
+              requests.trackGiveawayEvent(Number(storedGiveawayId)),
+              { eventType: 'shelf_add' },
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            ).catch(err => console.error('Error tracking giveaway shelf add:', err));
+            AsyncStorage.removeItem('attributedGiveawayId');
+          }
+
+          if (storedArcId && !isNaN(Number(storedArcId))) {
+            instance.post(
+              requests.trackArcEvent(Number(storedArcId)),
+              { eventType: 'shelf_add' },
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            ).catch(err => console.error('Error tracking ARC shelf add:', err));
+            AsyncStorage.removeItem('attributedArcId');
+          }
+        }
       }
     } catch (error) {
       console.error('Error submitting status:', error);
@@ -328,7 +358,7 @@ const ReadingStatusModal: React.FC<ReadingStatusModalProps> = ({
                       <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
                     ) : (
                       <>
-                        <AntDesign name={isInQueue ? "checkcircle" : "plus"} size={FONTSIZE.size_16} color={COLORS.primaryWhiteHex} />
+                        <AntDesign name={isInQueue ? "check-circle" : "plus"} size={FONTSIZE.size_16} color={COLORS.primaryWhiteHex} />
                         <Text style={styles.queueButtonText}>{isInQueue ? 'In Reading Queue' : 'Add to Reading Queue'}</Text>
                       </>
                     )}

@@ -16,6 +16,7 @@ import StarRating from 'react-native-star-rating-widget';
 import { WysiwygRender } from '../../../components/wysiwyg/WysiwygRender';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../contexts/ThemeContext';
+import UserDisplay from '../../../components/UserDisplay';
 
 interface ProductReviewProps {
   id: string;
@@ -31,6 +32,7 @@ interface ReviewTag {
 interface Review {
   ratingId: string;
   userName: string;
+  userProfilePic?: string;
   ratingDate: string;
   rating: number;
   review: string;
@@ -248,25 +250,22 @@ const ProductReview: React.FC<ProductReviewProps> = ({ id, isGoogleBook, product
 
   const renderReview = ({ item }: { item: Review }) => {
     const isDifferentEdition = item.productId != id;
-    const initials = getInitials(item.userName);
-    const avatarColor = getAvatarColor(item.userName);
 
     return (
       <View style={[styles.reviewCard]}>
         {/* Header row */}
         <View style={styles.reviewHeader}>
-          <View style={styles.authorRow}>
-            <View style={[styles.avatar, { backgroundColor: avatarColor.bg }]}>
-              <Text style={[styles.avatarText, { color: avatarColor.text }]}>{initials}</Text>
-            </View>
-            <View>
-              <Text style={styles.username}>{item.userName}</Text>
-              <Text style={styles.dateText}>
-                {item.ratingDate}
-                {item.editionFormat && !isDifferentEdition ? ` · ${item.editionFormat}` : ''}
-              </Text>
-            </View>
-          </View>
+          <UserDisplay
+            username={item.userName}
+            name={item.userName}
+            avatarUrl={item.userProfilePic}
+            size="medium"
+          >
+            <Text style={styles.dateText}>
+              {item.ratingDate}
+              {item.editionFormat && !isDifferentEdition ? ` · ${item.editionFormat}` : ''}
+            </Text>
+          </UserDisplay>
           {isDifferentEdition && (
             <TouchableOpacity
               onPress={() => handleEditionPress(item.productId)}
@@ -513,28 +512,6 @@ const createStyles = (COLORS: any) =>
       justifyContent: 'space-between',
       alignItems: 'flex-start',
       marginBottom: SPACING.space_8,
-    },
-    authorRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.space_10,
-      flex: 1,
-    },
-    avatar: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    avatarText: {
-      fontFamily: FONTFAMILY.poppins_semibold,
-      fontSize: FONTSIZE.size_12,
-    },
-    username: {
-      fontFamily: FONTFAMILY.poppins_semibold,
-      fontSize: FONTSIZE.size_14,
-      color: COLORS.primaryWhiteHex,
     },
     dateText: {
       fontFamily: FONTFAMILY.poppins_regular,

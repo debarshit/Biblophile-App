@@ -25,6 +25,7 @@ import BuddyReadCard from '../components/BuddyReadCard';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
 
 const { width } = Dimensions.get('window');
 
@@ -65,6 +66,7 @@ const BuddyReadsIndex = () => {
   const [searchType, setSearchType] = useState<SearchType>('all');
   const [showSearchFilters, setShowSearchFilters] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const { onScroll: onTabBarScroll } = useTabBarScroll();
 
   // Consolidated state for both tabs
   const [tabState, setTabState] = useState<Record<TabType, TabState>>({
@@ -305,6 +307,8 @@ const BuddyReadsIndex = () => {
             tintColor={COLORS.primaryOrangeHex}
           />
         }
+        onScroll={onTabBarScroll}
+        scrollEventThrottle={16}
       />
     </SafeAreaView>
   );

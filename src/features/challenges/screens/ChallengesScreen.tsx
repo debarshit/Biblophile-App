@@ -21,6 +21,8 @@ import ChallengeCard from '../components/ChallengeCard';
 import CreateChallengeForm from '../components/CreateChallengeForm';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
+import { ResponsiveContainer } from '../../../utils/responsive';
 
 const ChallengeScreen = ({navigation}: any) => {
   // Consolidated state
@@ -46,6 +48,7 @@ const ChallengeScreen = ({navigation}: any) => {
 
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const { onScroll: onTabBarScroll } = useTabBarScroll();
 
   // Helper to update state
   const updateState = (updates: any) => setState(prev => ({ ...prev, ...updates }));
@@ -223,8 +226,9 @@ const ChallengeScreen = ({navigation}: any) => {
     ) : null;
 
   return (
-    <SafeAreaView style={styles.screenContainer}>
-      <ScrollView>
+    <SafeAreaView style={styles.screenContainer} edges={['top', 'left', 'right']}>
+      <ScrollView onScroll={onTabBarScroll} scrollEventThrottle={16}>
+        <ResponsiveContainer>
         <HeaderBar title="" />
         
         {/* Header */}
@@ -305,6 +309,7 @@ const ChallengeScreen = ({navigation}: any) => {
             />
           }
         />
+        </ResponsiveContainer>
       </ScrollView>
 
       {/* FAB */}

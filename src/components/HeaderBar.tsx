@@ -27,7 +27,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
   showLocationSelector = false,
   rightComponent,
 }) => {
-  const { COLORS } = useTheme();
+  const { COLORS, scheme } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const navigation = useNavigation<any>();  
   const userDetails = useStore((state: any) => state.userDetails);
@@ -71,7 +71,9 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
       ) : showLogo ? (
         <Image
           source={{
-            uri: "https://ik.imagekit.io/umjnzfgqh/biblophile/common_assets/logos/Biblophile%20logo%20-%20white.png",
+            uri: scheme === 'dark'
+              ? "https://ik.imagekit.io/umjnzfgqh/biblophile/common_assets/logos/Biblophile%20logo%20-%20white.png"
+              : "https://ik.imagekit.io/umjnzfgqh/biblophile/common_assets/logos/Biblophile%20logo%20-%20black.png",
           }}
           style={styles.Image}
         />

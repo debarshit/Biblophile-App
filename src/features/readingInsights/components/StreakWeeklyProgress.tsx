@@ -1,21 +1,22 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
 import { BORDERRADIUS, COLORS, FONTFAMILY, FONTSIZE, SPACING } from '../../../theme/theme';
 import { useStreak } from '../../../hooks/useStreak';
 import StreakCelebration from '../../../components/StreakCelebration';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../contexts/ThemeContext';
+import GlassEffect from '../../../components/GlassEffect';
 
 const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
   const navigation = useNavigation<any>();
-  const [showTooltip, setShowTooltip] = useState(false);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [celebrationData, setCelebrationData] = useState(null);
 
   const {
     currentStreak,
     latestUpdateTime,
+    streakFreezes,
+    weeklyProgress,
     updateStreak,
     loading,
   } = useStreak(userDetails[0]?.accessToken, null, handleCelebration);
@@ -41,6 +42,7 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
     setCelebrationData({
       currentStreak: streakData.currentStreak,
       isNewRecord: streakData.isNewRecord,
+      streakFreezes: streakData.streakFreezes ?? streakFreezes,
     });
     setShowStreakCelebration(true);
   }
@@ -51,6 +53,17 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
   }
 
   function getDayClasses(dayIndex) {
+    if (weeklyProgress && weeklyProgress.length === 7) {
+      const dayData = weeklyProgress[dayIndex];
+      if (dayData && dayData.hasRead) {
+        if (dayData.type === 'freeze') {
+          return styles.freezeDay;
+        }
+        return styles.filledDay;
+      }
+      return styles.day;
+    }
+
     if (!latestUpdateTime) return styles.day;
 
     const today = new Date();
@@ -109,24 +122,12 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
   }, [currentStreak, latestUpdateTime]);
 
   return (
-    <View style={styles.progressContainer}>
-      <View style={styles.streakInfo}>
-        <Text style={styles.streakText}>🌟 {currentStreak}-Day Streak</Text>
-        {/* <TouchableOpacity onPress={() => setShowTooltip(!showTooltip)} style={styles.infoIconContainer}>
-          <FontAwesome name="info-circle" style={styles.infoIcon} />
-          {showTooltip && (
-            <View style={styles.tooltip}>
-              <Text style={styles.tooltipText}>
-                Use our NFC bookmarks for a physical experience!
-              </Text>
-              <TouchableOpacity onPress={handleBuyNow}>
-                <Text style={styles.buyNowText}>Buy Now</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </TouchableOpacity> */}
-      </View>
-
+    <GlassEffect
+      glassStyle="regular"
+      intensity={25}
+      borderRadius={BORDERRADIUS.radius_15}
+      style={styles.progressContainer}
+    >
       <View style={styles.weekContainer}>
         {daysOfWeek.map((day, index) => (
           <View key={index} style={[styles.dayContainer, getDayClasses(index)]}>
@@ -165,7 +166,7 @@ const StreakWeeklyProgress = ({ userDetails, onFullWeekComplete }) => {
         isNewRecord={celebrationData?.isNewRecord || false}
         onAnimationComplete={handleCelebrationComplete}
       />
-    </View>
+    </GlassEffect>
   );
 };
 
@@ -173,22 +174,16 @@ export default StreakWeeklyProgress;
 
 const createStyles = (COLORS) => StyleSheet.create({
   progressContainer: {
-    backgroundColor: COLORS.primaryGreyHex,
-    borderRadius: BORDERRADIUS.radius_10,
-    padding: SPACING.space_8,
-    margin: SPACING.space_8,
-    zIndex: -1,
-  },
-  streakInfo: {
-    alignContent: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: SPACING.space_4,
-    zIndex: -1,
+    backgroundColor: 'rgba(30, 33, 40, 0.45)',
+    borderRadius: BORDERRADIUS.radius_15,
+    padding: SPACING.space_12,
+    margin: SPACING.space_10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   streakText: {
     fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_16,
+    fontSize: FONTSIZE.size_14,
     color: COLORS.primaryOrangeHex,
   },
   infoIconContainer: {
@@ -242,6 +237,9 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   filledDay: {
     backgroundColor: COLORS.primaryOrangeHex,
+  },
+  freezeDay: {
+    backgroundColor: '#38BDF8',
   },
   greeting: {
     fontFamily: FONTFAMILY.poppins_medium,

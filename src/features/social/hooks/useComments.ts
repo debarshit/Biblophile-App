@@ -14,6 +14,8 @@ export interface Comment {
     commentText: string;
     progressPercentage: number;
     user_name: string;
+    username?: string;
+    user_avatar?: string;
     userId: string;
     like_count: number;
     createdAt: string;

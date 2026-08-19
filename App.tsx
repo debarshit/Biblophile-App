@@ -1,6 +1,20 @@
 import React, {useEffect, useState} from 'react';
 import { PostHogProvider } from 'posthog-react-native'
-import { Alert } from 'react-native';
+import { Alert, Text, TextInput } from 'react-native';
+
+// Cap font scaling globally to prevent layout distortion on large system fonts
+if ((Text as any).defaultProps) {
+  (Text as any).defaultProps.maxFontSizeMultiplier = 1.3;
+} else {
+  (Text as any).defaultProps = { maxFontSizeMultiplier: 1.3 };
+}
+
+if ((TextInput as any).defaultProps) {
+  (TextInput as any).defaultProps.maxFontSizeMultiplier = 1.3;
+} else {
+  (TextInput as any).defaultProps = { maxFontSizeMultiplier: 1.3 };
+}
+
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
 import * as SplashScreen from 'expo-splash-screen';
@@ -27,6 +41,7 @@ import StatScreen from './src/features/readingInsights/screens/StatScreen';
 import AboutScreen from './src/features/settings/screens/AboutScreen';
 import ReviewScreen from './src/features/reading/components/UserReviews';
 import ProfileSummaryScreen from './src/features/profile/screens/ProfileSummaryScreen';
+import FriendsListScreen from './src/features/profile/screens/FriendsListScreen';
 import NotesScreen from './src/features/reading/screens/NotesScreen';
 import DurationTrackScreen from './src/features/reading/screens/DurationTrackScreen';
 import LibraryScreen from './src/features/bookshop/screens/LibraryScreen';
@@ -60,6 +75,8 @@ import AddEditionScreen from './src/features/discover/screens/AddEditionScreen';
 import ReadalongCheckpointDiscussion from './src/features/social/screens/ReadalongDiscussionScreen';
 import ChallengePromptDetailsScreen from './src/features/challenges/screens/ChallengePromptDetailsScreen';
 import ThreadScreen from './src/features/social/screens/ThreadScreen';
+import GiveawaysScreen from './src/features/campaigns/giveaways/screens/GiveawaysScreen';
+import AdvanceReadingCopiesScreen from './src/features/campaigns/arcs/screens/AdvanceReadingCopiesScreen';
 import { ThemeProvider } from './src/contexts/ThemeContext';
 import PrivacySettingsScreen from './src/features/settings/screens/PrivacySettingsScreen';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -305,6 +322,7 @@ const App = () => {
                     <Stack.Screen name="Note" component={NotesScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="Durations" component={DurationTrackScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="ProfileSummary" component={ProfileSummaryScreen} options={{animation: 'slide_from_right'}} />
+                    <Stack.Screen name="FriendsList" component={FriendsListScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="Subscription" component={SubscriptionScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="Social" component={SocialScreen} options={{animation: 'slide_from_bottom'}} />
                     <Stack.Screen name="Cart" component={CartScreen} options={{animation: 'slide_from_right'}} />
@@ -330,6 +348,8 @@ const App = () => {
                     <Stack.Screen name="Editions" component={EditionsScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="AddEdition" component={AddEditionScreen} options={{animation: 'slide_from_bottom'}} />
                     <Stack.Screen name="ThreadScreen" component={ThreadScreen} />
+                    <Stack.Screen name="Giveaways" component={GiveawaysScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="AdvanceReadingCopies" component={AdvanceReadingCopiesScreen} options={{animation: 'slide_from_bottom'}} />
                   </Stack.Navigator>
                 </CityProvider>
               ) : (

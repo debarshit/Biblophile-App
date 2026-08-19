@@ -26,6 +26,7 @@ import ReadAlongCard from '../components/ReadAlongCard';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
 
 const { width } = Dimensions.get('window');
 
@@ -73,6 +74,7 @@ const ReadAlongsIndex = () => {
   const [searchType, setSearchType] = useState<SearchType>('all');
   const [showSearchFilters, setShowSearchFilters] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const { onScroll: onTabBarScroll } = useTabBarScroll();
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
@@ -313,6 +315,8 @@ const ReadAlongsIndex = () => {
             tintColor={COLORS.primaryOrangeHex}
           />
         }
+        onScroll={onTabBarScroll}
+        scrollEventThrottle={16}
       />
     </SafeAreaView>
   );

@@ -1,16 +1,27 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Share } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Share, Linking } from 'react-native';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import { SPACING, COLORS, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
+import { SPACING, FONTFAMILY, FONTSIZE, BORDERRADIUS } from '../../../theme/theme';
 import { useStore } from '../../../store/store';
 import BookshelfComponent from '../components/BookshelfComponent';
 import UserReviews from '../../reading/components/UserReviews';
-import GradientBGIcon from '../../../components/GradientBGIcon';
-import { AntDesign, Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStreak } from '../../../hooks/useStreak';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
+import { ResponsiveContainer } from '../../../utils/responsive';
+
+// Only keys with a non-empty URL are rendered.
+const SOCIAL_ICON_MAP: Record<string, { lib: 'Entypo' | 'FontAwesome5'; name: string }> = {
+  instagram: { lib: 'Entypo', name: 'instagram' },
+  twitter: { lib: 'Entypo', name: 'twitter' },
+  youtube: { lib: 'Entypo', name: 'youtube' },
+  tiktok: { lib: 'FontAwesome5', name: 'tiktok' },
+  goodreads: { lib: 'FontAwesome5', name: 'goodreads' },
+  website: { lib: 'FontAwesome5', name: 'blog' },
+};
 
 const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const [userData, setUserData] = useState(null);
@@ -20,8 +31,17 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const [userAverageRating, setUserAverageRating] = useState<number | null>(null);
   const [userAverageEmotions, setUserAverageEmotions] = useState([]);
   const [averageReadingDays, setAverageReadingDays] = useState<number | null>(null);
+  const [socialLinks, setSocialLinks] = useState<{ [key: string]: string }>({});
   const [activeTab, setActiveTab] = useState('bookshelf');
   const [loading, setLoading] = useState(true);
+
+  const handleBackPress = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.replace('Tab', { screen: 'Home' });
+    }
+  };
 
   const userDetails = useStore((state: any) => state.userDetails);
   const accessToken = userDetails[0].accessToken;
@@ -31,6 +51,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   const { currentStreak } = useStreak(userDetails[0]?.accessToken, pageOwnerUserId);
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const { onScroll: onTabBarScroll } = useTabBarScroll();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -79,15 +100,16 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
     if (userData) {
       const fetchAdditionalData = async () => {
         try {
-          const [averageRatingResponse, averageEmotionsResponse, averageReadingDaysResponse] = await Promise.all([
+          const [averageRatingResponse, averageEmotionsResponse, averageReadingDaysResponse, socialLinksResponse] = await Promise.all([
             instance(requests.fetchAverageRatingByUser + userData.userId),
             instance(requests.fetchAverageEmotionsByUser + userData.userId),
-            instance(requests.fetchAverageDaystoFinish + userData.userId)
+            instance(requests.fetchAverageDaystoFinish + userData.userId),
+            instance(`${requests.getSocialLinks}?userId=${userData.userId}`),
           ]);
-          console
           setUserAverageRating(averageRatingResponse.data.data.averageRating);
           setUserAverageEmotions(averageEmotionsResponse.data.data.topEmotions || []);
           setAverageReadingDays(averageReadingDaysResponse.data.data.averageDaysToFinish);
+          setSocialLinks(socialLinksResponse.data?.data || {});
         } catch (error) {
           console.error('Failed to fetch additional user data:', error);
         }
@@ -110,7 +132,20 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
     }
   };
 
-  const handleFriendRequest = async (action:string) => {
+  const handleSocialLinkPress = async (url: string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        console.error('Cannot open URL:', url);
+      }
+    } catch (error) {
+      console.error('Error opening social link:', error);
+    }
+  };
+
+  const handleFriendRequest = async (action: string) => {
     const prevState = userRelations;
     // optimistic update
     setUserRelations((prev) => {
@@ -145,7 +180,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
     try {
       let apiEndpoint = requests.toggleFriend;
       let requestData;
-  
+
       if (action === 'confirm' || action === 'reject') {
         apiEndpoint = requests.confirmRejectFriend;
 
@@ -160,7 +195,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
           receiver_user_id: userData.userId,
         };
       }
-  
+
       await instance.post(apiEndpoint, requestData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -207,12 +242,12 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
     } else if (userRelations?.isReversePendingRequest) {
       return (
         <View style={{flexDirection: 'row', gap: SPACING.space_8, justifyContent: 'space-around'}}>
-        <TouchableOpacity style={styles.addFriendButton} onPress={() => handleFriendRequest('confirm')}>
-          <Text style={styles.buttonText}>Confirm Friend</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.addFriendButton} onPress={() => handleFriendRequest('reject')}>
-          <Text style={styles.buttonText}>Reject Friend</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.addFriendButton} onPress={() => handleFriendRequest('confirm')}>
+            <Text style={styles.buttonText}>Confirm Friend</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.addFriendButton} onPress={() => handleFriendRequest('reject')}>
+            <Text style={styles.buttonText}>Reject Friend</Text>
+          </TouchableOpacity>
         </View>
       );
     } else {
@@ -223,6 +258,12 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   };
 
   const formattedMoodPreferences = userAverageEmotions.map((mood) => mood.Emotion).join(', ');
+
+  const socialLinkEntries = useMemo(() => {
+    return Object.keys(SOCIAL_ICON_MAP)
+      .filter((key) => !!socialLinks[key])
+      .map((key) => ({ key, url: socialLinks[key], ...SOCIAL_ICON_MAP[key] }));
+  }, [socialLinks]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -252,16 +293,31 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container}>
-        <View style={styles.headerContainer}>
-          {/* Back Button */}
-          <TouchableOpacity
-            onPress={() => navigation.replace('Tab', { screen: 'Home' })}
-            style={styles.backButton}
-          >
-            <Feather name="arrow-left" size={20} color={COLORS.primaryWhiteHex} />
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <View style={styles.headerBar}>
+        <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+          <Feather name="arrow-left" size={22} color={COLORS.primaryWhiteHex} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>@{username}</Text>
+        <View style={styles.headerRightActions}>
+          <TouchableOpacity onPress={handleShareProfile} style={styles.headerShareButton}>
+            <Feather name="share-2" size={20} color={COLORS.primaryWhiteHex} />
           </TouchableOpacity>
+          {isPageOwner && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Settings')}
+              style={styles.headerSettingsButton}
+            >
+              <Feather name="menu" size={20} color={COLORS.primaryWhiteHex} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+      <ScrollView style={styles.container} onScroll={onTabBarScroll} scrollEventThrottle={16}>
+        <ResponsiveContainer>
+
+        {/* Avatar + Name + Friends */}
+        <View style={styles.headerContainer}>
           <TouchableOpacity
             onPress={isPageOwner ? () => navigation.push('Profile') : undefined}
             style={styles.profileContainer}>
@@ -277,34 +333,60 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
               )}
             </View>
           </TouchableOpacity>
+
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{userData?.name}</Text>
-            <Text style={styles.profileUsername}>
-              {username}
-            </Text>
-          </View>
-          {/* Share Button */}
-          <TouchableOpacity onPress={handleShareProfile} style={{marginRight: SPACING.space_10}}>
-            <Feather name="share-2" size={20} color={COLORS.primaryWhiteHex} />
-          </TouchableOpacity>
-          {/* Settings (only owner) */}
-          {isPageOwner && (
+            <Text style={styles.profileName} numberOfLines={1}>{userData?.name}</Text>
             <TouchableOpacity
-              style={styles.headerIcon}
-              onPress={() => navigation.navigate('Settings')}
+              style={styles.friendsInlineRow}
+              onPress={() =>
+                navigation.push('FriendsList', {
+                  pageOwnerId: userData.userId,
+                  profileName: userData.name,
+                })
+              }
+              activeOpacity={0.7}
             >
-              <GradientBGIcon 
-                name="menu-fold"
-                color={COLORS.primaryWhiteHex}
-                size={FONTSIZE.size_16}
-              />
+              <Text style={styles.statNumber}>{userData?.friendsCount || 0}</Text>
+              <Text style={styles.statLabelText}>Friends</Text>
             </TouchableOpacity>
-          )}
+          </View>
         </View>
+
+        {/* Bio Section */}
+        {userData?.bio ? (
+          <View style={styles.bioSection}>
+            <Text style={styles.bioText}>{userData.bio}</Text>
+          </View>
+        ) : null}
+
+        {/* Social Links Row - horizontally scrollable */}
+        {socialLinkEntries.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.socialLinksScroll}
+            contentContainerStyle={styles.socialLinksScrollContent}
+          >
+            {socialLinkEntries.map((entry) => (
+              <TouchableOpacity
+                key={entry.key}
+                style={styles.socialLinkButton}
+                onPress={() => handleSocialLinkPress(entry.url)}
+                activeOpacity={0.75}
+              >
+                {entry.lib === 'FontAwesome5' ? (
+                  <FontAwesome5 name={entry.name} size={16} color={COLORS.primaryWhiteHex} />
+                ) : (
+                  <Entypo name={entry.name} size={16} color={COLORS.primaryWhiteHex} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
 
         {!isPageOwner && (
           <View style={styles.buttonsSection}>
-              <Text style={styles.buttonText}>{getFriendButtonText()}</Text>
+            {getFriendButtonText()}
             {/* <TouchableOpacity style={styles.followButton} onPress={() => handleFollowRequest()}>
               <Text style={styles.buttonText}>{userRelations?.isFollowing ? "Unfollow" : "Follow"}</Text>
             </TouchableOpacity> */}
@@ -352,17 +434,17 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
 
         <View style={styles.horizontalLine} />
         {privacyStatus ? (
-        <>
-        <View style={styles.TabBar}>
-          <TouchableOpacity onPress={() => setActiveTab('bookshelf')} style={[styles.TabButton, activeTab === 'bookshelf' && styles.TabButtonActive]}>
-            <Text style={[styles.TabLabel, activeTab === 'bookshelf' && styles.TabLabelActive]}>Bookshelf</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setActiveTab('reviews')} style={[styles.TabButton, activeTab === 'reviews' && styles.TabButtonActive]}>
-            <Text style={[styles.TabLabel, activeTab === 'reviews' && styles.TabLabelActive]}>Reviews</Text>
-          </TouchableOpacity>
-        </View>
-        {renderContent()}
-        </>
+          <>
+            <View style={styles.TabBar}>
+              <TouchableOpacity onPress={() => setActiveTab('bookshelf')} style={[styles.TabButton, activeTab === 'bookshelf' && styles.TabButtonActive]}>
+                <Text style={[styles.TabLabel, activeTab === 'bookshelf' && styles.TabLabelActive]}>Bookshelf</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setActiveTab('reviews')} style={[styles.TabButton, activeTab === 'reviews' && styles.TabButtonActive]}>
+                <Text style={[styles.TabLabel, activeTab === 'reviews' && styles.TabLabelActive]}>Reviews</Text>
+              </TouchableOpacity>
+            </View>
+            {renderContent()}
+          </>
         ) : (
           <View style={styles.privateContainer}>
             <Text style={styles.privateText}>
@@ -370,6 +452,7 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
             </Text>
           </View>
         )}
+        </ResponsiveContainer>
       </ScrollView>
     </SafeAreaView>
   );
@@ -384,6 +467,34 @@ const createStyles = (COLORS) => StyleSheet.create({
     padding: SPACING.space_20,
     backgroundColor: COLORS.primaryBlackHex,
     flex: 1,
+  },
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.space_16,
+    paddingVertical: SPACING.space_12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.primaryDarkGreyHex,
+  },
+  backButton: {
+    padding: SPACING.space_4,
+  },
+  headerTitle: {
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+  },
+  headerRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerShareButton: {
+    padding: SPACING.space_4,
+    marginRight: SPACING.space_12,
+  },
+  headerSettingsButton: {
+    padding: SPACING.space_4,
   },
   profileContainer: {
     flexDirection: 'row',
@@ -413,30 +524,84 @@ const createStyles = (COLORS) => StyleSheet.create({
     borderColor: COLORS.primaryBlackHex,
   },
   profileInfo: {
-    marginLeft: 16,
+    marginLeft: 14,
     flex: 1,
+    minWidth: 0,
+    justifyContent: 'center',
   },
   profileName: {
     fontSize: FONTSIZE.size_18,
     fontFamily: FONTFAMILY.poppins_semibold,
     color: COLORS.primaryWhiteHex,
+    marginBottom: SPACING.space_4,
   },
-  profileUsername: {
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.space_16,
+  },
+  friendsInlineRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: SPACING.space_4,
+  },
+  statNumber: {
     fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+  },
+  statLabelText: {
+    fontSize: FONTSIZE.size_12,
     fontFamily: FONTFAMILY.poppins_regular,
     color: COLORS.secondaryLightGreyHex,
   },
-   headerContainer: {
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: SPACING.space_20,
   },
+  topBarTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: FONTSIZE.size_16,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryWhiteHex,
+    marginHorizontal: SPACING.space_8,
+  },
+  topBarRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerIconButton: {
+    marginLeft: SPACING.space_8,
+    padding: SPACING.space_4,
+  },
   backButton: {
-    marginRight: SPACING.space_8,
+    padding: SPACING.space_4,
   },
   headerIcon: {
-    paddingBottom: SPACING.space_20,
+    marginLeft: SPACING.space_8,
+    paddingBottom: 0,
+  },
+  socialLinksScroll: {
+    marginBottom: SPACING.space_20,
+  },
+  socialLinksScrollContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.space_12,
+    paddingRight: SPACING.space_8,
+  },
+  socialLinkButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.primaryDarkGreyHex,
   },
   loadingContainer: {
     flex: 1,
@@ -455,9 +620,8 @@ const createStyles = (COLORS) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: SPACING.space_8,
-    marginBottom: SPACING.space_8,
+    marginBottom: SPACING.space_20,
   },
-
   addFriendButton: {
     backgroundColor: COLORS.primaryOrangeHex,
     paddingVertical: SPACING.space_8,
@@ -469,9 +633,8 @@ const createStyles = (COLORS) => StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 15,
-    width: 140,
+    width: 160,
   },
-
   followButton: {
     backgroundColor: COLORS.primaryBlackHex,
     paddingVertical: SPACING.space_8,
@@ -485,7 +648,6 @@ const createStyles = (COLORS) => StyleSheet.create({
     shadowRadius: 15,
     width: 140,
   },
-
   buttonText: {
     color: COLORS.primaryWhiteHex,
     fontFamily: FONTFAMILY.poppins_bold,
@@ -540,33 +702,28 @@ const createStyles = (COLORS) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   statIcon: {
     fontSize: FONTSIZE.size_24,
     marginBottom: SPACING.space_4,
   },
-
   statValue: {
     fontSize: FONTSIZE.size_20,
     fontFamily: FONTFAMILY.poppins_bold,
     color: COLORS.primaryOrangeHex,
     marginBottom: SPACING.space_2,
   },
-
   statLabel: {
     fontSize: FONTSIZE.size_10,
     fontFamily: FONTFAMILY.poppins_regular,
     color: COLORS.secondaryLightGreyHex,
     textAlign: 'center',
   },
-
   statDivider: {
     width: 1,
     height: 40,
     backgroundColor: COLORS.secondaryLightGreyHex,
     opacity: 0.3,
   },
-
   TabBar: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
@@ -599,6 +756,17 @@ const createStyles = (COLORS) => StyleSheet.create({
   privateText: {
     color: COLORS.secondaryLightGreyHex,
     fontSize: 16,
+  },
+  bioSection: {
+    paddingHorizontal: SPACING.space_20,
+    marginTop: SPACING.space_4,
+    marginBottom: SPACING.space_12,
+  },
+  bioText: {
+    fontSize: FONTSIZE.size_12,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
+    lineHeight: 18,
   },
 });
 

@@ -149,8 +149,28 @@ const requests = {
     fetchBooksFinishedByDay: `${APIURL}reading/reading-insights/books-finished-by-day`,
     fetchReadingOverview: `${APIURL}reading/reading-insights/overview`,
 
-    //give-away requests
-    fetchGiveawayBooks: `${APIURL}giveaways/books`,
+    //social profile links
+    getSocialLinks: `${APIURL}marketing/profiles/user/socials`,
+    updateSocialLinks: `${APIURL}marketing/profiles/user/socials`,
+
+    //give-away marketing requests
+    getActiveGiveaways: `${APIURL}marketing/giveaways`,
+    getGiveawayById: (id: string | number) => `${APIURL}marketing/giveaways/${id}`,
+    getUserWonGiveaways: `${APIURL}marketing/giveaways/user/won`,
+    joinGiveaway: (id: string | number) => `${APIURL}marketing/giveaways/${id}/join`,
+    claimGiveawayPrize: (id: string | number) => `${APIURL}marketing/giveaways/${id}/claim`,
+    trackGiveawayEvent: (id: number) => `${APIURL}marketing/giveaways/${id}/track`,
+
+    //advance reading copies (ARC) requests
+    getActiveArcCampaigns: `${APIURL}marketing/arcs`,
+    getARCById: (id: string | number) => `${APIURL}marketing/arcs/${id}`,
+    getUserAppliedArcs: `${APIURL}marketing/arcs/user/applied`,
+    getUserArcEligibility: `${APIURL}marketing/arcs/user/eligibility`,
+    applyForArc: (id: string | number) => `${APIURL}marketing/arcs/${id}/apply`,
+    submitArcReview: (id: string | number) => `${APIURL}marketing/arcs/${id}/submit-review`,
+    getArcFeedbackMessages: (appId: string | number) => `${APIURL}marketing/arcs/applications/${appId}/feedback`,
+    sendArcFeedbackMessage: (appId: string | number) => `${APIURL}marketing/arcs/applications/${appId}/feedback`,
+    trackArcEvent: (id: number) => `${APIURL}marketing/arcs/${id}/track`,
 
     //payment requests
     paymentRequest: `${APIURL}payments/request`,
@@ -170,6 +190,7 @@ const requests = {
 
     //user-relations requests
     fetchUserRelations: (pageOwnerId) => `${APIURL}social/user-relations/${pageOwnerId}/relations`,
+    fetchFriendsList: (pageOwnerId) => `${APIURL}social/user-relations/${pageOwnerId}/friends`,
     fetchFriendRequests:`${APIURL}social/user-relations/friend-requests/incoming`,
     toggleFollow:`${APIURL}social/user-relations/toggle-follow`,
     toggleFriend:`${APIURL}social/user-relations/toggle-friend`,
