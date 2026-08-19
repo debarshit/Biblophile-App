@@ -105,7 +105,6 @@ const createStyles = (COLORS) => StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
-    borderWidth: Platform.OS === 'ios' ? 1 : 0,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   bookPhoto: {

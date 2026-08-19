@@ -38,6 +38,7 @@ interface TabButtonProps {
   onLongPress: () => void;
   icon: React.ReactNode;
   COLORS: any;
+  inactiveColor: string;
 }
 
 const TabButton: React.FC<TabButtonProps> = ({
@@ -47,6 +48,7 @@ const TabButton: React.FC<TabButtonProps> = ({
   onLongPress,
   icon,
   COLORS,
+  inactiveColor,
 }) => {
   return (
     <TouchableOpacity
@@ -62,7 +64,7 @@ const TabButton: React.FC<TabButtonProps> = ({
           {
             color: isFocused
               ? COLORS.primaryOrangeHex
-              : 'rgba(255, 255, 255, 0.55)',
+              : inactiveColor,
             fontWeight: isFocused ? '600' : '400',
           },
         ]}
@@ -78,7 +80,7 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
   descriptors,
   navigation,
 }) => {
-  const { COLORS } = useTheme();
+  const { COLORS, scheme } = useTheme();
   const insets = useSafeAreaInsets();
   const { tabBarTranslateY, tabBarScale, tabBarOpacity, showTabBar } = useTabBarScroll();
 
@@ -107,6 +109,14 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
       }).start();
     }
   }, [activeIndex, tabWidth]);
+
+  const isDark = scheme === 'dark';
+  const backingColor = isDark ? 'rgba(15, 17, 22, 0.72)' : 'rgba(255, 255, 255, 0.82)';
+  const tabBorderColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)';
+  const glassTint = isDark ? 'dark' : 'light';
+  const bubbleBg = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.05)';
+  const bubbleBorder = isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.08)';
+  const inactiveColor = isDark ? 'rgba(255, 255, 255, 0.55)' : 'rgba(0, 0, 0, 0.45)';
 
   const getClampedX = (pageX: number) => {
     const relativeX = pageX - 22; // 16 container margin + 6 padding
@@ -191,17 +201,18 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
             { scale: tabBarScale }
           ],
           opacity: tabBarOpacity,
+          borderColor: tabBorderColor,
         },
       ]}
     >
-      {/* Semi-translucent dark background card to ensure text/icon readability */}
-      <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(15, 17, 22, 0.72)', borderRadius: 34 }]} />
+      {/* Semi-translucent background card to ensure text/icon readability */}
+      <View style={[StyleSheet.absoluteFillObject, { backgroundColor: backingColor, borderRadius: 34 }]} />
 
       <GlassBackground
         glassStyle="clear"
         isInteractive={true}
         intensity={35}
-        tint="dark"
+        tint={glassTint}
       />
       <View style={styles.tabBarInner} onLayout={handleInnerLayout}>
         {/* Sliding Frosted Glassy Bubble Indicator */}
@@ -213,7 +224,8 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
                 width: tabWidth - 6,
                 transform: [{ translateX: bubbleTranslateX }],
                 opacity: bubbleOpacity,
-                borderColor: 'rgba(255, 255, 255, 0.22)',
+                backgroundColor: bubbleBg,
+                borderColor: bubbleBorder,
                 shadowColor: COLORS.primaryOrangeHex,
                 height: Platform.OS === 'ios' ? 52 : 46,
                 top: Platform.OS === 'ios' ? 7 : 7,
@@ -255,7 +267,7 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
                 focused: isFocused,
                 color: isFocused
                   ? COLORS.primaryOrangeHex
-                  : 'rgba(255, 255, 255, 0.55)',
+                  : inactiveColor,
                 size: 24,
               })
             : null;
@@ -269,6 +281,7 @@ const CustomGlassTabBar: React.FC<BottomTabBarProps> = ({
               onLongPress={onLongPress}
               icon={icon}
               COLORS={COLORS}
+              inactiveColor={inactiveColor}
             />
           );
         })}
@@ -281,10 +294,11 @@ const TabNavigatorContent = () => {
   const userDetails = useStore((state: any) => state.userDetails);
   const username = userDetails[0]?.userUniqueUserName;
   const profilePic = userDetails[0]?.profilePic;
-  const { COLORS } = useTheme();
+  const { COLORS, scheme } = useTheme();
   const insets = useSafeAreaInsets();
 
   const isIos = Platform.OS === 'ios';
+  const isDark = scheme === 'dark';
 
   return (
     <Tab.Navigator
@@ -309,13 +323,11 @@ const TabNavigatorContent = () => {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused, color }) => (
             <MaterialIcons
               name="home"
               size={24}
-              color={
-                focused ? COLORS.primaryOrangeHex : 'rgba(255, 255, 255, 0.6)'
-              }
+              color={color}
             />
           ),
         }}
@@ -324,13 +336,11 @@ const TabNavigatorContent = () => {
         name="Discover"
         component={DiscoverScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused, color }) => (
             <MaterialIcons
               name="travel-explore"
               size={24}
-              color={
-                focused ? COLORS.primaryOrangeHex : 'rgba(255, 255, 255, 0.6)'
-              }
+              color={color}
             />
           ),
         }}
@@ -339,13 +349,11 @@ const TabNavigatorContent = () => {
         name="Challenges"
         component={ChallengesScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused, color }) => (
             <Entypo
               name="medal"
               size={24}
-              color={
-                focused ? COLORS.primaryOrangeHex : 'rgba(255, 255, 255, 0.6)'
-              }
+              color={color}
             />
           ),
         }}
@@ -354,13 +362,11 @@ const TabNavigatorContent = () => {
         name="Social"
         component={SocialScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused, color }) => (
             <FontAwesome
               name="group"
               size={24}
-              color={
-                focused ? COLORS.primaryOrangeHex : 'rgba(255, 255, 255, 0.6)'
-              }
+              color={color}
             />
           ),
         }}
@@ -378,7 +384,7 @@ const TabNavigatorContent = () => {
                 {
                   borderColor: focused
                     ? COLORS.primaryOrangeHex
-                    : 'rgba(255, 255, 255, 0.25)',
+                    : isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.15)',
                 },
               ]}
             />
@@ -407,10 +413,9 @@ const styles = StyleSheet.create({
     borderRadius: 34,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.25,
     shadowRadius: 18,
     elevation: 8,
   },
@@ -443,7 +448,6 @@ const styles = StyleSheet.create({
   bubbleIndicator: {
     position: 'absolute',
     left: 9,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     borderRadius: 26,
     borderWidth: 1,
     shadowOffset: { width: 0, height: 2 },
