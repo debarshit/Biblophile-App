@@ -345,7 +345,7 @@ const BookshelfComponent: React.FC<BookshelfScreenProps> = ({ userData }) => {
             {renderBooksByStatus('To be read')}
             {renderBooksByStatus('Did not finish')}
             
-            {userTags.length > 0 && <Separator title="Your Tags" />}
+            {userTags.length > 0 && <Separator title="Collections" />}
             {userTags.map((tag) => renderTagCard(tag))}
 
             {loadingMoreTags && (
