@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Platform, Alert, Linking } from 'react-native';
 import { useStore } from '../store/store'; // Adjust path to your store
+import { NIGHTLY_NUDGE_ID, PREFERRED_REMINDER_ID } from './readingReminderConstants';
 
 // In-app permission states
 export const PERMISSION_STATES = {
@@ -392,6 +393,138 @@ class NotificationService {
     const { notifications } = useStore.getState();
     return notifications.devicePermissionAsked;
   }
+
+  // ─── Reading Reminder: Nightly Nudge ─────────────────────────────────────
+
+  /**
+   * Schedules a one-time 11pm local notification for today.
+   * Should be called on app launch/foreground if the user hasn't read today.
+   * Safe to call repeatedly — replaces any existing nudge.
+   */
+  async scheduleNightlyNudge() {
+    const enabled = await this.areNotificationsEnabled();
+    if (!enabled) return;
+
+    const now = new Date();
+    const nudgeTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23, 0, 0  // 11:00 PM
+    );
+
+    // If 11pm has already passed today, don't bother scheduling
+    if (nudgeTime <= now) return;
+
+    // Rotate through a few warm copy options based on the day of week
+    const nudgeCopy = [
+      { title: 'One last thing... 📖', body: 'Maybe squeeze a few pages in before bed?' },
+      { title: 'Still time to read! 🌙', body: 'Your book is waiting — just a few pages tonight.' },
+      { title: 'Perfect night for a chapter 📚', body: 'Even a page or two counts. You\'ve got this!' },
+      { title: 'Biblo says goodnight... 🌟', body: 'But maybe read a bit first? No pressure 😊' },
+      { title: 'Wind down with a book? 📖', body: 'A few pages before sleep is the best kind of bedtime routine.' },
+      { title: 'Reading = better sleep 💤', body: 'Science says so. Biblo says so. Your book agrees.' },
+      { title: 'Just a few pages? 🌙', body: 'You\'ve got time before midnight — your streak is rooting for you.' },
+    ];
+    const copy = nudgeCopy[now.getDay() % nudgeCopy.length];
+
+    try {
+      // Cancel any existing nudge first so we don't stack them
+      await Notifications.cancelScheduledNotificationAsync(NIGHTLY_NUDGE_ID).catch(() => {});
+
+      await Notifications.scheduleNotificationAsync({
+        identifier: NIGHTLY_NUDGE_ID,
+        content: {
+          title: copy.title,
+          body: copy.body,
+          data: {
+            type: 'nightly_reading_nudge',
+            urlScheme: 'biblophile://streak/updateReadingStreak/',
+          },
+          ...(Platform.OS === 'android' && { channelId: 'reminders' }),
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: nudgeTime,
+        },
+      });
+      console.log('[Notifications] Nightly nudge scheduled for 11pm tonight');
+    } catch (error) {
+      console.error('[Notifications] Failed to schedule nightly nudge:', error);
+    }
+  }
+
+  /**
+   * Cancels today's 11pm nudge.
+   * Call this immediately after a reading session is successfully logged.
+   */
+  async cancelNightlyNudge() {
+    try {
+      await Notifications.cancelScheduledNotificationAsync(NIGHTLY_NUDGE_ID);
+      console.log('[Notifications] Nightly nudge cancelled (reading logged today)');
+    } catch {
+      // Notification may already have fired or never been scheduled — that's fine
+    }
+  }
+
+  // ─── Reading Reminder: Preferred Daily Time ───────────────────────────────
+
+  /**
+   * Schedules (or reschedules) a daily repeating notification at the user's preferred time.
+   * Only cancels PREFERRED_REMINDER_ID, not the nightly nudge.
+   */
+  async schedulePreferredReminder(hour: number, minute: number) {
+    const enabled = await this.areNotificationsEnabled();
+    if (!enabled) return { success: false, reason: 'permissions_denied' };
+
+    try {
+      // Cancel only the preferred reminder, not all notifications
+      await Notifications.cancelScheduledNotificationAsync(PREFERRED_REMINDER_ID).catch(() => {});
+
+      await Notifications.scheduleNotificationAsync({
+        identifier: PREFERRED_REMINDER_ID,
+        content: {
+          title: 'Time to read! 📖',
+          body: "Don't forget to read a few pages today!",
+          data: {
+            type: 'preferred_reading_reminder',
+            urlScheme: 'biblophile://streak/updateReadingStreak/',
+          },
+          ...(Platform.OS === 'android' && { channelId: 'reminders' }),
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
+          hour,
+          minute,
+        },
+      });
+
+      // Persist the time string for display in settings
+      const { setPreferredReminderTime } = useStore.getState();
+      const timeString = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+      setPreferredReminderTime(timeString);
+
+      console.log(`[Notifications] Preferred reminder scheduled daily at ${timeString}`);
+      return { success: true };
+    } catch (error) {
+      console.error('[Notifications] Failed to schedule preferred reminder:', error);
+      return { success: false, reason: 'schedule_failed', error };
+    }
+  }
+
+  /**
+   * Cancels the user's preferred daily reading reminder.
+   */
+  async cancelPreferredReminder() {
+    try {
+      await Notifications.cancelScheduledNotificationAsync(PREFERRED_REMINDER_ID);
+      const { setPreferredReminderTime } = useStore.getState();
+      setPreferredReminderTime(null);
+      console.log('[Notifications] Preferred reminder cancelled');
+    } catch {
+      // May not have been scheduled
+    }
+  }
 }
 
 // Export singleton instance
@@ -410,4 +543,8 @@ export const {
   resetInAppPermissions,
   getPushToken,
   wasDevicePermissionAsked,
+  scheduleNightlyNudge,
+  cancelNightlyNudge,
+  schedulePreferredReminder,
+  cancelPreferredReminder,
 } = notificationService;
