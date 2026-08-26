@@ -47,7 +47,7 @@ export default {
       "backgroundColor": "#0C0F14"
     },
     "googleServicesFile": "./google-services.json",
-    "versionCode": 19,
+    "versionCode": 20,
     package: IS_DEV
       ? "com.debar_shit.BiblophileApp.dev"
       : IS_PREVIEW
