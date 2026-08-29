@@ -68,7 +68,7 @@ export const useStreak = (accessToken, userId = null, initialAction = null, onCe
     });
 
     // Even if "already updated", we still want to refresh the state with current data
-    if (result && result.isAlreadyUpdated) {
+    if (result && (result as any).isAlreadyUpdated) {
       updateStreakState(result);
     }
 
@@ -77,23 +77,25 @@ export const useStreak = (accessToken, userId = null, initialAction = null, onCe
   }, [accessToken, updateStreakState]);
 
   // Auto-fetch on mount + handle 'updateReadingStreak' if needed
-  const hasInitialized = useRef(false);
+  const lastFetchedUserId = useRef<any>(Symbol('initial'));
 
   useEffect(() => {
-    if (!accessToken || hasInitialized.current) return;
+    if (!accessToken) return;
+
+    // Prevent duplicate fetch in Strict Mode, but allow refetch if userId changes
+    if (lastFetchedUserId.current === userId) return;
 
     const initializeStreak = async () => {
+      lastFetchedUserId.current = userId;
       await fetchStreak();
 
       if (initialAction === 'updateReadingStreak') {
         await updateStreak(onCelebration);
       }
-
-      hasInitialized.current = true;
     };
 
     initializeStreak();
-  }, [accessToken, initialAction, fetchStreak, updateStreak, onCelebration]);
+  }, [accessToken, userId, initialAction, fetchStreak, updateStreak, onCelebration]);
 
   return {
     currentStreak,
