@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import { PostHogProvider } from 'posthog-react-native'
-import { Alert, Text, TextInput } from 'react-native';
+import { Alert, AppState, Text, TextInput } from 'react-native';
 
 // Cap font scaling globally to prevent layout distortion on large system fonts
 if ((Text as any).defaultProps) {
@@ -23,7 +23,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import * as Linking from 'expo-linking';
 import Toast from 'react-native-toast-message';
 import * as Notifications from 'expo-notifications';
-import { notificationService } from './src/utils/notificationUtils';
+import { notificationService, scheduleNightlyNudge } from './src/utils/notificationUtils';
 import { initialize } from '@microsoft/react-native-clarity';
 import * as Font from 'expo-font';
 import {useStore} from './src/store/store';
@@ -208,18 +208,42 @@ const App = () => {
   //check for appstores update and implement accordingly end
 
   // for expo notifications start
-  // Initialize notification service
+  // Initialize notification service + schedule nightly nudge if user hasn't read today
   useEffect(() => {
     async function initializeNotifications() {
       try {
         await notificationService.initialize();
         console.log('Notification service initialized');
+
+        // Schedule the 11pm nightly nudge if the user hasn't read today.
+        // The nudge is cancelled in CurrentReadsSection when reading is logged.
+        const { lastReadDate, isAuthenticated } = useStore.getState();
+        const todayStr = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+        if (isAuthenticated && lastReadDate !== todayStr) {
+          await scheduleNightlyNudge();
+        }
       } catch (error) {
         console.error('Error initializing notification service:', error);
       }
     }
 
     initializeNotifications();
+  }, []);
+
+  // Re-evaluate nightly nudge whenever the app comes back to the foreground
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', async (nextState) => {
+      if (nextState === 'active') {
+        const { lastReadDate, isAuthenticated } = useStore.getState();
+        const todayStr = new Date().toISOString().slice(0, 10);
+        if (isAuthenticated && lastReadDate !== todayStr) {
+          await scheduleNightlyNudge();
+        }
+        // If they already read today, the nudge was already cancelled in CurrentReadsSection
+        // so nothing to do here — just skip rescheduling
+      }
+    });
+    return () => subscription.remove();
   }, []);
 
   //handle deep links on app launch
@@ -274,11 +298,6 @@ const App = () => {
   }, []);
   // for expo notifications end
 
-  //temporarily clear out all prev notifications start
-  useEffect(() => {
-    notificationService.cancelAllNotifications();
-  }, []);
-  //temporarily clear out all prev notifications end
 
   if (!fontsLoaded) {
     return null;

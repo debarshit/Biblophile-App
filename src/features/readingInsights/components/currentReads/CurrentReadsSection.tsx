@@ -10,7 +10,7 @@ import SessionPrompt from './SessionPrompt';
 import { useStreak } from '../../../../hooks/useStreak';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useAnalytics } from '../../../../utils/analytics';
-import { dismissTimerNotification, updateTimerNotification } from '../../../../utils/notificationUtils';
+import { dismissTimerNotification, updateTimerNotification, cancelNightlyNudge } from '../../../../utils/notificationUtils';
 import CurrentlyReadingBooks from './CurrentlyReadingBooks';
 import PagesReadInputForm from './PagesReadInputForm';
 import SessionControls from './SessionControls';
@@ -54,6 +54,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const startingPage = useStore((state: any) => state.sessionStartPage);
   const setStartPage = useStore((state: any) => state.setStartPage);
   const clearSession = useStore((state: any) => state.clearSession);
+  const setLastReadDate = useStore((state: any) => state.setLastReadDate);
 
   const { updateStreak } = useStreak(userDetails[0]?.accessToken);
   const { COLORS } = useTheme();
@@ -235,13 +236,18 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   }, []);
 
   const handleBookStatusUpdate = useCallback(async () => {
+    // Mark today as a read day and cancel tonight's nudge — user has already read
+    const todayStr = new Date().toISOString().slice(0, 10);
+    setLastReadDate(todayStr);
+    cancelNightlyNudge();
+
     setRefreshData(prev => !prev);
     setShowDailyNoteBottomSheet(true);
     await fetchPagesRead();
     await updateStreak(null);
     checkActiveSession();
     handleCloseBookStatusModal();
-  }, [fetchPagesRead, updateStreak, checkActiveSession, handleCloseBookStatusModal]);
+  }, [fetchPagesRead, updateStreak, checkActiveSession, handleCloseBookStatusModal, setLastReadDate]);
 
   const handleEditInstance = useCallback((instance: any) => {
     setSelectedBookId(instance.bookId || selectedBookId);

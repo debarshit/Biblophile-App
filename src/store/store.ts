@@ -28,6 +28,9 @@ interface StoreState {
   };
   unreadNotificationCount: number;
   themePreference: ThemePreference;
+  lastReadDate: string | null;
+  reminderSetupShown: boolean;
+  preferredReminderTime: string | null;
 
   login: (userData: any) => Promise<void>;
   logout: () => void;
@@ -53,6 +56,9 @@ interface StoreState {
   setUnreadNotificationCount: (count: number) => void;
   fetchUnreadNotificationCount: () => Promise<void>;
   setThemePreference: (theme: ThemePreference) => void;
+  setLastReadDate: (date: string) => void;
+  setReminderSetupShown: (shown: boolean) => void;
+  setPreferredReminderTime: (time: string | null) => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -78,6 +84,9 @@ export const useStore = create<StoreState>()(
         },
         unreadNotificationCount: 0,
         themePreference: 'system',
+        lastReadDate: null,
+        reminderSetupShown: false,
+        preferredReminderTime: null,
         
         login: async (userData) => {
           await set(state => ({
@@ -354,6 +363,15 @@ export const useStore = create<StoreState>()(
           },
           setThemePreference: (theme) => {
             set({ themePreference: theme });
+          },
+          setLastReadDate: (date: string) => {
+            set({ lastReadDate: date });
+          },
+          setReminderSetupShown: (shown: boolean) => {
+            set({ reminderSetupShown: shown });
+          },
+          setPreferredReminderTime: (time: string | null) => {
+            set({ preferredReminderTime: time });
           },
       }),
       {

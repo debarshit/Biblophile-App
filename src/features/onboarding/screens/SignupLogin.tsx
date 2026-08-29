@@ -20,6 +20,7 @@ import CustomPicker from '../../../components/CustomPickerComponent';
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeText } from '../../../components/safeText';
+import ReadingReminderSetupModal from '../components/ReadingReminderSetupModal';
 
 const EyeIcon: React.FC<{ visible: boolean; onPress: () => void; styles: any }> = ({
     visible,
@@ -68,6 +69,9 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const [signupMessage, setSignupMessage] = useState({ text: '', color: COLORS.primaryBlackHex });
     const [isLoading, setIsLoading] = useState(false);
     const [newsletterOptIn, setNewsletterOptIn] = useState(true);
+    const [showReminderModal, setShowReminderModal] = useState(false);
+
+    const reminderSetupShown = useStore((state: any) => state.reminderSetupShown);
 
     // Refs for toolbar prev/next focus management
     const inputRefs = useRef<Record<string, TextInput | null>>({});
@@ -223,6 +227,11 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                 setSignupPhone(''); setSignupPass(''); setSignupPassCnf('');
                 setSource(null); setNewsletterOptIn(true);
                 analytics.signup('email');
+
+                // Show reading reminder setup modal (only once per user)
+                if (!reminderSetupShown) {
+                  setShowReminderModal(true);
+                }
             } else {
                 setSignupMessage({ text: data.data.message, color: COLORS.primaryRedHex });
             }
@@ -504,6 +513,12 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                 isPrevDisabled={isFirstInput}
                 isNextDisabled={isLastInput}
                 onDoneCallback={() => inputRefs.current[focusedInput]?.blur()}
+            />
+
+            {/* Reading reminder setup — shown once after successful signup */}
+            <ReadingReminderSetupModal
+                visible={showReminderModal}
+                onDone={() => setShowReminderModal(false)}
             />
         </>
     );
