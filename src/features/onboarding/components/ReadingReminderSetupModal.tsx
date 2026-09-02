@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { notificationService } from '../../../utils/notificationUtils';
 import { useStore } from '../../../store/store';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
+import { useAnalytics } from '../../../utils/analytics';
 
 interface ReadingReminderSetupModalProps {
   visible: boolean;
@@ -25,8 +26,15 @@ const ReadingReminderSetupModal: React.FC<ReadingReminderSetupModalProps> = ({
 }) => {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const analytics = useAnalytics();
 
   const setReminderSetupShown = useStore((state: any) => state.setReminderSetupShown);
+
+  useEffect(() => {
+    if (visible) {
+      analytics.track('reminder_setup_modal_viewed');
+    }
+  }, [visible]);
 
   // Default to 9pm as a sensible first suggestion
   const defaultTime = new Date();
@@ -47,6 +55,11 @@ const ReadingReminderSetupModal: React.FC<ReadingReminderSetupModalProps> = ({
         selectedTime.getHours(),
         selectedTime.getMinutes()
       );
+      analytics.track('reminder_setup_completed', {
+        time: formattedTime,
+        hour: selectedTime.getHours(),
+        minute: selectedTime.getMinutes(),
+      });
     } catch (error) {
       console.error('[ReadingReminderSetupModal] Failed to schedule reminder:', error);
     } finally {
@@ -57,6 +70,7 @@ const ReadingReminderSetupModal: React.FC<ReadingReminderSetupModalProps> = ({
   };
 
   const handleSkip = () => {
+    analytics.track('reminder_setup_skipped');
     setReminderSetupShown(true);
     onDone();
   };

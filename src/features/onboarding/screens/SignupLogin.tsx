@@ -148,7 +148,11 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
         setMascotEmotion((e) => (e === 'eyesClosed' ? 'eyesPeeping' : 'eyesClosed'));
     };
 
-    const toggleRegistration = () => setIsRegistration((r) => !r);
+    const toggleRegistration = () => {
+        const nextMode = !isRegistration;
+        setIsRegistration(nextMode);
+        analytics.track('auth_mode_switched', { isRegistration: nextMode });
+    };
 
     const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
     const validatePhone = (phone: string) => /^\d{10}$/.test(phone);
@@ -156,9 +160,11 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const handleLogin = async () => {
         if (!loginEmail || !loginPass) {
             setLoginMessage({ text: 'Please fill all the details', color: COLORS.primaryRedHex });
+            analytics.track('login_failed', { error: 'Validation Error: Missing details' });
             return;
         }
         setIsLoading(true);
+        analytics.track('login_initiated');
         try {
             const { data } = await instance.post(requests.userLogin, {
                 email: loginEmail,
@@ -187,12 +193,15 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                 analytics.login('email');
             } else {
                 setLoginMessage({ text: data.data.message, color: COLORS.primaryRedHex });
+                analytics.track('login_failed', { error: data.data.message });
             }
         } catch (error: any) {
+            const errMsg = error?.response?.data?.message || error.message || 'There was an error! Please try again.';
             setLoginMessage({
-                text: error?.response?.data?.message || 'There was an error! Please try again.',
+                text: errMsg,
                 color: COLORS.primaryRedHex,
             });
+            analytics.track('login_failed', { error: errMsg });
         } finally {
             setIsLoading(false);
         }
@@ -201,13 +210,27 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const handleSignup = async () => {
         if (!signupName || !signupUserName || !signupEmail || !signupPass || !signupPassCnf || !source) {
             alert('Please fill all the details!');
+            analytics.track('signup_failed', { error: 'Validation Error: Incomplete form' });
             return;
         }
-        if (!validateEmail(signupEmail)) { alert('Invalid email format!'); return; }
-        if (signupPhone && !validatePhone(signupPhone)) { alert('Invalid phone number format!'); return; }
-        if (signupPass !== signupPassCnf) { alert("Passwords don't match"); return; }
+        if (!validateEmail(signupEmail)) {
+            alert('Invalid email format!');
+            analytics.track('signup_failed', { error: 'Validation Error: Invalid email' });
+            return;
+        }
+        if (signupPhone && !validatePhone(signupPhone)) {
+            alert('Invalid phone number format!');
+            analytics.track('signup_failed', { error: 'Validation Error: Invalid phone number' });
+            return;
+        }
+        if (signupPass !== signupPassCnf) {
+            alert("Passwords don't match");
+            analytics.track('signup_failed', { error: "Validation Error: Passwords don't match" });
+            return;
+        }
 
         setIsLoading(true);
+        analytics.track('signup_initiated');
         try {
             const payload: any = {
                 name: signupName,
@@ -234,12 +257,15 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                 }
             } else {
                 setSignupMessage({ text: data.data.message, color: COLORS.primaryRedHex });
+                analytics.track('signup_failed', { error: data.data.message });
             }
         } catch (error: any) {
+            const errMsg = error?.response?.data?.message || error.message || 'Signup failed. Try again.';
             setSignupMessage({
-                text: error?.response?.data?.message || 'Signup failed. Try again.',
+                text: errMsg,
                 color: COLORS.primaryRedHex,
             });
+            analytics.track('signup_failed', { error: errMsg });
         } finally {
             setIsLoading(false);
         }
@@ -248,13 +274,17 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     const forgotPassword = async () => {
         if (!loginEmail) {
             setLoginMessage({ text: 'Please fill the email address', color: COLORS.primaryRedHex });
+            analytics.track('forgot_password_failed', { error: 'Validation Error: Email missing' });
             return;
         }
+        analytics.track('forgot_password_initiated', { email: loginEmail });
         try {
             await instance.post(requests.forgotPassword, { email: loginEmail });
             setLoginMessage({ text: 'Reset link has been sent to this email id.', color: COLORS.primaryRedHex });
-        } catch {
+            analytics.track('forgot_password_success');
+        } catch (error: any) {
             setLoginMessage({ text: 'There was an error! Please try again.', color: COLORS.primaryRedHex });
+            analytics.track('forgot_password_failed', { error: error?.message || 'Request failed' });
         }
     };
 

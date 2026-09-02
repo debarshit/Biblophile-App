@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { StyleSheet, View, Dimensions, Text} from 'react-native';
 import Onboarding from 'react-native-onboarding-swiper';
 import LottieView from 'lottie-react-native';
@@ -6,17 +6,33 @@ import { COLORS, FONTSIZE } from '../../../theme/theme';
 import Mascot from '../../../components/Mascot';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAnalytics } from '../../../utils/analytics';
 
 const { width, height } = Dimensions.get("window");
 
 const OnboardingScreen = ({ navigation }: any) => {
   const { COLORS } = useTheme();
+  const analytics = useAnalytics();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+
+  useEffect(() => {
+    analytics.track('onboarding_viewed');
+  }, []);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.primaryBlackHex }}>
       <Onboarding
-        onDone={() => navigation.navigate('SignupLogin')}
-        onSkip={() => navigation.navigate('SignupLogin')}
+        onDone={() => {
+          analytics.track('onboarding_completed');
+          navigation.navigate('SignupLogin');
+        }}
+        onSkip={() => {
+          analytics.track('onboarding_skipped');
+          navigation.navigate('SignupLogin');
+        }}
+        pageIndexCallback={(index) => {
+          analytics.track('onboarding_page_viewed', { pageIndex: index });
+        }}
         skipLabel={'Skip '} //extra space added to prevent clipping on Android 15+ (search this comment to find other temp workarounds), along with safeText.tsx component
         bottomBarColor={COLORS.primaryBlackHex}
         pages={[

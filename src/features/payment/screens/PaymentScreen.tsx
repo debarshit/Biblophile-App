@@ -77,10 +77,12 @@ const PaymentScreen = ({navigation, route}: any) => {
       navigation.push('Profile', {
         update: "Please fill your address",
       });
+      analytics.track('checkout_failed', { error: 'Address missing' });
     }
     else {
       try {
         for (const data of route.params.cart) {
+          const itemAmount = (data.prices[0].price * data.prices[0].quantity);
           const placeOrderResponse = await instance.post(requests.placeOrder, {
             custName: userDetails[0].userName,
             custPhone: userDetails[0].userPhone,
@@ -90,7 +92,7 @@ const PaymentScreen = ({navigation, route}: any) => {
             payment: paymentStatus,
             orderMode: data.prices[0].size,
             custOrderDuration: data.prices[0].quantity, //duration for rent and qty for buy
-            amount: (data.prices[0].price*data.prices[0].quantity),
+            amount: itemAmount,
             securityDeposit: parseFloat(securityDeposit),
             deliveryOption: deliveryOptions.deliveryOption,
             pickupLocationId: deliveryOptions.pickupLocationId,
@@ -106,7 +108,7 @@ const PaymentScreen = ({navigation, route}: any) => {
           if (response.data.message === 1) {
             analytics.purchase({
               transaction_id: response.data.orderId || Date.now().toString(), // fallback if API doesn’t return orderId
-              value: (data.prices[0].price * data.prices[0].quantity),
+              value: itemAmount,
               currency: 'INR',
               items: [
                 {
@@ -118,6 +120,12 @@ const PaymentScreen = ({navigation, route}: any) => {
                 }
               ],
             });
+            analytics.track('checkout_completed', {
+              orderId: response.data.orderId,
+              amount: itemAmount,
+              bookName: data.name,
+              paymentMethod: paymentMode,
+            });
             setShowAnimation(true);
             clearCart();
             calculateCartPrice();
@@ -128,10 +136,12 @@ const PaymentScreen = ({navigation, route}: any) => {
           } else {
             alert(response.data.message);
             console.log(response);
+            analytics.track('checkout_failed', { error: response.data.message });
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.log(error);
+        analytics.track('checkout_failed', { error: error?.message || 'Request failed' });
       }
     }
   };
@@ -163,6 +173,7 @@ const PaymentScreen = ({navigation, route}: any) => {
               },
             ],
           });
+          analytics.track('subscription_completed', { planId: route.params.subscription, amount });
           //navigate to subscription page or just do navigation.back
           setShowAnimation(true);
             setTimeout(() => {
@@ -173,10 +184,12 @@ const PaymentScreen = ({navigation, route}: any) => {
         } else {
           alert(response.data.message);
           console.log(response);
+          analytics.track('subscription_failed', { planId: route.params.subscription, error: response.data.message });
         }
       
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      analytics.track('subscription_failed', { planId: route.params.subscription, error: error?.message || 'Request failed' });
     }
   };
 
@@ -198,8 +211,10 @@ const PaymentScreen = ({navigation, route}: any) => {
       navigation.push('Profile', {
         update: 'Please fill your address',
       });
+      analytics.track('payment_failed', { error: 'Address missing' });
     } else {
       if (amount > 0) {
+        analytics.track('payment_initiated', { amount });
         try {
           const paymentRequestResponse = await instance.post(requests.paymentRequest, {
             customerName: userDetails[0].userName,
@@ -211,6 +226,7 @@ const PaymentScreen = ({navigation, route}: any) => {
             navigation.push('PaymentGateway', {
               url: response.data.link_url,
             });
+            analytics.track('payment_gateway_redirected', { amount });
 
             const link_id = response.data.link_id;
 
@@ -231,6 +247,7 @@ const PaymentScreen = ({navigation, route}: any) => {
                 const statusResponseOutput = statusResponse.data;
                 if (statusResponseOutput.message == 'Payment recorded successfully. You can close this window.') {
                   clearInterval(pollPaymentStatus);
+                  analytics.track('payment_successful', { amount });
                   if (action) {
                     navigation.navigate('History');
                   } else {
@@ -250,17 +267,19 @@ const PaymentScreen = ({navigation, route}: any) => {
             }, 5000);
 
             // Stop polling after 5 minutes (300000ms)
-          setTimeout(() => {
-            timeoutReached = true;
-            clearInterval(pollPaymentStatus);
-            // alert('Payment status check timed out. Please try again later.');
-          }, 300000);
+            setTimeout(() => {
+              timeoutReached = true;
+              clearInterval(pollPaymentStatus);
+              analytics.track('payment_timed_out', { amount });
+            }, 300000);
 
           } else {
             alert('Network error! Please try again.');
+            analytics.track('payment_failed', { error: 'Failed to generate link_url' });
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error occurred during payment:', error);
+          analytics.track('payment_failed', { error: error?.message || 'Request failed' });
         }
       } else {
         placeOrder(0, depositAmount);
@@ -319,6 +338,7 @@ const PaymentScreen = ({navigation, route}: any) => {
               key={data.name}
               onPress={() => {
                 setPaymentMode(data.name);
+                analytics.track('payment_method_selected', { method: data.name });
               }}>
               <PaymentMethod
                 paymentMode={paymentMode}
