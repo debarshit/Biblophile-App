@@ -14,6 +14,13 @@ export const PERMISSION_STATES = {
 class NotificationService {
   constructor() {
     this.isInitialized = false;
+    // Bind all prototype methods to this instance so destructured exports preserve 'this'
+    const proto = Object.getPrototypeOf(this);
+    Object.getOwnPropertyNames(proto).forEach((key) => {
+      if (key !== 'constructor' && typeof (this as any)[key] === 'function') {
+        (this as any)[key] = (this as any)[key].bind(this);
+      }
+    });
   }
 
   // Initialize the service (call this once in App.js)
@@ -439,7 +446,7 @@ class NotificationService {
           body: copy.body,
           data: {
             type: 'nightly_reading_nudge',
-            urlScheme: 'biblophile://streak/updateReadingStreak/',
+            urlScheme: 'biblophile://',
           },
           ...(Platform.OS === 'android' && { channelId: 'reminders' }),
         },
