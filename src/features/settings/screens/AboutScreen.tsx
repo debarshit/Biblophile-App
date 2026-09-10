@@ -142,7 +142,7 @@ const AboutScreen = () => {
         </View>
         
         <View style={styles.footer}>
-          <Text style={styles.footerText}>© 2025 Biblophile. All rights reserved.</Text>
+          <Text style={styles.footerText}>© 2026 Biblophile. All rights reserved.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

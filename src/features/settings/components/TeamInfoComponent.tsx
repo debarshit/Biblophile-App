@@ -27,14 +27,16 @@ const TeamInfoComponent = () => {
     useEffect(() => {
         const fetchReadsForTeam = async () => {
             try {
-            const [debarshiReads, rashmiReads] = await Promise.all([
+            const [debarshiReads, rashmiReads, jashanReads] = await Promise.all([
                 fetchCurrentReads(1),
-                fetchCurrentReads(7)
+                fetchCurrentReads(7),
+                fetchCurrentReads(176),
             ]);
             
             setCurrentReads({
                 Debarshi: debarshiReads,
                 Rashmi: rashmiReads,
+                Jashan: jashanReads,
             });
             } catch (error) {
             console.error('Error fetching reads:', error);
@@ -85,16 +87,23 @@ const TeamInfoComponent = () => {
         {renderTeamMember(
             'Debarshi Das',
             'https://media.istockphoto.com/id/1097490360/vector/vector-illustration-of-cute-black-cat.jpg?s=612x612&w=0&k=20&c=Ef0qYl79aZJ6NJXJVbJ0onjXVNnSyqrN_TKPjieAIGE=',
-            'Maintains the site, app, and other technical aspects.',
+            'Does whatever needs to be done. Everything, everywhere, all at once.',
             currentReads['Debarshi'],
             'Likes to sleep in free time.'
         )}
         {renderTeamMember(
             'Rashmi Ramesh',
             'https://img.freepik.com/premium-vector/cute-cartoon-cat-vector-illustration-isolated-white-background_1151-48146.jpg',
-            'Looks after design, social media, and operations.',
+            'Looks after ui, and creative aspects.',
             currentReads['Rashmi'],
             'Likes to chatter in free time.'
+        )}
+        {renderTeamMember(
+            'Jashan Garg',
+            'https://static.vecteezy.com/system/resources/thumbnails/061/678/038/small/orange-tabby-cat-sitting-with-closed-eyes-calm-and-peaceful-feline-illustration-vector.jpg',
+            'Handles marketing and community engagement.',
+            currentReads['Jashan'],
+            'Likes to binge Netflix and play video games.'
         )}
         </View>
     </View>
