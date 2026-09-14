@@ -119,6 +119,24 @@ const Spotlights: React.FC<SpotlightsProps> = ({ spotlights = [] }) => {
     [userDetails]
   );
 
+  const trackImpressionRef = useRef(trackImpression);
+  useEffect(() => {
+    trackImpressionRef.current = trackImpression;
+  }, [trackImpression]);
+
+  // Only track impression when item is actually visible on screen (at least 50% in view)
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: Array<{ item: SpotlightItem }> }) => {
+    viewableItems.forEach(({ item }) => {
+      if (item) {
+        trackImpressionRef.current?.(item);
+      }
+    });
+  }).current;
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+  }).current;
+
   // Auto-scroll the list gently
   useEffect(() => {
     if (listLength > 1) {
@@ -252,12 +270,10 @@ const Spotlights: React.FC<SpotlightsProps> = ({ spotlights = [] }) => {
           ref={flatListRef}
           data={filteredSpotlights}
           horizontal
-          renderItem={({ item }) => {
-            // Track impression when card renders
-            trackImpression(item);
-
-            return (
-              <TouchableOpacity
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          renderItem={({ item }) => (
+            <TouchableOpacity
                 activeOpacity={0.85}
                 style={styles.carouselItem}
                 onPress={() => {
@@ -309,8 +325,7 @@ const Spotlights: React.FC<SpotlightsProps> = ({ spotlights = [] }) => {
                   </View>
                 </View>
               </TouchableOpacity>
-            );
-          }}
+          )}
           keyExtractor={(item, index) => `${item.Id}-${index}`}
           showsHorizontalScrollIndicator={false}
           snapToInterval={330}
