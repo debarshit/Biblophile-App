@@ -295,7 +295,12 @@ const DetailsScreen = ({navigation, route}: any) => {
         return (
           <View style={styles.TabContent}>
             <Text style={styles.InfoTitle}>Read Together</Text>
-            <ReadTogetherLinks id={canonicalBookId} isGoogleBook={isGoogleBook} product={product} />
+            <ReadTogetherLinks
+              id={canonicalBookId}
+              isGoogleBook={isGoogleBook}
+              product={product}
+              onBookPromoted={promoteToInternalBook}
+            />
           </View>
         );
       default:
