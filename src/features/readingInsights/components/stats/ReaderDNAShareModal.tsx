@@ -53,9 +53,9 @@ const ReaderDNAShareModal: React.FC<ReaderDNAShareModalProps> = ({
   const analytics = useAnalytics();
   const userDetails = useStore((state: any) => state.userDetails);
 
-  const myUsername = userDetails?.[0]?.userName || userDetails?.[0]?.userUniqueUserName || '';
-  const myName = userDetails?.[0]?.name || 'Reader';
-  const myProfilePic = userDetails?.[0]?.userProfilePic;
+  const myUsername = userDetails?.[0]?.userUniqueUserName || '';
+  const myName = userDetails?.[0]?.userName || 'Reader';
+  const myProfilePic = userDetails?.[0]?.profilePic;
 
   const storyRef = useRef<View>(null);
   const [isSharing, setIsSharing] = useState(false);
