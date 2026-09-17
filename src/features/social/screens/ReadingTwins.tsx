@@ -6,8 +6,10 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   RefreshControl,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import instance from '../../../services/axios';
@@ -179,6 +181,52 @@ const ReadingTwins: React.FC = () => {
   const [isGeneratingStory, setIsGeneratingStory] = useState(false);
   const storyRef = useRef<View>(null);
 
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipOpacity = useRef(new Animated.Value(0)).current;
+  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const hideTooltip = useCallback(() => {
+    if (tooltipTimeoutRef.current) {
+      clearTimeout(tooltipTimeoutRef.current);
+      tooltipTimeoutRef.current = null;
+    }
+    Animated.timing(tooltipOpacity, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowTooltip(false);
+    });
+  }, [tooltipOpacity]);
+
+  const showInfoTooltip = useCallback(() => {
+    if (showTooltip) {
+      hideTooltip();
+      return;
+    }
+    if (tooltipTimeoutRef.current) {
+      clearTimeout(tooltipTimeoutRef.current);
+    }
+    setShowTooltip(true);
+    Animated.timing(tooltipOpacity, {
+      toValue: 1,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+
+    tooltipTimeoutRef.current = setTimeout(() => {
+      hideTooltip();
+    }, 3500);
+  }, [showTooltip, hideTooltip, tooltipOpacity]);
+
+  useEffect(() => {
+    return () => {
+      if (tooltipTimeoutRef.current) {
+        clearTimeout(tooltipTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const fetchTwins = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
@@ -269,84 +317,115 @@ const ReadingTwins: React.FC = () => {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          colors={[COLORS.primaryOrangeHex]}
-          tintColor={COLORS.primaryOrangeHex}
-        />
-      }
-    >
-      {/* Header */}
-      <View style={styles.headerSection}>
-        <Text style={styles.headerTitle}>Reading Twins</Text>
-        <Text style={styles.headerSubtitle}>
-          People who've read the most books in common with you
-        </Text>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoText}>💡 Scores update nightly</Text>
-        </View>
-
-        {/* Invite Friends Banner */}
-        {myUsername ? (
-          <View style={styles.inviteBanner}>
-            <View style={styles.inviteBannerContent}>
-              <Text style={styles.inviteBannerTitle}>Are your friends your twins?</Text>
-              <Text style={styles.inviteBannerSubtitle}>
-                Share your personal link and let friends compare their taste with yours!
-              </Text>
+    <View style={styles.rootContainer}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        onScrollBeginDrag={hideTooltip}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primaryOrangeHex]}
+            tintColor={COLORS.primaryOrangeHex}
+          />
+        }
+      >
+        {/* Header */}
+        <View style={styles.headerSection}>
+          <View style={styles.titleRow}>
+            <Text style={styles.headerTitle}>Reading Twins</Text>
+            <View style={styles.betaBadge}>
+              <Text style={styles.betaText}>Beta</Text>
             </View>
-            <TouchableOpacity
-              style={styles.inviteBannerBtn}
-              onPress={handleShareInviteLink}
-              activeOpacity={0.85}
-            >
-              <Feather name="share-2" size={14} color={COLORS.primaryWhiteHex} />
-              <Text style={styles.inviteBannerBtnText}>Compare With Friends</Text>
-            </TouchableOpacity>
+            <View style={styles.infoWrapper}>
+              <TouchableOpacity
+                style={styles.infoButton}
+                onPress={showInfoTooltip}
+                activeOpacity={0.7}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                accessibilityLabel="Scores update info"
+              >
+                <Feather name="info" size={15} color={COLORS.secondaryLightGreyHex} />
+              </TouchableOpacity>
+
+              {showTooltip && (
+                <Animated.View style={[styles.tooltipBubble, { opacity: tooltipOpacity }]}>
+                  <View style={styles.tooltipArrow} />
+                  <Text style={styles.tooltipText}>Scores update nightly</Text>
+                </Animated.View>
+              )}
+            </View>
           </View>
-        ) : null}
-      </View>
 
-      {/* Twins list */}
-      {twins.length === 0 ? (
-        <EmptyTwins styles={styles} />
-      ) : (
-        twins.map(twin => (
-          <TwinCard
-            key={twin.userId}
-            twin={twin}
-            COLORS={COLORS}
-            styles={styles}
-            onPress={() => navigation.push('ProfileSummary', { username: twin.userName })}
-            onShare={handleShareTwin}
-          />
-        ))
-      )}
+          <Text style={styles.headerSubtitle}>
+            People who've read the most books in common with you
+          </Text>
 
-      {/* Offscreen 9:16 story container for captureRef */}
-      {sharingTwin && (
-        <View style={styles.offscreenStory} pointerEvents="none">
-          <ReadingTwinStoryTemplate
-            ref={storyRef}
-            myName={myName}
-            myUserName={myUsername}
-            myProfilePic={myProfilePic}
-            twinName={sharingTwin.name}
-            twinUserName={sharingTwin.userName}
-            twinProfilePic={sharingTwin.userProfilePic}
-            matchScore={sharingTwin.matchScore}
-            sharedWorks={sharingTwin.sharedWorks}
-            covers={sharingTwin.theyAlsoRead}
-          />
+          {/* Invite Friends Banner */}
+          {myUsername ? (
+            <View style={styles.inviteBanner}>
+              <View style={styles.inviteBannerContent}>
+                <Text style={styles.inviteBannerTitle}>Are your friends your twins?</Text>
+                <Text style={styles.inviteBannerSubtitle}>
+                  Share your personal link and let friends compare their taste with yours!
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.inviteBannerBtn}
+                onPress={handleShareInviteLink}
+                activeOpacity={0.85}
+              >
+                <Feather name="share-2" size={14} color={COLORS.primaryWhiteHex} />
+                <Text style={styles.inviteBannerBtnText}>Compare With Friends</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
         </View>
+
+        {/* Twins list */}
+        {twins.length === 0 ? (
+          <EmptyTwins styles={styles} />
+        ) : (
+          twins.map(twin => (
+            <TwinCard
+              key={twin.userId}
+              twin={twin}
+              COLORS={COLORS}
+              styles={styles}
+              onPress={() => navigation.push('ProfileSummary', { username: twin.userName })}
+              onShare={handleShareTwin}
+            />
+          ))
+        )}
+
+        {/* Offscreen 9:16 story container for captureRef */}
+        {sharingTwin && (
+          <View style={styles.offscreenStory} pointerEvents="none">
+            <ReadingTwinStoryTemplate
+              ref={storyRef}
+              myName={myName}
+              myUserName={myUsername}
+              myProfilePic={myProfilePic}
+              twinName={sharingTwin.name}
+              twinUserName={sharingTwin.userName}
+              twinProfilePic={sharingTwin.userProfilePic}
+              matchScore={sharingTwin.matchScore}
+              sharedWorks={sharingTwin.sharedWorks}
+              covers={sharingTwin.theyAlsoRead}
+            />
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Backdrop to dismiss tooltip on tapping elsewhere */}
+      {showTooltip && (
+        <TouchableWithoutFeedback onPress={hideTooltip}>
+          <View style={styles.backdrop} />
+        </TouchableWithoutFeedback>
       )}
-    </ScrollView>
+    </View>
   );
 };
 
@@ -356,6 +435,11 @@ export default ReadingTwins;
 
 const createStyles = (COLORS: any) =>
   StyleSheet.create({
+    rootContainer: {
+      flex: 1,
+      backgroundColor: COLORS.primaryBlackHex,
+      position: 'relative',
+    },
     container: {
       flex: 1,
       backgroundColor: COLORS.primaryBlackHex,
@@ -374,12 +458,82 @@ const createStyles = (COLORS: any) =>
     headerSection: {
       paddingTop: SPACING.space_20,
       paddingBottom: SPACING.space_20,
+      zIndex: 10,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: SPACING.space_8,
     },
     headerTitle: {
       fontSize: FONTSIZE.size_28,
       fontFamily: FONTFAMILY.poppins_bold,
       color: COLORS.primaryWhiteHex,
-      marginBottom: SPACING.space_8,
+    },
+    betaBadge: {
+      backgroundColor: COLORS.primaryOrangeHex + '20',
+      borderColor: COLORS.primaryOrangeHex + '60',
+      borderWidth: 1,
+      borderRadius: BORDERRADIUS.radius_4,
+      paddingHorizontal: 6,
+      paddingVertical: 1,
+      marginLeft: SPACING.space_8,
+      alignSelf: 'center',
+    },
+    betaText: {
+      fontSize: FONTSIZE.size_10,
+      fontFamily: FONTFAMILY.poppins_semibold,
+      color: COLORS.primaryOrangeHex,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    infoWrapper: {
+      position: 'relative',
+      zIndex: 20,
+    },
+    infoButton: {
+      padding: SPACING.space_4,
+      marginLeft: 6,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    tooltipBubble: {
+      position: 'absolute',
+      top: 30,
+      right: -4,
+      backgroundColor: COLORS.secondaryDarkGreyHex,
+      borderRadius: BORDERRADIUS.radius_8,
+      paddingVertical: 6,
+      paddingHorizontal: SPACING.space_10,
+      borderWidth: 1,
+      borderColor: COLORS.primaryOrangeHex + '40',
+      zIndex: 100,
+      elevation: 8,
+      shadowColor: COLORS.primaryBlackHex,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 6,
+      flexDirection: 'row',
+      alignItems: 'center',
+      minWidth: 165,
+    },
+    tooltipArrow: {
+      position: 'absolute',
+      top: -5,
+      right: 8,
+      width: 10,
+      height: 10,
+      backgroundColor: COLORS.secondaryDarkGreyHex,
+      borderLeftWidth: 1,
+      borderTopWidth: 1,
+      borderLeftColor: COLORS.primaryOrangeHex + '40',
+      borderTopColor: COLORS.primaryOrangeHex + '40',
+      transform: [{ rotate: '45deg' }],
+    },
+    tooltipText: {
+      fontSize: FONTSIZE.size_12,
+      fontFamily: FONTFAMILY.poppins_regular,
+      color: COLORS.primaryWhiteHex,
     },
     headerSubtitle: {
       fontSize: FONTSIZE.size_14,
@@ -388,17 +542,10 @@ const createStyles = (COLORS: any) =>
       lineHeight: 22,
       marginBottom: SPACING.space_12,
     },
-    infoRow: {
-      backgroundColor: COLORS.secondaryDarkGreyHex,
-      borderRadius: BORDERRADIUS.radius_8,
-      paddingVertical: SPACING.space_8,
-      paddingHorizontal: SPACING.space_12,
-      alignSelf: 'flex-start',
-    },
-    infoText: {
-      fontSize: FONTSIZE.size_12,
-      fontFamily: FONTFAMILY.poppins_regular,
-      color: COLORS.secondaryLightGreyHex,
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'transparent',
+      zIndex: 50,
     },
 
     // Invite banner
