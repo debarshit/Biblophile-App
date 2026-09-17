@@ -41,11 +41,11 @@ const SocialScreen = ({ route }) => {
     //   component: BookClubsIndex,
     //   props: {}, // (optional) additional props
     // },
-    // {
-    //     tabLabel: 'Reading Twins',
-    //     component: ReadingTwins,
-    //     props: {},
-    // },
+    {
+        tabLabel: 'Reading Twins ',
+        component: ReadingTwins,
+        props: {},
+    },
   ];
 
   const initialIndex = data.findIndex(item => item.tabLabel === initialTab);

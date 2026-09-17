@@ -46,6 +46,7 @@ import NotesScreen from './src/features/reading/screens/NotesScreen';
 import DurationTrackScreen from './src/features/reading/screens/DurationTrackScreen';
 import LibraryScreen from './src/features/bookshop/screens/LibraryScreen';
 import SocialScreen from './src/features/social/screens/SocialScreen';
+import ReadingTwins from './src/features/social/screens/ReadingTwins';
 import CartScreen from './src/features/bookshop/screens/CartScreen';
 import OrderHistoryScreen from './src/features/bookshop/screens/OrderHistoryScreen';
 import CommonWebViewScreen from './src/features/discover/screens/CommonWebViewScreen';
@@ -344,6 +345,7 @@ const App = () => {
                     <Stack.Screen name="FriendsList" component={FriendsListScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="Subscription" component={SubscriptionScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="Social" component={SocialScreen} options={{animation: 'slide_from_bottom'}} />
+                    <Stack.Screen name="ReadingTwins" component={ReadingTwins} options={{animation: 'slide_from_bottom'}} />
                     <Stack.Screen name="Cart" component={CartScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="History" component={OrderHistoryScreen} options={{animation: 'slide_from_right'}} />
                     <Stack.Screen name="CommonWebView" component={CommonWebViewScreen} options={{animation: 'slide_from_bottom'}} />

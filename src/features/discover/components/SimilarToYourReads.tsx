@@ -21,6 +21,7 @@ import instance from '../../../services/axios';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useAnalytics } from '../../../utils/analytics';
 
 interface SimilarItem {
   workId: string;
@@ -30,6 +31,15 @@ interface SimilarItem {
   photo: string;
   matchScore: number;
 }
+
+const VIBES = [
+  { id: 'atmospheric', label: 'Atmospheric', emoji: '🌙', emotionId: 7, tagQuery: 'atmospheric' },
+  { id: 'fast-paced', label: 'Fast-paced', emoji: '⚡', emotionId: 6, tagQuery: 'fast-paced' },
+  { id: 'cozy', label: 'Cozy', emoji: '☕', emotionId: 1, tagQuery: 'cozy' },
+  { id: 'complex', label: 'Complex', emoji: '🧠', emotionId: 5, tagQuery: 'complex' },
+  { id: 'bittersweet', label: 'Bittersweet', emoji: '💔', emotionId: 2, tagQuery: 'bittersweet' },
+  { id: 'worldbuilding', label: 'Worldbuilding', emoji: '🪄', emotionId: 6, tagQuery: 'worldbuilding' },
+];
 
 const getMatchLabel = (score: number): string => {
   if (score >= 4) return 'Strong match';
@@ -74,10 +84,56 @@ const MatchDots = ({
 const SimilarToYourReads = () => {
   const [items, setItems] = useState<SimilarItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isColdStart, setIsColdStart] = useState(false);
+  const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
+  const [vibeLoading, setVibeLoading] = useState(false);
 
   const navigation = useNavigation<any>();
+  const analytics = useAnalytics();
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+
+  const fetchVibeBooks = async (vibe: (typeof VIBES)[0]) => {
+    setSelectedVibe(vibe.id);
+    setVibeLoading(true);
+    analytics.track('cold_start_vibes_selected', {
+      vibes: vibe.label,
+      vibe_id: vibe.id,
+    });
+
+    try {
+      // Try to fetch books matching emotion/mood
+      const res = await instance.get(requests.getFilteredRecommendations, {
+        params: {
+          moods: String(vibe.emotionId),
+          match: 'any',
+        },
+      });
+
+      let loaded: any[] = res.data?.data?.items || [];
+
+      // If empty, fall back to hot recommendations so user gets immediate gratification
+      if (loaded.length === 0) {
+        const fallbackRes = await instance.get(requests.fetchHotRecommendations);
+        loaded = fallbackRes.data?.data?.items || [];
+      }
+
+      const formatted: SimilarItem[] = loaded.slice(0, 10).map((b: any) => ({
+        workId: String(b.workId || b.id || Math.random()),
+        bookId: String(b.bookId || b.id),
+        title: b.title || b.name || 'Recommended Book',
+        description: b.description || '',
+        photo: b.photo || b.imagelink_square || '',
+        matchScore: 4.8,
+      }));
+
+      setItems(formatted);
+    } catch (err) {
+      console.error('Error fetching vibe books:', err);
+    } finally {
+      setVibeLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchRecs = async () => {
@@ -86,9 +142,13 @@ const SimilarToYourReads = () => {
         const data = response.data?.data?.items;
         if (data && data.length > 0) {
           setItems(data);
+          setIsColdStart(false);
+        } else {
+          setIsColdStart(true);
         }
       } catch (error) {
-        console.error('Error fetching similar-to-yours recommendations:', error);
+        // In case of error (e.g. 0 ratings), treat as cold start
+        setIsColdStart(true);
       } finally {
         setLoading(false);
       }
@@ -155,16 +215,66 @@ const SimilarToYourReads = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.headerContainer}>
-        <View>
-          <Text style={styles.headerTitle}>Similar to Your Reads</Text>
-          <Text style={styles.headerSubtitle}>
-            Based on your genres, moods & reading style
-          </Text>
-        </View>
+        <Text style={styles.headerTitle}>
+          {isColdStart ? 'Discover by Reading Vibe' : 'Similar to Your Reads'}
+        </Text>
+        <Text style={styles.headerSubtitle}>
+          {isColdStart
+            ? 'Pick a vibe to jumpstart personalized recommendations'
+            : 'Based on your genres, moods & reading style'}
+        </Text>
       </View>
 
+      {/* Cold start vibe selector pills */}
+      {isColdStart && (
+        <View style={styles.vibesScrollContainer}>
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={VIBES}
+            keyExtractor={(v) => v.id}
+            contentContainerStyle={styles.vibesContentContainer}
+            renderItem={({ item: v }) => {
+              const isSelected = selectedVibe === v.id;
+              return (
+                <TouchableOpacity
+                  style={[
+                    styles.vibePill,
+                    isSelected && styles.vibePillSelected,
+                  ]}
+                  onPress={() => fetchVibeBooks(v)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.vibeEmoji}>{v.emoji}</Text>
+                  <Text
+                    style={[
+                      styles.vibeLabel,
+                      isSelected && styles.vibeLabelSelected,
+                    ]}
+                  >
+                    {v.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </View>
+      )}
+
       {/* Content */}
-      {items.length === 0 ? (
+      {vibeLoading ? (
+        <View style={styles.vibeLoadingContainer}>
+          <ActivityIndicator size="small" color={COLORS.primaryOrangeHex} />
+          <Text style={styles.vibeLoadingText}>Finding matching books...</Text>
+        </View>
+      ) : items.length === 0 && isColdStart ? (
+        <View style={styles.emptyContainer}>
+          <Feather name="compass" size={22} color={COLORS.primaryOrangeHex} />
+          <Text style={styles.emptyText}>
+            Tap any vibe above to discover books tailored to that feeling!
+          </Text>
+        </View>
+      ) : items.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Feather name="book-open" size={22} color={COLORS.primaryLightGreyHex} />
           <Text style={styles.emptyText}>
@@ -176,7 +286,7 @@ const SimilarToYourReads = () => {
           data={items}
           horizontal
           showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.workId?.toString()}
+          keyExtractor={(item, idx) => `${item.workId || item.bookId}-${idx}`}
           renderItem={renderBookItem}
           contentContainerStyle={styles.flatListContainer}
         />
@@ -264,6 +374,51 @@ const createStyles = (COLORS: any) =>
       fontSize: FONTSIZE.size_12,
       color: COLORS.primaryLightGreyHex,
       lineHeight: 18,
+    },
+    vibesScrollContainer: {
+      marginBottom: SPACING.space_16,
+    },
+    vibesContentContainer: {
+      paddingHorizontal: SPACING.space_30,
+      gap: SPACING.space_10,
+    },
+    vibePill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.primaryDarkGreyHex,
+      paddingVertical: SPACING.space_8,
+      paddingHorizontal: SPACING.space_15,
+      borderRadius: BORDERRADIUS.radius_20,
+      borderWidth: 1,
+      borderColor: COLORS.primaryGreyHex,
+      gap: 6,
+    },
+    vibePillSelected: {
+      borderColor: COLORS.primaryOrangeHex,
+      backgroundColor: COLORS.primaryOrangeHex + '20',
+    },
+    vibeEmoji: {
+      fontSize: 14,
+    },
+    vibeLabel: {
+      fontFamily: FONTFAMILY.poppins_medium,
+      fontSize: FONTSIZE.size_12,
+      color: COLORS.secondaryLightGreyHex,
+    },
+    vibeLabelSelected: {
+      color: COLORS.primaryOrangeHex,
+      fontFamily: FONTFAMILY.poppins_semibold,
+    },
+    vibeLoadingContainer: {
+      paddingVertical: SPACING.space_24,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: SPACING.space_8,
+    },
+    vibeLoadingText: {
+      fontFamily: FONTFAMILY.poppins_regular,
+      fontSize: FONTSIZE.size_12,
+      color: COLORS.primaryLightGreyHex,
     },
   });
 

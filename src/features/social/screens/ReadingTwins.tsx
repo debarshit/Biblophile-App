@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -16,6 +16,10 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
+import { useStore } from '../../../store/store';
+import { useAnalytics } from '../../../utils/analytics';
+import { shareToplatform, SharePlatform } from '../../../utils/share';
+import ReadingTwinStoryTemplate from '../../../components/ReadingTwinStoryTemplate';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -62,9 +66,10 @@ interface TwinCardProps {
   COLORS: any;
   styles: any;
   onPress: () => void;
+  onShare: (twin: Twin) => void;
 }
 
-const TwinCard: React.FC<TwinCardProps> = ({ twin, COLORS, styles, onPress }) => {
+const TwinCard: React.FC<TwinCardProps> = ({ twin, COLORS, styles, onPress, onShare }) => {
   const picUri = twin.userProfilePic
     ? convertHttpToHttps(twin.userProfilePic)
     : null;
@@ -87,8 +92,22 @@ const TwinCard: React.FC<TwinCardProps> = ({ twin, COLORS, styles, onPress }) =>
       <View style={styles.cardMiddle}>
         <Text style={styles.twinName} numberOfLines={1}>{twin.name}</Text>
         <Text style={styles.twinUsername} numberOfLines={1}>@{twin.userName}</Text>
-        <Text style={styles.sharedBooks}>📚 {twin.sharedWorks} books in common</Text>
-        <MatchBar score={twin.matchScore} COLORS={COLORS} styles={styles} />
+        <Text style={styles.sharedBooks}>{twin.sharedWorks} books in common</Text>
+        <View style={styles.matchBarRowContainer}>
+          <View style={{ flex: 1 }}>
+            <MatchBar score={twin.matchScore} COLORS={COLORS} styles={styles} />
+          </View>
+          <TouchableOpacity
+            style={styles.cardShareBtn}
+            onPress={(e: any) => {
+              e?.stopPropagation?.();
+              onShare(twin);
+            }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Feather name="share-2" size={12} color={COLORS.primaryOrangeHex} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Right: they also read */}
@@ -145,10 +164,20 @@ const ReadingTwins: React.FC = () => {
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const navigation = useNavigation<any>();
 
+  const userDetails = useStore((state: any) => state.userDetails);
+  const myUsername = userDetails?.[0]?.userUniqueUserName || '';
+  const myName = userDetails?.[0]?.userName || 'Me';
+  const myProfilePic = userDetails?.[0]?.profilePic;
+  const analytics = useAnalytics();
+
   const [twins, setTwins] = useState<Twin[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+
+  const [sharingTwin, setSharingTwin] = useState<Twin | null>(null);
+  const [isGeneratingStory, setIsGeneratingStory] = useState(false);
+  const storyRef = useRef<View>(null);
 
   const fetchTwins = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -171,6 +200,53 @@ const ReadingTwins: React.FC = () => {
   }, [fetchTwins]);
 
   const handleRefresh = useCallback(() => fetchTwins(true), [fetchTwins]);
+
+  const handleShareTwin = useCallback(
+    async (twin: Twin) => {
+      setSharingTwin(twin);
+      setIsGeneratingStory(true);
+
+      setTimeout(async () => {
+        try {
+          await shareToplatform({
+            platform: 'instagram-stories',
+            content: {
+              title: 'My Reading Twin on Biblophile',
+              message: `I found my ${Math.round(twin.matchScore * 100)}% Reading Twin on Biblophile! 📚 See our match: https://biblophile.com/twin/${myUsername}`,
+              url: `https://biblophile.com/twin/${myUsername}`,
+            },
+            screenshotRef: storyRef,
+          });
+          analytics.track('twin_card_shared', {
+            match_score: twin.matchScore,
+            twin_user_id: twin.userId,
+            platform: 'instagram-stories',
+          });
+        } catch (err) {
+          console.error('Error sharing twin story:', err);
+        } finally {
+          setIsGeneratingStory(false);
+        }
+      }, 450);
+    },
+    [myUsername, analytics]
+  );
+
+  const handleShareInviteLink = useCallback(async () => {
+    try {
+      await shareToplatform({
+        platform: 'native',
+        content: {
+          title: 'Are we Reading Twins? 📚',
+          message: `Are we Reading Twins? Compare your reading taste with mine on Biblophile.`,
+          url: `https://biblophile.com/twin/${myUsername}`,
+        },
+      });
+      analytics.track('compare_link_shared', { my_user_name: myUsername });
+    } catch (err) {
+      console.error('Error sharing invite link:', err);
+    }
+  }, [myUsername, analytics]);
 
   if (loading) {
     return (
@@ -215,6 +291,26 @@ const ReadingTwins: React.FC = () => {
         <View style={styles.infoRow}>
           <Text style={styles.infoText}>💡 Scores update nightly</Text>
         </View>
+
+        {/* Invite Friends Banner */}
+        {myUsername ? (
+          <View style={styles.inviteBanner}>
+            <View style={styles.inviteBannerContent}>
+              <Text style={styles.inviteBannerTitle}>Are your friends your twins?</Text>
+              <Text style={styles.inviteBannerSubtitle}>
+                Share your personal link and let friends compare their taste with yours!
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.inviteBannerBtn}
+              onPress={handleShareInviteLink}
+              activeOpacity={0.85}
+            >
+              <Feather name="share-2" size={14} color={COLORS.primaryWhiteHex} />
+              <Text style={styles.inviteBannerBtnText}>Compare With Friends</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </View>
 
       {/* Twins list */}
@@ -227,9 +323,28 @@ const ReadingTwins: React.FC = () => {
             twin={twin}
             COLORS={COLORS}
             styles={styles}
-            onPress={() => navigation.push('UserProfile', { userId: twin.userId })}
+            onPress={() => navigation.push('ProfileSummary', { username: twin.userName })}
+            onShare={handleShareTwin}
           />
         ))
+      )}
+
+      {/* Offscreen 9:16 story container for captureRef */}
+      {sharingTwin && (
+        <View style={styles.offscreenStory} pointerEvents="none">
+          <ReadingTwinStoryTemplate
+            ref={storyRef}
+            myName={myName}
+            myUserName={myUsername}
+            myProfilePic={myProfilePic}
+            twinName={sharingTwin.name}
+            twinUserName={sharingTwin.userName}
+            twinProfilePic={sharingTwin.userProfilePic}
+            matchScore={sharingTwin.matchScore}
+            sharedWorks={sharingTwin.sharedWorks}
+            covers={sharingTwin.theyAlsoRead}
+          />
+        </View>
       )}
     </ScrollView>
   );
@@ -286,6 +401,49 @@ const createStyles = (COLORS: any) =>
       color: COLORS.secondaryLightGreyHex,
     },
 
+    // Invite banner
+    inviteBanner: {
+      backgroundColor: COLORS.secondaryDarkGreyHex,
+      borderRadius: BORDERRADIUS.radius_15,
+      padding: SPACING.space_16,
+      marginTop: SPACING.space_16,
+      borderWidth: 1,
+      borderColor: COLORS.primaryOrangeHex + '40',
+      flexDirection: 'column',
+      gap: SPACING.space_12,
+    },
+    inviteBannerContent: {
+      width: '100%',
+    },
+    inviteBannerTitle: {
+      fontSize: FONTSIZE.size_14,
+      fontFamily: FONTFAMILY.poppins_bold,
+      color: COLORS.primaryWhiteHex,
+      marginBottom: 2,
+    },
+    inviteBannerSubtitle: {
+      fontSize: FONTSIZE.size_12,
+      fontFamily: FONTFAMILY.poppins_regular,
+      color: COLORS.secondaryLightGreyHex,
+      lineHeight: 16,
+    },
+    inviteBannerBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: COLORS.primaryOrangeHex,
+      paddingVertical: SPACING.space_8,
+      paddingHorizontal: SPACING.space_16,
+      borderRadius: BORDERRADIUS.radius_8,
+      gap: SPACING.space_8,
+      alignSelf: 'flex-start',
+    },
+    inviteBannerBtnText: {
+      fontSize: FONTSIZE.size_12,
+      fontFamily: FONTFAMILY.poppins_semibold,
+      color: COLORS.primaryWhiteHex,
+    },
+
     // Card
     card: {
       flexDirection: 'row',
@@ -334,6 +492,20 @@ const createStyles = (COLORS: any) =>
       color: COLORS.secondaryLightGreyHex,
       marginBottom: SPACING.space_8,
     },
+    matchBarRowContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.space_8,
+    },
+    cardShareBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.primaryOrangeHex + '20',
+      paddingVertical: 3,
+      paddingHorizontal: SPACING.space_8,
+      borderRadius: BORDERRADIUS.radius_8,
+      gap: 4,
+    },
 
     // Match bar
     matchBarRow: {
@@ -358,6 +530,13 @@ const createStyles = (COLORS: any) =>
       fontFamily: FONTFAMILY.poppins_medium,
       color: COLORS.primaryOrangeHex,
       minWidth: 62,
+    },
+
+    // Offscreen story
+    offscreenStory: {
+      position: 'absolute',
+      left: -9999,
+      top: -9999,
     },
 
     // They also read

@@ -26,8 +26,9 @@ import TopAuthorsChart from '../components/stats/TopAuthorsChart';
 import FormatBreakdownChart from '../components/stats/FormatBreakdownChart';
 import PublicationYearChart from '../components/stats/PublicationYearChart';
 import BookAttributesChart from '../components/stats/BookAttributesChart';
+import ReaderDNAShareModal from '../components/stats/ReaderDNAShareModal';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -42,6 +43,7 @@ const StatScreen = () => {
   const [activeStat, setActiveStat] = useState<StatTab>('page-stats');
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState(null);
+  const [dnaModalVisible, setDnaModalVisible] = useState(false);
 
   const navigation = useNavigation<any>();
   const userDetails = useStore((state) => state.userDetails);
@@ -217,6 +219,23 @@ const StatScreen = () => {
           <Ionicons name="chevron-forward" size={24} color={COLORS.primaryWhiteHex} />
         </TouchableOpacity>
 
+        {/* Reader DNA Share Card */}
+        <TouchableOpacity 
+          style={styles.dnaButton}
+          onPress={() => setDnaModalVisible(true)}
+          activeOpacity={0.85}>
+          <View style={styles.dnaLeft}>
+            <View style={styles.dnaIconCircle}>
+              <Ionicons name="finger-print-outline" size={20} color={COLORS.primaryOrangeHex} />
+            </View>
+            <View>
+              <Text style={styles.dnaButtonTitle}>Your Reader DNA</Text>
+              <Text style={styles.dnaButtonSubtitle}>Share your taste fingerprint to Stories</Text>
+            </View>
+          </View>
+          <Feather name="share-2" size={18} color={COLORS.primaryOrangeHex} />
+        </TouchableOpacity>
+
         {/* <Text style={styles.title}>Reading Streak Leaderboard</Text>
         <FlatList
           data={leaderboard}
@@ -254,6 +273,13 @@ const StatScreen = () => {
             setDatePickerVisible={setDatePickerVisible}
           />
         )}
+
+        <ReaderDNAShareModal
+          visible={dnaModalVisible}
+          onClose={() => setDnaModalVisible(false)}
+          emotions={userAverageEmotions}
+          userBooks={readingStatusData}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -352,5 +378,39 @@ const createStyles = (COLORS: any) => StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_medium,
     flex: 1,
     textAlign: 'center',
+  },
+  dnaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.secondaryDarkGreyHex,
+    borderRadius: BORDERRADIUS.radius_10,
+    padding: SPACING.space_12,
+    marginBottom: SPACING.space_16,
+    borderWidth: 1,
+    borderColor: COLORS.primaryOrangeHex + '40',
+  },
+  dnaLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.space_12,
+  },
+  dnaIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: COLORS.primaryOrangeHex + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dnaButtonTitle: {
+    fontSize: FONTSIZE.size_14,
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: COLORS.primaryWhiteHex,
+  },
+  dnaButtonSubtitle: {
+    fontSize: FONTSIZE.size_10,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.secondaryLightGreyHex,
   },
 });
