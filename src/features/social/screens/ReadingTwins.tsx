@@ -20,8 +20,9 @@ import { FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/them
 import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import { useStore } from '../../../store/store';
 import { useAnalytics } from '../../../utils/analytics';
+import { usePostHog } from 'posthog-react-native';
 import { shareToplatform, SharePlatform } from '../../../utils/share';
-import ReadingTwinStoryTemplate from '../../../components/ReadingTwinStoryTemplate';
+import ReadingTwinStoryTemplate, { StoryVariant } from '../../../components/ReadingTwinStoryTemplate';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -171,6 +172,26 @@ const ReadingTwins: React.FC = () => {
   const myName = userDetails?.[0]?.userName || 'Me';
   const myProfilePic = userDetails?.[0]?.profilePic;
   const analytics = useAnalytics();
+  const posthog = usePostHog();
+
+  // A/B/C Test Variant: PostHog remote flag with deterministic 33/33/33 hash fallback
+  const storyVariant: StoryVariant = useMemo(() => {
+    const flag = posthog?.getFeatureFlag('reading_twin_story_variant');
+    if (flag === 'variant_a_circles' || flag === 'variant_a') return 'variant_a_circles';
+    if (flag === 'variant_b_minimal' || flag === 'variant_b') return 'variant_b_minimal';
+    if (flag === 'variant_c_gradient_sticker' || flag === 'variant_c') return 'variant_c_gradient_sticker';
+
+    const seed = myUsername || userDetails?.[0]?.userId?.toString() || 'biblo';
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = (hash << 5) - hash + seed.charCodeAt(i);
+      hash |= 0;
+    }
+    const bucket = Math.abs(hash) % 3;
+    if (bucket === 0) return 'variant_a_circles';
+    if (bucket === 1) return 'variant_b_minimal';
+    return 'variant_c_gradient_sticker';
+  }, [posthog, myUsername, userDetails]);
 
   const [twins, setTwins] = useState<Twin[]>([]);
   const [loading, setLoading] = useState(true);
@@ -247,6 +268,15 @@ const ReadingTwins: React.FC = () => {
     fetchTwins();
   }, [fetchTwins]);
 
+  useEffect(() => {
+    if (twins.length > 0) {
+      analytics.track('twin_screen_viewed', {
+        variant: storyVariant,
+        twins_count: twins.length,
+      });
+    }
+  }, [twins.length, storyVariant, analytics]);
+
   const handleRefresh = useCallback(() => fetchTwins(true), [fetchTwins]);
 
   const handleShareTwin = useCallback(
@@ -266,6 +296,7 @@ const ReadingTwins: React.FC = () => {
             screenshotRef: storyRef,
           });
           analytics.track('twin_card_shared', {
+            variant: storyVariant,
             match_score: twin.matchScore,
             twin_user_id: twin.userId,
             platform: 'instagram-stories',
@@ -277,7 +308,7 @@ const ReadingTwins: React.FC = () => {
         }
       }, 450);
     },
-    [myUsername, analytics]
+    [myUsername, analytics, storyVariant]
   );
 
   const handleShareInviteLink = useCallback(async () => {
@@ -405,6 +436,7 @@ const ReadingTwins: React.FC = () => {
           <View style={styles.offscreenStory} pointerEvents="none">
             <ReadingTwinStoryTemplate
               ref={storyRef}
+              variant={storyVariant}
               myName={myName}
               myUserName={myUsername}
               myProfilePic={myProfilePic}
