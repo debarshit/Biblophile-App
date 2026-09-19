@@ -111,6 +111,7 @@ const StatScreen = () => {
     try {
       const response = await instance.get(requests.fetchUserBooks, {
         params: { userId: userDetails[0].userId, timeFrame: 'all-time' },
+        headers: { Authorization: `Bearer ${userDetails[0].accessToken}` },
       });
       const books = response.data.data.userBooks;
       if (Array.isArray(books)) setReadingStatusData(books);

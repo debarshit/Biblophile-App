@@ -69,6 +69,40 @@ const GRAPHIC_THEME = {
   footerSubText: '#AEAEAE',
 };
 
+const getBookCoverUri = (b: any): string | null => {
+  if (!b) return null;
+  const raw =
+    b.bookPhoto ||
+    b.BookPhoto ||
+    b.photo ||
+    b.ProductPhoto ||
+    b.coverImage ||
+    b.cover ||
+    b.image;
+  return raw ? convertHttpToHttps(raw) : null;
+};
+
+const sortAndFilterBooks = (list: any[]) => {
+  if (!Array.isArray(list) || list.length === 0) return [];
+  // Prioritize books with valid covers
+  const withCovers = list.filter((b) => getBookCoverUri(b) !== null);
+  const withoutCovers = list.filter((b) => getBookCoverUri(b) === null);
+
+  const statusPriority: Record<string, number> = {
+    'Read': 1,
+    'Currently reading': 2,
+    'Paused': 3,
+    'To be read': 4,
+    'Did not finish': 5,
+  };
+
+  withCovers.sort(
+    (a, b) => (statusPriority[a.status] || 99) - (statusPriority[b.status] || 99)
+  );
+
+  return [...withCovers, ...withoutCovers].slice(0, 3);
+};
+
 const ReaderDNAShareModal: React.FC<ReaderDNAShareModalProps> = ({
   visible,
   onClose,
@@ -120,20 +154,44 @@ const ReaderDNAShareModal: React.FC<ReaderDNAShareModalProps> = ({
       })
       .catch(() => {});
 
-    // Load books if needed
-    if (!propUserBooks || propUserBooks.length === 0) {
-      instance
-        .get(requests.fetchUserBooks, {
+    // Load books with Authorization and fallback
+    const loadBooks = async () => {
+      if (propUserBooks && propUserBooks.length > 0) {
+        const sorted = sortAndFilterBooks(propUserBooks);
+        if (sorted.length > 0 && sorted.some((b) => getBookCoverUri(b) !== null)) {
+          setSignatureBooks(sorted);
+          return;
+        }
+      }
+
+      try {
+        const res = await instance.get(requests.fetchUserBooks, {
           params: { userId: userDetails[0]?.userId, timeFrame: 'all-time' },
-        })
-        .then((res) => {
-          const list = res.data?.data?.userBooks || [];
-          setSignatureBooks(list.slice(0, 3));
-        })
-        .catch(() => {});
-    } else {
-      setSignatureBooks(propUserBooks.slice(0, 3));
-    }
+          headers: { Authorization: `Bearer ${userDetails[0]?.accessToken}` },
+        });
+        let list = res.data?.data?.userBooks || [];
+        if (!Array.isArray(list) || list.length === 0 || !list.some((b: any) => getBookCoverUri(b) !== null)) {
+          // Fallback to current reads if user-books was empty or had no covers
+          try {
+            const currentRes = await instance.get(requests.fetchCurrentReads, {
+              params: { userId: userDetails[0]?.userId },
+              headers: { Authorization: `Bearer ${userDetails[0]?.accessToken}` },
+            });
+            const currentReads = currentRes.data?.data?.currentReads || [];
+            if (Array.isArray(currentReads) && currentReads.length > 0) {
+              list = [...currentReads, ...list];
+            }
+          } catch {}
+        }
+        setSignatureBooks(sortAndFilterBooks(list));
+      } catch (err) {
+        if (propUserBooks && propUserBooks.length > 0) {
+          setSignatureBooks(sortAndFilterBooks(propUserBooks));
+        }
+      }
+    };
+
+    loadBooks();
   }, [visible, propEmotions, propUserBooks, userDetails]);
 
   const topEmotion = emotions[0]?.Emotion || 'Joy';
@@ -307,7 +365,7 @@ const ReaderDNAShareModal: React.FC<ReaderDNAShareModalProps> = ({
 
               {/* Signature Reads */}
               <View style={styles.cardSection}>
-                <Text style={styles.sectionHeader}>RECENT READS</Text>
+                <Text style={styles.sectionHeader}>TOP READS</Text>
                 <View style={styles.booksRow}>
                   {(signatureBooks.length > 0
                     ? signatureBooks
@@ -317,7 +375,7 @@ const ReaderDNAShareModal: React.FC<ReaderDNAShareModalProps> = ({
                         { bookId: '3', photo: null },
                       ]
                   ).map((b, idx) => {
-                    const coverUri = b.photo || b.ProductPhoto ? convertHttpToHttps(b.photo || b.ProductPhoto) : null;
+                    const coverUri = getBookCoverUri(b);
                     return (
                       <View key={b.bookId || idx} style={styles.coverWrapper}>
                         {coverUri ? (
