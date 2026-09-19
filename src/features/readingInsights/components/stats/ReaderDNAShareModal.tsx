@@ -37,10 +37,37 @@ const getArchetype = (topEmotion: string) => {
   if (norm.includes('surprise') || norm.includes('complex')) return { title: 'The Plot Twist Hunter', emoji: '🎭' };
   if (norm.includes('nostalgia')) return { title: 'The Vintage Romantic', emoji: '📼' };
   if (norm.includes('empathy')) return { title: 'The Soulful Empath', emoji: '💫' };
-  return { title: 'The Eclectic Explorer', emoji: '📚' };
+  return { title: 'The Eclectic Explorer', emoji: '🧭' };
 };
 
 const EMOTION_COLORS = ['#FF7E5F', '#42D1D1', '#FFBC42', '#9C4DD4', '#45B69C'];
+
+// Always dark palette for the shareable 9:16 story card so it remains identical and high-contrast in light mode
+const GRAPHIC_THEME = {
+  cardBg: '#0F0F14',
+  cardBorder: 'rgba(209, 120, 66, 0.35)',
+  brandText: '#FFFFFF',
+  dnaPillBg: 'rgba(209, 120, 66, 0.15)',
+  dnaPillBorder: 'rgba(209, 120, 66, 0.35)',
+  dnaPillText: '#D17842',
+  avatarFallbackBg: '#21262E',
+  avatarFallbackIcon: '#AEAEAE',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#AEAEAE',
+  textMuted: '#8E8E93',
+  archetypeBg: '#181822',
+  archetypeBorder: 'rgba(209, 120, 66, 0.25)',
+  archetypeLabel: '#D17842',
+  trackBg: '#1E222D',
+  genreBadgeBg: '#1E1E2A',
+  genreBadgeBorder: 'rgba(255, 255, 255, 0.08)',
+  bookCoverFallbackBg: '#1E222D',
+  bookCoverFallbackIcon: '#AEAEAE',
+  footerBorder: 'rgba(255, 255, 255, 0.08)',
+  footerLinkBg: 'rgba(209, 120, 66, 0.15)',
+  footerLinkText: '#D17842',
+  footerSubText: '#AEAEAE',
+};
 
 const ReaderDNAShareModal: React.FC<ReaderDNAShareModalProps> = ({
   visible,
@@ -181,11 +208,24 @@ const ReaderDNAShareModal: React.FC<ReaderDNAShareModalProps> = ({
             contentContainerStyle={styles.scrollContent}
           >
             {/* ─── 9:16 Story Card ─── */}
-            <View ref={storyRef} collapsable={false} style={styles.storyCard}>
+            <View
+              ref={storyRef}
+              collapsable={false}
+              renderToHardwareTextureAndroid={false}
+              needsOffscreenAlphaCompositing
+              style={styles.storyCard}
+            >
               {/* Header */}
               <View style={styles.storyHeader}>
                 <View style={styles.brandRow}>
-                  <Text style={styles.brandLogo}>📚 BIBLOPHILE</Text>
+                  <View style={styles.brandTitleRow}>
+                    <Image
+                      source={require('../../../../../assets/logo-white.png')}
+                      style={styles.brandLogoImage}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.brandTitleText}>biblophile</Text>
+                  </View>
                   <View style={styles.dnaPill}>
                     <Text style={styles.dnaPillText}>READER DNA</Text>
                   </View>
@@ -200,7 +240,7 @@ const ReaderDNAShareModal: React.FC<ReaderDNAShareModalProps> = ({
                     />
                   ) : (
                     <View style={[styles.avatar, styles.avatarFallback]}>
-                      <Feather name="user" size={20} color={COLORS.secondaryLightGreyHex} />
+                      <Feather name="user" size={20} color={GRAPHIC_THEME.avatarFallbackIcon} />
                     </View>
                   )}
                   <View style={styles.profileText}>
@@ -288,7 +328,7 @@ const ReaderDNAShareModal: React.FC<ReaderDNAShareModalProps> = ({
                           />
                         ) : (
                           <View style={[styles.bookCover, styles.bookFallback]}>
-                            <Feather name="book" size={20} color={COLORS.secondaryLightGreyHex} />
+                            <Feather name="book" size={20} color={GRAPHIC_THEME.bookCoverFallbackIcon} />
                           </View>
                         )}
                       </View>
@@ -300,7 +340,7 @@ const ReaderDNAShareModal: React.FC<ReaderDNAShareModalProps> = ({
               {/* Footer CTA */}
               <View style={styles.storyFooter}>
                 <View style={styles.footerLinkBox}>
-                  <Feather name="link" size={12} color={COLORS.primaryOrangeHex} />
+                  <Feather name="link" size={12} color={GRAPHIC_THEME.footerLinkText} />
                   <Text style={styles.footerUrl}>biblophile.com/twin/{myUsername}</Text>
                 </View>
                 <Text style={styles.footerSub}>Compare your reading taste with mine</Text>
@@ -316,10 +356,10 @@ const ReaderDNAShareModal: React.FC<ReaderDNAShareModalProps> = ({
                 disabled={isSharing}
               >
                 {isSharing ? (
-                  <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
+                  <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
                   <>
-                    <Ionicons name="logo-instagram" size={18} color={COLORS.primaryWhiteHex} />
+                    <Ionicons name="logo-instagram" size={18} color="#FFFFFF" />
                     <Text style={styles.btnText}>Share to Instagram Story</Text>
                   </>
                 )}
@@ -388,11 +428,11 @@ const createStyles = (COLORS: any) =>
     storyCard: {
       width: 320,
       minHeight: 568,
-      backgroundColor: '#0F0F14',
+      backgroundColor: GRAPHIC_THEME.cardBg,
       borderRadius: BORDERRADIUS.radius_20,
       padding: SPACING.space_20,
       borderWidth: 1.5,
-      borderColor: COLORS.primaryOrangeHex + '50',
+      borderColor: GRAPHIC_THEME.cardBorder,
       justifyContent: 'space-between',
     },
     storyHeader: {
@@ -404,24 +444,33 @@ const createStyles = (COLORS: any) =>
       justifyContent: 'space-between',
       marginBottom: SPACING.space_12,
     },
-    brandLogo: {
-      fontSize: FONTSIZE.size_12,
+    brandTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    brandLogoImage: {
+      width: 20,
+      height: 20,
+    },
+    brandTitleText: {
+      fontSize: 16,
       fontFamily: FONTFAMILY.poppins_bold,
-      color: COLORS.primaryWhiteHex,
-      letterSpacing: 1.2,
+      color: GRAPHIC_THEME.textPrimary,
+      letterSpacing: -0.3,
     },
     dnaPill: {
-      backgroundColor: COLORS.primaryOrangeHex + '25',
+      backgroundColor: GRAPHIC_THEME.dnaPillBg,
       paddingHorizontal: SPACING.space_8,
       paddingVertical: 2,
       borderRadius: BORDERRADIUS.radius_4,
       borderWidth: 1,
-      borderColor: COLORS.primaryOrangeHex + '50',
+      borderColor: GRAPHIC_THEME.dnaPillBorder,
     },
     dnaPillText: {
       fontSize: 9,
       fontFamily: FONTFAMILY.poppins_bold,
-      color: COLORS.primaryOrangeHex,
+      color: GRAPHIC_THEME.dnaPillText,
       letterSpacing: 0.8,
     },
     profileRow: {
@@ -435,7 +484,7 @@ const createStyles = (COLORS: any) =>
       borderRadius: 22,
     },
     avatarFallback: {
-      backgroundColor: COLORS.primaryGreyHex,
+      backgroundColor: GRAPHIC_THEME.avatarFallbackBg,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -445,23 +494,23 @@ const createStyles = (COLORS: any) =>
     userNameText: {
       fontSize: FONTSIZE.size_14,
       fontFamily: FONTFAMILY.poppins_semibold,
-      color: COLORS.primaryWhiteHex,
+      color: GRAPHIC_THEME.textPrimary,
     },
     userHandleText: {
       fontSize: FONTSIZE.size_10,
       fontFamily: FONTFAMILY.poppins_regular,
-      color: COLORS.secondaryLightGreyHex,
+      color: GRAPHIC_THEME.textSecondary,
     },
 
     // Archetype
     archetypeContainer: {
-      backgroundColor: '#181822',
+      backgroundColor: GRAPHIC_THEME.archetypeBg,
       borderRadius: BORDERRADIUS.radius_15,
       padding: SPACING.space_12,
       alignItems: 'center',
       marginVertical: SPACING.space_10,
       borderWidth: 1,
-      borderColor: COLORS.primaryOrangeHex + '30',
+      borderColor: GRAPHIC_THEME.archetypeBorder,
     },
     archetypeEmoji: {
       fontSize: 28,
@@ -470,13 +519,13 @@ const createStyles = (COLORS: any) =>
     archetypeLabel: {
       fontSize: 9,
       fontFamily: FONTFAMILY.poppins_bold,
-      color: COLORS.primaryOrangeHex,
+      color: GRAPHIC_THEME.archetypeLabel,
       letterSpacing: 1.2,
     },
     archetypeTitle: {
       fontSize: FONTSIZE.size_16,
       fontFamily: FONTFAMILY.poppins_bold,
-      color: COLORS.primaryWhiteHex,
+      color: GRAPHIC_THEME.textPrimary,
       marginTop: 2,
     },
 
@@ -487,7 +536,7 @@ const createStyles = (COLORS: any) =>
     sectionHeader: {
       fontSize: 9,
       fontFamily: FONTFAMILY.poppins_bold,
-      color: COLORS.secondaryLightGreyHex,
+      color: GRAPHIC_THEME.textMuted,
       letterSpacing: 1,
       marginBottom: 6,
     },
@@ -504,7 +553,7 @@ const createStyles = (COLORS: any) =>
     emotionName: {
       fontSize: FONTSIZE.size_10,
       fontFamily: FONTFAMILY.poppins_medium,
-      color: COLORS.primaryWhiteHex,
+      color: GRAPHIC_THEME.textPrimary,
     },
     emotionPct: {
       fontSize: FONTSIZE.size_10,
@@ -513,7 +562,7 @@ const createStyles = (COLORS: any) =>
     track: {
       height: 4,
       borderRadius: 2,
-      backgroundColor: COLORS.primaryDarkGreyHex,
+      backgroundColor: GRAPHIC_THEME.trackBg,
       overflow: 'hidden',
     },
     fill: {
@@ -528,17 +577,17 @@ const createStyles = (COLORS: any) =>
       gap: 6,
     },
     genreBadge: {
-      backgroundColor: '#1E1E2A',
+      backgroundColor: GRAPHIC_THEME.genreBadgeBg,
       paddingVertical: 4,
       paddingHorizontal: SPACING.space_10,
       borderRadius: BORDERRADIUS.radius_10,
       borderWidth: 1,
-      borderColor: COLORS.primaryGreyHex + '50',
+      borderColor: GRAPHIC_THEME.genreBadgeBorder,
     },
     genreBadgeText: {
       fontSize: 10,
       fontFamily: FONTFAMILY.poppins_medium,
-      color: COLORS.primaryWhiteHex,
+      color: GRAPHIC_THEME.textPrimary,
     },
 
     // Books
@@ -562,7 +611,7 @@ const createStyles = (COLORS: any) =>
       borderRadius: BORDERRADIUS.radius_8,
     },
     bookFallback: {
-      backgroundColor: COLORS.primaryDarkGreyHex,
+      backgroundColor: GRAPHIC_THEME.bookCoverFallbackBg,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -573,14 +622,14 @@ const createStyles = (COLORS: any) =>
       marginTop: SPACING.space_12,
       paddingTop: SPACING.space_10,
       borderTopWidth: 1,
-      borderTopColor: COLORS.primaryDarkGreyHex,
+      borderTopColor: GRAPHIC_THEME.footerBorder,
       gap: 2,
     },
     footerLinkBox: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
-      backgroundColor: COLORS.primaryOrangeHex + '20',
+      backgroundColor: GRAPHIC_THEME.footerLinkBg,
       paddingHorizontal: SPACING.space_10,
       paddingVertical: 3,
       borderRadius: BORDERRADIUS.radius_8,
@@ -588,12 +637,12 @@ const createStyles = (COLORS: any) =>
     footerUrl: {
       fontSize: 10,
       fontFamily: FONTFAMILY.poppins_semibold,
-      color: COLORS.primaryOrangeHex,
+      color: GRAPHIC_THEME.footerLinkText,
     },
     footerSub: {
       fontSize: 9,
       fontFamily: FONTFAMILY.poppins_regular,
-      color: COLORS.secondaryLightGreyHex,
+      color: GRAPHIC_THEME.footerSubText,
     },
 
     // Action buttons
@@ -614,7 +663,7 @@ const createStyles = (COLORS: any) =>
     btnText: {
       fontSize: FONTSIZE.size_14,
       fontFamily: FONTFAMILY.poppins_semibold,
-      color: COLORS.primaryWhiteHex,
+      color: '#FFFFFF',
     },
     nativeShareBtn: {
       flexDirection: 'row',
