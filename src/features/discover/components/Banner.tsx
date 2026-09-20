@@ -71,12 +71,14 @@ const Banner: React.FC = ( navigation: any) => {
   );
 };
 
-const createStyles = (COLORS) => StyleSheet.create({
+const createStyles = (COLORS: any) => StyleSheet.create({
   bannerContainer: {
-    width: '100%',
-    // height: '25%', when banner outside scrollview in bg
-    height: 200,
-    position: 'absolute',
+    marginHorizontal: 16,
+    marginVertical: 10,
+    height: 120,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
   },
   bannerImage: {
     position: 'absolute',
@@ -86,14 +88,13 @@ const createStyles = (COLORS) => StyleSheet.create({
     bottom: 0,
     width: '100%',
     height: '100%',
-    objectFit: 'fill',
   },
   bannerFadeBottom: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: 50,
+    height: 40,
   },
 });
 

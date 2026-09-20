@@ -1,9 +1,9 @@
 import axios from "axios";
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { useStore } from "../store/store";
 
 const isDevelopment = __DEV__;
-const baseURL = isDevelopment ? "http://192.168.1.25:3000/" : "https://api.biblophile.com/";
+const baseURL = isDevelopment ? "http://192.168.1.114:3000/" : "https://api.biblophile.com/";
 
 const instance = axios.create({ baseURL });
 const refreshInstance = axios.create({ baseURL });
@@ -13,12 +13,14 @@ interface DecodedToken {
 }
 
 const isTokenExpiringSoon = (token: string): boolean => {
+  if (!token) return false;
   try {
-    const decoded = jwt_decode<DecodedToken>(token);
+    const decoded = jwtDecode<DecodedToken>(token);
+    if (!decoded || !decoded.exp) return false;
     const currentTime = Date.now() / 1000;
     return decoded.exp - currentTime < 60;
   } catch (e) {
-    return true;
+    return false;
   }
 };
 

@@ -245,11 +245,48 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
 
             const { data } = await instance.post(requests.userSignup, payload);
             if (data.data.message === 1) {
+                analytics.signup('email');
+                const emailToLogin = signupEmail;
+                const passToLogin = signupPass;
+                try {
+                    const loginRes = await instance.post(requests.userLogin, {
+                        email: emailToLogin,
+                        pass: passToLogin,
+                    });
+                    if (loginRes.data.data.message === 1) {
+                        const userData = {
+                            accessToken: loginRes.data.data.accessToken,
+                            refreshToken: loginRes.data.data.refreshToken,
+                            userId: loginRes.data.data.userId,
+                            userEmail: loginRes.data.data.email,
+                            userAddress: loginRes.data.data.address,
+                            userPhone: loginRes.data.data.phone,
+                            userName: loginRes.data.data.fullName,
+                            userUniqueUserName: loginRes.data.data.name,
+                            deposit: loginRes.data.data.deposit,
+                            profilePic: loginRes.data.data.profilePic,
+                        };
+                        await handleNotificationPermission(userData);
+                        await analytics.identifyUser(String(userData.userId), {
+                            userId: String(userData.userId),
+                            email: userData.userEmail,
+                            name: userData.userName,
+                            username: userData.userUniqueUserName,
+                        });
+                        analytics.login('email');
+                        return;
+                    }
+                } catch (autoLoginErr) {
+                    console.error('Auto-login error after signup:', autoLoginErr);
+                }
+
+                // Fallback: switch to login mode with email pre-filled
                 setSignupMessage({ text: 'Signup successful! You can login now.', color: COLORS.primaryOrangeHex });
+                setIsRegistration(false);
+                setLoginEmail(signupEmail);
                 setSignupName(''); setSignupUserName(''); setSignupEmail('');
                 setSignupPhone(''); setSignupPass(''); setSignupPassCnf('');
                 setSource(null); setNewsletterOptIn(true);
-                analytics.signup('email');
 
                 // Show reading reminder setup modal (only once per user)
                 if (!reminderSetupShown) {

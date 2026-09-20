@@ -1,25 +1,18 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Platform,
-  ToastAndroid,
   Animated,
-  FlatList,
-  Dimensions,
-  Image,
-  Linking,
 } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import Toast from 'react-native-toast-message';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Spotlights from '../components/Spotlights';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
-import {useStore} from '../../../store/store';
+import { useStore } from '../../../store/store';
 import {
   BORDERRADIUS,
   COLORS,
@@ -27,25 +20,20 @@ import {
   FONTSIZE,
   SPACING,
 } from '../../../theme/theme';
-import StreakCelebration from '../../../components/StreakCelebration';
 import GlassEffect from '../../../components/GlassEffect';
 import { useTabBarScroll } from '../../../contexts/TabBarScrollContext';
 import HeaderBar from '../../../components/HeaderBar';
-import CoffeeCard from '../../../components/CoffeeCard';
 import Banner from '../components/Banner';
 import Mascot from '../../../components/Mascot';
 import FloatingIcon from '../../bookshop/components/FloatingIcon';
 import { useCity } from '../../../contexts/CityContext';
-import { convertHttpToHttps } from '../../../utils/convertHttpToHttps';
 import SeasonalRecommendations from '../components/SeasonalRecommendations';
-import StreakWeeklyProgress from '../../readingInsights/components/StreakWeeklyProgress';
-import CurrentReadsSection from '../../readingInsights/components/currentReads/CurrentReadsSection';
-import MerchShopBanner from '../../../components/MerchShopBanner';
-import ChallengesBanner from '../components/ChallengesBanner';
+import DailyReadHero from '../../readingInsights/components/dailyHero/DailyReadHero';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FriendActivityPreview from '../components/FriendActivityPreview';
 import { ResponsiveContainer } from '../../../utils/responsive';
+import { useStreak } from '../../../hooks/useStreak';
 
 interface Spotlight {
   Id: string | number;
@@ -63,122 +51,42 @@ interface Spotlight {
   giveawayId?: number | null;
 }
 
-const HomeScreen = ({navigation}: any) => {
-  //useStore variables
+const HomeScreen = ({ navigation }: any) => {
   const userDetails = useStore((state) => state.userDetails);
-  const addToCart = useStore((state: any) => state.addToCart);
-  const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const CartList = useStore((state: any) => state.CartList);
   const unreadNotificationCount = useStore((state: any) => state.unreadNotificationCount);
 
-  //useState variables
-  const [bookList, setBookList] = useState<any>([]);
   const [spotlights, setSpotlights] = useState<Spotlight[]>([]);
   const [loading, setLoading] = useState(true);
-  const [booksLoading, setBooksLoading] = useState(true);
-  const [currentStreak, setCurrentStreak] = useState(1);
-  const [streakFreezes, setStreakFreezes] = useState<number | null>(null);
-  const [latestUpdateTime, setLatestUpdateTime] = useState<string | null>(null);
   const { onScroll: onTabBarScroll } = useTabBarScroll();
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const ListRef: any = useRef<FlatList>();
+  // Reactive streak for header bar
+  const { currentStreak, streakFreezes } = useStreak(userDetails[0]?.accessToken);
+
   const scrollViewRef = useRef(null);
   const scrollOffset = useRef(new Animated.Value(0)).current;
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
-  const { selectedCity, latitude, longitude } = useCity();
-
-  const CoffeeCardAddToCart = ({
-    id,
-    name,
-    photo,
-    type,
-    prices,                
-  }: any) => {
-    addToCart({
-      id,
-      name,
-      photo,
-      type,
-      prices,
-    });
-    calculateCartPrice();
-    if (Platform.OS == 'android') {
-      ToastAndroid.showWithGravity(
-        `${name} is Added to Cart`,
-        ToastAndroid.SHORT,
-        ToastAndroid.CENTER,
-      );
-    }
-    else {
-      Toast.show({
-        type: 'info',
-        text1: `${name} is Added to Cart`,
-        visibilityTime: 2000,
-        autoHide: true,
-        position: 'bottom',
-        bottomOffset: 100,
-      });
-    }
-  };
-
-  useEffect(() => {
-    async function fetchBookList() {
-      try {
-        const response = await instance(requests.getBooks+'All');
-        const responseData = response.data;
-        setBookList(responseData.data);
-        setBooksLoading(false);
-      } catch (error) {
-        console.error('Error fetching book list:', error);
-      }
-    }
-    fetchBookList();
-  }, []);
+  const { latitude, longitude } = useCity();
 
   useEffect(() => {
     async function getSpotlights() {
       try {
         const response = await instance(requests.getSpotlight);
-        const responseData = response.data;
-        setSpotlights(responseData.data);
+        setSpotlights(response.data.data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching spotlights:', error);
       }
     }
-  
+
     getSpotlights();
   }, []);
 
-  useEffect(() => {
-    async function fetchCurrentStreak() {
-      try {
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const response = await instance(`${requests.fetchReadingStreak}?timezone=${userTimezone}`, {
-          headers: {
-            Authorization: `Bearer ${userDetails[0].accessToken}`,
-          },
-        });
-        const data = response.data.data;
-        if (data) {
-          setCurrentStreak(data.currentStreak);
-          setStreakFreezes(data.streakFreezes ?? 0);
-          setLatestUpdateTime(data.latestUpdateTime);
-        }
-      } catch (error) {
-        console.error('Error fetching streak:', error);
-      }
-    }
-  
-    fetchCurrentStreak();
-  }, [currentStreak]);
-
   return (
     <SafeAreaView style={styles.ScreenContainer} edges={['top', 'left', 'right']}>
-
       <StatusBar backgroundColor={COLORS.primaryBlackHex} />
       {showConfetti && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} />}
 
@@ -188,11 +96,12 @@ const HomeScreen = ({navigation}: any) => {
         contentContainerStyle={styles.ScrollViewFlex}
         contentOffset={{ x: 0, y: scrollOffset }}
         onScroll={onTabBarScroll}
-        scrollEventThrottle={16}>
+        scrollEventThrottle={16}
+      >
         <ResponsiveContainer>
-          {/* App Header-with redundant notification setup */}
-          <HeaderBar 
-            showLogo 
+          {/* App Header with Streak Badge & Notifications */}
+          <HeaderBar
+            showLogo
             rightComponent={
               <View style={styles.headerRightContainer}>
                 <TouchableOpacity
@@ -219,7 +128,7 @@ const HomeScreen = ({navigation}: any) => {
                   {unreadNotificationCount > 0 && (
                     <View style={styles.notificationBadge}>
                       <Text style={styles.notificationBadgeText}>
-                        {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+                        {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
                       </Text>
                     </View>
                   )}
@@ -228,71 +137,24 @@ const HomeScreen = ({navigation}: any) => {
             }
           />
 
-          <StreakWeeklyProgress userDetails={userDetails} onFullWeekComplete={() => setShowConfetti(true)} />
+          {/* THE ONE CLEAR ACTION: The Daily Read Hero (Activation & Retention Engine) */}
+          <DailyReadHero onFullWeekComplete={() => setShowConfetti(true)} />
 
-          <Banner />
-
-          <CurrentReadsSection />
-   
+          {/* Social Proof: Friend Activity */}
           <FriendActivityPreview />
 
-          {/* Spotlight Section */}
+          {/* Promotional Banner */}
+          <Banner />
+
+          {/* Spotlight Section (ARCs, Giveaways, Publisher Spotlights) */}
           <Spotlights spotlights={spotlights} />
 
-          {/* Checkout city's library */}
-          <View style={styles.bookshopSection}>
-            <View style={styles.headerContainer}>
-              <Text style={styles.bookshopText}>Library</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Library')}>
-                <Text style={styles.seeMoreText}>See More</Text>
-              </TouchableOpacity>
-            </View>
-            <FlatList
-              {...bookList.length === 0 && styles.hidden}
-              ref={ListRef}
-              horizontal
-              ListEmptyComponent={
-                <View style={styles.EmptyListContainer}>
-                  <Text style={styles.infoText}>No Books found</Text>
-                </View>
-              }
-              showsHorizontalScrollIndicator={false}
-              data={bookList}
-              contentContainerStyle={styles.FlatListContainer}
-              keyExtractor={item => item.BookId}
-              renderItem={({item}) => {
-                return (
-                  <TouchableOpacity
-                    onPress={() => {
-                      navigation.push('Details', {
-                        id: item.BookId,
-                        type: "Book",
-                      });
-                    }}>
-                    <CoffeeCard
-                      id={item.BookId}
-                      name={item.BookName}
-                      photo={convertHttpToHttps(item.BookPhoto)}
-                      type="Book"
-                      price={item.BookPrice}
-                      averageRating={item.BookAverageRating}
-                      ratingCount={item.BookRatingCount}
-                      buttonPressHandler={CoffeeCardAddToCart}
-                    />
-                  </TouchableOpacity>
-                );
-              }}
-            />
-          </View>
-
+          {/* Seasonal Recommendations */}
           <SeasonalRecommendations latitude={latitude} longitude={longitude} />
 
-          {/* Checkout merch shop */}
-          {/* <MerchShopBanner title='Check Out Our Exclusive Merch!' description='Browse our latest merchandise, only for book lovers like you.' /> */}
-
-          {/* biblo jan and made with love in India */}
+          {/* Biblo Mascot */}
           <View style={styles.welcomeMascot}>
-            <Mascot emotion="pendingBooks"/>
+            <Mascot emotion="pendingBooks" />
             <Text style={styles.welcomeMessage}>From India, with love for readers</Text>
           </View>
         </ResponsiveContainer>
@@ -312,45 +174,6 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   ScrollViewFlex: {
     flexGrow: 1,
-  },
-  infoText: {
-    fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_16,
-    color: COLORS.primaryLightGreyHex,
-    marginBottom: SPACING.space_4,
-  },
-  FlatListContainer: {
-    gap: SPACING.space_20,
-    paddingVertical: SPACING.space_20,
-    paddingHorizontal: SPACING.space_30,
-  },
-  EmptyListContainer: {
-    width: Dimensions.get('window').width - SPACING.space_30 * 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.space_36 * 3.6,
-  },
-  bookshopSection: {
-    backgroundColor: COLORS.primaryDarkGreyHex,
-    marginTop: SPACING.space_24,
-    marginBottom: SPACING.space_24,
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingLeft: SPACING.space_10,
-  },
-  bookshopText: {
-    fontSize: FONTSIZE.size_20,
-    fontFamily: FONTFAMILY.poppins_bold,
-    color: COLORS.primaryLightGreyHex,
-  },
-  seeMoreText: {
-    fontSize: FONTSIZE.size_16,
-    fontFamily: FONTFAMILY.poppins_regular,
-    color: COLORS.primaryOrangeHex,
-    paddingRight: SPACING.space_10,
   },
   welcomeMascot: {
     opacity: 0.5,
