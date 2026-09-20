@@ -55,6 +55,14 @@ const ProfileSummaryScreen = ({ navigation, route }: any) => {
 
   useEffect(() => {
     const fetchUserData = async () => {
+      setLoading(true);
+      setUserData(null);
+      setUserAverageRating(null);
+      setAverageReadingDays(null);
+      setUserAverageEmotions([]);
+      setSocialLinks({});
+      setUserRelations(null);
+      setPrivacyStatus(true);
       try {
         const response = await instance(
           requests.fetchUserDataFromUsername(username),
@@ -575,9 +583,6 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   headerIconButton: {
     marginLeft: SPACING.space_8,
-    padding: SPACING.space_4,
-  },
-  backButton: {
     padding: SPACING.space_4,
   },
   headerIcon: {

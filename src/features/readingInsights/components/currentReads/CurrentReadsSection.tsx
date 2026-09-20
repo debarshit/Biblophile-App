@@ -41,6 +41,7 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   const userDetails = useStore((state: any) => state.userDetails);
+  const hasLoadedOnce = React.useRef(false);
 
   //  states for reading sessions
   const [timer, setTimer] = useState(0);
@@ -73,13 +74,16 @@ const CurrentReadsSection = ({ showDiscoverLink = true }) => {
 
   // Memoized fetch functions
   const fetchCurrentReads = useCallback(async () => {
-    setIsLoadingCurrentReads(true);
+    if (!hasLoadedOnce.current) {
+      setIsLoadingCurrentReads(true);
+    }
     try {
       const currentReadsResponse = await instance(requests.fetchCurrentReads, {
         headers: authHeaders,
       });
       const response = currentReadsResponse.data;
       setCurrentReads(response.data.currentReads);
+      hasLoadedOnce.current = true;
     } catch (error) {
       console.error('Failed to fetch current reads:', error);
       setCurrentReads([]);

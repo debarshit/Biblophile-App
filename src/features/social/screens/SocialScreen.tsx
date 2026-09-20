@@ -27,7 +27,7 @@ const SocialScreen = ({ route }) => {
         component: ActivityFeed,
     },
     {
-        tabLabel: 'buddy Reads ', //extra space added to prevent clipping on Android 15+ (search this comment to find other temp workarounds), along with safeText.tsx component
+        tabLabel: 'Buddy Reads ', //extra space added to prevent clipping on Android 15+ (search this comment to find other temp workarounds), along with safeText.tsx component
         component: buddyReadsIndex,
         props: {}, // (optional) additional props
     },
@@ -41,11 +41,11 @@ const SocialScreen = ({ route }) => {
     //   component: BookClubsIndex,
     //   props: {}, // (optional) additional props
     // },
-    // {
-    //     tabLabel: 'Reading Twins',
-    //     component: ReadingTwins,
-    //     props: {},
-    // },
+    {
+        tabLabel: 'Reading Twins ',
+        component: ReadingTwins,
+        props: {},
+    },
   ];
 
   const initialIndex = data.findIndex(item => item.tabLabel === initialTab);

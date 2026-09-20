@@ -27,10 +27,14 @@ interface PurchaseData {
 export const useAnalytics = () => {
   const posthog = usePostHog();
   const analytics = getAnalytics(getApp());
+  const isDevelopment = __DEV__;
 
   return {
     // --- User identity management ---
     identifyUser: async (userId: string, traits: Record<string, any> = {}) => {
+      if (isDevelopment) {
+        return;
+      }
       await Promise.all([
         setUserId(analytics, userId),
         ...Object.entries(traits).map(([key, value]) =>
@@ -42,23 +46,36 @@ export const useAnalytics = () => {
     },
 
     resetUser: async () => {
+      if (isDevelopment) {
+        console.log('[Analytics Dev] Reset user session');
+        return;
+      }
       await resetAnalyticsData(analytics);
       posthog?.reset();
     },
 
     // --- User lifecycle events ---
     signup: async (method: string = 'email') => {
+      if (isDevelopment) {
+        return;
+      }
       await logEvent(analytics, 'sign_up', { method });
       posthog?.capture('signup', { method });
     },
 
     login: async (method: string = 'email') => {
+      if (isDevelopment) {
+        return;
+      }
       await logEvent(analytics, 'login', { method });
       posthog?.capture('login', { method });
     },
 
     // --- Business events ---
     purchase: async ({ transaction_id, value, currency = 'INR', items }: PurchaseData) => {
+      if (isDevelopment) {
+        return;
+      }
       await logEvent(analytics, 'purchase', {
         transaction_id,
         value,
@@ -76,6 +93,9 @@ export const useAnalytics = () => {
 
     // --- Utility ---
     track: async (event: string, properties: Record<string, any> = {}) => {
+      if (isDevelopment) {
+        return;
+      }
       await logEvent(analytics, event, properties);
       posthog?.capture(event, properties);
     },

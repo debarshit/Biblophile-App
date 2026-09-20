@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -14,6 +14,7 @@ import PaymentFooter from '../../payment/components/PaymentFooter';
 import CartItem from '../components/CartItem';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAnalytics } from '../../../utils/analytics';
 
 interface DeliveryOptionsData {
   deliveryOption: "delivery" | "self-pickup";
@@ -22,6 +23,7 @@ interface DeliveryOptionsData {
 }
 
 const CartScreen = ({navigation, route}: any) => {
+  const analytics = useAnalytics();
   const CartList = useStore((state: any) => state.CartList);
   const CartPrice = useStore((state: any) => state.CartPrice);
   const incrementCartItemQuantity = useStore(
@@ -35,8 +37,20 @@ const CartScreen = ({navigation, route}: any) => {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
+  useEffect(() => {
+    analytics.track('cart_viewed', {
+      cartSize: CartList.length,
+      totalPrice: CartPrice,
+    });
+  }, []);
+
   const buttonPressHandler = (finalPrice: string, securityDeposit: string, deliveryOptions: DeliveryOptionsData) => {
     if (CartList.length != 0) {
+      analytics.track('checkout_started', {
+        amount: finalPrice,
+        securityDeposit: securityDeposit,
+        itemCount: CartList.length,
+      });
       // Navigate directly to Payment with the calculated final price
       navigation.push('Payment', { 
         amount: finalPrice, 
@@ -50,11 +64,13 @@ const CartScreen = ({navigation, route}: any) => {
   const incrementCartItemQuantityHandler = (id: string, size: string) => {
     incrementCartItemQuantity(id, size);
     calculateCartPrice();
+    analytics.track('cart_quantity_increased', { itemId: id, size });
   };
 
   const decrementCartItemQuantityHandler = (id: string, size: string) => {
     decrementCartItemQuantity(id, size);
     calculateCartPrice();
+    analytics.track('cart_quantity_decreased', { itemId: id, size });
   };
 
   return (

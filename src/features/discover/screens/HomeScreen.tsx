@@ -48,9 +48,19 @@ import FriendActivityPreview from '../components/FriendActivityPreview';
 import { ResponsiveContainer } from '../../../utils/responsive';
 
 interface Spotlight {
-  Id: string;
+  Id: string | number;
+  WorkId?: number;
   Photo: string;
   Name: string;
+  Authors?: string;
+  Genres?: string;
+  Publisher?: string;
+  badgeType?: 'partner_exclusive' | 'publisher_spotlight' | 'biblo_pick' | 'indie_spotlight' | 'arc_live' | 'giveaway_live';
+  badgeText?: string;
+  hasActiveArc?: boolean;
+  arcId?: number | null;
+  hasActiveGiveaway?: boolean;
+  giveawayId?: number | null;
 }
 
 const HomeScreen = ({navigation}: any) => {
