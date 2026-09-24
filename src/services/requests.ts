@@ -84,6 +84,10 @@ const requests = {
     getCityEvents: (id: string) => `${APIURL}city-discover/${id}/events`,
     getCityPlaces: (id: string) => `${APIURL}city-discover/${id}/places`,
     submitEventStatus: `${APIURL}city-discover/submit/event`,
+    bookTicket: (id: string | number) => `${APIURL}city-discover/events/${id}/book-ticket`,
+    createTicketPayment: (id: string | number) => `${APIURL}city-discover/events/${id}/create-payment`,
+    verifyTicketPayment: (linkId: string) => `${APIURL}city-discover/events/tickets/verify-payment/${linkId}`,
+    getUserTickets: `${APIURL}city-discover/events/tickets/my-tickets`,
 
     //reading activity requests
     submitReadingDuration: `${APIURL}reading/reading-activity/reading-duration`,

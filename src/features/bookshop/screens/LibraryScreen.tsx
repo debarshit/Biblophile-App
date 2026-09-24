@@ -38,6 +38,7 @@ import CityEventCard from '../components/CityEventCard';
 import { useTheme } from '../../../contexts/ThemeContext';
 import CityPlaceModal from '../components/CityPlaceModal';
 import EventModal from '../components/CityEventModal';
+import CityWaitlistModal from '../components/CityWaitlistModal';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCity } from '../../../contexts/CityContext';
@@ -103,6 +104,7 @@ const LibraryScreen = ({navigation}: any) => {
   const [booksLoading, setBooksLoading] = useState(true);
   const [cityPlaces, setCityPlaces] = useState([]);
   const [cityEvents, setCityEvents] = useState([]);
+  const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
   const [cityDataLoading, setCityDataLoading] = useState(true);
   const [deepLinkModal, setDeepLinkModal] = useState<{
     type: 'place' | 'event' | null;
@@ -583,6 +585,23 @@ const LibraryScreen = ({navigation}: any) => {
             <Text style={styles.emptyCityHint}>
               Check back later or select a different city to see what's happening.
             </Text>
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: COLORS.primaryOrangeHex,
+                paddingHorizontal: 20,
+                paddingVertical: 12,
+                borderRadius: 10,
+                marginTop: 14,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onPress={() => setIsWaitlistModalOpen(true)}
+            >
+              <Text style={{ color: '#fff', fontFamily: FONTFAMILY.poppins_semibold, fontSize: FONTSIZE.size_12 }}>
+                🌍 Vote to Bring Events to {citySlug ?? 'Your City'}
+              </Text>
+            </TouchableOpacity>
           </View>
         ) : 
         (<View style={styles.newsletterContainer}>
@@ -638,6 +657,12 @@ const LibraryScreen = ({navigation}: any) => {
         visible={!!selectedEventFromLink}
         event={selectedEventFromLink}
         onClose={() => setDeepLinkModal({ type: null, id: null })}
+      />
+      <CityWaitlistModal
+        visible={isWaitlistModalOpen}
+        onClose={() => setIsWaitlistModalOpen(false)}
+        defaultCity={citySlug}
+        defaultCountry={isFromIndia === false ? 'International' : 'India'}
       />
       {CartList.length > 0 && <FloatingIcon />}
     </SafeAreaView>
