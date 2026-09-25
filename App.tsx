@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import { PostHogProvider } from 'posthog-react-native'
-import { Alert, AppState, Text, TextInput } from 'react-native';
+import { PostHogProvider, usePostHog } from 'posthog-react-native';
+import { Alert, AppState, Text, TextInput, Platform } from 'react-native';
 
 // Cap font scaling globally to prevent layout distortion on large system fonts
 if ((Text as any).defaultProps) {
@@ -105,6 +105,32 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
+
+const PostHogEcosystemTracker: React.FC = () => {
+  const posthog = usePostHog();
+
+  useEffect(() => {
+    if (posthog) {
+      // Register super properties that attach to every event from RN app
+      posthog.register({
+        app_name: 'biblophile_mobile',
+        platform: Platform.OS,
+        client_type: 'mobile_native',
+        ecosystem_app: 'main_mobile',
+      });
+      // Initial entry attribution for new mobile users
+      posthog.capture('$set', {
+        $set_once: {
+          initial_entry_app: 'biblophile_mobile',
+          initial_entry_platform: `mobile_${Platform.OS}`,
+          initial_entry_timestamp: new Date().toISOString(),
+        },
+      });
+    }
+  }, [posthog]);
+
+  return null;
+};
 
 const App = () => {
   const isAuthenticated = useStore((state: any) => state.isAuthenticated);
@@ -320,6 +346,7 @@ const App = () => {
             apiKey="phc_FSNgN6xgRp56gSFZVhNVr0PWaPthNY3VjRRc8H6IUFo"
             options={posthogOptions}
           >
+            <PostHogEcosystemTracker />
             <KeyboardProvider>
               {isAuthenticated ? (
                 <CityProvider>

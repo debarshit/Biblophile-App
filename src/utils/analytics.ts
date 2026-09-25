@@ -1,4 +1,5 @@
 import { usePostHog } from 'posthog-react-native';
+import { Platform } from 'react-native';
 import { getApp } from '@react-native-firebase/app';
 import {
   getAnalytics,
@@ -60,7 +61,17 @@ export const useAnalytics = () => {
         return;
       }
       await logEvent(analytics, 'sign_up', { method });
-      posthog?.capture('signup', { method });
+      posthog?.capture('signup', {
+        method,
+        app_name: 'biblophile_mobile',
+        platform: Platform.OS,
+        entry_app: 'biblophile_mobile',
+        $set_once: {
+          initial_entry_app: 'biblophile_mobile',
+          initial_entry_platform: `mobile_${Platform.OS}`,
+          initial_entry_timestamp: new Date().toISOString(),
+        },
+      });
     },
 
     login: async (method: string = 'email') => {
