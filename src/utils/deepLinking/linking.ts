@@ -89,6 +89,9 @@ const config = {
         subPath: (subPath: string) => `${subPath}`,
       },
     },
+    SearchScreen: {
+      path: 'search',
+    },
     Resources: {
       path: ':*', // The asterisk acts as a wildcard
     },

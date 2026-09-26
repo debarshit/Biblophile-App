@@ -65,11 +65,12 @@ interface UserSearchResult {
 const SearchScreen = ({ route }) => {
   // Get add to cart handler from route params
   const { CoffeeCardAddToCart } = route.params || {};
+  const initialQuery = route?.params?.q || route?.params?.search || route?.params?.searchQuery || '';
   
   // State variables
   const [activeTab, setActiveTab] = useState<'books' | 'people'>('books');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState(initialQuery);
   
   // Books Search State
   const [externalBooks, setExternalBooks] = useState([]);
@@ -112,6 +113,12 @@ const SearchScreen = ({ route }) => {
       setBooksLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (initialQuery) {
+      performSearch(initialQuery);
+    }
+  }, [initialQuery]);
 
   // Search people function
   const performPeopleSearch = async (query) => {
@@ -428,7 +435,7 @@ const SearchScreen = ({ route }) => {
               <Text style={styles.promptTitle}>Search for readers</Text>
               <Text style={styles.promptSubtitle}>Find friends, reading twins, and book lovers</Text>
             </View>
-            {/* <SimilarUsers /> */}
+            <SimilarUsers />
             </>
           )
         )}
