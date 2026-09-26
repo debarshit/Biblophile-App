@@ -288,9 +288,13 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
           </View>
 
           <View style={styles.statusDisplay}>
-            <View style={styles.statusBadge}>
+            <TouchableOpacity
+              style={styles.statusBadge}
+              onPress={() => setModalVisible(true)}
+              activeOpacity={0.8}
+            >
               <Text style={styles.statusText}>{readingStatus.userBookId ? readingStatus.status : 'Set status'}</Text>
-            </View>
+            </TouchableOpacity>
             {(readingStatus.status === 'Currently reading' || readingStatus.status === 'Paused') && readingStatus.progressValue != null && (
               <Text style={styles.pageInfo}>
                 {formatReadingProgress(readingStatus.progressValue, readingStatus.progressUnit, product)}
