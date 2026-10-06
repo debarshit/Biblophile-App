@@ -87,6 +87,20 @@ export function navigateFromUrl(url: string) {
       path = parsed.hostname + (path ? `/${path}` : '');
     }
 
+    // Handle root or search path with search query param (e.g. https://biblophile.com/?search=... or biblophile://search?q=...)
+    const rawSearchQuery = queryParams?.search || queryParams?.q || queryParams?.searchQuery;
+    const searchQuery = typeof rawSearchQuery === 'string' ? rawSearchQuery.trim() : '';
+    if ((!path || path === '/' || path === 'search') && searchQuery) {
+      console.log('[DeepLink] Navigating to SearchScreen with query:', searchQuery);
+      navigate('SearchScreen', {
+        ...queryParams,
+        search: searchQuery,
+        q: searchQuery,
+        searchQuery: searchQuery,
+      });
+      return;
+    }
+
     if (!path) {
       console.warn('[DeepLink] No path found in URL:', url);
       navigate('Tab'); // fallback

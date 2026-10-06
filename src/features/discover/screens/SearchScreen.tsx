@@ -104,7 +104,8 @@ const SearchScreen = ({ route }) => {
     
     try {
       // Fetch internal+external books
-      const externalSearchResponse = await instance.get(`${requests.searchExternalBooks}${query}&userCity=${selectedCity}`);
+      const encodedQuery = encodeURIComponent(query);
+      const externalSearchResponse = await instance.get(`${requests.searchExternalBooks}${encodedQuery}&userCity=${selectedCity}`);
       const externalResponse = externalSearchResponse.data;
       setExternalBooks(externalResponse.data || []);
     } catch (error) {
@@ -116,6 +117,7 @@ const SearchScreen = ({ route }) => {
 
   useEffect(() => {
     if (initialQuery) {
+      setSearchText(initialQuery);
       performSearch(initialQuery);
     }
   }, [initialQuery]);

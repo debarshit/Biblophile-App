@@ -1,4 +1,5 @@
 import * as Linking from 'expo-linking';
+import { getStateFromPath } from '@react-navigation/native';
 
 const prefixes = [
   Linking.createURL('/'),
@@ -101,6 +102,35 @@ const config = {
 export const linking = {
   prefixes,
   config,
+  getStateFromPath(path: string, options: any) {
+    // Intercept search URLs like /?search=... or /?q=... or /search?search=...
+    const [pathname, queryString] = path.split('?');
+    const normalizedPath = pathname?.replace(/^\/+/, '');
+    if (queryString && (!normalizedPath || normalizedPath === 'search')) {
+      const searchParams = new URLSearchParams(queryString);
+      const query = (
+        searchParams.get('search') ||
+        searchParams.get('q') ||
+        searchParams.get('searchQuery') ||
+        ''
+      ).trim();
+      if (query) {
+        return {
+          routes: [
+            {
+              name: 'SearchScreen',
+              params: {
+                search: query,
+                q: query,
+                searchQuery: query,
+              },
+            },
+          ],
+        };
+      }
+    }
+    return getStateFromPath(path, options);
+  },
   async getInitialURL() {
     const url = await Linking.getInitialURL();
     return url;
