@@ -288,9 +288,6 @@ export const CoverImagePicker: React.FC<CoverImagePickerProps> = ({
             <Text style={styles.SourceText}>
               Source: {autoCover.source === 'open_library' ? 'Open Library' : 'Google Books'}
             </Text>
-            <Text style={styles.InfoText}>
-              Will be saved as high-res WebP on Biblophile CDN.
-            </Text>
 
             <TouchableOpacity
               style={styles.ChangeBtn}
@@ -512,11 +509,6 @@ const createStyles = (COLORS: any, isLight: boolean) =>
       color: COLORS.secondaryLightGreyHex,
       fontFamily: FONTFAMILY.poppins_regular,
       fontSize: FONTSIZE.size_12,
-    },
-    InfoText: {
-      color: COLORS.secondaryLightGreyHex,
-      fontFamily: FONTFAMILY.poppins_regular,
-      fontSize: FONTSIZE.size_10,
     },
     ChangeBtn: {
       flexDirection: 'row',
