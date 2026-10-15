@@ -22,6 +22,7 @@ import { AutocompleteDropdown } from '../components/AutocompleteDropdown';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 import HeaderBar from '../../../components/HeaderBar';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { CoverImagePicker, CoverSelection } from '../components/CoverImagePicker';
 
 const Input = ({ styles, label, value, onChange, placeholder, required = false, keyboardType = 'default', maxLength }: any) => (
   <View style={styles.Field}>
@@ -114,8 +115,11 @@ const AddWorkScreen = ({ navigation }: any) => {
   const [seriesPosition, setSeriesPosition] = useState('');
   const [seriesLabel, setSeriesLabel] = useState('');
   const [description, setDescription] = useState('');
-  const [coverUrl, setCoverUrl] = useState('');
-  const [coverError, setCoverError] = useState(false);
+  const [coverSelection, setCoverSelection] = useState<CoverSelection>({
+    mode: 'none',
+    url: null,
+    fileUri: null,
+  });
   const [bookType, setBookType] = useState<'fiction' | 'non-fiction'>('fiction');
   const [genres, setGenres] = useState('');
   const [isbn, setIsbn] = useState('');
@@ -184,9 +188,7 @@ const AddWorkScreen = ({ navigation }: any) => {
         language,
         publisher: publisher || null,
         publicationYear: publicationYear ? Number(publicationYear) : null,
-        cover:
-          coverUrl ||
-          'https://via.placeholder.com/300x450?text=No+Cover',
+        cover: coverSelection.url || null,
         contributors:
           contributors.length > 0
             ? contributors.filter(c => c.name.trim())
@@ -197,26 +199,54 @@ const AddWorkScreen = ({ navigation }: any) => {
     try {
       setLoading(true);
       setError('');
-      const res = await instance.post(
-        requests.createWork,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${userDetails[0].accessToken}`,
-          },
-        }
-      );
 
-      navigation.replace('Details', {
-        id: res.data.data.bookId,
-        type: 'Book',
-      });
+      if (coverSelection.mode === 'file' && coverSelection.fileUri) {
+        const formData = new FormData();
+        formData.append('workData', JSON.stringify(payload));
+        formData.append('coverFile', {
+          uri: coverSelection.fileUri,
+          name: coverSelection.fileName || 'cover.jpg',
+          type: coverSelection.fileType || 'image/jpeg',
+        } as any);
+
+        const res = await instance.post(
+          requests.createWork,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization: `Bearer ${userDetails[0].accessToken}`,
+            },
+          }
+        );
+
+        navigation.replace('Details', {
+          id: res.data.data.bookId,
+          type: 'Book',
+        });
+      } else {
+        const res = await instance.post(
+          requests.createWork,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${userDetails[0].accessToken}`,
+            },
+          }
+        );
+
+        navigation.replace('Details', {
+          id: res.data.data.bookId,
+          type: 'Book',
+        });
+      }
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to add book');
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <SafeAreaView style={styles.Screen}>
@@ -350,37 +380,14 @@ const AddWorkScreen = ({ navigation }: any) => {
             placeholder="Enter book description or blurb"
           />
 
-          {/* Cover URL */}
-          <View style={styles.Field}>
-            <Text style={styles.Label}>Cover Image URL</Text>
-            <TextInput
-              value={coverUrl}
-              onChangeText={(text) => {
-                setCoverUrl(text);
-                setCoverError(false);
-              }}
-              placeholder="https://example.com/cover.jpg"
-              placeholderTextColor={COLORS.secondaryLightGreyHex}
-              style={styles.Input}
-              keyboardType="url"
-            />
-            {coverUrl ? (
-              <View style={styles.CoverPreview}>
-                <Text style={styles.PreviewLabel}>Preview:</Text>
-                {!coverError ? (
-                  <Image 
-                    source={{ uri: coverUrl }} 
-                    style={styles.Cover}
-                    onError={() => setCoverError(true)}
-                  />
-                ) : (
-                  <Text style={styles.CoverError}>
-                    Unable to load image. Please check the URL.
-                  </Text>
-                )}
-              </View>
-            ) : null}
-          </View>
+          {/* Cover Image Selector */}
+          <CoverImagePicker
+            isbn={isbn}
+            title={title}
+            author={authors}
+            onCoverChange={setCoverSelection}
+          />
+
 
           {/* Book Type */}
           <Text style={styles.Label}>Book Type</Text>
@@ -603,8 +610,6 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   WarningBox: {
     backgroundColor: COLORS.primaryGreyHex,
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.primaryOrangeHex,
     borderRadius: BORDERRADIUS.radius_10,
     padding: SPACING.space_15,
     marginBottom: SPACING.space_20,

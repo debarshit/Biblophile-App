@@ -34,6 +34,13 @@ const requests = {
     searchBooks: `${APIURL}books/search?searchQuery=`,
     searchExternalBooks: `${APIURL}books/search-external?searchQuery=`,
     fetchReviewTags: `${APIURL}books/reviews/tags`,
+    previewBookCover: (params: { isbn?: string; title?: string; author?: string }) => {
+        const queryParts: string[] = [];
+        if (params.isbn) queryParts.push(`isbn=${encodeURIComponent(params.isbn)}`);
+        if (params.title) queryParts.push(`title=${encodeURIComponent(params.title)}`);
+        if (params.author) queryParts.push(`author=${encodeURIComponent(params.author)}`);
+        return `${APIURL}books/cover-preview?${queryParts.join('&')}`;
+    },
 
     //books meta requests
     searchAuthors: `${APIURL}admin/book-meta/authors/search`,

@@ -23,6 +23,7 @@ import { AutocompleteDropdown } from '../components/AutocompleteDropdown';
 import CustomPicker, { PickerOption } from '../../../components/CustomPickerComponent';
 import HeaderBar from '../../../components/HeaderBar';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { CoverImagePicker, CoverSelection } from '../components/CoverImagePicker';
 
 interface Contributor {
   name: string;
@@ -125,8 +126,11 @@ const AddEditionScreen = ({ navigation, route }: any) => {
   const [language, setLanguage] = useState('English');
   const [publisher, setPublisher] = useState('');
   const [publicationYear, setPublicationYear] = useState('');
-  const [coverUrl, setCoverUrl] = useState(initialCoverUrl || '');
-  const [coverError, setCoverError] = useState(false);
+  const [coverSelection, setCoverSelection] = useState<CoverSelection>({
+    mode: initialCoverUrl ? 'auto' : 'none',
+    url: initialCoverUrl || null,
+    fileUri: null,
+  });
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -188,18 +192,36 @@ const AddEditionScreen = ({ navigation, route }: any) => {
       language,
       publisher: publisher || null,
       publicationYear: publicationYear ? parseInt(publicationYear) : null,
-      cover: coverUrl || null,
+      cover: coverSelection.url || null,
       contributors: contributors
         .filter((c) => c.name.trim())
         .map((c) => ({ name: c.name, role: c.role })),
     };
 
     try {
-      await instance.post(requests.addWorkEdition(workId), editionData, {
-        headers: {
-          Authorization: `Bearer ${userDetails[0].accessToken}`,
-        },
-      });
+      if (coverSelection.mode === 'file' && coverSelection.fileUri) {
+        const formData = new FormData();
+        formData.append('editionData', JSON.stringify(editionData));
+        formData.append('coverFile', {
+          uri: coverSelection.fileUri,
+          name: coverSelection.fileName || 'cover.jpg',
+          type: coverSelection.fileType || 'image/jpeg',
+        } as any);
+
+        await instance.post(requests.addWorkEdition(workId), formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${userDetails[0].accessToken}`,
+          },
+        });
+      } else {
+        await instance.post(requests.addWorkEdition(workId), editionData, {
+          headers: {
+            Authorization: `Bearer ${userDetails[0].accessToken}`,
+          },
+        });
+      }
+
       Alert.alert('Success', 'Edition added successfully', [
         {
           text: 'OK',
@@ -212,6 +234,7 @@ const AddEditionScreen = ({ navigation, route }: any) => {
       setLoading(false);
     }
   };
+
 
   return (
     <SafeAreaView style={styles.Screen}>
@@ -307,40 +330,14 @@ const AddEditionScreen = ({ navigation, route }: any) => {
             placeholder="Enter book description or blurb"
           />
 
-          {/* Cover Image URL */}
-          <View style={styles.Field}>
-            <Text style={styles.Label}>Cover Image URL</Text>
-            <HelperText styles={styles}>
-              If you don't add a cover image, the cover image of another edition will be used.
-            </HelperText>
-            <TextInput
-              value={coverUrl}
-              onChangeText={(text) => {
-                setCoverUrl(text);
-                setCoverError(false);
-              }}
-              placeholder="https://example.com/cover.jpg"
-              placeholderTextColor={COLORS.secondaryLightGreyHex}
-              style={styles.Input}
-              keyboardType="url"
-            />
-            {coverUrl ? (
-              <View style={styles.CoverPreview}>
-                <Text style={styles.PreviewLabel}>Preview:</Text>
-                {!coverError ? (
-                  <Image 
-                    source={{ uri: coverUrl }} 
-                    style={styles.Cover}
-                    onError={() => setCoverError(true)}
-                  />
-                ) : (
-                  <Text style={styles.CoverError}>
-                    Unable to load image. Please check the URL.
-                  </Text>
-                )}
-              </View>
-            ) : null}
-          </View>
+          {/* Cover Image Selector */}
+          <CoverImagePicker
+            isbn={isbn}
+            title={bookTitle || title}
+            initialCoverUrl={initialCoverUrl}
+            onCoverChange={setCoverSelection}
+          />
+
 
           {/* ISBN */}
           <View style={styles.Field}>
@@ -543,8 +540,6 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   WarningBox: {
     backgroundColor: COLORS.primaryGreyHex,
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.primaryOrangeHex,
     borderRadius: BORDERRADIUS.radius_10,
     padding: SPACING.space_15,
     marginBottom: SPACING.space_20,
