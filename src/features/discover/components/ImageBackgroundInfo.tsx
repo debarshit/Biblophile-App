@@ -365,7 +365,7 @@ const ImageBackgroundInfo: React.FC<ImageBackgroundInfoProps> = ({
 
 const createStyles = (COLORS) => StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.primaryBlackHex },
-  header: { padding: SPACING.space_20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  header: { padding: SPACING.space_20, paddingTop: 0, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   bookCard: { marginHorizontal: SPACING.space_20, marginBottom: SPACING.space_20, padding: SPACING.space_20, backgroundColor: COLORS.primaryGreyHex, borderRadius: BORDERRADIUS.radius_20, flexDirection: 'row' },
   bookCover: { width: 110, height: 165, borderRadius: BORDERRADIUS.radius_10, marginRight: SPACING.space_16, borderWidth: 1, borderColor: COLORS.primaryLightGreyHex },
   bookInfoRight: { flex: 1, justifyContent: 'space-between' },

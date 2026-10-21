@@ -33,7 +33,7 @@ const DetailsScreen = ({navigation, route}: any) => {
   const addToCart = useStore((state: any) => state.addToCart);
   const calculateCartPrice = useStore((state: any) => state.calculateCartPrice);
   const userDetails = useStore((state: any) => state.userDetails);
-  const { selectedCity } = useCity();
+  const { selectedCity, isFromIndia } = useCity();
   const analytics = useAnalytics();
 
   const [canonicalBookId, setCanonicalBookId] = useState(route.params.id);
@@ -282,6 +282,7 @@ const DetailsScreen = ({navigation, route}: any) => {
             actualPrice={actualPrice}
             userDetails={userDetails}
             stripHtmlTags={stripHtmlTags}
+            onOpenBuyOptions={handleBuyOptions}
           />
         );
       case 'reviews':
@@ -333,10 +334,10 @@ const DetailsScreen = ({navigation, route}: any) => {
         <TabNavigator activeTab={activeTab} setActiveTab={setActiveTab} type={type} />
           {renderContent()}
         </View>
-        {price && (
+        {price && (isFromIndia !== false || price.size === 'Buy') && (
           <PaymentFooter
             price={price}
-            buttonTitle={price.size === "Buy" ? "See options" : "Add to Cart"}
+            buttonTitle={price.size === "Buy" ? "Buy Book" : "Add to Cart"}
             buttonPressHandler={() => {
               if (price.size === "Buy") {
                 handleBuyOptions();

@@ -155,7 +155,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
     };
 
     const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
-    const validatePhone = (phone: string) => /^\d{10}$/.test(phone);
+    const validatePhone = (phone: string) => /^\+?[1-9]\d{6,14}$/.test(phone.replace(/[\s\-()]/g, ''));
 
     const handleLogin = async () => {
         if (!loginEmail || !loginPass) {
@@ -166,9 +166,11 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
         setIsLoading(true);
         analytics.track('login_initiated');
         try {
+            const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const { data } = await instance.post(requests.userLogin, {
                 email: loginEmail,
                 pass: loginPass,
+                userTimezone: localTimezone,
             });
             if (data.data.message === 1) {
                 const userData = {
@@ -182,6 +184,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                     userUniqueUserName: data.data.name,
                     deposit: data.data.deposit,
                     profilePic: data.data.profilePic,
+                    userTimezone: data.data.userTimezone || localTimezone,
                 };
                 await handleNotificationPermission(userData);
                 await analytics.identifyUser(String(userData.userId), {
@@ -232,6 +235,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
         setIsLoading(true);
         analytics.track('signup_initiated');
         try {
+            const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const payload: any = {
                 name: signupName,
                 userName: signupUserName,
@@ -240,6 +244,7 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
                 signupPassCnf,
                 source,
                 newsletterOptIn,
+                userTimezone: localTimezone,
             };
             if (signupPhone) payload.phone = signupPhone;
 

@@ -21,6 +21,9 @@ import CityModal from '../../bookshop/components/CityModal';
 import { useTheme } from '../../../contexts/ThemeContext';
 import ThemeModal from '../components/ThemeSwitcherModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCity } from '../../../contexts/CityContext';
+import instance from '../../../services/axios';
+import requests from '../../../services/requests';
 
 const SettingsScreen = ({navigation, route}: any) => {
   const [cityModalVisible, setCityModalVisible] = React.useState(false);
@@ -31,6 +34,8 @@ const SettingsScreen = ({navigation, route}: any) => {
   const analytics = useAnalytics();
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const { selectedCity, isFromIndia, detectedCity } = useCity();
+  const isBangalore = selectedCity?.toLowerCase() === 'bengaluru' || selectedCity?.toLowerCase() === 'bangalore' || detectedCity?.toLowerCase() === 'bengaluru' || detectedCity?.toLowerCase() === 'bangalore';
 
   const openWebView = (url: string) => {
     navigation.push('Resources', {
@@ -60,18 +65,18 @@ const SettingsScreen = ({navigation, route}: any) => {
     {
       title: 'My Account',
       items: [
-        {
+        ...(isFromIndia !== false ? [{
           icon: <MaterialIcons name="history" size={20} color="#fff" />,
           label: 'My Order History',
           onPress: () => navigation.push('History'),
           bgColor: '#FF8C42',
-        },
-        {
+        }] : []),
+        ...(isBangalore ? [{
           icon: <FontAwesome color="#fff" name="rupee" size={20} />,
           label: 'Manage Subscription',
           onPress: () => navigation.push('Subscription'),
           bgColor: '#FF8C42',
-        },
+        }] : []),
         {
           icon: <MaterialIcons color="#fff" name="notifications-none" size={20} />,
           label: 'Manage Notifications',
@@ -84,12 +89,12 @@ const SettingsScreen = ({navigation, route}: any) => {
           onPress: () => navigation.push('PrivacySettings'),
           bgColor: '#FF8C42',
         },
-        {
+        ...(isFromIndia !== false ? [{
           icon: <FontAwesome5 color="#fff" name="city" size={20} />,
           label: 'Manage City',
           onPress: () => setCityModalVisible(true),
           bgColor: '#FF8C42',
-        },
+        }] : []),
         {
           icon: <FontAwesome5 color="#fff" name="sun" size={20} />,
           label: 'Manage Theme',
@@ -230,9 +235,20 @@ const SettingsScreen = ({navigation, route}: any) => {
                 {
                   text: 'Yes, Delete',
                   style: 'destructive',
-                  onPress: () => {
-                    // deleteUserAccount(); // Add your API call or logic here
+                  onPress: async () => {
                     Alert.alert('Delete', 'You will receive a deletion confirmation email shortly.');
+                    // deleteUserAccount(); // Add your API call or logic here
+                    // try {
+                    //   await instance.delete(requests.deleteAccount, {
+                    //     headers: {
+                    //       Authorization: `Bearer ${userDetails[0]?.accessToken}`,
+                    //     },
+                    //   });
+                    //   Alert.alert('Account Deleted', 'Your account and data have been permanently removed.');
+                    //   logout();
+                    // } catch (err: any) {
+                    //   Alert.alert('Error', err?.response?.data?.message || 'Failed to delete account. Please try again.');
+                    // }
                   },
                 },
               ],

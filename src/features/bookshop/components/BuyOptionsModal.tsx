@@ -12,6 +12,7 @@ import {
 import { COLORS, FONTFAMILY, FONTSIZE, SPACING, BORDERRADIUS } from '../../../theme/theme';
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useCity } from '../../../contexts/CityContext';
 
 const BuyOptionsModal = ({
   isVisible,
@@ -26,7 +27,7 @@ const BuyOptionsModal = ({
   const handleAmazonPurchase = () => {
     const encodedTitle = encodeURIComponent(bookTitle || "");
     // Amazon affiliate link with tag
-    const amazonLink = `https://www.amazon.in/s?k=${encodedTitle}&tag=abhi130208-21`;
+    const amazonLink = `${amazonDomain}${encodedTitle}&tag=abhi130208-21`;
     analytics.track('amazon_redirect', {
       book_title: bookTitle,
       price: bookPrice,
@@ -39,6 +40,8 @@ const BuyOptionsModal = ({
   };
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const { isFromIndia } = useCity();
+  const amazonDomain = isFromIndia === false ? 'https://www.amazon.com/s?k=' : 'https://www.amazon.in/s?k=';
   // Handle direct purchase through the app
   const handleDirectPurchase = () => {
     onOptionSelect("direct");
@@ -76,7 +79,7 @@ const BuyOptionsModal = ({
                   <Text style={styles.optionButtonText}>Buy on Amazon</Text>
                 </TouchableOpacity>
                 
-                {showDirectOption && (
+                {showDirectOption && isFromIndia !== false && (
                   <TouchableOpacity
                     style={styles.optionButton}
                     onPress={handleDirectPurchase}

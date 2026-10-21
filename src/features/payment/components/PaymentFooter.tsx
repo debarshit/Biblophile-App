@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import {
   BORDERRADIUS,
   COLORS,
@@ -15,6 +15,7 @@ import instance from '../../../services/axios';
 import { useStore } from '../../../store/store';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useCity } from '../../../contexts/CityContext';
 
 interface PriceProps {
   price: string;
@@ -32,12 +33,14 @@ interface PaymentFooterProps {
   price: PriceProps;
   buttonPressHandler: (totalPrice: string, securityDeposit: string, deliveryOptions: DeliveryOptionsData) => void;
   buttonTitle: string;
+  isLoading?: boolean;
 }
 
 const PaymentFooter: React.FC<PaymentFooterProps> = ({
   price,
   buttonPressHandler,
   buttonTitle,
+  isLoading = false,
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [subscription, setSubscription] = useState(false);
@@ -47,6 +50,7 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
   const navigation = useNavigation<any>();
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const { isFromIndia } = useCity();
   
   // Delivery and pickup states
   const [pickupDropOption, setPickupDropOption] = useState<"delivery" | "self-pickup">("delivery");
@@ -250,15 +254,31 @@ const PaymentFooter: React.FC<PaymentFooterProps> = ({
       
       <View style={styles.priceFooter}>
         <View style={styles.priceContainer}>
-          <Text style={styles.priceTitle}>{price.size === 'Buy' && buttonTitle !== 'Pay' ? 'From' : 'Total'}</Text>
-          <Text style={styles.priceText}>
-            ₹ <Text style={styles.price}>{totalPrice === 'NaN' ? '' : buttonTitle === 'Pay' ? totalPrice : price.price}</Text>
-          </Text>
+          {isFromIndia === false && price.size === 'Buy' ? (
+            <>
+              <Text style={styles.priceTitle}>Purchase</Text>
+              <Text style={styles.priceText}>
+                <Text style={styles.price}>Online</Text>
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.priceTitle}>{price.size === 'Buy' && buttonTitle !== 'Pay' ? 'From' : 'Total'}</Text>
+              <Text style={styles.priceText}>
+                ₹ <Text style={styles.price}>{totalPrice === 'NaN' ? '' : buttonTitle === 'Pay' ? totalPrice : price.price}</Text>
+              </Text>
+            </>
+          )}
         </View>
         <TouchableOpacity
-          style={styles.payButton}
+          style={[styles.payButton, isLoading && { opacity: 0.8 }]}
+          disabled={isLoading}
           onPress={handleButtonPress}>
-          <Text style={styles.buttonText}>{buttonTitle}</Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color={COLORS.primaryWhiteHex} />
+          ) : (
+            <Text style={styles.buttonText}>{buttonTitle}</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>

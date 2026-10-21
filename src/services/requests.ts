@@ -76,6 +76,7 @@ const requests = {
     fetchBookShelf: `${APIURL}users/bookshelf`,
     fetchUserNotes: `${APIURL}users/notes`,
     updateUserNote: (id) => `${APIURL}users/notes/${id}`,
+    deleteAccount: `${APIURL}users/delete-account`,
 
     //recommendation requests
     getSpotlight: `${APIURL}recommendations/spotlight`,

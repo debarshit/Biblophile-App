@@ -17,7 +17,8 @@ const DescriptionTab = ({
   id, 
   actualPrice,
   userDetails,
-  stripHtmlTags
+  stripHtmlTags,
+  onOpenBuyOptions
 }) => {
   const hasRentOption = prices.some(p => p.size === 'Rent');
   const { COLORS } = useTheme();
@@ -45,6 +46,7 @@ const DescriptionTab = ({
             prices={prices} 
             selectedPrice={price} 
             onSelectPrice={setPrice} 
+            onOpenBuyOptions={onOpenBuyOptions} 
             type={type} 
           />
           {!hasRentOption && <RequestBookButton 

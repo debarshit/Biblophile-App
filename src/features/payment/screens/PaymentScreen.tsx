@@ -6,6 +6,7 @@ import {
   StatusBar,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import {
   COLORS,
@@ -56,6 +57,7 @@ const PaymentScreen = ({navigation, route}: any) => {
   const [paymentMode, setPaymentMode] = useState('Online');
   const [showAnimation, setShowAnimation] = useState(false);
   const [isSubscription, setIsSubscription] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [amount, setAmount] = useState(route.params.amount);
 
   // Get delivery options from route params (passed from CartScreen)
@@ -204,6 +206,13 @@ const PaymentScreen = ({navigation, route}: any) => {
       handleAction(action);
     }
   }, [action]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      setIsProcessingPayment(false);
+    });
+    return unsubscribe;
+  }, [navigation]);
   
 
   const handleOnlinePayment = async (depositAmount) => {
@@ -214,6 +223,7 @@ const PaymentScreen = ({navigation, route}: any) => {
       analytics.track('payment_failed', { error: 'Address missing' });
     } else {
       if (amount > 0) {
+        setIsProcessingPayment(true);
         analytics.track('payment_initiated', { amount });
         try {
           const paymentRequestResponse = await instance.post(requests.paymentRequest, {
@@ -247,6 +257,7 @@ const PaymentScreen = ({navigation, route}: any) => {
                 const statusResponseOutput = statusResponse.data;
                 if (statusResponseOutput.message == 'Payment recorded successfully. You can close this window.') {
                   clearInterval(pollPaymentStatus);
+                  setIsProcessingPayment(false);
                   analytics.track('payment_successful', { amount });
                   if (action) {
                     navigation.navigate('History');
@@ -270,14 +281,17 @@ const PaymentScreen = ({navigation, route}: any) => {
             setTimeout(() => {
               timeoutReached = true;
               clearInterval(pollPaymentStatus);
+              setIsProcessingPayment(false);
               analytics.track('payment_timed_out', { amount });
             }, 300000);
 
           } else {
+            setIsProcessingPayment(false);
             alert('Network error! Please try again.');
             analytics.track('payment_failed', { error: 'Failed to generate link_url' });
           }
         } catch (error: any) {
+          setIsProcessingPayment(false);
           console.error('Error occurred during payment:', error);
           analytics.track('payment_failed', { error: error?.message || 'Request failed' });
         }
@@ -352,7 +366,7 @@ const PaymentScreen = ({navigation, route}: any) => {
       </ScrollView>
 
       <PaymentFooter
-        buttonTitle={`Pay ${paymentMode}`}
+        buttonTitle={ isProcessingPayment ? <ActivityIndicator color={COLORS.primaryWhiteHex} /> : `Pay ${paymentMode}`}
         price={{price: amount, currency: '₹'}}
         buttonPressHandler={buttonPressHandler}
       />

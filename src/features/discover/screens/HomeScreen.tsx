@@ -88,7 +88,7 @@ const HomeScreen = ({navigation}: any) => {
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
 
-  const { selectedCity, latitude, longitude } = useCity();
+  const { selectedCity, latitude, longitude, isFromIndia } = useCity();
 
   const CoffeeCardAddToCart = ({
     id,
@@ -239,51 +239,53 @@ const HomeScreen = ({navigation}: any) => {
           {/* Spotlight Section */}
           <Spotlights spotlights={spotlights} />
 
-          {/* Checkout city's library */}
-          <View style={styles.bookshopSection}>
-            <View style={styles.headerContainer}>
-              <Text style={styles.bookshopText}>Library</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Library')}>
-                <Text style={styles.seeMoreText}>See More</Text>
-              </TouchableOpacity>
+          {/* Checkout city's library (Domestic only) */}
+          {isFromIndia !== false && (
+            <View style={styles.bookshopSection}>
+              <View style={styles.headerContainer}>
+                <Text style={styles.bookshopText}>Library</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Library')}>
+                  <Text style={styles.seeMoreText}>See More</Text>
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                {...bookList.length === 0 && styles.hidden}
+                ref={ListRef}
+                horizontal
+                ListEmptyComponent={
+                  <View style={styles.EmptyListContainer}>
+                    <Text style={styles.infoText}>No Books found</Text>
+                  </View>
+                }
+                showsHorizontalScrollIndicator={false}
+                data={bookList}
+                contentContainerStyle={styles.FlatListContainer}
+                keyExtractor={item => item.BookId}
+                renderItem={({item}) => {
+                  return (
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.push('Details', {
+                          id: item.BookId,
+                          type: "Book",
+                        });
+                      }}>
+                      <CoffeeCard
+                        id={item.BookId}
+                        name={item.BookName}
+                        photo={convertHttpToHttps(item.BookPhoto)}
+                        type="Book"
+                        price={item.BookPrice}
+                        averageRating={item.BookAverageRating}
+                        ratingCount={item.BookRatingCount}
+                        buttonPressHandler={CoffeeCardAddToCart}
+                      />
+                    </TouchableOpacity>
+                  );
+                }}
+              />
             </View>
-            <FlatList
-              {...bookList.length === 0 && styles.hidden}
-              ref={ListRef}
-              horizontal
-              ListEmptyComponent={
-                <View style={styles.EmptyListContainer}>
-                  <Text style={styles.infoText}>No Books found</Text>
-                </View>
-              }
-              showsHorizontalScrollIndicator={false}
-              data={bookList}
-              contentContainerStyle={styles.FlatListContainer}
-              keyExtractor={item => item.BookId}
-              renderItem={({item}) => {
-                return (
-                  <TouchableOpacity
-                    onPress={() => {
-                      navigation.push('Details', {
-                        id: item.BookId,
-                        type: "Book",
-                      });
-                    }}>
-                    <CoffeeCard
-                      id={item.BookId}
-                      name={item.BookName}
-                      photo={convertHttpToHttps(item.BookPhoto)}
-                      type="Book"
-                      price={item.BookPrice}
-                      averageRating={item.BookAverageRating}
-                      ratingCount={item.BookRatingCount}
-                      buttonPressHandler={CoffeeCardAddToCart}
-                    />
-                  </TouchableOpacity>
-                );
-              }}
-            />
-          </View>
+          )}
 
           <SeasonalRecommendations latitude={latitude} longitude={longitude} />
 
@@ -297,7 +299,7 @@ const HomeScreen = ({navigation}: any) => {
           </View>
         </ResponsiveContainer>
       </Animated.ScrollView>
-      {CartList.length > 0 && <FloatingIcon />}
+      {CartList.length > 0 && isFromIndia !== false && <FloatingIcon />}
     </SafeAreaView>
   );
 };

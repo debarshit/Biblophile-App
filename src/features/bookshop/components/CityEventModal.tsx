@@ -21,6 +21,7 @@ import {
   BORDERRADIUS,
 } from '../../../theme/theme';
 import { useAnalytics } from '../../../utils/analytics';
+import { useCity } from '../../../contexts/CityContext';
 import { useStore } from '../../../store/store';
 import instance from '../../../services/axios';
 import requests from '../../../services/requests';
@@ -58,6 +59,8 @@ export default function EventModal({
   const navigation = useNavigation<any>();
   const userDetails = useStore((state: any) => state.userDetails);
   const user = userDetails?.[0];
+  const { isFromIndia } = useCity();
+  const currencySymbol = isFromIndia === false ? '$' : '₹';
   const [isBooking, setIsBooking] = useState(false);
   const { COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
@@ -288,7 +291,7 @@ export default function EventModal({
                 {isPaid ? (
                   <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, backgroundColor: 'rgba(255, 122, 0, 0.15)', borderWidth: 1, borderColor: COLORS.primaryOrangeHex }}>
                     <Text style={{ color: COLORS.primaryOrangeHex, fontFamily: FONTFAMILY.poppins_semibold, fontSize: FONTSIZE.size_12 }}>
-                      🎟 ₹{displayPrice} per ticket
+                      🎟 {currencySymbol}{displayPrice} per ticket
                     </Text>
                   </View>
                 ) : (
@@ -325,7 +328,7 @@ export default function EventModal({
                     <ActivityIndicator size="small" color="#fff" />
                   ) : (
                     <Text style={{ color: '#fff', fontFamily: FONTFAMILY.poppins_semibold, fontSize: FONTSIZE.size_12 }}>
-                      {isPaid ? `🎟 Book Ticket (₹${displayPrice})` : '🎟 Get Free Pass'}
+                      {isPaid ? `🎟 Book Ticket (${currencySymbol}${displayPrice})` : '🎟 Get Free Pass'}
                     </Text>
                   )}
                 </TouchableOpacity>

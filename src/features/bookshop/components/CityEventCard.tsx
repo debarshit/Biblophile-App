@@ -18,6 +18,7 @@ import instance from '../../../services/axios';
 import requests from '../../../services/requests';
 import { useAnalytics } from '../../../utils/analytics';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useCity } from '../../../contexts/CityContext';
 import { FontAwesome } from '@expo/vector-icons';
 
 interface CityEvent {
@@ -48,6 +49,8 @@ interface CityEventCardProps {
 
 export default function CityEventCard({ event, accessToken, onPress }: CityEventCardProps) {
   const analytics = useAnalytics();
+  const { isFromIndia } = useCity();
+  const currencySymbol = isFromIndia === false ? '$' : '₹';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [interested, setInterested] = useState(event.interested || 0);
   const [going, setGoing] = useState(event.going || 0);
@@ -187,7 +190,7 @@ export default function CityEventCard({ event, accessToken, onPress }: CityEvent
           {/* Pricing Tag */}
           <View style={[styles.priceBadge, isPaid ? styles.priceBadgePaid : styles.priceBadgeFree]}>
             <Text style={[styles.priceBadgeText, isPaid ? styles.priceBadgePaidText : styles.priceBadgeFreeText]}>
-              {isPaid ? `₹${displayPrice}` : 'Free Pass'}
+              {isPaid ? `${currencySymbol}${displayPrice}` : 'Free Pass'}
             </Text>
           </View>
         </View>
@@ -305,7 +308,7 @@ export default function CityEventCard({ event, accessToken, onPress }: CityEvent
           >
             <FontAwesome name="ticket" size={11} color="#fff" style={{ marginRight: 5 }} />
             <Text style={styles.bookButtonText}>
-              {isPaid ? `Book • ₹${displayPrice}` : 'Get Pass'}
+              {isPaid ? `Book • ${currencySymbol}${displayPrice}` : 'Get Pass'}
             </Text>
           </TouchableOpacity>
         </View>
