@@ -89,10 +89,11 @@ export const useStore = create<StoreState>()(
         preferredReminderTime: null,
         
         login: async (userData) => {
-          await set(state => ({
-            userDetails: [...state.userDetails, userData],
-          }));
-          set({ isAuthenticated: true, user: userData['userId'] });
+          await set({
+            userDetails: [userData],
+            isAuthenticated: true,
+            user: userData['userId'],
+          });
         },
         logout: async () => {
           const { userDetails } = get();

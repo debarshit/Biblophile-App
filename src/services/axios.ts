@@ -3,7 +3,7 @@ import jwt_decode from "jwt-decode";
 import { useStore } from "../store/store";
 
 const isDevelopment = __DEV__;
-const baseURL = isDevelopment ? "http://192.168.1.9:3000/" : "https://api.biblophile.com/";
+const baseURL = isDevelopment ? "http://172.17.192.155:3000/" : "https://api.biblophile.com/";
 
 const instance = axios.create({ baseURL });
 const refreshInstance = axios.create({ baseURL });
@@ -76,18 +76,23 @@ instance.interceptors.request.use(
     isRefreshing = true;
 
     try {
+      const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const response = await refreshInstance.post(
         isDevelopment
           ? "api/v0/auth/refresh-token"
           : "backend/api/v0/auth/refresh-token",
-        { refreshToken: user.refreshToken }
+        {
+          refreshToken: user.refreshToken,
+          userTimezone: localTimezone,
+        }
       );
 
       const data = response.data;
 
       if (data.data.message === 1 && data.data.accessToken) {
         const newToken = data.data.accessToken;
-        const updatedUser = { ...user, accessToken: newToken };
+        const updatedTimezone = data.data.userTimezone || localTimezone;
+        const updatedUser = { ...user, accessToken: newToken, userTimezone: updatedTimezone };
         login(updatedUser);
         config.headers["Authorization"] = `Bearer ${newToken}`;
         onRefreshed(newToken);
@@ -154,16 +159,21 @@ instance.interceptors.response.use(
     isRefreshing = true;
 
     try {
+      const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const { data } = await refreshInstance.post(
         isDevelopment
           ? "api/v0/auth/refresh-token"
           : "backend/api/v0/auth/refresh-token",
-        { refreshToken: user.refreshToken }
+        {
+          refreshToken: user.refreshToken,
+          userTimezone: localTimezone,
+        }
       );
 
       if (data.data.message === 1 && data.data.accessToken) {
         const newToken = data.data.accessToken;
-        login({ ...user, accessToken: newToken });
+        const updatedTimezone = data.data.userTimezone || localTimezone;
+        login({ ...user, accessToken: newToken, userTimezone: updatedTimezone });
         originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
         onRefreshed(newToken);
         return instance(originalRequest);

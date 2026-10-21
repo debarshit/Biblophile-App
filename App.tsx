@@ -27,6 +27,8 @@ import { notificationService, scheduleNightlyNudge } from './src/utils/notificat
 import { initialize } from '@microsoft/react-native-clarity';
 import * as Font from 'expo-font';
 import {useStore} from './src/store/store';
+import instance from './src/services/axios';
+import requests from './src/services/requests';
 import TabNavigator from './src/navigators/TabNavigator';
 import DetailsScreen from './src/features/discover/screens/DetailsScreen';
 import PaymentScreen from './src/features/payment/screens/PaymentScreen';
@@ -261,13 +263,33 @@ const App = () => {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', async (nextState) => {
       if (nextState === 'active') {
-        const { lastReadDate, isAuthenticated } = useStore.getState();
+        const { lastReadDate, isAuthenticated, userDetails, login } = useStore.getState();
         const todayStr = new Date().toISOString().slice(0, 10);
         if (isAuthenticated && lastReadDate !== todayStr) {
           await scheduleNightlyNudge();
         }
         // If they already read today, the nudge was already cancelled in CurrentReadsSection
         // so nothing to do here — just skip rescheduling
+
+        // Sync timezone with backend if device timezone differs
+        const user = userDetails?.[0];
+        const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (isAuthenticated && user?.refreshToken && user?.userTimezone !== localTimezone) {
+          instance.post(requests.refreshToken, {
+            refreshToken: user.refreshToken,
+            userTimezone: localTimezone,
+          }).then((res) => {
+            if (res.data?.data?.message === 1) {
+              login({
+                ...user,
+                accessToken: res.data.data.accessToken || user.accessToken,
+                userTimezone: res.data.data.userTimezone || localTimezone,
+              });
+            }
+          }).catch((err) => {
+            console.warn('Failed to sync updated timezone on app active:', err);
+          });
+        }
       }
     });
     return () => subscription.remove();
