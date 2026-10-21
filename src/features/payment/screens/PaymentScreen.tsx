@@ -133,7 +133,10 @@ const PaymentScreen = ({navigation, route}: any) => {
             calculateCartPrice();
             setTimeout(() => {
               setShowAnimation(false);
-              navigation.navigate('History');
+              navigation.reset({
+                index: 1,
+                routes: [{ name: 'Tab' }, { name: 'History' }],
+              });
             }, 2000);
           } else {
             alert(response.data.message);
@@ -180,7 +183,10 @@ const PaymentScreen = ({navigation, route}: any) => {
           setShowAnimation(true);
             setTimeout(() => {
               setShowAnimation(false);
-              navigation.navigate('Subscription');
+              navigation.reset({
+                index: 1,
+                routes: [{ name: 'Tab' }, { name: 'Subscription' }],
+              });
             }, 2000);
 
         } else {
@@ -260,7 +266,10 @@ const PaymentScreen = ({navigation, route}: any) => {
                   setIsProcessingPayment(false);
                   analytics.track('payment_successful', { amount });
                   if (action) {
-                    navigation.navigate('History');
+                    navigation.reset({
+                      index: 1,
+                      routes: [{ name: 'Tab' }, { name: 'History' }],
+                    });
                   } else {
                     if (isSubscription) {
                       placeSubscriptionOrder();

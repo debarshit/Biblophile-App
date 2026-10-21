@@ -5,7 +5,8 @@ import {
   StyleSheet,
   View,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  BackHandler
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {useStore} from '../../../store/store';
@@ -41,6 +42,26 @@ const OrderHistoryScreen = ({navigation}: any) => {
   const [limit] = useState(10);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [hasMoreData, setHasMoreData] = useState(true);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        if (navigation.canGoBack()) {
+          navigation.pop();
+        } else {
+          navigation.navigate('Tab');
+        }
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress
+      );
+
+      return () => backHandler.remove();
+    }, [navigation])
+  );
 
   const fetchOrderHistory = async (isLoadMore = false) => {
     if (!isLoadMore) {
