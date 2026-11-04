@@ -26,10 +26,12 @@ interface CityEvent {
   title: string;
   type: string;
   location?: string;
+  googleMapsUrl?: string;
   photo?: string;
   startDate: string;
   endDate?: string;
   description?: string;
+  organizerNotes?: string;
   registrationLink?: string;
   price?: number | string;
   ticketPrice?: number | string;
@@ -233,12 +235,25 @@ export default function CityEventCard({ event, accessToken, onPress }: CityEvent
 
         {/* Location */}
         {event.location ? (
-          <View style={styles.locationRow}>
-            <FontAwesome name="map-marker" size={11} color={COLORS.secondaryLightGreyHex} style={{ marginRight: 5 }} />
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              const url =
+                event.googleMapsUrl ||
+                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  event.cityName && !event.location?.toLowerCase().includes(event.cityName.toLowerCase())
+                    ? `${event.location}, ${event.cityName}`
+                    : event.location || ''
+                )}`;
+              Linking.openURL(url).catch(err => console.error('Error opening map:', err));
+            }}
+            style={styles.locationRow}
+          >
+            <FontAwesome name="map-marker" size={11} color={COLORS.primaryOrangeHex} style={{ marginRight: 5 }} />
             <Text style={styles.locationText} numberOfLines={1}>
               {event.location}
             </Text>
-          </View>
+          </TouchableOpacity>
         ) : null}
 
         {/* Description snippet */}
