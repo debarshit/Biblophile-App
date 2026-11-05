@@ -250,6 +250,16 @@ const SignupLogin: React.FC = ({ navigation }: any) => {
 
             const { data } = await instance.post(requests.userSignup, payload);
             if (data.data.message === 1) {
+                const newUserId = data.data.userId || data.data.data?.userId;
+                if (newUserId) {
+                    analytics.identifyUser(String(newUserId), {
+                        userId: newUserId,
+                        email: signupEmail,
+                        name: signupName,
+                        userName: signupUserName,
+                        phone: signupPhone || undefined,
+                    });
+                }
                 setSignupMessage({ text: 'Signup successful! You can login now.', color: COLORS.primaryOrangeHex });
                 setSignupName(''); setSignupUserName(''); setSignupEmail('');
                 setSignupPhone(''); setSignupPass(''); setSignupPassCnf('');
