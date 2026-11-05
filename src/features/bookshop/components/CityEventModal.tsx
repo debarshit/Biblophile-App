@@ -32,10 +32,12 @@ interface CityEvent {
   title: string;
   type: string;
   location?: string;
+  googleMapsUrl?: string;
   photo?: string;
   startDate: string;
   endDate?: string;
   description?: string;
+  organizerNotes?: string;
   registrationLink?: string;
   price?: number | string;
   ticketPrice?: number | string;
@@ -89,6 +91,22 @@ export default function EventModal({
         console.error('Error opening registration link:', err)
       );
     }
+  };
+
+  const openGoogleMaps = () => {
+    if (!event) return;
+    const url =
+      event.googleMapsUrl ||
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        event.cityName && !event.location?.toLowerCase().includes(event.cityName.toLowerCase())
+          ? `${event.location}, ${event.cityName}`
+          : event.location || ''
+      )}`;
+    analytics.track('event_modal_open_map', {
+      event_id: event.id,
+      title: event.title,
+    });
+    Linking.openURL(url).catch(err => console.error('Error opening map:', err));
   };
 
   const addToCalendar = () => {
@@ -269,9 +287,30 @@ export default function EventModal({
               </Text>
 
               {/* 📍 Location */}
-              {event.location && (
-                <Text style={styles.location}>{event.location}</Text>
-              )}
+              {event.location ? (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={openGoogleMaps}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: SPACING.space_8,
+                  }}
+                >
+                  <FontAwesome
+                    name="map-marker"
+                    size={13}
+                    color={COLORS.primaryOrangeHex}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={[styles.location, { marginBottom: 0, flex: 1 }]}>
+                    {event.location}{' '}
+                    <Text style={{ color: COLORS.primaryOrangeHex, fontFamily: FONTFAMILY.poppins_medium, fontSize: FONTSIZE.size_12 }}>
+                      (Map &#x2197;&#xFE0E;)
+                    </Text>
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
 
               {/* 📅 Date */}
               <Text style={styles.date}>
