@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -35,7 +35,21 @@ interface CityPlaceModalProps {
   place: CityPlace | null;
 }
 
-export default function CityPlaceModal({ visible, onClose, place }: CityPlaceModalProps) {
+export default function CityPlaceModal({
+  visible,
+  onClose,
+  place: placeProp,
+}: CityPlaceModalProps) {
+  const [cachedPlace, setCachedPlace] = useState<CityPlace | null>(placeProp);
+
+  useEffect(() => {
+    if (placeProp) {
+      setCachedPlace(placeProp);
+    }
+  }, [placeProp]);
+
+  const place = placeProp || cachedPlace;
+
   const analytics = useAnalytics();
   if (!place) return null;
   const { COLORS } = useTheme();

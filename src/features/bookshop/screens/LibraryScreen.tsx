@@ -651,12 +651,22 @@ const LibraryScreen = ({navigation}: any) => {
       <CityPlaceModal
         visible={!!selectedPlaceFromLink}
         place={selectedPlaceFromLink}
-        onClose={() => setDeepLinkModal({ type: null, id: null })}
+        onClose={() => {
+          setDeepLinkModal({ type: null, id: null });
+          if (type || id) {
+            navigation.setParams({ type: undefined, id: undefined });
+          }
+        }}
       />
       <EventModal
         visible={!!selectedEventFromLink}
         event={selectedEventFromLink}
-        onClose={() => setDeepLinkModal({ type: null, id: null })}
+        onClose={() => {
+          setDeepLinkModal({ type: null, id: null });
+          if (type || id) {
+            navigation.setParams({ type: undefined, id: undefined });
+          }
+        }}
       />
       <CityWaitlistModal
         visible={isWaitlistModalOpen}

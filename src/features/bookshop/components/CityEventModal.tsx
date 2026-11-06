@@ -55,8 +55,18 @@ interface EventModalProps {
 export default function EventModal({
   visible,
   onClose,
-  event,
+  event: eventProp,
 }: EventModalProps) {
+  const [cachedEvent, setCachedEvent] = useState<CityEvent | null>(eventProp);
+
+  React.useEffect(() => {
+    if (eventProp) {
+      setCachedEvent(eventProp);
+    }
+  }, [eventProp]);
+
+  const event = eventProp || cachedEvent;
+
   const analytics = useAnalytics();
   const navigation = useNavigation<any>();
   const userDetails = useStore((state: any) => state.userDetails);
@@ -165,7 +175,15 @@ export default function EventModal({
     if (!user?.accessToken) {
       Alert.alert('Sign In Required', 'Please sign in to book event tickets or get passes.', [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign In', onPress: () => { onClose(); navigation.navigate('Profile'); } },
+        {
+          text: 'Sign In',
+          onPress: () => {
+            onClose();
+            setTimeout(() => {
+              navigation.navigate('Profile');
+            }, 300);
+          },
+        },
       ]);
       return;
     }
@@ -201,7 +219,9 @@ export default function EventModal({
         const paymentUrl = res.data?.data?.paymentUrl;
         if (paymentUrl) {
           onClose();
-          navigation.navigate('PaymentGateway', { url: paymentUrl });
+          setTimeout(() => {
+            navigation.navigate('PaymentGateway', { url: paymentUrl });
+          }, 300);
         } else {
           Alert.alert('Payment Error', 'Could not obtain checkout URL from payment gateway.');
         }
